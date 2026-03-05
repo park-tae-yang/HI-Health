@@ -196,20 +196,32 @@
     .loading-text { font-size:14px; font-weight:600; color:var(--text-3); }
 
     /* USER LIST */
-    .user-list-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:12px; margin-bottom:20px; }
-    .user-card { background:var(--card); border-radius:var(--radius); padding:18px; box-shadow:var(--shadow); cursor:pointer; transition:all 0.2s; border:2px solid transparent; }
-    .user-card:hover { border-color:var(--primary); transform:translateY(-2px); }
-    .user-card.selected { border-color:var(--primary); background:var(--primary-light); }
-    .uc-header { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
-    .uc-avatar { font-size:28px; line-height:1; }
-    .uc-name { font-size:15px; font-weight:700; }
-    .uc-device { font-size:10px; color:var(--text-3); font-family:monospace; }
-    .uc-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; border-top:1px solid var(--border); padding-top:12px; }
-    .uc-stat { text-align:center; }
-    .uc-stat-val { font-size:16px; font-weight:700; color:var(--primary); }
-    .uc-stat-label { font-size:10px; color:var(--text-3); }
     .td-user { font-size:11px; font-weight:700; color:var(--primary); background:var(--primary-light); padding:2px 7px; border-radius:10px; display:inline-block; }
     .hidden { display:none; }
+
+    /* SELECTED USER BANNER */
+    .selected-user-bar { background:var(--primary-light); border:1.5px solid var(--primary); border-radius:var(--radius); padding:10px 16px; margin-bottom:14px; display:flex; align-items:center; gap:10px; }
+    .selected-user-bar.hidden { display:none; }
+    .sub-label { font-size:13px; font-weight:700; color:var(--primary); }
+    .sub-name { font-size:14px; font-weight:700; flex:1; }
+    .sub-clear { padding:5px 12px; background:var(--primary); color:#fff; border:none; border-radius:20px; font-family:inherit; font-size:12px; font-weight:600; cursor:pointer; }
+
+    /* PAGINATION */
+    .pagination { display:flex; align-items:center; justify-content:center; gap:6px; padding:16px 0; flex-wrap:wrap; }
+    .page-btn { padding:6px 13px; border:1.5px solid var(--border); border-radius:var(--radius-sm); background:#fff; font-family:inherit; font-size:13px; cursor:pointer; transition:all 0.15s; }
+    .page-btn:hover { border-color:var(--primary); color:var(--primary); }
+    .page-btn.active { background:var(--primary); color:#fff; border-color:var(--primary); font-weight:700; }
+    .page-btn:disabled { opacity:0.4; cursor:default; }
+    .page-info { font-size:13px; color:var(--text-3); font-weight:600; padding:0 6px; }
+
+    /* USER TABLE */
+    .user-row { cursor:pointer; }
+    .user-row:hover td { background:var(--primary-light) !important; }
+    .user-row.selected td { background:var(--primary-light); }
+    .rank-badge { display:inline-block; width:24px; height:24px; border-radius:50%; background:var(--border); color:var(--text-3); font-size:11px; font-weight:700; text-align:center; line-height:24px; }
+    .rank-badge.gold { background:#FEF3C7; color:#92400E; }
+    .rank-badge.silver { background:#F3F4F6; color:#374151; }
+    .rank-badge.bronze { background:#FEE0CC; color:#7C2D12; }
   </style>
 </head>
 <body>
@@ -258,13 +270,11 @@
       </div>
     </div>
 
-<!-- USER FILTER (sheets mode) -->
-    <div class="user-filter-bar hidden" id="user-filter-bar">
-      <span class="user-filter-label">이용자 선택</span>
-      <select class="user-filter-select" id="user-filter-select" onchange="onUserFilterChange()">
-        <option value="">전체 이용자</option>
-      </select>
-      <span class="user-count-badge" id="user-count-badge">0명</span>
+<!-- SELECTED USER BANNER (sheets mode) -->
+    <div class="selected-user-bar hidden" id="selected-user-bar">
+      <span class="sub-label">필터 중:</span>
+      <span class="sub-name" id="selected-user-name">-</span>
+      <button type="button" class="sub-clear" onclick="clearUserFilter()">전체 보기</button>
     </div>
 
     <!-- STAT CARDS -->
@@ -308,7 +318,7 @@
       <button type="button" class="tab-btn" onclick="switchTab('challenge', this)">챌린지 신청</button>
       <button type="button" class="tab-btn" onclick="switchTab('orders', this)">구매 주문</button>
       <button type="button" class="tab-btn" onclick="switchTab('user', this)">이용자 정보</button>
-      <button type="button" class="tab-btn hidden" id="tab-users-btn" onclick="switchTab('users', this)">이용자 목록</button>
+      <button type="button" class="tab-btn hidden" id="tab-users-btn" onclick="switchTab('users', this)">이용자 목록 <span id="tab-users-count" style="font-size:10px;opacity:0.8;"></span></button>
     </div>
 
     <!-- PANEL: 운동 기록 -->
@@ -497,10 +507,36 @@
     <!-- PANEL: 이용자 목록 (sheets mode) -->
     <div class="panel" id="panel-users">
       <div class="controls">
-        <input type="text" class="ctrl-search" id="users-search" placeholder="이름, 사번, 부서로 검색..." oninput="renderUsers()">
+        <input type="text" class="ctrl-search" id="users-search" placeholder="이름, 등록번호, 부서로 검색..." oninput="onUsersSearch()">
+        <select class="ctrl-select" id="users-sort" onchange="renderUsers()">
+          <option value="name">이름순</option>
+          <option value="points">포인트순</option>
+          <option value="workouts">운동 횟수순</option>
+          <option value="streak">연속운동순</option>
+        </select>
         <span class="ctrl-count" id="users-count"></span>
       </div>
-      <div class="user-list-grid" id="users-grid"></div>
+      <div class="table-wrap">
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>이름</th>
+                <th>등록번호</th>
+                <th>부서</th>
+                <th>포인트</th>
+                <th>운동</th>
+                <th>연속</th>
+                <th>게시글</th>
+                <th>관리</th>
+              </tr>
+            </thead>
+            <tbody id="users-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="pagination" id="users-pagination"></div>
     </div>
 
   </div>
@@ -561,6 +597,9 @@ let SHEETS_URL = localStorage.getItem('hi_admin_sheets_url') || '';
 let sheetsMode = false;
 let GD = null;           // 구글 시트에서 불러온 전체 이용자 데이터
 let selectedDeviceId = ''; // 이용자 필터 ('' = 전체)
+let userPage = 0;
+const USER_PAGE_SIZE = 50;
+let usersSearchTimer = null;
 
 const EX_MAP = {
   walking:'걷기', running:'달리기', swimming:'수영', cycling:'자전거',
@@ -712,7 +751,6 @@ async function loadFromSheets() {
     sheetsMode = true;
     selectedDeviceId = '';
     // UI: sheets mode 활성화
-    document.getElementById('user-filter-bar').classList.remove('hidden');
     document.getElementById('stat-card-users').classList.remove('hidden');
     document.getElementById('tab-users-btn').classList.remove('hidden');
     buildUserFilter();
@@ -752,57 +790,126 @@ function filterByUser(arr) {
 }
 
 function buildUserFilter() {
-  const sel = document.getElementById('user-filter-select');
   const users = GD.users || [];
-  sel.innerHTML = '<option value="">전체 이용자</option>' +
-    users.map(u => `<option value="${u.deviceId}">${u.avatar||'🏃'} ${u.name||'(이름없음)'}</option>`).join('');
-  document.getElementById('user-count-badge').textContent = users.length + '명';
+  document.getElementById('tab-users-count').textContent = users.length + '명';
 }
 
-function onUserFilterChange() {
-  selectedDeviceId = document.getElementById('user-filter-select').value;
+function clearUserFilter() {
+  selectedDeviceId = '';
+  document.getElementById('selected-user-bar').classList.add('hidden');
   renderAll();
+}
+
+function onUsersSearch() {
+  clearTimeout(usersSearchTimer);
+  usersSearchTimer = setTimeout(() => { userPage = 0; renderUsers(); }, 200);
 }
 
 /* ── USERS LIST ── */
-function renderUsers() {
-  if (!sheetsMode || !GD) return;
+function getFilteredSortedUsers() {
+  if (!GD) return [];
   const q = (document.getElementById('users-search')?.value || '').toLowerCase();
-  const users = (GD.users || []).filter(u => {
+  const sort = document.getElementById('users-sort')?.value || 'name';
+  const workoutCounts = {};
+  (GD.workouts || []).forEach(w => { workoutCounts[w.deviceId] = (workoutCounts[w.deviceId] || 0) + 1; });
+
+  let users = (GD.users || []).filter(u => {
     if (!q) return true;
-    return (u.name||'').toLowerCase().includes(q) || (u.empId||'').toLowerCase().includes(q) || (u.dept||'').toLowerCase().includes(q);
+    return (u.name||'').toLowerCase().includes(q)
+      || (u.registrationId||'').toLowerCase().includes(q)
+      || (u.empId||'').toLowerCase().includes(q)
+      || (u.dept||'').toLowerCase().includes(q);
   });
-  document.getElementById('users-count').textContent = `총 ${users.length}명`;
-  const grid = document.getElementById('users-grid');
-  if (!users.length) {
-    grid.innerHTML = '<div style="padding:40px;text-align:center;color:var(--text-3);">이용자가 없습니다</div>';
-    return;
-  }
-  grid.innerHTML = users.map(u => {
-    const woCount = (GD.workouts||[]).filter(w => w.deviceId === u.deviceId).length;
-    const postCount = (GD.posts||[]).filter(p => p.deviceId === u.deviceId).length;
-    const isSelected = u.deviceId === selectedDeviceId;
-    return `<div class="user-card${isSelected?' selected':''}" onclick="selectUser('${u.deviceId}')">
-      <div class="uc-header">
-        <div class="uc-avatar">${u.avatar||'🏃'}</div>
-        <div>
-          <div class="uc-name">${u.name||'(이름없음)'}</div>
-          <div class="uc-device">${u.deviceId||''}</div>
-        </div>
-      </div>
-      <div class="uc-stats">
-        <div class="uc-stat"><div class="uc-stat-val">${Number(u.points)||0}</div><div class="uc-stat-label">포인트</div></div>
-        <div class="uc-stat"><div class="uc-stat-val">${woCount}</div><div class="uc-stat-label">운동</div></div>
-        <div class="uc-stat"><div class="uc-stat-val">${postCount}</div><div class="uc-stat-label">게시글</div></div>
-      </div>
-    </div>`;
-  }).join('');
+
+  users = [...users].sort((a, b) => {
+    if (sort === 'points') return (Number(b.points)||0) - (Number(a.points)||0);
+    if (sort === 'workouts') return (workoutCounts[b.deviceId]||0) - (workoutCounts[a.deviceId]||0);
+    if (sort === 'streak') return (Number(b.streak)||0) - (Number(a.streak)||0);
+    return (a.name||'').localeCompare(b.name||'', 'ko');
+  });
+  return users;
 }
 
-function selectUser(deviceId) {
-  selectedDeviceId = (selectedDeviceId === deviceId) ? '' : deviceId;
-  document.getElementById('user-filter-select').value = selectedDeviceId;
-  renderAll();
+function renderUsers() {
+  if (!sheetsMode || !GD) return;
+  const users = getFilteredSortedUsers();
+  const total = users.length;
+  const totalPages = Math.ceil(total / USER_PAGE_SIZE);
+  if (userPage >= totalPages) userPage = Math.max(0, totalPages - 1);
+
+  document.getElementById('users-count').textContent = `총 ${total.toLocaleString()}명`;
+
+  const workoutCounts = {}, postCounts = {};
+  (GD.workouts||[]).forEach(w => { workoutCounts[w.deviceId] = (workoutCounts[w.deviceId]||0)+1; });
+  (GD.posts||[]).forEach(p => { postCounts[p.deviceId] = (postCounts[p.deviceId]||0)+1; });
+
+  const pageUsers = users.slice(userPage * USER_PAGE_SIZE, (userPage + 1) * USER_PAGE_SIZE);
+  const offset = userPage * USER_PAGE_SIZE;
+
+  const tbody = document.getElementById('users-tbody');
+  if (!pageUsers.length) {
+    tbody.innerHTML = `<tr><td colspan="9" class="empty-table"><div class="empty-icon">👤</div>이용자가 없습니다</td></tr>`;
+  } else {
+    tbody.innerHTML = pageUsers.map((u, i) => {
+      const rank = offset + i + 1;
+      const rankClass = rank === 1 ? 'gold' : rank === 2 ? 'silver' : rank === 3 ? 'bronze' : '';
+      const isSelected = u.deviceId === selectedDeviceId;
+      const wo = workoutCounts[u.deviceId] || 0;
+      const po = postCounts[u.deviceId] || 0;
+      return `<tr class="user-row${isSelected?' selected':''}" onclick="selectUser('${u.deviceId}','${(u.name||'').replace(/'/g,"\\'")}')">
+        <td><span class="rank-badge ${rankClass}">${rank}</span></td>
+        <td class="td-name">${u.avatar||'🏃'} ${u.name||'(이름없음)'}</td>
+        <td><span class="td-user">${u.registrationId||u.empId||'-'}</span></td>
+        <td>${u.dept||'-'}</td>
+        <td class="pts-badge">${(Number(u.points)||0).toLocaleString()}</td>
+        <td>${wo}</td>
+        <td>${Number(u.streak)||0}일</td>
+        <td>${po}</td>
+        <td><button class="action-btn btn-detail" onclick="event.stopPropagation();selectUser('${u.deviceId}','${(u.name||'').replace(/'/g,"\\'")}');switchTab('user',document.querySelectorAll('.tab-btn')[4])">상세</button></td>
+      </tr>`;
+    }).join('');
+  }
+
+  renderUsersPagination(total, totalPages);
+}
+
+function renderUsersPagination(total, totalPages) {
+  const el = document.getElementById('users-pagination');
+  if (totalPages <= 1) { el.innerHTML = ''; return; }
+
+  const maxVisible = 5;
+  let start = Math.max(0, userPage - Math.floor(maxVisible / 2));
+  let end = Math.min(totalPages, start + maxVisible);
+  if (end - start < maxVisible) start = Math.max(0, end - maxVisible);
+
+  let html = `<button class="page-btn" onclick="goUserPage(0)" ${userPage===0?'disabled':''}>«</button>`;
+  html += `<button class="page-btn" onclick="goUserPage(${userPage-1})" ${userPage===0?'disabled':''}>‹</button>`;
+  for (let i = start; i < end; i++) {
+    html += `<button class="page-btn${i===userPage?' active':''}" onclick="goUserPage(${i})">${i+1}</button>`;
+  }
+  html += `<button class="page-btn" onclick="goUserPage(${userPage+1})" ${userPage===totalPages-1?'disabled':''}>›</button>`;
+  html += `<button class="page-btn" onclick="goUserPage(${totalPages-1})" ${userPage===totalPages-1?'disabled':''}>»</button>`;
+  html += `<span class="page-info">${userPage+1} / ${totalPages} 페이지 (${total.toLocaleString()}명)</span>`;
+  el.innerHTML = html;
+}
+
+function goUserPage(page) {
+  userPage = page;
+  renderUsers();
+  document.getElementById('panel-users').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function selectUser(deviceId, name) {
+  if (selectedDeviceId === deviceId) {
+    clearUserFilter();
+  } else {
+    selectedDeviceId = deviceId;
+    const bar = document.getElementById('selected-user-bar');
+    bar.classList.remove('hidden');
+    document.getElementById('selected-user-name').textContent = name || deviceId;
+    renderAll();
+    renderUsers();
+  }
 }
 
 /* ── TABS ── */
