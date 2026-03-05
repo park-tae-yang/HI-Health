@@ -13,7 +13,7 @@
 // 7. index.html 의 SCRIPT_URL 과 user-admin.html 에 붙여넣기
 // ================================================================
 
-const SPREADSHEET_ID = 'Y147IOXY2-JFrMLmmMjCZjWPwSmWJHcd9Hf0NtXAsVE8E';
+const SPREADSHEET_ID = '147IOXY2-JFrMLmmMjCZjWPwSmWJHcd9Hf0NtXAsVE8E';
 
 function getOrCreateSheet(ss, name, headers) {
   let sheet = ss.getSheetByName(name);
