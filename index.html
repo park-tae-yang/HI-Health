@@ -730,6 +730,7 @@
     .feed-filter-row::-webkit-scrollbar { display:none; }
     .feed-filter-chip { padding:6px 14px; border-radius:20px; border:1.5px solid var(--border); background:var(--card); font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap; transition:all 0.2s; flex-shrink:0; }
     .feed-filter-chip.on { border-color:var(--primary); background:var(--primary-light); color:var(--primary); }
+    .feed-filter-divider { width:1px; background:var(--border); align-self:stretch; flex-shrink:0; margin:0 2px; }
     /* ── Comment modal ── */
     .comment-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:200; display:flex; align-items:flex-end; justify-content:center; }
     .comment-modal { background:var(--card); border-radius:var(--radius-lg) var(--radius-lg) 0 0; width:100%; max-width:480px; max-height:78vh; display:flex; flex-direction:column; }
@@ -3027,12 +3028,21 @@ function renderCommunity() {
 
   // Build filter chips
   const filterRow = document.getElementById('feed-filter-row');
-  const filters = [
+  const mainFilters = [
     { key:'all', label:'전체보기' },
     { key:'챌린지', label:'챌린지 보기' },
   ];
+  const filters = [
+    ...mainFilters,
+    ...(S.user.tags || []).map(t => ({ key:t, label:t })),
+  ];
   filterRow.innerHTML = '';
-  filters.forEach(f => {
+  filters.forEach((f, i) => {
+    if (i === mainFilters.length && S.user.tags && S.user.tags.length > 0) {
+      const div = document.createElement('div');
+      div.className = 'feed-filter-divider';
+      filterRow.appendChild(div);
+    }
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'feed-filter-chip' + (_feedFilter === f.key ? ' on' : '');
