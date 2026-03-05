@@ -910,6 +910,28 @@
       transition: opacity 0.2s; z-index: 200;
     }
     .shop-cart-bar.hidden { display: none; }
+    /* 신청내역 */
+    .order-history { margin: 16px 0 80px; }
+    .order-history-title { font-size: 14px; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+    .order-card { background: var(--card); border-radius: var(--radius-sm); padding: 14px 16px; margin-bottom: 10px; box-shadow: var(--shadow); border-left: 3px solid var(--border); }
+    .order-card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+    .order-card-id { font-size: 11px; color: var(--text-secondary); font-weight: 600; }
+    .order-card-date { font-size: 11px; color: var(--text-secondary); }
+    .order-card-items { font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+    .order-card-total { font-size: 12px; color: var(--text-secondary); }
+    .order-status-badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+    .os-pending   { background: #FEF3C7; color: #92400E; }
+    .os-confirmed { background: #D1FAE5; color: #065F46; }
+    .os-shipped   { background: #DBEAFE; color: #1E40AF; }
+    .os-done      { background: #F3F4F6; color: #374151; }
+    .os-cancelled { background: #FEE2E2; color: #991B1B; }
+    .reward-history { margin: 20px 0 8px; }
+    .reward-history-title { font-size: 14px; font-weight: 700; margin-bottom: 10px; }
+    .reward-hist-item { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: var(--card); border-radius: var(--radius-sm); margin-bottom: 8px; box-shadow: var(--shadow); }
+    .reward-hist-emoji { font-size: 22px; }
+    .reward-hist-name { flex: 1; font-size: 13px; font-weight: 600; }
+    .reward-hist-cost { font-size: 12px; color: var(--text-secondary); }
+    .order-empty { text-align: center; padding: 24px; color: var(--text-secondary); font-size: 13px; }
     .shop-cart-count {
       background: var(--primary); color: #fff; border-radius: 50%;
       width: 22px; height: 22px; font-size: 11px; font-weight: 900;
@@ -1590,6 +1612,7 @@
 
     <p class="section-title"><img src="icons/HI_icon_29.png" class="st-icon" alt="보상"> 교환 가능한 보상</p>
     <div class="reward-grid" id="reward-grid"></div>
+    <div class="reward-history" id="reward-history"></div>
 
     <div class="reward-guide-card">
       <p class="reward-guide-title"><img src="icons/HI_icon_29.png" class="sec-icon" alt="선물"> 선물 수령 안내</p>
@@ -1624,6 +1647,7 @@
         <div class="shop-banner-sub">원하는 제품을 담아 주문 신청하세요</div>
       </div>
       <div class="shop-list" id="shop-list"></div>
+      <div class="order-history" id="shop-order-history"></div>
       <div class="shop-cart-bar hidden" id="shop-cart-bar" onclick="openShopOrder()">
         <div class="shop-cart-count" id="shop-cart-count">0</div>
         <span class="shop-cart-label">장바구니 보기</span>
@@ -3556,6 +3580,36 @@ function renderShop() {
     if (countEl) countEl.textContent = count;
     if (totalEl) totalEl.textContent = cartTotal().toLocaleString() + '원';
   }
+
+  // 주문 내역
+  renderShopOrderHistory();
+}
+
+function renderShopOrderHistory() {
+  const el = document.getElementById('shop-order-history');
+  if (!el) return;
+  const orders = JSON.parse(localStorage.getItem(SHOP_ORDERS_KEY) || '[]')
+    .slice().reverse(); // 최신순
+  if (!orders.length) { el.innerHTML = ''; return; }
+
+  const statusLabel = { pending:'처리 대기', confirmed:'주문 확인', shipped:'배송 중', done:'수령 완료', cancelled:'취소' };
+  const statusClass = { pending:'os-pending', confirmed:'os-confirmed', shipped:'os-shipped', done:'os-done', cancelled:'os-cancelled' };
+
+  el.innerHTML = `<div class="order-history-title">📦 구매 신청내역</div>` +
+    orders.map(o => {
+      const items = Array.isArray(o.items) ? o.items : [];
+      const itemStr = items.map(i => `${i.name} × ${i.qty}`).join(', ') || '-';
+      const date = o.orderedAt ? new Date(o.orderedAt).toLocaleDateString('ko-KR') : '';
+      const st = o.status || 'pending';
+      return `<div class="order-card">
+        <div class="order-card-top">
+          <span class="order-card-id">${o.id}</span>
+          <span class="order-status-badge ${statusClass[st]||'os-pending'}">${statusLabel[st]||st}</span>
+        </div>
+        <div class="order-card-items">${itemStr}</div>
+        <div class="order-card-total">${(o.total||0).toLocaleString()}원 · ${o.pickup||''} · ${date}</div>
+      </div>`;
+    }).join('');
 }
 
 let _soPickup = '직접수령';
@@ -3709,6 +3763,33 @@ function renderRewards() {
       ${l.lv === myLv.lv ? `<div class="lg-current">현재 레벨</div>` : ''}
     </div>
   `).join('');
+
+  // 보상 신청내역
+  const histEl = document.getElementById('reward-history');
+  if (histEl) {
+    const all = [
+      ...S.pendingRewards.map(id => ({ id, status: 'pending' })),
+      ...S.redeemedRewards.map(id => ({ id, status: 'done' })),
+    ];
+    if (!all.length) { histEl.innerHTML = ''; }
+    else {
+      histEl.innerHTML = `<div class="reward-history-title">🎁 보상 신청내역</div>` +
+        all.map(({ id, status }) => {
+          const r = REWARDS_DATA.find(x => x.id === id);
+          if (!r) return '';
+          return `<div class="reward-hist-item">
+            <span class="reward-hist-emoji">${r.emoji}</span>
+            <div>
+              <div class="reward-hist-name">${r.name}</div>
+              <div class="reward-hist-cost">⭐ ${r.cost}p</div>
+            </div>
+            <span class="order-status-badge ${status === 'done' ? 'os-done' : 'os-pending'}">
+              ${status === 'done' ? '교환 완료' : '처리 대기'}
+            </span>
+          </div>`;
+        }).join('');
+    }
+  }
 }
 
 function redeemReward(id) {
@@ -4169,6 +4250,27 @@ function loadSheetsUserData(data) {
   if (myPosts.length) {
     const existingIds = new Set(S.posts.map(p => p.id));
     myPosts.forEach(p => { if (!existingIds.has(p.id)) S.posts.push(p); });
+  }
+  // 주문 상태 동기화 (Sheets의 최신 상태로 로컬 업데이트)
+  if (data.orders && data.orders.length) {
+    const local = JSON.parse(localStorage.getItem(SHOP_ORDERS_KEY) || '[]');
+    const sheetsMap = {};
+    data.orders.forEach(o => { sheetsMap[String(o.id)] = o.status; });
+    // 로컬에 있는 주문 상태 업데이트
+    local.forEach(o => { if (sheetsMap[String(o.id)]) o.status = sheetsMap[String(o.id)]; });
+    // Sheets에만 있는 주문 (다른 기기에서 신청) 추가
+    const localIds = new Set(local.map(o => String(o.id)));
+    data.orders.forEach(o => {
+      if (!localIds.has(String(o.id))) {
+        local.push({
+          id: o.id, name: o.name, phone: o.phone, pickup: o.pickup,
+          addr: o.addr, items: typeof o.items === 'string' ? JSON.parse(o.items || '[]') : (o.items || []),
+          total: Number(o.total) || 0, status: o.status,
+          orderedAt: o.orderedAt,
+        });
+      }
+    });
+    localStorage.setItem(SHOP_ORDERS_KEY, JSON.stringify(local));
   }
 }
 

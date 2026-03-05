@@ -91,6 +91,9 @@ function doGet(e) {
           result.posts = sheetToObjects(getOrCreateSheet(ss, 'Posts',
             ['id','deviceId','userName','body','exTag','userTags','ts']))
             .filter(p => p.deviceId === did);
+          result.orders = sheetToObjects(getOrCreateSheet(ss, 'Orders',
+            ['id','deviceId','userName','name','phone','pickup','addr','items','total','status','orderedAt']))
+            .filter(o => o.deviceId === did);
         }
       }
     }
