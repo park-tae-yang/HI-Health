@@ -308,6 +308,7 @@
     .pts-preview-lbl { font-size: 12px; color: var(--text-secondary); }
     .daily-limit-info { margin-top: 6px; font-size: 11px; color: var(--text-secondary); }
     .daily-limit-info.warn { color: var(--accent); font-weight: 600; }
+    .daily-limit-info--center { text-align: center; margin-bottom: 8px; }
 
     .workout-item { display: flex; align-items: center; gap: 13px; padding: 13px 0; border-bottom: 1px solid var(--border); }
     .workout-item:last-child { border-bottom: none; }
@@ -1359,7 +1360,8 @@
       <div class="glucose-time-expand" id="sa-glucose-time-wrap">
         <input type="time" id="sa-glucose-time" class="glucose-time-input" oninput="_glucoseTime=this.value">
       </div>
-      <button class="btn btn-primary btn-full glucose-log-btn" onclick="logGlucoseStandalone()">혈당 기록하기</button>
+      <button class="btn btn-primary btn-full glucose-log-btn" onclick="logGlucoseStandalone()">혈당 기록하기 (+5p)</button>
+      <div id="glucose-daily-info" class="daily-limit-info daily-limit-info--center"></div>
       <div class="glucose-history-list" id="glucose-history"></div>
     </div>
 
@@ -1646,8 +1648,11 @@ const LEVELS = [
 
 /* ── 운동 기록 제한 ── */
 const DAILY_WORKOUT_LIMIT = 3;   // 하루 최대 운동 기록 횟수
-const DAILY_POINTS_LIMIT  = 150; // 하루 최대 획득 포인트
+const DAILY_POINTS_LIMIT  = 150; // 하루 최대 획득 포인트 (운동)
 const MIN_DURATION        = 10;  // 최소 운동 시간(분)
+/* ── 혈당 기록 제한 ── */
+const DAILY_GLUCOSE_LIMIT  = 4;  // 하루 최대 혈당 기록 횟수
+const GLUCOSE_POINTS       = 5;  // 혈당 1회 기록 포인트
 const SHOP_ORDERS_KEY = 'hi_health_shop_orders';
 
 const EX_TYPES = [
@@ -2587,8 +2592,26 @@ function setGlucoseTiming(timing) {
   syncGlucoseUI();
 }
 
+function todayGlucoseRecords() {
+  const today = new Date().toDateString();
+  return (S.glucoseRecords || []).filter(r => new Date(r.ts).toDateString() === today);
+}
+
 function logGlucoseStandalone() {
   if (!_glucoseTiming) { haptic('error'); showToast('측정 시점을 선택해주세요'); return; }
+  // 하루 기록 횟수 제한
+  const todayGl = todayGlucoseRecords();
+  if (todayGl.length >= DAILY_GLUCOSE_LIMIT) {
+    haptic('error');
+    showToast(`⚠️ 하루 최대 ${DAILY_GLUCOSE_LIMIT}회까지 혈당을 기록할 수 있어요`);
+    return;
+  }
+  // 같은 시점 중복 기록 방지
+  if (todayGl.some(r => r.timing === _glucoseTiming)) {
+    haptic('error');
+    showToast(`⚠️ 오늘 '${_glucoseTiming}' 혈당은 이미 기록했어요`);
+    return;
+  }
   haptic('success');
   let ts;
   if (_glucoseTime) {
@@ -2598,8 +2621,9 @@ function logGlucoseStandalone() {
   } else {
     ts = new Date().toISOString();
   }
-  const rec = { id: Date.now(), value: _glucoseVal, timing: _glucoseTiming, ts };
+  const rec = { id: Date.now(), value: _glucoseVal, timing: _glucoseTiming, ts, points: GLUCOSE_POINTS };
   S.glucoseRecords.unshift(rec);
+  S.user.points += GLUCOSE_POINTS;
   save();
   _glucoseVal = 100; _glucoseTiming = null; _glucoseTime = ''; _glucoseTimeOpen = false;
   const timeEl = document.getElementById('sa-glucose-time');
@@ -2608,8 +2632,9 @@ function logGlucoseStandalone() {
   document.getElementById('sa-gt-time')?.classList.remove('on');
   syncGlucoseUI();
   renderGlucose();
+  renderHeader();
   const st = getGlucoseStatus(rec.value);
-  showToast('🩸 혈당 기록 완료! ' + rec.value + ' mg/dL (' + st.label + ')');
+  showToast(`🩸 혈당 기록 완료! ${rec.value} mg/dL (${st.label}) +${GLUCOSE_POINTS}p`);
 }
 
 function deleteGlucose(id) {
@@ -2701,6 +2726,19 @@ function renderGlucose() {
   if (!el) return;
   const recs = S.glucoseRecords;
   if (badge) badge.textContent = '총 ' + recs.length + '회';
+  // 일일 현황 표시
+  const infoEl = document.getElementById('glucose-daily-info');
+  if (infoEl) {
+    const todayGl = todayGlucoseRecords();
+    const rem = DAILY_GLUCOSE_LIMIT - todayGl.length;
+    if (rem <= 0) {
+      infoEl.textContent = `오늘 혈당 기록 한도(${DAILY_GLUCOSE_LIMIT}회) 도달 · +${todayGl.length * GLUCOSE_POINTS}p 획득`;
+      infoEl.classList.add('warn');
+    } else {
+      infoEl.textContent = `오늘 ${todayGl.length}회 기록 · 남은 횟수: ${rem}회 · 기록당 +${GLUCOSE_POINTS}p`;
+      infoEl.classList.remove('warn');
+    }
+  }
 
   if (_glucoseViewMode === 'graph') {
     el.innerHTML = glucoseGraphHTML();
