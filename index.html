@@ -3025,14 +3025,11 @@ function buildPostHealthHtml(h) {
 function renderCommunity() {
   document.getElementById('compose-av').textContent = S.user.avatar;
 
-  // Build filter chips from unique userTags
+  // Build filter chips
   const filterRow = document.getElementById('feed-filter-row');
-  const tagSet = new Set();
-  S.posts.forEach(p => { (p.userTags || []).forEach(t => tagSet.add(t)); });
   const filters = [
-    { key:'all', label:'전체' },
-    { key:'챌린지', label:'🏃 챌린지' },
-    ...[...tagSet].map(t => ({ key:t, label:t })),
+    { key:'all', label:'전체보기' },
+    { key:'챌린지', label:'챌린지 보기' },
   ];
   filterRow.innerHTML = '';
   filters.forEach(f => {
