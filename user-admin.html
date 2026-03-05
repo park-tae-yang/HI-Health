@@ -579,9 +579,13 @@ function doLogin() {
   if (pw === ADMIN_PW) {
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('admin').style.display = 'block';
-    // 저장된 Sheets URL 복원
-    if (SHEETS_URL) document.getElementById('sheets-url-input').value = SHEETS_URL;
-    loadData();
+    // 저장된 Sheets URL 복원 및 자동 불러오기
+    if (SHEETS_URL) {
+      document.getElementById('sheets-url-input').value = SHEETS_URL;
+      loadFromSheets();
+    } else {
+      loadData();
+    }
   } else {
     inp.classList.add('error');
     inp.value = '';
