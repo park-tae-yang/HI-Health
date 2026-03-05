@@ -157,6 +157,51 @@
     .btn-done:hover    { background:#9CA3AF;       color:#fff; }
 
     @media(max-width:640px) { .admin-body{padding:14px;} .stat-grid{grid-template-columns:repeat(2,1fr);} .tab-btn{font-size:12px;padding:8px 4px;} }
+
+    /* SHEETS CONFIG */
+    .sheets-config { background:#fff; border-radius:var(--radius); padding:14px 18px; box-shadow:var(--shadow); margin-bottom:16px; border-left:4px solid #34A853; }
+    .sheets-top { display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+    .sheets-icon { font-size:20px; }
+    .sheets-title { font-size:14px; font-weight:700; }
+    .sheets-sub { font-size:12px; color:var(--text-3); margin-top:1px; }
+    .sheets-row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+    .sheets-url-input { flex:1; min-width:220px; padding:9px 14px; border:1.5px solid var(--border); border-radius:var(--radius-sm); font-family:inherit; font-size:13px; outline:none; }
+    .sheets-url-input:focus { border-color:#34A853; }
+    .btn-sheets-load { padding:9px 18px; background:#34A853; color:#fff; border:none; border-radius:var(--radius-sm); font-family:inherit; font-size:13px; font-weight:700; cursor:pointer; white-space:nowrap; transition:all 0.2s; }
+    .btn-sheets-load:hover { background:#2D8A44; }
+    .sheets-status { font-size:12px; font-weight:600; padding:5px 12px; border-radius:20px; }
+    .sheets-ok { background:#D1FAE5; color:#065F46; }
+    .sheets-err { background:var(--red-light); color:var(--red); }
+
+    /* USER FILTER */
+    .user-filter-bar { background:#fff; border-radius:var(--radius); padding:12px 16px; box-shadow:var(--shadow); margin-bottom:16px; display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+    .user-filter-label { font-size:13px; font-weight:700; color:var(--text-3); white-space:nowrap; }
+    .user-filter-select { flex:1; min-width:180px; padding:8px 12px; border:1.5px solid var(--border); border-radius:var(--radius-sm); font-family:inherit; font-size:13px; outline:none; background:var(--bg); }
+    .user-filter-select:focus { border-color:var(--primary); }
+    .user-count-badge { background:var(--primary-light); color:var(--primary); padding:4px 12px; border-radius:20px; font-size:12px; font-weight:700; }
+
+    /* LOADING */
+    .loading-overlay { display:none; position:fixed; inset:0; background:rgba(255,255,255,0.85); z-index:500; align-items:center; justify-content:center; flex-direction:column; gap:14px; }
+    .loading-overlay.show { display:flex; }
+    .loading-spinner { width:44px; height:44px; border:4px solid var(--border); border-top-color:var(--primary); border-radius:50%; animation:spin 0.8s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .loading-text { font-size:14px; font-weight:600; color:var(--text-3); }
+
+    /* USER LIST */
+    .user-list-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:12px; margin-bottom:20px; }
+    .user-card { background:var(--card); border-radius:var(--radius); padding:18px; box-shadow:var(--shadow); cursor:pointer; transition:all 0.2s; border:2px solid transparent; }
+    .user-card:hover { border-color:var(--primary); transform:translateY(-2px); }
+    .user-card.selected { border-color:var(--primary); background:var(--primary-light); }
+    .uc-header { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+    .uc-avatar { font-size:28px; line-height:1; }
+    .uc-name { font-size:15px; font-weight:700; }
+    .uc-device { font-size:10px; color:var(--text-3); font-family:monospace; }
+    .uc-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; border-top:1px solid var(--border); padding-top:12px; }
+    .uc-stat { text-align:center; }
+    .uc-stat-val { font-size:16px; font-weight:700; color:var(--primary); }
+    .uc-stat-label { font-size:10px; color:var(--text-3); }
+    .td-user { font-size:11px; font-weight:700; color:var(--primary); background:var(--primary-light); padding:2px 7px; border-radius:10px; display:inline-block; }
+    .hidden { display:none; }
   </style>
 </head>
 <body>
@@ -188,8 +233,38 @@
 
   <div class="admin-body">
 
+    <!-- SHEETS CONFIG -->
+    <div class="sheets-config">
+      <div class="sheets-top">
+        <span class="sheets-icon">📊</span>
+        <div>
+          <div class="sheets-title">Google Sheets 연동 (전체 이용자 관리)</div>
+          <div class="sheets-sub">Apps Script 웹 앱 URL을 입력하면 모든 이용자 데이터를 관리할 수 있습니다</div>
+        </div>
+      </div>
+      <div class="sheets-row">
+        <input type="text" class="sheets-url-input" id="sheets-url-input" placeholder="https://script.google.com/macros/s/.../exec" oninput="onSheetsUrlChange()">
+        <button type="button" class="btn-sheets-load" onclick="loadFromSheets()">불러오기</button>
+        <span class="sheets-status hidden" id="sheets-status"></span>
+      </div>
+    </div>
+
+    <!-- USER FILTER (sheets mode) -->
+    <div class="user-filter-bar hidden" id="user-filter-bar">
+      <span class="user-filter-label">이용자 선택</span>
+      <select class="user-filter-select" id="user-filter-select" onchange="onUserFilterChange()">
+        <option value="">전체 이용자</option>
+      </select>
+      <span class="user-count-badge" id="user-count-badge">0명</span>
+    </div>
+
     <!-- STAT CARDS -->
     <div class="stat-grid">
+      <div class="stat-card blue hidden" id="stat-card-users">
+        <div class="stat-label">총 이용자</div>
+        <div class="stat-value" id="stat-users">0</div>
+        <div class="stat-sub">명</div>
+      </div>
       <div class="stat-card blue">
         <div class="stat-label">총 운동 횟수</div>
         <div class="stat-value" id="stat-total-ex">0</div>
@@ -224,6 +299,7 @@
       <button type="button" class="tab-btn" onclick="switchTab('challenge', this)">챌린지 신청</button>
       <button type="button" class="tab-btn" onclick="switchTab('orders', this)">구매 주문</button>
       <button type="button" class="tab-btn" onclick="switchTab('user', this)">이용자 정보</button>
+      <button type="button" class="tab-btn hidden" id="tab-users-btn" onclick="switchTab('users', this)">이용자 목록</button>
     </div>
 
     <!-- PANEL: 운동 기록 -->
@@ -247,6 +323,7 @@
           <table>
             <thead>
               <tr>
+                <th id="wo-th-user" class="hidden">이용자</th>
                 <th>날짜 / 시간</th>
                 <th>운동 종류</th>
                 <th>시간</th>
@@ -285,6 +362,7 @@
               </tr>
             </thead>
             <tbody id="post-tbody"></tbody>
+
           </table>
         </div>
       </div>
@@ -407,7 +485,22 @@
       </div>
     </div>
 
+    <!-- PANEL: 이용자 목록 (sheets mode) -->
+    <div class="panel" id="panel-users">
+      <div class="controls">
+        <input type="text" class="ctrl-search" id="users-search" placeholder="이름, 사번, 부서로 검색..." oninput="renderUsers()">
+        <span class="ctrl-count" id="users-count"></span>
+      </div>
+      <div class="user-list-grid" id="users-grid"></div>
+    </div>
+
   </div>
+</div>
+
+<!-- LOADING OVERLAY -->
+<div class="loading-overlay" id="loading-overlay">
+  <div class="loading-spinner"></div>
+  <div class="loading-text">Google Sheets에서 불러오는 중...</div>
 </div>
 
 <!-- WORKOUT DETAIL MODAL -->
@@ -441,6 +534,12 @@
 const ADMIN_PW = 'hi2025admin';
 const STORAGE_KEY = 'hi_health_v2';
 
+/* ── Google Sheets 연동 상태 ── */
+let SHEETS_URL = localStorage.getItem('hi_admin_sheets_url') || '';
+let sheetsMode = false;
+let GD = null;           // 구글 시트에서 불러온 전체 이용자 데이터
+let selectedDeviceId = ''; // 이용자 필터 ('' = 전체)
+
 const EX_MAP = {
   walking:'걷기', running:'달리기', swimming:'수영', cycling:'자전거',
   yoga:'요가', strength:'근력운동', stretching:'스트레칭', hiking:'등산',
@@ -461,6 +560,8 @@ function doLogin() {
   if (pw === ADMIN_PW) {
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('admin').style.display = 'block';
+    // 저장된 Sheets URL 복원
+    if (SHEETS_URL) document.getElementById('sheets-url-input').value = SHEETS_URL;
     loadData();
   } else {
     inp.classList.add('error');
@@ -475,6 +576,9 @@ function doLogout() {
   document.getElementById('admin').style.display = 'none';
   document.getElementById('pw-input').value = '';
   D = null;
+  GD = null;
+  sheetsMode = false;
+  selectedDeviceId = '';
 }
 
 /* ── DATA ── */
@@ -500,20 +604,161 @@ function renderAll() {
   renderStats();
   renderWorkouts();
   renderPosts();
-  renderUserInfo();
-  buildExFilter();
-  document.getElementById('ah-user-name').textContent = (D.user.avatar || '') + ' ' + (D.user.name || '이름 없음');
+  renderChallenge();
+  renderOrders();
+  if (sheetsMode) renderUsers();
+  if (!sheetsMode) {
+    renderUserInfo();
+    buildExFilter();
+    document.getElementById('ah-user-name').textContent = (D.user.avatar || '') + ' ' + (D.user.name || '이름 없음');
+  } else {
+    const userCount = (GD.users || []).length;
+    document.getElementById('ah-user-name').textContent = `전체 이용자 ${userCount}명`;
+  }
 }
 
 /* ── STATS ── */
 function renderStats() {
-  const myPosts = D.posts.filter(p => p.userId === 0);
-  const totalMins = D.workouts.reduce((s,w) => s + (w.duration||0), 0);
-  document.getElementById('stat-total-ex').textContent = D.workouts.length;
-  document.getElementById('stat-pts').textContent = (D.user.points || 0).toLocaleString();
-  document.getElementById('stat-streak').textContent = D.user.streak || 0;
-  document.getElementById('stat-posts').textContent = myPosts.length;
-  document.getElementById('stat-mins').textContent = totalMins.toLocaleString();
+  if (sheetsMode && GD) {
+    const users = GD.users || [];
+    const workouts = filterByUser(GD.workouts || []);
+    const posts = filterByUser(GD.posts || []);
+    const totalMins = workouts.reduce((s,w) => s + (Number(w.duration)||0), 0);
+    const selUser = selectedDeviceId ? users.find(u => u.deviceId === selectedDeviceId) : null;
+
+    document.getElementById('stat-card-users').classList.toggle('hidden', !!selectedDeviceId);
+    document.getElementById('stat-users').textContent = users.length;
+    document.getElementById('stat-total-ex').textContent = workouts.length;
+    document.getElementById('stat-pts').textContent = selUser
+      ? (Number(selUser.points)||0).toLocaleString()
+      : users.reduce((s,u) => s + (Number(u.points)||0), 0).toLocaleString();
+    document.getElementById('stat-streak').textContent = selUser
+      ? (Number(selUser.streak)||0)
+      : '-';
+    document.getElementById('stat-posts').textContent = posts.length;
+    document.getElementById('stat-mins').textContent = totalMins.toLocaleString();
+  } else if (D) {
+    const myPosts = D.posts.filter(p => p.userId === 0);
+    const totalMins = D.workouts.reduce((s,w) => s + (w.duration||0), 0);
+    document.getElementById('stat-total-ex').textContent = D.workouts.length;
+    document.getElementById('stat-pts').textContent = (D.user.points || 0).toLocaleString();
+    document.getElementById('stat-streak').textContent = D.user.streak || 0;
+    document.getElementById('stat-posts').textContent = myPosts.length;
+    document.getElementById('stat-mins').textContent = totalMins.toLocaleString();
+  }
+}
+
+/* ── GOOGLE SHEETS ── */
+function onSheetsUrlChange() {
+  SHEETS_URL = document.getElementById('sheets-url-input').value.trim();
+  localStorage.setItem('hi_admin_sheets_url', SHEETS_URL);
+}
+
+async function loadFromSheets() {
+  SHEETS_URL = document.getElementById('sheets-url-input').value.trim();
+  if (!SHEETS_URL) { toast('Apps Script URL을 입력해주세요'); return; }
+  localStorage.setItem('hi_admin_sheets_url', SHEETS_URL);
+  showLoading(true);
+  const statusEl = document.getElementById('sheets-status');
+  try {
+    const res = await fetch(SHEETS_URL + '?action=getAll');
+    const json = await res.json();
+    if (!json.ok) throw new Error(json.error || '응답 오류');
+    GD = json.data;
+    sheetsMode = true;
+    selectedDeviceId = '';
+    // UI: sheets mode 활성화
+    document.getElementById('user-filter-bar').classList.remove('hidden');
+    document.getElementById('stat-card-users').classList.remove('hidden');
+    document.getElementById('tab-users-btn').classList.remove('hidden');
+    buildUserFilter();
+    renderAll();
+    statusEl.textContent = `연결됨 (${(GD.users||[]).length}명)`;
+    statusEl.className = 'sheets-status sheets-ok';
+    statusEl.classList.remove('hidden');
+    toast(`Google Sheets 데이터 불러오기 완료! 이용자 ${(GD.users||[]).length}명`);
+  } catch(e) {
+    statusEl.textContent = '연결 실패: ' + e.message;
+    statusEl.className = 'sheets-status sheets-err';
+    statusEl.classList.remove('hidden');
+    toast('오류: ' + e.message);
+  } finally {
+    showLoading(false);
+  }
+}
+
+async function sheetsPost(action, payload) {
+  if (!SHEETS_URL) return;
+  try {
+    await fetch(SHEETS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action, payload }),
+    });
+  } catch(e) {}
+}
+
+function showLoading(on) {
+  document.getElementById('loading-overlay').classList.toggle('show', on);
+}
+
+function filterByUser(arr) {
+  if (!selectedDeviceId) return arr;
+  return arr.filter(x => x.deviceId === selectedDeviceId);
+}
+
+function buildUserFilter() {
+  const sel = document.getElementById('user-filter-select');
+  const users = GD.users || [];
+  sel.innerHTML = '<option value="">전체 이용자</option>' +
+    users.map(u => `<option value="${u.deviceId}">${u.avatar||'🏃'} ${u.name||'(이름없음)'}</option>`).join('');
+  document.getElementById('user-count-badge').textContent = users.length + '명';
+}
+
+function onUserFilterChange() {
+  selectedDeviceId = document.getElementById('user-filter-select').value;
+  renderAll();
+}
+
+/* ── USERS LIST ── */
+function renderUsers() {
+  if (!sheetsMode || !GD) return;
+  const q = (document.getElementById('users-search')?.value || '').toLowerCase();
+  const users = (GD.users || []).filter(u => {
+    if (!q) return true;
+    return (u.name||'').toLowerCase().includes(q) || (u.empId||'').toLowerCase().includes(q) || (u.dept||'').toLowerCase().includes(q);
+  });
+  document.getElementById('users-count').textContent = `총 ${users.length}명`;
+  const grid = document.getElementById('users-grid');
+  if (!users.length) {
+    grid.innerHTML = '<div style="padding:40px;text-align:center;color:var(--text-3);">이용자가 없습니다</div>';
+    return;
+  }
+  grid.innerHTML = users.map(u => {
+    const woCount = (GD.workouts||[]).filter(w => w.deviceId === u.deviceId).length;
+    const postCount = (GD.posts||[]).filter(p => p.deviceId === u.deviceId).length;
+    const isSelected = u.deviceId === selectedDeviceId;
+    return `<div class="user-card${isSelected?' selected':''}" onclick="selectUser('${u.deviceId}')">
+      <div class="uc-header">
+        <div class="uc-avatar">${u.avatar||'🏃'}</div>
+        <div>
+          <div class="uc-name">${u.name||'(이름없음)'}</div>
+          <div class="uc-device">${u.deviceId||''}</div>
+        </div>
+      </div>
+      <div class="uc-stats">
+        <div class="uc-stat"><div class="uc-stat-val">${Number(u.points)||0}</div><div class="uc-stat-label">포인트</div></div>
+        <div class="uc-stat"><div class="uc-stat-val">${woCount}</div><div class="uc-stat-label">운동</div></div>
+        <div class="uc-stat"><div class="uc-stat-val">${postCount}</div><div class="uc-stat-label">게시글</div></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function selectUser(deviceId) {
+  selectedDeviceId = (selectedDeviceId === deviceId) ? '' : deviceId;
+  document.getElementById('user-filter-select').value = selectedDeviceId;
+  renderAll();
 }
 
 /* ── TABS ── */
@@ -522,12 +767,14 @@ function switchTab(name, btn) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('panel-' + name).classList.add('active');
   btn.classList.add('active');
+  if (name === 'users') renderUsers();
 }
 
 /* ── WORKOUT FILTER BUILD ── */
 function buildExFilter() {
   const sel = document.getElementById('wo-filter-type');
-  const used = [...new Set(D.workouts.map(w => w.exId || 'custom'))];
+  const src = sheetsMode ? filterByUser(GD.workouts||[]) : (D ? D.workouts : []);
+  const used = [...new Set(src.map(w => w.exId || 'custom'))];
   sel.innerHTML = '<option value="">전체 종류</option>';
   used.forEach(id => {
     const opt = document.createElement('option');
@@ -544,9 +791,18 @@ function getFilteredWorkouts() {
   const period = document.getElementById('wo-filter-period').value;
   const now = new Date();
 
-  return D.workouts.filter(w => {
+  // 데이터 소스: Sheets 모드면 GD, 아니면 D
+  const source = sheetsMode
+    ? filterByUser(GD.workouts || []).map(w => ({
+        id: w.id, exId: w.exId, customName: w.exName, duration: Number(w.duration)||0,
+        points: Number(w.points)||0, memo: w.memo, ts: Number(w.ts)||0,
+        userName: w.userName,
+      }))
+    : (D ? D.workouts : []);
+
+  return source.filter(w => {
     const exName = w.customName || EX_MAP[w.exId] || w.exId || '';
-    if (q && !exName.toLowerCase().includes(q) && !(w.memo||'').toLowerCase().includes(q)) return false;
+    if (q && !exName.toLowerCase().includes(q) && !(w.memo||'').toLowerCase().includes(q) && !(w.userName||'').toLowerCase().includes(q)) return false;
     if (type && w.exId !== type) return false;
     if (period) {
       const d = new Date(w.ts);
@@ -563,11 +819,15 @@ function getFilteredWorkouts() {
 }
 
 function renderWorkouts() {
+  buildExFilter();
   const list = getFilteredWorkouts();
+  const showUser = sheetsMode && !selectedDeviceId;
+  document.getElementById('wo-th-user').classList.toggle('hidden', !showUser);
   document.getElementById('wo-count').textContent = `총 ${list.length}건`;
   const tbody = document.getElementById('wo-tbody');
+  const colspan = showUser ? 7 : 6;
   if (!list.length) {
-    tbody.innerHTML = '<tr><td colspan="6"><div class="empty-table"><div class="empty-icon">🏋️</div>운동 기록이 없습니다</div></td></tr>';
+    tbody.innerHTML = `<tr><td colspan="${colspan}"><div class="empty-table"><div class="empty-icon">🏋️</div>운동 기록이 없습니다</div></td></tr>`;
     return;
   }
   tbody.innerHTML = list.map(w => {
@@ -576,7 +836,10 @@ function renderWorkouts() {
     const timeStr = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
     const icon = EX_ICON[w.exId] || '✏️';
     const name = w.customName || EX_MAP[w.exId] || w.exId || '기타';
+    const userCell = showUser ? `<td><span class="td-user">${w.userName||'-'}</span></td>` : '';
+    const canDelete = !sheetsMode; // Sheets 모드에서는 삭제 비활성화
     return `<tr>
+      ${userCell}
       <td><div class="td-date">${dateStr}</div><div class="td-date">${timeStr}</div></td>
       <td><span class="ex-badge">${icon} ${name}</span></td>
       <td>${w.duration || 0}분</td>
@@ -584,8 +847,8 @@ function renderWorkouts() {
       <td class="td-memo">${w.memo || '-'}</td>
       <td>
         <div style="display:flex;gap:5px;">
-          <button type="button" class="action-btn btn-detail" onclick="showWorkoutDetail(${w.id})">상세</button>
-          <button type="button" class="action-btn btn-delete" onclick="deleteWorkout(${w.id})">삭제</button>
+          ${!sheetsMode ? `<button type="button" class="action-btn btn-detail" onclick="showWorkoutDetail(${w.id})">상세</button>` : ''}
+          ${canDelete ? `<button type="button" class="action-btn btn-delete" onclick="deleteWorkout(${w.id})">삭제</button>` : ''}
         </div>
       </td>
     </tr>`;
@@ -642,7 +905,14 @@ function deleteAllWorkouts() {
 function getFilteredPosts() {
   const q = document.getElementById('post-search').value.toLowerCase();
   const filter = document.getElementById('post-filter').value;
-  return D.posts.filter(p => {
+
+  if (sheetsMode && GD) {
+    return filterByUser(GD.posts || []).filter(p => {
+      if (q && !(p.body||'').toLowerCase().includes(q) && !(p.userName||'').toLowerCase().includes(q)) return false;
+      return true;
+    }).sort((a,b) => Number(b.ts||0) - Number(a.ts||0));
+  }
+  return (D ? D.posts : []).filter(p => {
     if (filter === 'mine' && p.userId !== 0) return false;
     if (q && !(p.body||'').toLowerCase().includes(q)) return false;
     return true;
@@ -658,6 +928,18 @@ function renderPosts() {
     return;
   }
   tbody.innerHTML = list.map(p => {
+    if (sheetsMode) {
+      const preview = (p.body||'').substring(0,60) + ((p.body||'').length > 60 ? '...' : '');
+      const d = new Date(Number(p.ts)||0);
+      const dateStr = p.ts ? `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}` : '-';
+      return `<tr>
+        <td class="td-date">${dateStr}</td>
+        <td><span class="td-user">${p.userName||'-'}</span></td>
+        <td>${p.exTag ? `<span class="ex-badge">${p.exTag}</span>` : '-'}</td>
+        <td class="td-memo">${preview}</td>
+        <td></td>
+      </tr>`;
+    }
     const isMine = p.userId === 0;
     const preview = (p.body||'').substring(0,60) + ((p.body||'').length > 60 ? '...' : '');
     return `<tr>
@@ -786,10 +1068,11 @@ const STATUS_LABEL = {
 };
 
 function getChRegs() {
+  if (sheetsMode && GD) return GD.registrations || [];
   return JSON.parse(localStorage.getItem(CH_REG_KEY) || '[]');
 }
 function saveChRegs(regs) {
-  localStorage.setItem(CH_REG_KEY, JSON.stringify(regs));
+  if (!sheetsMode) localStorage.setItem(CH_REG_KEY, JSON.stringify(regs));
 }
 
 function renderChallenge() {
@@ -797,7 +1080,7 @@ function renderChallenge() {
   const status = document.getElementById('ch-filter-status').value;
   let regs = getChRegs().filter(r => {
     if (status && r.status !== status) return false;
-    if (q && !r.name.toLowerCase().includes(q) && !r.empId.toLowerCase().includes(q) && !(r.dept||'').toLowerCase().includes(q)) return false;
+    if (q && !(r.name||'').toLowerCase().includes(q) && !(r.empId||'').toLowerCase().includes(q) && !(r.dept||'').toLowerCase().includes(q)) return false;
     return true;
   }).sort((a,b) => new Date(b.registeredAt) - new Date(a.registeredAt));
 
@@ -833,6 +1116,15 @@ function renderChallenge() {
 }
 
 function chSetStatus(id, status) {
+  if (sheetsMode && GD) {
+    const r = (GD.registrations||[]).find(x => x.id === id);
+    if (!r) return;
+    r.status = status;
+    sheetsPost('updateRegistrationStatus', { id, status });
+    renderChallenge();
+    toast(`${r.name}님 신청이 '${STATUS_LABEL[status]}'으로 변경됐습니다`);
+    return;
+  }
   const regs = getChRegs();
   const r = regs.find(x => x.id === id);
   if (!r) return;
@@ -846,10 +1138,17 @@ function chSetStatus(id, status) {
 const SHOP_ORDERS_KEY = 'hi_health_shop_orders';
 
 function getOrders() {
+  if (sheetsMode && GD) {
+    return (GD.orders || []).map(o => ({
+      ...o,
+      items: typeof o.items === 'string' ? (() => { try { return JSON.parse(o.items); } catch(e) { return []; } })() : (o.items||[]),
+      total: Number(o.total)||0,
+    }));
+  }
   return JSON.parse(localStorage.getItem(SHOP_ORDERS_KEY) || '[]');
 }
 function saveOrders(orders) {
-  localStorage.setItem(SHOP_ORDERS_KEY, JSON.stringify(orders));
+  if (!sheetsMode) localStorage.setItem(SHOP_ORDERS_KEY, JSON.stringify(orders));
 }
 
 function renderOrders() {
@@ -896,6 +1195,15 @@ function renderOrders() {
 }
 
 function ordSetStatus(id, status) {
+  if (sheetsMode && GD) {
+    const o = (GD.orders||[]).find(x => x.id === id);
+    if (!o) return;
+    o.status = status;
+    sheetsPost('updateOrderStatus', { id, status });
+    renderOrders();
+    toast(`주문 ${o.id} 상태가 '${STATUS_LABEL[status]||status}'으로 변경됐습니다`);
+    return;
+  }
   const orders = getOrders();
   const o = orders.find(x => x.id === id);
   if (!o) return;

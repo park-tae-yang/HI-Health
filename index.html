@@ -1654,6 +1654,8 @@ const MIN_DURATION        = 10;  // 최소 운동 시간(분)
 const DAILY_GLUCOSE_LIMIT  = 4;  // 하루 최대 혈당 기록 횟수
 const GLUCOSE_POINTS       = 5;  // 혈당 1회 기록 포인트
 const SHOP_ORDERS_KEY = 'hi_health_shop_orders';
+/* ── Google Sheets 동기화 URL (배포 후 입력) ── */
+const SCRIPT_URL = ''; // ← Apps Script 웹 앱 URL을 여기에 붙여넣기
 
 const EX_TYPES = [
   { id:'walking',   name:'걷기',    icon:'🚶', ppm:0.5,  bg:'#DCFCE7' },
@@ -1833,6 +1835,7 @@ const WEEK_DAYS = ['일','월','화','수','목','금','토'];
    STATE
 ════════════════════════════════════════ */
 let S = {
+  deviceId: null,
   user: { name:'', avatar:'🏃', points:0, streak:0, stickersReceived:0, registrationId:null, tags:[] },
   workouts: [],
   posts: JSON.parse(JSON.stringify(MOCK_POSTS_SEED)),
@@ -1860,9 +1863,41 @@ function save() {
       glucoseRecords: S.glucoseRecords,
     }));
   } catch(e) {}
+  // 사용자 정보 구글 시트 동기화
+  apiSync('syncUser', {
+    deviceId: S.deviceId,
+    name: S.user.name,
+    avatar: S.user.avatar,
+    empId: S.user.empId || '',
+    dept: S.user.dept || '',
+    points: S.user.points,
+    streak: S.user.streak,
+    tags: S.user.tags || [],
+    registrationId: S.user.registrationId || '',
+  });
+}
+
+/* ── Google Sheets 비동기 동기화 (fire & forget) ── */
+function apiSync(action, payload) {
+  if (!SCRIPT_URL) return;
+  try {
+    fetch(SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ action, payload }),
+      mode: 'no-cors',
+    });
+  } catch(e) {}
 }
 function load() {
   try {
+    // deviceId는 기기 고유 식별자 (초기화해도 유지)
+    let did = localStorage.getItem('hi_device_id');
+    if (!did) {
+      did = 'u' + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+      localStorage.setItem('hi_device_id', did);
+    }
+    S.deviceId = did;
     const d = JSON.parse(localStorage.getItem('hi_health_v2') || 'null');
     if (!d) return;
     S.user = { ...S.user, ...d.user };
@@ -2400,6 +2435,23 @@ function logExercise() {
   clearPhoto(null);
   resetHealthChecks();
   save();
+  // 운동 기록 구글 시트 동기화
+  const lastW = S.workouts[0];
+  if (lastW) {
+    const exInfo = getExType(lastW.exId);
+    apiSync('addWorkout', {
+      id: lastW.id,
+      deviceId: S.deviceId,
+      userName: S.user.name,
+      date: new Date(lastW.ts).toLocaleDateString('ko-KR'),
+      exId: lastW.exId,
+      exName: lastW.customName || exInfo.name,
+      duration: lastW.duration,
+      points: lastW.points,
+      memo: lastW.memo || '',
+      ts: lastW.ts,
+    });
+  }
   renderHeader();
   haptic('success');
   if (wasShared) {
@@ -2625,6 +2677,15 @@ function logGlucoseStandalone() {
   S.glucoseRecords.unshift(rec);
   S.user.points += GLUCOSE_POINTS;
   save();
+  apiSync('addGlucose', {
+    id: rec.id,
+    deviceId: S.deviceId,
+    userName: S.user.name,
+    value: rec.value,
+    timing: rec.timing,
+    points: rec.points,
+    ts: rec.ts,
+  });
   _glucoseVal = 100; _glucoseTiming = null; _glucoseTime = ''; _glucoseTimeOpen = false;
   const timeEl = document.getElementById('sa-glucose-time');
   if (timeEl) timeEl.value = '';
@@ -3340,6 +3401,15 @@ function submitPost() {
   S.posts.unshift(newPost);
   input.value = '';
   save();
+  apiSync('addPost', {
+    id: newPost.id,
+    deviceId: S.deviceId,
+    userName: S.user.name,
+    body: newPost.body,
+    exTag: newPost.exTag || '',
+    userTags: newPost.userTags || [],
+    ts: newPost.id,
+  });
   haptic('medium');
   showToast('📣 게시물이 등록되었어요!');
   renderCommunity();
@@ -3442,6 +3512,20 @@ function submitShopOrder() {
     orderedAt: new Date().toISOString(),
   });
   localStorage.setItem(SHOP_ORDERS_KEY, JSON.stringify(orders));
+  const lastOrder = orders[orders.length - 1];
+  apiSync('addOrder', {
+    id: lastOrder.id,
+    deviceId: S.deviceId,
+    userName: S.user.name,
+    name: lastOrder.name,
+    phone: lastOrder.phone,
+    pickup: lastOrder.pickup,
+    addr: lastOrder.addr,
+    items: JSON.stringify(lastOrder.items),
+    total: lastOrder.total,
+    status: lastOrder.status,
+    orderedAt: lastOrder.orderedAt,
+  });
   haptic('success');
   showToast('✅ 주문 신청 완료! 담당자 확인 후 연락드립니다');
   _cart = {};
@@ -3858,6 +3942,20 @@ function submitChReg(e) {
     registeredAt: new Date().toISOString(),
   });
   localStorage.setItem(CH_REG_KEY, JSON.stringify(regs));
+  const lastReg = regs[regs.length - 1];
+  apiSync('addRegistration', {
+    id: lastReg.id,
+    deviceId: S.deviceId,
+    empId: lastReg.empId,
+    name: lastReg.name,
+    dept: lastReg.dept,
+    phone: lastReg.phone,
+    shoeSize: lastReg.shoeSize,
+    familyParticipation: lastReg.familyParticipation,
+    familyCount: lastReg.familyCount,
+    status: lastReg.status,
+    registeredAt: lastReg.registeredAt,
+  });
 
   S.user.registrationId = id;
   S.user.name = name;
