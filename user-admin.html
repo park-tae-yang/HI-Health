@@ -1442,14 +1442,12 @@ async function submitAdminPost() {
   };
   showLoading(true);
   try {
-    const res = await fetch(SHEETS_URL, {
+    fetch(SHEETS_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify({ action: 'addAdminPost', payload: post }),
-      credentials: 'omit'
+      mode: 'no-cors'
     });
-    const json = await res.json();
-    if (!json.ok) throw new Error(json.error || '오류');
     GD.adminPosts = GD.adminPosts || [];
     GD.adminPosts.unshift(post);
     document.getElementById('ct-title').value = '';
@@ -1469,14 +1467,12 @@ async function deleteAdminPost(id) {
   if (!SHEETS_URL) { toast('Google Sheets 연결이 필요합니다'); return; }
   showLoading(true);
   try {
-    const res = await fetch(SHEETS_URL, {
+    fetch(SHEETS_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify({ action: 'deleteAdminPost', id }),
-      credentials: 'omit'
+      mode: 'no-cors'
     });
-    const json = await res.json();
-    if (!json.ok) throw new Error(json.error || '오류');
     GD.adminPosts = (GD.adminPosts || []).filter(p => String(p.id) !== String(id));
     renderAdminPosts();
     toast('삭제됐습니다');
