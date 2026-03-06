@@ -295,6 +295,20 @@ function doPost(e) {
         break;
       }
 
+      case 'updateAdminPost': {
+        const sheet = getOrCreateSheet(ss, 'AdminPosts',
+          ['id','title','body','mediaUrl','mediaType','category','author','createdAt']);
+        const data = sheetToObjects(sheet);
+        const p = payload;
+        const idx = data.findIndex(x => String(x.id) === String(p.id));
+        if (idx >= 0) {
+          const row = [p.id, p.title||'', p.body||'', p.mediaUrl||'', p.mediaType||'', p.category||'', p.author||'관리자', p.createdAt||''];
+          sheet.getRange(idx + 2, 1, 1, row.length).setValues([row]);
+        }
+        result = { updated: true };
+        break;
+      }
+
       case 'deleteAdminPost': {
         const sheet = getOrCreateSheet(ss, 'AdminPosts',
           ['id','title','body','mediaUrl','mediaType','category','author','createdAt']);

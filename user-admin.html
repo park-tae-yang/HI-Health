@@ -189,6 +189,11 @@
     .ct-panel-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
     .ct-panel-title { font-size:14px; font-weight:700; }
     .ct-count { font-size:13px; color:var(--text-3); font-weight:600; }
+    .edit-post-modal { max-width:560px; width:90%; }
+    .edit-post-row { display:flex; gap:8px; margin-bottom:10px; }
+    .edit-post-row-wrap { display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap; }
+    .edit-post-row-wrap .ctrl-search { flex:1; min-width:200px; }
+    .edit-post-actions { display:flex; justify-content:flex-end; gap:8px; }
 
     /* SHEETS CONFIG */
     .sheets-config { background:#fff; border-radius:var(--radius); padding:14px 18px; box-shadow:var(--shadow); margin-bottom:16px; border-left:4px solid #34A853; }
@@ -605,6 +610,40 @@
 <div class="loading-overlay" id="loading-overlay">
   <div class="loading-spinner"></div>
   <div class="loading-text">Google Sheets에서 불러오는 중...</div>
+</div>
+
+<!-- ADMIN POST EDIT MODAL -->
+<div class="modal-overlay" id="edit-post-modal">
+  <div class="modal edit-post-modal">
+    <div class="modal-header">
+      <span class="modal-title">✏️ 콘텐츠 수정</span>
+      <button type="button" class="modal-close" onclick="closeEditAdminPost()">✕</button>
+    </div>
+    <input type="hidden" id="edit-post-id">
+    <div class="edit-post-row">
+      <select class="ctrl-select" id="edit-ct-category">
+        <option value="운동">💪 운동</option>
+        <option value="영양">🥗 영양</option>
+        <option value="건강팁">💡 건강팁</option>
+        <option value="영상">🎬 영상</option>
+        <option value="공지">📢 공지</option>
+      </select>
+      <input type="text" class="ctrl-search" id="edit-ct-title" placeholder="제목">
+    </div>
+    <textarea class="ct-body" id="edit-ct-body" placeholder="내용"></textarea>
+    <div class="edit-post-row-wrap">
+      <input type="text" class="ctrl-search" id="edit-ct-media-url" placeholder="YouTube 또는 이미지 URL (선택)">
+      <select class="ctrl-select" id="edit-ct-media-type">
+        <option value="">미디어 없음</option>
+        <option value="youtube">YouTube 영상</option>
+        <option value="image">이미지</option>
+      </select>
+    </div>
+    <div class="edit-post-actions">
+      <button type="button" class="ctrl-btn" onclick="closeEditAdminPost()">취소</button>
+      <button type="button" class="ctrl-btn primary" onclick="saveEditAdminPost()">저장</button>
+    </div>
+  </div>
 </div>
 
 <!-- PW CHANGE MODAL -->
@@ -1425,6 +1464,53 @@ function ordSetStatus(id, status) {
 }
 
 /* ── ADMIN CONTENT ── */
+function openEditAdminPost(id) {
+  const p = (GD.adminPosts || []).find(x => String(x.id) === String(id));
+  if (!p) return;
+  document.getElementById('edit-post-id').value = p.id;
+  document.getElementById('edit-ct-title').value = p.title || '';
+  document.getElementById('edit-ct-body').value = p.body || '';
+  document.getElementById('edit-ct-media-url').value = p.mediaUrl || '';
+  // category select
+  const catSel = document.getElementById('edit-ct-category');
+  [...catSel.options].forEach(o => { o.selected = o.value === p.category; });
+  // mediaType select
+  const mtSel = document.getElementById('edit-ct-media-type');
+  [...mtSel.options].forEach(o => { o.selected = o.value === (p.mediaType || ''); });
+  document.getElementById('edit-post-modal').classList.add('show');
+}
+
+function closeEditAdminPost() {
+  document.getElementById('edit-post-modal').classList.remove('show');
+}
+
+async function saveEditAdminPost() {
+  const id       = document.getElementById('edit-post-id').value;
+  const title    = document.getElementById('edit-ct-title').value.trim();
+  const body     = document.getElementById('edit-ct-body').value.trim();
+  const mediaUrl = document.getElementById('edit-ct-media-url').value.trim();
+  const mediaType = document.getElementById('edit-ct-media-type').value;
+  const category = document.getElementById('edit-ct-category').value;
+  if (!title) { toast('제목을 입력해주세요'); return; }
+  if (!body)  { toast('내용을 입력해주세요'); return; }
+
+  const idx = (GD.adminPosts || []).findIndex(x => String(x.id) === String(id));
+  if (idx < 0) return;
+  const updated = { ...GD.adminPosts[idx], title, body, mediaUrl, mediaType, category };
+  GD.adminPosts[idx] = updated;
+
+  fetch(SHEETS_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain' },
+    body: JSON.stringify({ action: 'updateAdminPost', payload: updated }),
+    mode: 'no-cors',
+  });
+
+  closeEditAdminPost();
+  renderAdminPosts();
+  toast('수정됐습니다');
+}
+
 async function submitAdminPost() {
   const category = document.getElementById('ct-category').value;
   const title = document.getElementById('ct-title').value.trim();
@@ -1510,6 +1596,7 @@ function renderAdminPosts() {
           <span class="ct-card-category">${cat}</span>
           <span style="font-weight:700;font-size:15px;flex:1">${escHtml(p.title)}</span>
           <span style="font-size:12px;color:#999">${date}</span>
+          <button class="ctrl-btn" style="padding:4px 10px;font-size:12px" onclick="openEditAdminPost('${p.id}')">수정</button>
           <button class="ctrl-btn danger" style="padding:4px 10px;font-size:12px" onclick="deleteAdminPost('${p.id}')">삭제</button>
         </div>
         ${mediaHtml}
