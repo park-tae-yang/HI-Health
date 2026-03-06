@@ -900,6 +900,29 @@
     .shop-item-price { font-size: 12px; color: var(--primary); font-weight: 700; margin-top: 2px; }
     .shop-item-ctrl  { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
     .shop-section-title { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 800; color: var(--text-primary); padding: 10px 0 6px; border-bottom: 2px solid var(--border); margin-bottom: 4px; }
+    .shop-item { cursor: pointer; }
+    .shop-item:active { opacity: 0.75; }
+    /* ── Product Detail Modal ── */
+    .pd-overlay { position: fixed; inset: 0; z-index: 1200; background: rgba(0,0,0,0.5); display: flex; align-items: flex-end; justify-content: center; }
+    .pd-overlay.pd-hidden { display: none; }
+    .pd-sheet { background: var(--bg); width: 100%; max-width: 480px; border-radius: var(--radius) var(--radius) 0 0; max-height: 88vh; overflow-y: auto; position: relative; animation: slideUp 0.28s ease; }
+    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    .pd-close { position: sticky; top: 12px; float: right; margin: 12px 14px 0 0; background: var(--card); border: none; border-radius: 50%; width: 32px; height: 32px; font-size: 16px; cursor: pointer; color: var(--text-secondary); box-shadow: var(--shadow); z-index: 1; }
+    .pd-img-wrap { width: 100%; background: var(--card); display: flex; align-items: center; justify-content: center; min-height: 200px; overflow: hidden; }
+    .pd-img-wrap img { width: 100%; max-height: 280px; object-fit: cover; display: block; }
+    .pd-img-placeholder { font-size: 72px; padding: 32px 0; }
+    .pd-body { padding: 20px 20px 40px; }
+    .pd-category { font-size: 11px; font-weight: 700; color: var(--primary); background: var(--primary-light); display: inline-block; padding: 3px 10px; border-radius: 20px; margin-bottom: 8px; }
+    .pd-name { font-size: 20px; font-weight: 900; color: var(--text-primary); margin-bottom: 6px; }
+    .pd-price { font-size: 18px; font-weight: 800; color: var(--primary); margin-bottom: 4px; }
+    .pd-divider { height: 1px; background: var(--border); margin: 14px 0; }
+    .pd-desc { font-size: 14px; color: var(--text-secondary); line-height: 1.7; margin-bottom: 24px; }
+    .pd-cart-row { display: flex; align-items: center; gap: 12px; }
+    .pd-qty-ctrl { display: flex; align-items: center; gap: 10px; background: var(--card); border-radius: 12px; padding: 8px 14px; }
+    .pd-qty-btn { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--primary); font-weight: 700; line-height: 1; padding: 0 2px; }
+    .pd-qty-num { font-size: 16px; font-weight: 700; min-width: 20px; text-align: center; }
+    .pd-add-btn { flex: 1; padding: 14px; background: var(--primary); color: #fff; border: none; border-radius: 14px; font-size: 15px; font-weight: 700; cursor: pointer; }
+    .pd-add-btn:active { opacity: 0.85; }
     .shop-qty-btn {
       width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid var(--border);
       background: var(--bg); font-size: 16px; line-height: 1;
@@ -1573,6 +1596,22 @@
   </div>
 
   <!-- ████  SHOP ORDER MODAL  ████ -->
+  <!-- ████  PRODUCT DETAIL MODAL  ████ -->
+  <div class="pd-overlay pd-hidden" id="pd-overlay" onclick="closeProductDetail()">
+    <div class="pd-sheet" id="pd-sheet" onclick="event.stopPropagation()">
+      <button type="button" class="pd-close" onclick="closeProductDetail()">✕</button>
+      <div class="pd-img-wrap" id="pd-img-wrap"></div>
+      <div class="pd-body">
+        <div class="pd-category" id="pd-category"></div>
+        <div class="pd-name" id="pd-name"></div>
+        <div class="pd-price" id="pd-price"></div>
+        <div class="pd-divider"></div>
+        <div class="pd-desc" id="pd-desc"></div>
+        <div class="pd-cart-row" id="pd-cart-row"></div>
+      </div>
+    </div>
+  </div>
+
   <div class="shop-order-modal so-hidden" id="shop-order-modal">
     <div class="shop-order-sheet">
       <div class="rf-header">
@@ -1821,38 +1860,38 @@ const REWARDS_DATA = [
 
 const SHOP_PRODUCTS = [
   // ── 영양제
-  { id:'sp01', emoji:'💪', name:'글루타민',               price:60000, cat:'supp' },
-  { id:'sp02', emoji:'🦷', name:'닥터징크(아연) 2개월',   price:24000, cat:'supp' },
-  { id:'sp03', emoji:'💊', name:'덱시안',                 price:38000, cat:'supp' },
-  { id:'sp04', emoji:'🧬', name:'마그네슘정 2개월',       price:22000, cat:'supp' },
-  { id:'sp05', emoji:'🌸', name:'이노시톨',               price:36000, cat:'supp' },
-  { id:'sp06', emoji:'💪', name:'아르기닌',               price:35000, cat:'supp' },
-  { id:'sp07', emoji:'🍬', name:'아르기닌(젤리)',          price:68000, cat:'supp' },
-  { id:'sp08', emoji:'🌿', name:'엽산(60정)',              price:45000, cat:'supp' },
-  { id:'sp09', emoji:'✨', name:'엘레뉴1',                price:45000, cat:'supp' },
-  { id:'sp10', emoji:'✨', name:'엘레뉴2',                price:85000, cat:'supp' },
-  { id:'sp11', emoji:'⭐', name:'엘레뉴럭스',             price:86000, cat:'supp' },
-  { id:'sp12', emoji:'🐟', name:'알티지 오메가',           price:55000, cat:'supp' },
-  { id:'sp13', emoji:'💧', name:'아스트로(윤활제)',        price:30000, cat:'supp' },
-  { id:'sp14', emoji:'☀️', name:'에브리D 성인(스프레이)', price:39000, cat:'supp' },
-  { id:'sp15', emoji:'👩', name:'퍼틸우먼 액티브',        price:90000, cat:'supp' },
-  { id:'sp16', emoji:'👨', name:'퍼틸맨 액티브',          price:95000, cat:'supp' },
+  { id:'sp01', emoji:'💪', name:'글루타민',               price:60000, cat:'supp', img:'', desc:'근육 회복과 면역 강화에 도움을 주는 고순도 글루타민 제품입니다. 운동 후 섭취 시 피로 회복에 효과적이며, 하루 1~2회 공복 또는 운동 전후에 섭취하는 것을 권장합니다.' },
+  { id:'sp02', emoji:'🦷', name:'닥터징크(아연) 2개월',   price:24000, cat:'supp', img:'', desc:'아연은 면역 기능과 세포 재생에 필수적인 미네랄입니다. 2개월 분량으로 꾸준한 섭취를 통해 항산화 효과와 피부 건강 개선을 기대할 수 있습니다.' },
+  { id:'sp03', emoji:'💊', name:'덱시안',                 price:38000, cat:'supp', img:'', desc:'눈의 피로 완화와 황반 건강에 도움을 주는 루테인·지아잔틴 복합 제제입니다. 장시간 스마트폰·모니터 사용이 많은 분께 권장합니다. 하루 1캡슐 식후 섭취.' },
+  { id:'sp04', emoji:'🧬', name:'마그네슘정 2개월',       price:22000, cat:'supp', img:'', desc:'근육 이완과 스트레스 완화에 효과적인 마그네슘 보충제입니다. 수면의 질 향상에도 도움을 주며, 저녁 식사 후 섭취를 권장합니다. 2개월 분량 제공.' },
+  { id:'sp05', emoji:'🌸', name:'이노시톨',               price:36000, cat:'supp', img:'', desc:'여성 호르몬 균형과 다낭성 난소 증후군(PCOS) 개선에 도움을 주는 성분입니다. 혈당 조절 및 정신 건강 지원 효과도 기대할 수 있습니다. 하루 1~2회 섭취.' },
+  { id:'sp06', emoji:'💪', name:'아르기닌',               price:35000, cat:'supp', img:'', desc:'혈액순환 개선 및 운동 능력 향상에 도움을 주는 아미노산 제품입니다. 산화질소 생성을 촉진하여 혈관 건강을 지원하며, 운동 30분 전 섭취를 권장합니다.' },
+  { id:'sp07', emoji:'🍬', name:'아르기닌(젤리)',          price:68000, cat:'supp', img:'', desc:'아르기닌 성분을 젤리 형태로 간편하게 섭취할 수 있는 제품입니다. 맛있게 건강을 챙길 수 있으며, 휴대가 간편해 바쁜 일상 속에서도 부담 없이 섭취 가능합니다.' },
+  { id:'sp08', emoji:'🌿', name:'엽산(60정)',              price:45000, cat:'supp', img:'', desc:'임산부 및 가임기 여성에게 필수적인 엽산 보충제입니다. 태아의 신경관 결손 예방에 중요하며, 세포 분열과 DNA 합성에도 관여합니다. 총 60정 제공.' },
+  { id:'sp09', emoji:'✨', name:'엘레뉴1',                price:45000, cat:'supp', img:'', desc:'여성 건강을 위한 종합 영양 보충제 기본 라인입니다. 비타민, 미네랄, 항산화 성분이 균형 있게 배합되어 일상적인 영양 보충에 적합합니다. 하루 1정 식후 섭취.' },
+  { id:'sp10', emoji:'✨', name:'엘레뉴2',                price:85000, cat:'supp', img:'', desc:'엘레뉴 시리즈의 강화 버전으로 더 풍부한 영양 성분을 담았습니다. 기초 영양에 더해 콜라겐, 코엔자임Q10 등 추가 성분으로 피부 건강과 활력을 지원합니다.' },
+  { id:'sp11', emoji:'⭐', name:'엘레뉴럭스',             price:86000, cat:'supp', img:'', desc:'프리미엄 여성 건강 보충제로 엘레뉴 시리즈 최고 라인입니다. 고함량 유효 성분과 흡수율을 극대화한 제형으로 최상의 건강 관리를 원하는 분께 추천합니다.' },
+  { id:'sp12', emoji:'🐟', name:'알티지 오메가',           price:55000, cat:'supp', img:'', desc:'rTG(재에스테르화 트리글리세리드) 형태의 고순도 오메가-3 제품으로 일반 오메가-3 대비 흡수율이 뛰어납니다. 혈행 개선과 뇌 건강에 도움을 줍니다.' },
+  { id:'sp13', emoji:'💧', name:'아스트로(윤활제)',        price:30000, cat:'supp', img:'', desc:'여성 질 건조증 및 갱년기 증상 완화를 위한 윤활 제품입니다. 피부 자극이 없는 순한 성분으로 구성되어 일상적으로 편안하게 사용할 수 있습니다.' },
+  { id:'sp14', emoji:'☀️', name:'에브리D 성인(스프레이)', price:39000, cat:'supp', img:'', desc:'비타민D를 스프레이 형태로 간편하게 섭취할 수 있는 제품입니다. 흡수가 빠른 구강 스프레이 방식으로 뼈 건강·면역력 향상에 도움을 줍니다. 하루 2~3회 분사.' },
+  { id:'sp15', emoji:'👩', name:'퍼틸우먼 액티브',        price:90000, cat:'supp', img:'', desc:'여성 임신 준비를 위한 종합 영양 보충제입니다. 엽산, 철분, 코엔자임Q10 등 임신 전 필요한 핵심 성분을 한 번에 섭취할 수 있도록 설계되었습니다.' },
+  { id:'sp16', emoji:'👨', name:'퍼틸맨 액티브',          price:95000, cat:'supp', img:'', desc:'남성 임신 준비를 위한 정자 건강 지원 보충제입니다. 아연, 셀레늄, 코엔자임Q10 등 남성 생식 건강에 중요한 성분들이 최적 함량으로 배합되어 있습니다.' },
   // ── 병원제작상품
-  { id:'hp01', emoji:'🍶', name:'병원 물병 (500ml)',      price:8000,  cat:'merch' },
-  { id:'hp02', emoji:'🫙', name:'병원 텀블러 (350ml)',    price:15000, cat:'merch' },
-  { id:'hp03', emoji:'🧣', name:'병원 담요',              price:18000, cat:'merch' },
-  { id:'hp04', emoji:'🏨', name:'병원 수건 (대)',         price:10000, cat:'merch' },
-  { id:'hp05', emoji:'🏨', name:'병원 수건 (소)',         price:6000,  cat:'merch' },
-  { id:'hp06', emoji:'☂️', name:'병원 우산',              price:12000, cat:'merch' },
-  { id:'hp07', emoji:'🧊', name:'병원 보냉백',            price:9000,  cat:'merch' },
-  { id:'hp08', emoji:'📓', name:'병원 수첩 (A5)',         price:5000,  cat:'merch' },
-  { id:'hp09', emoji:'🖊️', name:'병원 볼펜',              price:2000,  cat:'merch' },
-  { id:'hp10', emoji:'🎒', name:'병원 에코백',            price:7000,  cat:'merch' },
-  { id:'hp11', emoji:'🧢', name:'병원 캡모자',            price:14000, cat:'merch' },
-  { id:'hp12', emoji:'🩴', name:'병원 슬리퍼',            price:8000,  cat:'merch' },
-  { id:'hp13', emoji:'🏋️', name:'병원 운동 손목밴드',    price:5000,  cat:'merch' },
-  { id:'hp14', emoji:'💼', name:'병원 파우치',            price:11000, cat:'merch' },
-  { id:'hp15', emoji:'📎', name:'병원 메모패드 세트',     price:4000,  cat:'merch' },
+  { id:'hp01', emoji:'🍶', name:'병원 물병 (500ml)',      price:8000,  cat:'merch', img:'', desc:'병원 로고가 새겨진 500ml 용량의 BPA-free 트라이탄 물병입니다. 가볍고 내구성이 뛰어나며 밀폐력이 우수합니다. 건강한 수분 보충 습관을 만들어 보세요.' },
+  { id:'hp02', emoji:'🫙', name:'병원 텀블러 (350ml)',    price:15000, cat:'merch', img:'', desc:'병원 로고가 각인된 스테인리스 이중 진공 텀블러입니다. 보온·보냉 기능이 우수하여 뜨거운 음료는 6시간, 차가운 음료는 12시간 온도 유지가 가능합니다.' },
+  { id:'hp03', emoji:'🧣', name:'병원 담요',              price:18000, cat:'merch', img:'', desc:'부드러운 플리스 소재의 병원 로고 담요입니다. 가볍고 따뜻하여 사무실이나 이동 시 활용하기 좋습니다. 사이즈: 130×150cm. 세탁기 세탁 가능.' },
+  { id:'hp04', emoji:'🏨', name:'병원 수건 (대)',         price:10000, cat:'merch', img:'', desc:'고급 면 소재로 제작된 병원 로고 목욕 수건입니다. 흡수력이 뛰어나고 피부에 부드러우며 반복 세탁에도 형태가 유지됩니다. 사이즈: 60×120cm.' },
+  { id:'hp05', emoji:'🏨', name:'병원 수건 (소)',         price:6000,  cat:'merch', img:'', desc:'일상에서 편리하게 사용할 수 있는 병원 로고 핸드 타월입니다. 면 100% 소재로 흡수력이 좋고 가방에 넣어 다니기 좋은 크기입니다. 사이즈: 35×75cm.' },
+  { id:'hp06', emoji:'☂️', name:'병원 우산',              price:12000, cat:'merch', img:'', desc:'병원 로고가 인쇄된 3단 자동 접이식 우산입니다. 강풍에도 뒤집히지 않는 내풍 구조와 UV 차단 코팅으로 양산으로도 사용 가능합니다.' },
+  { id:'hp07', emoji:'🧊', name:'병원 보냉백',            price:9000,  cat:'merch', img:'', desc:'병원 로고가 새겨진 알루미늄 내부 코팅 보냉백입니다. 영양제나 도시락 보관에 적합하며 방수 소재로 내구성이 뛰어납니다. 용량: 약 10L.' },
+  { id:'hp08', emoji:'📓', name:'병원 수첩 (A5)',         price:5000,  cat:'merch', img:'', desc:'병원 로고가 새겨진 A5 사이즈 양장 수첩입니다. 80g 고품질 내지 120페이지로 구성되며, 격자/줄 혼합 레이아웃으로 다양한 기록에 활용할 수 있습니다.' },
+  { id:'hp09', emoji:'🖊️', name:'병원 볼펜',              price:2000,  cat:'merch', img:'', desc:'병원 로고가 인쇄된 고급 볼펜입니다. 부드러운 필기감과 잘 번지지 않는 잉크로 일상적인 업무와 메모에 최적화되어 있습니다. 색상: 파랑/검정 선택 가능.' },
+  { id:'hp10', emoji:'🎒', name:'병원 에코백',            price:7000,  cat:'merch', img:'', desc:'병원 로고가 프린트된 친환경 면 에코백입니다. 튼튼한 캔버스 소재로 장보기, 출퇴근, 운동 등 다용도로 활용하기 좋습니다. 최대 5kg 적재 가능.' },
+  { id:'hp11', emoji:'🧢', name:'병원 캡모자',            price:14000, cat:'merch', img:'', desc:'병원 로고가 자수로 새겨진 야구 캡 스타일 모자입니다. 사이즈 조절이 가능한 스냅백 구조로 누구나 착용 편리합니다. 소재: 면 100%.' },
+  { id:'hp12', emoji:'🩴', name:'병원 슬리퍼',            price:8000,  cat:'merch', img:'', desc:'병원 로고가 새겨진 EVA 소재 슬리퍼입니다. 가볍고 미끄럼 방지 처리가 되어 원내 이동 시 편안하게 착용할 수 있습니다. 사이즈: 230~280mm 선택 가능.' },
+  { id:'hp13', emoji:'🏋️', name:'병원 운동 손목밴드',    price:5000,  cat:'merch', img:'', desc:'병원 로고가 새겨진 면 혼방 운동 손목밴드입니다. 운동 중 땀 흡수와 손목 보호 역할을 합니다. 2개 1세트 구성이며 신축성이 좋아 착용감이 편안합니다.' },
+  { id:'hp14', emoji:'💼', name:'병원 파우치',            price:11000, cat:'merch', img:'', desc:'병원 로고가 새겨진 패브릭 지퍼 파우치입니다. 영양제, 소지품, 화장품 보관에 적합한 크기이며 방수 내부 코팅으로 내용물을 안전하게 보관할 수 있습니다.' },
+  { id:'hp15', emoji:'📎', name:'병원 메모패드 세트',     price:4000,  cat:'merch', img:'', desc:'병원 로고가 인쇄된 포스트잇 스타일 메모패드 3종 세트입니다. 75×75mm 50매, 38×51mm 100매, 25×75mm 100매로 구성되어 업무에서 다양하게 활용 가능합니다.' },
 ];
 
 let _cart = {}; // { productId: quantity }
@@ -1868,6 +1907,7 @@ function addToCart(id) {
   haptic('light');
   _cart[id] = (_cart[id] || 0) + 1;
   renderShop();
+  renderPdCartRow(id);
 }
 function removeFromCart(id) {
   if (!_cart[id]) return;
@@ -1875,6 +1915,58 @@ function removeFromCart(id) {
   _cart[id]--;
   if (_cart[id] === 0) delete _cart[id];
   renderShop();
+  renderPdCartRow(id);
+}
+
+/* ── Product Detail Modal ── */
+let _pdCurrentId = null;
+
+function openProductDetail(id) {
+  const p = SHOP_PRODUCTS.find(x => x.id === id);
+  if (!p) return;
+  _pdCurrentId = id;
+  haptic('light');
+
+  const catLabel = p.cat === 'supp' ? '영양제' : '병원제작상품';
+  document.getElementById('pd-category').textContent = catLabel;
+  document.getElementById('pd-name').textContent = p.name;
+  document.getElementById('pd-price').textContent = p.price.toLocaleString() + '원';
+  document.getElementById('pd-desc').textContent = p.desc || '';
+
+  const imgWrap = document.getElementById('pd-img-wrap');
+  if (p.img) {
+    imgWrap.innerHTML = `<img src="${p.img}" alt="${p.name}">`;
+  } else {
+    imgWrap.innerHTML = `<div class="pd-img-placeholder">${p.emoji}</div>`;
+  }
+
+  renderPdCartRow(id);
+  document.getElementById('pd-overlay').classList.remove('pd-hidden');
+  document.body.style.overflow = 'hidden';
+}
+
+function renderPdCartRow(id) {
+  if (_pdCurrentId !== id) return;
+  const qty = _cart[id] || 0;
+  const row = document.getElementById('pd-cart-row');
+  if (!row) return;
+  if (qty > 0) {
+    row.innerHTML = `
+      <div class="pd-qty-ctrl">
+        <button type="button" class="pd-qty-btn" onclick="removeFromCart('${id}')">−</button>
+        <span class="pd-qty-num">${qty}</span>
+        <button type="button" class="pd-qty-btn" onclick="addToCart('${id}')">+</button>
+      </div>
+      <button type="button" class="pd-add-btn" onclick="addToCart('${id}')">추가 담기</button>`;
+  } else {
+    row.innerHTML = `<button type="button" class="pd-add-btn" onclick="addToCart('${id}')">장바구니에 담기</button>`;
+  }
+}
+
+function closeProductDetail() {
+  document.getElementById('pd-overlay').classList.add('pd-hidden');
+  document.body.style.overflow = '';
+  _pdCurrentId = null;
 }
 
 const ACHIEVEMENTS_DATA = [
@@ -3643,13 +3735,13 @@ function renderShop() {
     return products.map(p => {
       const qty = _cart[p.id] || 0;
       return `
-        <div class="shop-item">
+        <div class="shop-item" onclick="openProductDetail('${p.id}')">
           <span class="shop-item-emoji">${p.emoji}</span>
           <div class="shop-item-info">
             <div class="shop-item-name">${p.name}</div>
             <div class="shop-item-price">${p.price.toLocaleString()}원</div>
           </div>
-          <div class="shop-item-ctrl">
+          <div class="shop-item-ctrl" onclick="event.stopPropagation()">
             ${qty > 0 ? `
               <button type="button" class="shop-qty-btn" onclick="removeFromCart('${p.id}')">−</button>
               <span class="shop-qty-num">${qty}</span>
