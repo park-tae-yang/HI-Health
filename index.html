@@ -790,18 +790,17 @@
     .comment-btn:hover { color: var(--primary); }
 
     /* ── Feed filter ── */
-    /* ── Admin Content Cards ── */
-    .admin-posts-section { margin-bottom:16px; }
-    .admin-posts-title { font-size:12px; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:.5px; margin-bottom:8px; padding-left:2px; }
-    .admin-post-card { background:var(--card); border-radius:16px; border:1.5px solid var(--border); overflow:hidden; margin-bottom:12px; }
-    .admin-post-card-header { padding:14px 16px 0; }
-    .admin-post-category { display:inline-block; font-size:11px; font-weight:700; padding:2px 8px; border-radius:10px; background:var(--primary-light); color:var(--primary); margin-bottom:6px; }
-    .admin-post-title { font-size:15px; font-weight:700; color:var(--text-primary); margin-bottom:4px; }
-    .admin-post-meta { font-size:12px; color:var(--text-secondary); margin-bottom:10px; }
-    .admin-post-media { width:100%; }
-    .admin-post-media iframe { width:100%; aspect-ratio:16/9; display:block; border:none; }
-    .admin-post-media img { width:100%; display:block; max-height:240px; object-fit:cover; }
-    .admin-post-body { padding:12px 16px 16px; font-size:14px; color:var(--text-primary); line-height:1.6; white-space:pre-wrap; }
+    /* ── Admin Content Cards (inline in feed) ── */
+    .post-card.admin-post-inline { background:#FFF0F3; border-color:#F9C0CB; }
+    .admin-post-inline .admin-post-header { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+    .admin-post-inline .admin-badge { font-size:11px; font-weight:700; background:#F43F5E; color:#fff; padding:2px 8px; border-radius:10px; flex-shrink:0; }
+    .admin-post-inline .admin-post-category { font-size:11px; font-weight:700; background:#FFE4E9; color:#F43F5E; padding:2px 8px; border-radius:10px; }
+    .admin-post-inline .admin-post-date { font-size:11px; color:#999; margin-left:auto; }
+    .admin-post-inline .admin-post-title { font-size:15px; font-weight:800; color:#1a1a1a; margin-bottom:6px; }
+    .admin-post-inline .admin-post-body { font-size:13px; color:#555; line-height:1.65; white-space:pre-wrap; margin-bottom:4px; }
+    .admin-post-media { width:100%; margin:8px 0; }
+    .admin-post-media iframe { width:100%; aspect-ratio:16/9; display:block; border:none; border-radius:8px; }
+    .admin-post-media img { width:100%; display:block; max-height:240px; object-fit:cover; border-radius:8px; }
     .feed-filter-row { display:flex; gap:7px; overflow-x:auto; padding-bottom:4px; margin-bottom:12px; }
     .feed-filter-row::-webkit-scrollbar { display:none; }
     .feed-filter-chip { padding:6px 14px; border-radius:20px; border:1.5px solid var(--border); background:var(--card); font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap; transition:all 0.2s; flex-shrink:0; }
@@ -1536,7 +1535,6 @@
         </div>
       </div>
 
-      <div id="admin-posts-section"></div>
       <div class="feed-filter-row" id="feed-filter-row"></div>
       <div id="posts-feed"></div>
     </div>
@@ -3432,12 +3430,12 @@ function buildPostHealthHtml(h) {
 
 function renderCommunity() {
   document.getElementById('compose-av').textContent = S.user.avatar;
-  renderAdminPostsSection();
 
-  // Build filter chips
+  // ── 필터 칩 빌드 ──
   const filterRow = document.getElementById('feed-filter-row');
   const mainFilters = [
-    { key:'all', label:'전체보기' },
+    { key:'all',     label:'전체보기' },
+    { key:'content', label:'콘텐츠만보기' },
     ...(S.user.registrationId ? [{ key:'챌린지', label:'챌린지 보기' }] : []),
   ];
   const filters = [
@@ -3459,22 +3457,66 @@ function renderCommunity() {
     filterRow.appendChild(btn);
   });
 
-  // Sort newest first, then filter
-  const sorted = [...S.posts].sort((a, b) => b.id - a.id);
-  const visible = sorted.filter(p => {
-    if (_feedFilter === 'all') return true;
-    if (_feedFilter === '챌린지') {
-      return p.isChallenger || (p.userId === 0 && !!S.user.registrationId);
-    }
-    return (p.userTags || []).includes(_feedFilter);
-  });
+  // ── 관리자 포스트 → 공통 아이템으로 변환 ──
+  const CATEGORY_LABEL = { notice:'공지', column:'칼럼', video:'영상', tip:'팁' };
+  const adminItems = (S.adminPosts || []).map(p => ({
+    _type: 'admin',
+    _ts: new Date(p.createdAt).getTime() || 0,
+    ...p,
+  }));
+
+  // ── 유저 포스트 필터 ──
+  let userItems = [];
+  if (_feedFilter !== 'content') {
+    const sorted = [...S.posts].sort((a, b) => b.id - a.id);
+    userItems = sorted.filter(p => {
+      if (_feedFilter === 'all') return true;
+      if (_feedFilter === '챌린지') return p.isChallenger || (p.userId === 0 && !!S.user.registrationId);
+      return (p.userTags || []).includes(_feedFilter);
+    }).map(p => ({ _type:'user', _ts: p.id, ...p }));
+  }
+
+  // ── 관리자 포스트 필터 ──
+  const visibleAdmin = (_feedFilter === 'all' || _feedFilter === 'content') ? adminItems : [];
+
+  // ── 합치고 시간순 정렬 ──
+  const combined = [...visibleAdmin, ...userItems].sort((a, b) => b._ts - a._ts);
 
   const feed = document.getElementById('posts-feed');
-  if (!visible.length) {
+  if (!combined.length) {
     feed.innerHTML = `<div class="empty-state"><div class="ei">💬</div><p>해당하는 게시물이 없어요</p></div>`;
     return;
   }
-  feed.innerHTML = visible.map(p => {
+
+  feed.innerHTML = combined.map(item => {
+    if (item._type === 'admin') {
+      // 관리자 콘텐츠 카드
+      const cat = CATEGORY_LABEL[item.category] || item.category || '';
+      const date = item.createdAt ? new Date(item.createdAt).toLocaleDateString('ko-KR') : '';
+      let mediaHtml = '';
+      if (item.mediaUrl) {
+        if (item.mediaType === 'youtube') {
+          const vid = item.mediaUrl.match(/(?:youtu\.be\/|v=)([^&?]+)/)?.[1] || '';
+          if (vid) mediaHtml = `<div class="admin-post-media"><iframe src="https://www.youtube.com/embed/${vid}" allowfullscreen></iframe></div>`;
+        } else if (item.mediaType === 'image') {
+          mediaHtml = `<div class="admin-post-media"><img src="${item.mediaUrl}" alt=""></div>`;
+        }
+      }
+      return `
+        <div class="post-card admin-post-inline">
+          <div class="admin-post-header">
+            <span class="admin-badge">관리자</span>
+            ${cat ? `<span class="admin-post-category">${cat}</span>` : ''}
+            <span class="admin-post-date">${date}</span>
+          </div>
+          <div class="admin-post-title">${escHtmlComm(item.title)}</div>
+          ${mediaHtml}
+          <div class="admin-post-body">${escHtmlComm(item.body).replace(/\n/g,'<br>')}</div>
+        </div>`;
+    }
+
+    // 유저 포스트 카드
+    const p = item;
     const lv = LEVELS[Math.min(p.lv - 1, LEVELS.length - 1)];
     const myR = S.myReactions[p.id] || [];
     const stickersHtml = STICKERS.map(s => {
@@ -3529,40 +3571,9 @@ async function fetchAdminPosts() {
     if (json.ok && json.data && json.data.adminPosts) {
       S.adminPosts = json.data.adminPosts;
       _adminPostsFetched = true;
-      renderAdminPostsSection();
+      renderCommunity();
     }
   } catch(e) {}
-}
-
-function renderAdminPostsSection() {
-  const el = document.getElementById('admin-posts-section');
-  if (!el) return;
-  const posts = (S.adminPosts || []).slice().sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-  if (!posts.length) { el.innerHTML = ''; return; }
-  const CATEGORY_LABEL = { notice: '공지', column: '칼럼', video: '영상', tip: '팁' };
-  el.innerHTML = `<div class="admin-posts-title">관리자 콘텐츠</div>` + posts.map(p => {
-    const cat = CATEGORY_LABEL[p.category] || p.category || '';
-    const date = p.createdAt ? new Date(p.createdAt).toLocaleDateString('ko-KR') : '';
-    let mediaHtml = '';
-    if (p.mediaUrl) {
-      if (p.mediaType === 'youtube') {
-        const vid = p.mediaUrl.match(/(?:youtu\.be\/|v=)([^&?]+)/)?.[1] || '';
-        if (vid) mediaHtml = `<div class="admin-post-media"><iframe src="https://www.youtube.com/embed/${vid}" allowfullscreen></iframe></div>`;
-      } else if (p.mediaType === 'image') {
-        mediaHtml = `<div class="admin-post-media"><img src="${p.mediaUrl}" alt=""></div>`;
-      }
-    }
-    return `
-      <div class="admin-post-card">
-        <div class="admin-post-card-header">
-          <span class="admin-post-category">${cat}</span>
-          <div class="admin-post-title">${escHtmlComm(p.title)}</div>
-          <div class="admin-post-meta">${p.author || '관리자'} · ${date}</div>
-        </div>
-        ${mediaHtml}
-        <div class="admin-post-body">${escHtmlComm(p.body).replace(/\n/g,'<br>')}</div>
-      </div>`;
-  }).join('');
 }
 
 function escHtmlComm(s) {
