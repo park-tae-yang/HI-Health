@@ -691,13 +691,12 @@
     .daily-limit-info--center { text-align: center; margin-bottom: 8px; }
 
     /* ── Workout History Items ── */
-    .workout-item { display: flex; align-items: center; gap: 12px; padding: 13px 0; border-bottom: 1px solid var(--border); }
+    .workout-item { display: flex; align-items: center; gap: 8px; padding: 11px 0; border-bottom: 1px solid var(--border); }
     .workout-item:last-child { border-bottom: none; }
-    .wo-icon { width: 46px; height: 46px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
-    .wo-info { flex: 1; }
-    .wo-name { font-size: 15px; font-weight: 700; }
-    .wo-meta { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
-    .wo-pts { font-size: 15px; font-weight: 800; color: #5B21B6; white-space: nowrap; }
+    .wo-icon { font-size: 20px; flex-shrink: 0; line-height: 1; }
+    .wo-name { font-size: 14px; font-weight: 700; white-space: nowrap; }
+    .wo-meta { font-size: 13px; color: var(--text-secondary); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .wo-pts { font-size: 14px; font-weight: 800; color: #5B21B6; white-space: nowrap; }
     .wo-photo { width:48px; height:48px; object-fit:cover; border-radius:8px; flex-shrink:0; cursor:pointer; border:1.5px solid var(--border); }
 
     .photo-upload-area {
@@ -3396,22 +3395,9 @@ function workoutItemHTML(w) {
   const ex = getExType(w.exId);
   return `
     <div class="workout-item">
-      <div class="wo-icon" style="background:${ex.bg}">${ex.icon}</div>
-      <div class="wo-info">
-        <div class="wo-name">${w.customName || ex.name}</div>
-        <div class="wo-meta">${w.duration}분 · ${fmtTime(w.ts)}${w.memo ? ' · '+w.memo : ''}</div>
-        ${(w.diet || w.mealTypes || w.sleep != null || w.supp != null || w.suppList || w.glucose != null) ? `
-        <div class="wo-health-tags">
-          ${w.diet  ? `<span class="wo-health-tag">🥗 ${w.diet}</span>` : ''}
-          ${w.mealTypes ? `<span class="wo-health-tag">🍽️ ${w.mealTypes.join('·')}</span>` : ''}
-          ${w.sleep != null ? `<span class="wo-health-tag">😴 ${w.sleep}h</span>` : ''}
-          ${w.supp === true && !w.suppList ? `<span class="wo-health-tag">💊 영양제</span>` : ''}
-          ${w.suppList ? `<span class="wo-health-tag">💊 ${w.suppList.join('·')}</span>` : ''}
-          ${w.supp === false ? `<span class="wo-health-tag wo-health-tag-muted">💊 미복용</span>` : ''}
-          ${w.glucose != null ? `<span class="wo-health-tag wo-health-tag-glucose">🩸 ${w.glucose} mg/dL</span>` : ''}
-        </div>` : ''}
-      </div>
-      ${w.photo ? `<img class="wo-photo" src="${w.photo}" onclick="viewPhoto(${w.id})" alt="인증">` : ''}
+      <span class="wo-icon">${ex.icon}</span>
+      <span class="wo-name">${w.customName || ex.name}</span>
+      <span class="wo-meta">${w.duration}분 · ${fmtTime(w.ts)}${w.memo ? ' · '+w.memo : ''}</span>
       <div class="wo-pts">+${w.points}p</div>
       <button type="button" class="wo-del" onclick="deleteWorkout(${w.id})" title="삭제">${_trashSvgSm}</button>
     </div>
