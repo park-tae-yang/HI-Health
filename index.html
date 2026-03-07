@@ -675,7 +675,12 @@
     }
     .dur-btn:active { border-color: var(--primary); color: var(--primary); transform: scale(0.92); }
     .dur-display { text-align: center; min-width: 90px; }
-    .dur-val { font-size: 54px; font-weight: 900; color: var(--primary); line-height: 1; letter-spacing: -2px; }
+    .dur-val {
+      font-size: 54px; font-weight: 900; color: var(--primary); line-height: 1; letter-spacing: -2px;
+      width: 100px; border: none; background: transparent; text-align: center; outline: none;
+      -moz-appearance: textfield; appearance: textfield; caret-color: var(--primary);
+    }
+    .dur-val::-webkit-outer-spin-button, .dur-val::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
     .dur-unit { font-size: 14px; color: var(--text-secondary); font-weight: 500; margin-top: 2px; }
 
     /* ── Points Preview ── */
@@ -1861,7 +1866,9 @@
       <div class="duration-wrap">
         <button type="button" class="dur-btn" onclick="changeDur(-5)">−</button>
         <div class="dur-display">
-          <div class="dur-val" id="dur-val">30</div>
+          <input type="number" class="dur-val" id="dur-val" value="30" min="5" max="180"
+                 inputmode="numeric"
+                 oninput="S.duration=Math.max(5,Math.min(180,parseInt(this.value)||5));updatePtsPreview();updateMemoPlaceholder();if(_shareOn)updateSharePreview()">
           <div class="dur-unit">분</div>
         </div>
         <button type="button" class="dur-btn" onclick="changeDur(5)">+</button>
@@ -3514,6 +3521,8 @@ function renderExercise() {
   const cw = document.getElementById('custom-ex-wrap');
   if (cw) cw.classList.toggle('show', isCustom);
 
+  const durEl = document.getElementById('dur-val');
+  if (durEl) durEl.value = S.duration;
   updatePtsPreview();
 
   renderExerciseHistory();
@@ -3547,7 +3556,7 @@ function selectEx(id) {
 }
 function changeDur(delta) {
   S.duration = Math.max(5, Math.min(180, S.duration + delta));
-  document.getElementById('dur-val').textContent = S.duration;
+  document.getElementById('dur-val').value = S.duration;
   updatePtsPreview();
   updateMemoPlaceholder();
   if (_shareOn) updateSharePreview();
