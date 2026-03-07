@@ -2918,6 +2918,10 @@ function myWeekPts() {
 const _isTouch = () => window.matchMedia('(hover: none)').matches;
 function quickNav(btn, fn) {
   if (!_isTouch()) { fn(); return; }
+  // 다른 카드의 물방울 효과 초기화
+  document.querySelectorAll('.quick-btn.clicked').forEach(b => {
+    if (b !== btn) { b._ready = false; b.classList.remove('clicked'); }
+  });
   if (btn._ready) {
     btn._ready = false;
     btn.classList.remove('clicked');
