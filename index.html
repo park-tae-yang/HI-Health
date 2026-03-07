@@ -5545,6 +5545,7 @@ function init() {
   
     renderHeader();
     renderHome();
+    requestAnimationFrame(() => { window.scrollTo(0, 0); document.documentElement.scrollTop = 0; document.body.scrollTop = 0; });
     // 초기 홈 페이지: 헤더 투명
     const hdr = document.querySelector('.app-header');
     if (hdr) hdr.classList.remove('solid');
