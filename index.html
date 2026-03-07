@@ -5528,6 +5528,8 @@ function appLogout() {
    INIT
 ════════════════════════════════════════ */
 function init() {
+  if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+  window.scrollTo(0, 0);
   // 로그인 유지 또는 세션에서 자동 로그인 복원
   const keepId = localStorage.getItem('hi_keep_login_id');
   const savedEmpId = keepId || sessionStorage.getItem('hi_session_empid');
