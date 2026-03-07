@@ -1893,14 +1893,16 @@
       </div>
 
       <div id="rec-panel-glucose" style="display:none">
-        <div class="card-header" style="padding-top:0">
-          <div class="card-header-right">
-            <span class="badge glucose-badge-red" id="glucose-total-badge">총 0회</span>
-            <div class="wo-view-tabs">
-              <button type="button" class="wo-view-tab active" id="gl-tab-list" onclick="setGlucoseView('list')">목록</button>
-              <button type="button" class="wo-view-tab" id="gl-tab-graph" onclick="setGlucoseView('graph')">그래프</button>
-            </div>
-          </div>
+        <div class="ex-type-grid">
+          <button type="button" class="ex-type-btn" id="sa-gt-fasting"  onclick="setGlucoseTiming('공복')">공복</button>
+          <button type="button" class="ex-type-btn" id="sa-gt-after"    onclick="setGlucoseTiming('식후')">식후</button>
+          <button type="button" class="ex-type-btn" id="sa-gt-after2h"  onclick="setGlucoseTiming('식후2h')">식후 2h</button>
+          <button type="button" class="ex-type-btn" id="sa-gt-before"   onclick="setGlucoseTiming('식전')">식전</button>
+          <button type="button" class="ex-type-btn" id="sa-gt-bedtime"  onclick="setGlucoseTiming('취침전')">취침 전</button>
+          <button type="button" class="ex-type-btn glucose-time-toggle" id="sa-gt-time" onclick="toggleGlucoseTimeInput()">🕐 시간</button>
+        </div>
+        <div class="glucose-time-expand" id="sa-glucose-time-wrap">
+          <input type="time" id="sa-glucose-time" class="glucose-time-input" oninput="_glucoseTime=this.value">
         </div>
         <div class="glucose-input-wrap-sa">
           <button type="button" class="dur-btn" onclick="changeGlucoseVal(-5)">−</button>
@@ -1910,19 +1912,18 @@
           </div>
           <button type="button" class="dur-btn" onclick="changeGlucoseVal(5)">+</button>
         </div>
-        <div class="glucose-timing-row">
-          <button type="button" class="glucose-timing-btn" id="sa-gt-fasting"  onclick="setGlucoseTiming('공복')">공복</button>
-          <button type="button" class="glucose-timing-btn" id="sa-gt-after"    onclick="setGlucoseTiming('식후')">식후</button>
-          <button type="button" class="glucose-timing-btn" id="sa-gt-after2h"  onclick="setGlucoseTiming('식후2h')">식후 2h</button>
-          <button type="button" class="glucose-timing-btn" id="sa-gt-before"   onclick="setGlucoseTiming('식전')">식전</button>
-          <button type="button" class="glucose-timing-btn" id="sa-gt-bedtime"  onclick="setGlucoseTiming('취침전')">취침 전</button>
-          <button type="button" class="glucose-timing-btn glucose-time-toggle" id="sa-gt-time" onclick="toggleGlucoseTimeInput()">🕐 시간</button>
-        </div>
-        <div class="glucose-time-expand" id="sa-glucose-time-wrap">
-          <input type="time" id="sa-glucose-time" class="glucose-time-input" oninput="_glucoseTime=this.value">
-        </div>
         <button class="btn btn-primary btn-full glucose-log-btn" onclick="logGlucoseStandalone()">혈당 기록하기 (+5p)</button>
-        <div id="glucose-daily-info" class="daily-limit-info daily-limit-info--center"></div>
+        <div id="glucose-daily-info" class="daily-limit-info daily-limit-info--center" style="margin-top:6px;margin-bottom:16px"></div>
+        <hr style="border:none;border-top:1px solid var(--border);margin:0 0 14px">
+        <div class="card-header" style="padding-top:0">
+          <div class="card-header-right">
+            <span class="badge glucose-badge-red" id="glucose-total-badge">총 0회</span>
+            <div class="wo-view-tabs">
+              <button type="button" class="wo-view-tab active" id="gl-tab-list" onclick="setGlucoseView('list')">목록</button>
+              <button type="button" class="wo-view-tab" id="gl-tab-graph" onclick="setGlucoseView('graph')">그래프</button>
+            </div>
+          </div>
+        </div>
         <div class="glucose-history-list" id="glucose-history"></div>
       </div>
     </div>
@@ -3942,7 +3943,7 @@ function syncGlucoseUI() {
   if (numEl) numEl.textContent = _glucoseVal;
   GLUCOSE_TIMINGS.forEach(t => {
     const el = document.getElementById('sa-gt-' + TIMING_ID_MAP[t]);
-    if (el) el.classList.toggle('on', _glucoseTiming === t);
+    if (el) el.classList.toggle('selected', _glucoseTiming === t);
   });
 }
 
