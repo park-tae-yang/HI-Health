@@ -3245,18 +3245,14 @@ function navigate(page) {
   const hdr = document.querySelector('.app-header');
   const content = document.querySelector('.app-content');
   const isHome = page === 'home';
-  const isExercise = page === 'exercise';
-  const isFlow = isHome || isExercise;
-  // 헤더 DOM 이동: 홈/운동이면 각 hero-card 안, 다른 탭이면 sentinel 앞
+  const isFlow = isHome;
+  // 헤더 DOM 이동: 홈이면 hero-card 안, 다른 탭이면 sentinel 앞
   if (hdr) {
-    const heroCard   = document.getElementById('hero-card-home');
-    const exHeroCard = document.getElementById('hero-card-exercise');
-    const sentinel   = document.getElementById('header-sentinel');
+    const heroCard = document.getElementById('hero-card-home');
+    const sentinel = document.getElementById('header-sentinel');
     if (isHome && heroCard && hdr.parentNode !== heroCard) {
       heroCard.insertBefore(hdr, heroCard.firstChild);
-    } else if (isExercise && exHeroCard && hdr.parentNode !== exHeroCard) {
-      exHeroCard.insertBefore(hdr, exHeroCard.firstChild);
-    } else if (!isFlow && sentinel && hdr.parentNode !== sentinel.parentNode) {
+    } else if (!isHome && sentinel && hdr.parentNode !== sentinel.parentNode) {
       sentinel.parentNode.insertBefore(hdr, sentinel);
     }
     hdr.classList.toggle('solid', !isHome);
