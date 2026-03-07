@@ -2054,9 +2054,23 @@
             <button type="button" class="hc-sub-chip hc-supp-preset" data-name="아르기닌"   onclick="toggleSuppItem('아르기닌')">아르기닌</button>
             <button type="button" class="hc-sub-chip hc-supp-preset" data-name="코큐텐"     onclick="toggleSuppItem('코큐텐')">코큐텐</button>
           </div>
-          <div class="hc-rate-row" style="justify-content:center">
-            <button type="button" class="hc-rate-btn" id="supp-yes" onclick="setSupp(true)">복용했어요</button>
-            <button type="button" class="hc-rate-btn" id="supp-no"  onclick="setSupp(false)">안했어요</button>
+          <div class="diet-card-grid" style="grid-template-columns:repeat(2,1fr); margin-top:4px">
+            <button type="button" class="diet-card" id="supp-all"     onclick="setSupp('all')">
+              <span class="diet-card-emoji">✅</span>
+              <span class="diet-card-label">모두 복용했어요</span>
+            </button>
+            <button type="button" class="diet-card" id="supp-partial" onclick="setSupp('partial')">
+              <span class="diet-card-emoji">🔺</span>
+              <span class="diet-card-label">일부만 복용했어요</span>
+            </button>
+            <button type="button" class="diet-card" id="supp-forgot"  onclick="setSupp('forgot')">
+              <span class="diet-card-emoji">😅</span>
+              <span class="diet-card-label">깜빡했어요</span>
+            </button>
+            <button type="button" class="diet-card" id="supp-no"      onclick="setSupp('no')">
+              <span class="diet-card-emoji">❌</span>
+              <span class="diet-card-label">오늘은 안했어요</span>
+            </button>
           </div>
           <div class="hc-supp-detail" id="hc-supp-detail">
             <div class="hc-custom-supp">
@@ -3972,10 +3986,13 @@ function toggleSleepCustom() {
 function setSupp(val) {
   haptic('light');
   _suppTaken = val;
-  document.getElementById('supp-yes').classList.toggle('on', val === true);
-  document.getElementById('supp-no').classList.toggle('on',  val === false);
-  document.getElementById('hc-supp-detail').classList.toggle('show', val === true);
-  if (val === false) {
+  ['supp-all','supp-partial','supp-forgot','supp-no'].forEach(id => {
+    document.getElementById(id)?.classList.remove('on');
+  });
+  document.getElementById('supp-' + val)?.classList.add('on');
+  const showDetail = val === 'all' || val === 'partial';
+  document.getElementById('hc-supp-detail').classList.toggle('show', showDetail);
+  if (!showDetail) {
     _suppList = [];
     document.querySelectorAll('.hc-supp-preset').forEach(e => e.classList.remove('on'));
     document.getElementById('supp-custom-list').innerHTML = '';
@@ -3990,8 +4007,9 @@ function resetHealthChecks() {
 }
 function clearSuppSection() {
   _suppTaken = null; _suppList = [];
-  document.getElementById('supp-yes').classList.remove('on');
-  document.getElementById('supp-no').classList.remove('on');
+  ['supp-all','supp-partial','supp-forgot','supp-no'].forEach(id => {
+    document.getElementById(id)?.classList.remove('on');
+  });
   document.getElementById('hc-supp-detail').classList.remove('show');
   document.querySelectorAll('.hc-supp-preset').forEach(e => e.classList.remove('on'));
   document.getElementById('supp-custom-list').innerHTML = '';
