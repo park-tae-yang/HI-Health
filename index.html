@@ -890,21 +890,18 @@
 
     /* ── Exercise Hero Card + Tabs ── */
     .ex-hero-card {
-      background: linear-gradient(135deg, #3730A3 0%, #4F46E5 100%);
+      background: #fff;
       position: relative; overflow: hidden; z-index: 110;
-    }
-    .ex-hero-card::before {
-      content:''; position:absolute; top:-60px; right:-40px;
-      width:180px; height:180px; background:rgba(255,255,255,0.08); border-radius:50%; filter:blur(12px);
+      box-shadow: 0 1px 0 var(--border);
     }
     .ex-hero-tabs { display:flex; padding:0 4px; }
     .ex-hero-tab {
       flex:1; padding:13px 0 15px; background:none; border:none;
       border-bottom:2px solid transparent;
-      color:rgba(255,255,255,0.55); font-size:15px; font-weight:700;
+      color:var(--text-secondary); font-size:15px; font-weight:700;
       cursor:pointer; font-family:inherit; transition:all 0.18s;
     }
-    .ex-hero-tab.active { color:#fff; border-bottom-color:#fff; }
+    .ex-hero-tab.active { color:var(--primary); border-bottom-color:var(--primary); }
     .record-content-card { border-radius:0 0 20px 20px !important; margin-top:0 !important; }
 
     /* ── View Tabs (월별/목록/그래프) ── */
@@ -3189,7 +3186,7 @@ function navigate(page) {
     } else if (!isFlow && sentinel && hdr.parentNode !== sentinel.parentNode) {
       sentinel.parentNode.insertBefore(hdr, sentinel);
     }
-    hdr.classList.toggle('solid', !isFlow);
+    hdr.classList.toggle('solid', !isHome);
     hdr.classList.toggle('flow', isFlow);
   }
   if (content) {
