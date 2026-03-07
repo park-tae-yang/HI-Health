@@ -644,7 +644,7 @@
       box-shadow: 0 2px 10px rgba(79,70,229,0.18);
     }
     .ex-type-icon { font-size: 17px; line-height: 1; }
-    .ex-type-name { font-size: 13px; font-weight: 600; color: var(--text); }
+    .ex-type-name { font-size: inherit; font-weight: inherit; color: var(--text); }
     .ex-type-pts { display: none; }
     .ex-type-btn.selected .ex-type-name { color: var(--primary); }
     .custom-ex-link {
@@ -3507,10 +3507,7 @@ function renderExercise() {
   document.getElementById('ex-type-grid').innerHTML =
     EX_TYPES.filter(e => e.id !== 'custom').map(e => `
       <button class="ex-type-btn ${S.selectedEx === e.id ? 'selected' : ''}"
-              onclick="selectEx('${e.id}')">
-        <span class="ex-type-icon">${e.icon}</span>
-        <span class="ex-type-name">${e.name}</span>
-      </button>
+              onclick="selectEx('${e.id}')">${e.name}</button>
     `).join('')
     + `<button class="custom-ex-link ${isCustom ? 'selected' : ''}" onclick="selectEx('custom')">✏️ 직접 입력</button>`;
 
