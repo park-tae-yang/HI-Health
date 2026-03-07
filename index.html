@@ -402,10 +402,9 @@
       border-radius: 0 0 28px 28px;
       padding: 0 0 22px;
       color: #fff;
-      margin-top: 0;
-      margin-left: -18px; margin-right: -18px;
-      margin-bottom: 18px;
-      position: sticky; top: 0; z-index: 110;
+      position: fixed; top: 0; left: 50%; transform: translateX(-50%);
+      width: 100%; max-width: 480px;
+      z-index: 110;
       overflow: hidden;
     }
     .hero-card::before {
@@ -1651,6 +1650,7 @@
         </div>
       </div>
     </div>
+    <div id="hero-spacer"></div>
 
     <div class="level-card">
       <div class="level-header">
@@ -3087,6 +3087,10 @@ function renderHome() {
   requestAnimationFrame(() => {
     const btns = document.querySelectorAll('.quick-btn');
     if (btns[0]) { btns[0]._ready = true; btns[0].classList.add('clicked'); }
+    // 히어로카드 고정 높이만큼 스페이서 설정
+    const hc = document.getElementById('hero-card-home');
+    const sp = document.getElementById('hero-spacer');
+    if (hc && sp) sp.style.height = hc.offsetHeight + 'px';
   });
 }
 
