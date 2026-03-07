@@ -118,13 +118,6 @@
     .header-logout:hover { color: #EF4444; border-color: #EF4444; }
     .header-logout.hidden { display: none; }
 
-    /* ── 노치 배경 ── */
-    #notch-fill {
-      display: none; position: fixed; top: 0; left: 0; right: 0; z-index: 109;
-      height: max(env(safe-area-inset-top), 44px);
-      background: linear-gradient(135deg, #2E2B8F 0%, #3730A3 100%);
-    }
-    #notch-fill.visible { display: block; }
 
     /* ── Header ── */
     .app-header {
@@ -1545,8 +1538,6 @@
 </head>
 <body>
 
-<!-- 노치 영역 배경 (홈에서만 표시) -->
-<div id="notch-fill"></div>
 
 <!-- Toast -->
 <div id="toast" class="toast"></div>
@@ -2956,7 +2947,6 @@ function navigate(page) {
   const hdr = document.querySelector('.app-header');
   const content = document.querySelector('.app-content');
   const isHome = page === 'home';
-  document.getElementById('notch-fill').classList.toggle('visible', isHome);
   // 헤더 DOM 이동: 홈이면 hero-card 안, 다른 탭이면 sentinel 앞
   if (hdr) {
     const heroCard = document.getElementById('hero-card-home');
@@ -5460,7 +5450,7 @@ async function doAppLogin() {
   renderHeader();
   renderHome();
 
-  document.getElementById('notch-fill').classList.add('visible');
+
   const _hdr = document.querySelector('.app-header');
   if (_hdr) { _hdr.classList.remove('solid'); _hdr.classList.add('flow'); }
   const _content = document.querySelector('.app-content');
@@ -5586,7 +5576,7 @@ function init() {
     renderHome();
     requestAnimationFrame(() => { window.scrollTo(0, 0); document.documentElement.scrollTop = 0; document.body.scrollTop = 0; });
     // 초기 홈 페이지: 헤더 투명 + 노치 배경
-    document.getElementById('notch-fill').classList.add('visible');
+  
     const hdr = document.querySelector('.app-header');
     if (hdr) { hdr.classList.remove('solid'); hdr.classList.add('flow'); }
     setTimeout(() => {
