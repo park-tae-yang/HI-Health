@@ -4344,6 +4344,7 @@ function toggleSuppCardCustom() {
 }
 function resetHealthChecks() {
   document.querySelectorAll('[id^="diet-"]').forEach(e => e.classList.remove('on'));
+  document.querySelectorAll('.hc-meal-chip').forEach(e => e.classList.remove('on'));
   _dietRating = null; _mealTypes = []; _sleepHours = null; _sleepCard = null;
   document.querySelectorAll('#sleep-great,#sleep-good,#sleep-short,#sleep-bad,#sleep-over').forEach(e => e.classList.remove('on'));
   clearSuppSection();
