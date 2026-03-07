@@ -138,16 +138,14 @@
       z-index: 110;
       transition: background 0.28s ease, box-shadow 0.28s ease;
     }
-    /* 홈: 헤더를 일반 흐름으로 (스크롤과 함께) */
+    /* 홈: 헤더를 히어로카드 내부 흐름으로 */
     .app-header.flow {
       position: relative; top: auto; left: auto; transform: none;
-      width: 100%; max-width: 480px;
+      width: 100%; max-width: 100%;
     }
     .app-content.no-top-margin { margin-top: 0; }
-    /* 홈에서 hero-card: app-content 마진 없으므로 네거티브 마진 불필요 */
-    .app-content.no-top-margin .hero-card {
-      margin-top: 0;
-    }
+    /* hc-body: 히어로카드 내 콘텐츠 영역 */
+    .hc-body { padding: 12px 20px 0; }
     .app-header.solid {
       background: rgba(255,255,255,0.97);
       box-shadow: 0 1px 12px rgba(0,0,0,0.08);
@@ -409,12 +407,13 @@
         linear-gradient(to bottom, rgba(0,0,0,0.28) 0%, rgba(0,0,0,0) 90px),
         linear-gradient(135deg, #3730A3 0%, #4F46E5 100%);
       border-radius: 0 0 28px 28px;
-      padding: calc(var(--header-height) + max(env(safe-area-inset-top), 44px) + 52px) 20px 22px;
+      padding: 0 0 22px;
       color: #fff;
-      margin-top: calc(-1 * (var(--header-height) + max(env(safe-area-inset-top), 44px)));
+      margin-top: 0;
       margin-left: -18px; margin-right: -18px;
       margin-bottom: 18px;
-      position: relative; overflow: hidden;
+      position: sticky; top: 0; z-index: 110;
+      overflow: hidden;
     }
     .hero-card::before {
       content: ''; position: absolute; top: calc(max(env(safe-area-inset-top), 44px) - 60px); right: -50px;
@@ -1577,24 +1576,7 @@
   </div>
 </div>
 
-<header class="app-header solid">
-  <div class="header-logo" onclick="location.reload()" style="cursor:pointer;">
-    <img src="images/logo.png"       alt="HI Health" class="logo-img">
-    <img src="images/logo-white.png" alt="HI Health" class="logo-img-white">
-  </div>
-  <div class="header-right">
-    <div class="header-points" id="header-pts" onclick="navigate('rewards')">
-      <span id="hpts-val">0</span>p
-    </div>
-    <button type="button" class="header-cart-btn" id="header-cart-btn" onclick="openCartPanel()" title="장바구니">
-      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/>
-      </svg>
-      <span class="header-cart-badge hidden" id="header-cart-badge">0</span>
-    </button>
-    <div class="header-avatar" id="header-avatar" onclick="openProfileModal()" title="프로필 설정"></div>
-  </div>
-</header>
+<div id="header-sentinel"></div>
 
 <!-- Cart Panel -->
 <div class="cart-panel-backdrop hidden" id="cart-panel-backdrop" onclick="closeCartPanel()"></div>
@@ -1634,24 +1616,44 @@
   <!-- ████  HOME  ████ -->
   <section id="page-home" class="page active">
 
-    <div class="hero-card">
-      <div class="hc-circle" style="width:150px;height:150px;top:calc(max(env(safe-area-inset-top),44px) - 50px);left:-50px;background:rgba(255,255,255,0.07)"></div>
-      <div class="hc-circle" style="width:80px;height:80px;top:calc(max(env(safe-area-inset-top),44px) + 30px);left:40px;background:rgba(255,255,255,0.05)"></div>
-      <p class="hero-greeting" id="hero-greeting">안녕하세요! 오늘도 건강하게 👋</p>
-      <h2 class="hero-name"><span id="hero-name">사용자님</span></h2>
-      <div class="hero-tags" id="hero-tags"></div>
-      <div class="hero-stats">
-        <div class="hero-stat">
-          <div class="hero-stat-value" id="today-cnt">0</div>
-          <div class="hero-stat-label">오늘 운동</div>
+    <div class="hero-card" id="hero-card-home">
+      <header class="app-header flow">
+        <div class="header-logo" onclick="location.reload()" style="cursor:pointer;">
+          <img src="images/logo.png"       alt="HI Health" class="logo-img">
+          <img src="images/logo-white.png" alt="HI Health" class="logo-img-white">
         </div>
-        <div class="hero-stat">
-          <div class="hero-stat-value" id="today-min">0</div>
-          <div class="hero-stat-label">운동(분)</div>
+        <div class="header-right">
+          <div class="header-points" id="header-pts" onclick="navigate('rewards')">
+            <span id="hpts-val">0</span>p
+          </div>
+          <button type="button" class="header-cart-btn" id="header-cart-btn" onclick="openCartPanel()" title="장바구니">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/>
+            </svg>
+            <span class="header-cart-badge hidden" id="header-cart-badge">0</span>
+          </button>
+          <div class="header-avatar" id="header-avatar" onclick="openProfileModal()" title="프로필 설정"></div>
         </div>
-        <div class="hero-stat">
-          <div class="hero-stat-value" id="today-pts">+0</div>
-          <div class="hero-stat-label">획득 포인트</div>
+      </header>
+      <div class="hc-body">
+        <div class="hc-circle" style="width:150px;height:150px;top:calc(max(env(safe-area-inset-top),44px) - 50px);left:-50px;background:rgba(255,255,255,0.07)"></div>
+        <div class="hc-circle" style="width:80px;height:80px;top:calc(max(env(safe-area-inset-top),44px) + 30px);left:40px;background:rgba(255,255,255,0.05)"></div>
+        <p class="hero-greeting" id="hero-greeting">안녕하세요! 오늘도 건강하게 👋</p>
+        <h2 class="hero-name"><span id="hero-name">사용자님</span></h2>
+        <div class="hero-tags" id="hero-tags"></div>
+        <div class="hero-stats">
+          <div class="hero-stat">
+            <div class="hero-stat-value" id="today-cnt">0</div>
+            <div class="hero-stat-label">오늘 운동</div>
+          </div>
+          <div class="hero-stat">
+            <div class="hero-stat-value" id="today-min">0</div>
+            <div class="hero-stat-label">운동(분)</div>
+          </div>
+          <div class="hero-stat">
+            <div class="hero-stat-value" id="today-pts">+0</div>
+            <div class="hero-stat-label">획득 포인트</div>
+          </div>
         </div>
       </div>
     </div>
@@ -2951,14 +2953,21 @@ function quickNav(btn, fn) {
 function navigate(page) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  // 헤더: 홈이면 투명, 다른 탭이면 solid 흰색
   const hdr = document.querySelector('.app-header');
   const content = document.querySelector('.app-content');
   const isHome = page === 'home';
   document.getElementById('notch-fill').classList.toggle('visible', isHome);
+  // 헤더 DOM 이동: 홈이면 hero-card 안, 다른 탭이면 sentinel 앞
   if (hdr) {
+    const heroCard = document.getElementById('hero-card-home');
+    const sentinel = document.getElementById('header-sentinel');
+    if (isHome && heroCard && hdr.parentNode !== heroCard) {
+      heroCard.insertBefore(hdr, heroCard.firstChild);
+    } else if (!isHome && sentinel && hdr.parentNode !== sentinel.parentNode) {
+      sentinel.parentNode.insertBefore(hdr, sentinel);
+    }
     hdr.classList.toggle('solid', !isHome);
-    hdr.classList.remove('flow');
+    hdr.classList.toggle('flow', isHome);
   }
   if (content) {
     content.classList.remove('no-top-margin');
@@ -5453,7 +5462,7 @@ async function doAppLogin() {
 
   document.getElementById('notch-fill').classList.add('visible');
   const _hdr = document.querySelector('.app-header');
-  if (_hdr) _hdr.classList.remove('solid');
+  if (_hdr) { _hdr.classList.remove('solid'); _hdr.classList.add('flow'); }
   const _content = document.querySelector('.app-content');
   if (_content) _content.classList.add('no-top-margin');
   if (!S.user.name) setTimeout(() => openProfileModal(true), 400);
@@ -5579,7 +5588,7 @@ function init() {
     // 초기 홈 페이지: 헤더 투명 + 노치 배경
     document.getElementById('notch-fill').classList.add('visible');
     const hdr = document.querySelector('.app-header');
-    if (hdr) hdr.classList.remove('solid');
+    if (hdr) { hdr.classList.remove('solid'); hdr.classList.add('flow'); }
     setTimeout(() => {
       const lv = getLevel(S.user.points);
       const nextLv = LEVELS.find(l => l.lv === lv.lv + 1);
