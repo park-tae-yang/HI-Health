@@ -120,7 +120,7 @@
     /* ── 노치 배경 ── */
     #notch-fill {
       display: none; position: fixed; top: 0; left: 0; right: 0; z-index: 109;
-      height: calc(max(env(safe-area-inset-top), 44px) + var(--header-height));
+      height: calc(max(env(safe-area-inset-top), 44px) + var(--header-height) - 40px);
       background: #3730A3;
     }
     #notch-fill.visible { display: block; }
