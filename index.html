@@ -2053,6 +2053,13 @@
             <button type="button" class="hc-sub-chip hc-supp-preset" data-name="종합비타민" onclick="toggleSuppItem('종합비타민')">종합비타민</button>
             <button type="button" class="hc-sub-chip hc-supp-preset" data-name="아르기닌"   onclick="toggleSuppItem('아르기닌')">아르기닌</button>
             <button type="button" class="hc-sub-chip hc-supp-preset" data-name="코큐텐"     onclick="toggleSuppItem('코큐텐')">코큐텐</button>
+            <button type="button" class="custom-ex-link" id="supp-direct-btn" onclick="toggleSuppDirect()">✏️ 직접 입력</button>
+          </div>
+          <div class="custom-ex-wrap" id="supp-direct-wrap">
+            <div style="display:flex;gap:6px">
+              <input type="text" class="ch-form-input" id="supp-direct-input" placeholder="영양제 이름을 입력하세요" maxlength="20" style="flex:1">
+              <button type="button" onclick="addSuppDirect()" style="padding:8px 14px;border-radius:var(--radius-sm);border:none;background:var(--primary);color:#fff;font-size:13px;cursor:pointer;white-space:nowrap">추가</button>
+            </div>
           </div>
           <div class="diet-card-grid" style="grid-template-columns:repeat(2,1fr); margin-top:4px">
             <button type="button" class="diet-card" id="supp-all"     onclick="setSupp('all')">
@@ -4014,6 +4021,9 @@ function clearSuppSection() {
   document.querySelectorAll('.hc-supp-preset').forEach(e => e.classList.remove('on'));
   document.getElementById('supp-custom-list').innerHTML = '';
   document.getElementById('supp-custom-input').value = '';
+  document.getElementById('supp-direct-wrap')?.classList.remove('show');
+  document.getElementById('supp-direct-btn')?.classList.remove('selected');
+  document.getElementById('supp-direct-input') && (document.getElementById('supp-direct-input').value = '');
 }
 
 /* ── Meal / Supplement detail ── */
@@ -4033,6 +4043,29 @@ function toggleSuppItem(name) {
 }
 function addCustomSupp() {
   const input = document.getElementById('supp-custom-input');
+  const val = input.value.trim();
+  if (!val || _suppList.includes(val)) { input.value = ''; return; }
+  haptic('light');
+  _suppList.push(val);
+  input.value = '';
+  const list = document.getElementById('supp-custom-list');
+  const chip = document.createElement('button');
+  chip.type = 'button';
+  chip.className = 'hc-sub-chip on';
+  chip.textContent = val + ' ✕';
+  chip.onclick = () => { _suppList = _suppList.filter(s => s !== val); chip.remove(); };
+  list.appendChild(chip);
+}
+function toggleSuppDirect() {
+  const wrap = document.getElementById('supp-direct-wrap');
+  const btn  = document.getElementById('supp-direct-btn');
+  const open = !wrap.classList.contains('show');
+  wrap.classList.toggle('show', open);
+  btn.classList.toggle('selected', open);
+  if (open) document.getElementById('supp-direct-input').focus();
+}
+function addSuppDirect() {
+  const input = document.getElementById('supp-direct-input');
   const val = input.value.trim();
   if (!val || _suppList.includes(val)) { input.value = ''; return; }
   haptic('light');
