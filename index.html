@@ -408,8 +408,11 @@
       overflow: hidden;
     }
     .hero-card::before {
-      content: ''; position: absolute; top: calc(max(env(safe-area-inset-top), 44px) - 60px); right: -50px;
+      content: ''; position: absolute; top: calc(max(env(safe-area-inset-top), 44px) - 100px); right: -50px;
       width: 200px; height: 200px; background: rgba(255,255,255,0.08); border-radius: 50%;
+      filter: blur(14px);
+      -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 55%);
+      mask-image: linear-gradient(to bottom, transparent 0%, black 55%);
     }
     .hero-card::after {
       content: ''; position: absolute; bottom: -40px; right: 40px;
