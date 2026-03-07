@@ -5330,6 +5330,7 @@ async function doAppLogin() {
 
   S.user.empId = S.user.empId || ACTIVE_EMPID;
   if (!S.user.name) S.user.name = inputName;
+  save();
   sessionStorage.setItem('hi_session_empid', ACTIVE_EMPID);
   if (keepLogin) {
     localStorage.setItem('hi_keep_login_id', ACTIVE_EMPID);
