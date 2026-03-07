@@ -888,10 +888,24 @@
     .wo-del { background:none; border:none; cursor:pointer; color:var(--text-secondary); font-size:15px; padding:4px; opacity:0.45; transition:opacity 0.2s; flex-shrink:0; line-height:1; }
     .wo-del:hover { opacity:1; color:#ef4444; }
 
-    /* ── Record Tabs (운동/혈당) ── */
-    .record-tabs { display:flex; border-bottom:2px solid var(--border); margin-bottom:14px; }
-    .record-tab { flex:1; padding:11px 0; background:none; border:none; border-bottom:2px solid transparent; margin-bottom:-2px; font-family:inherit; font-size:14px; font-weight:700; color:var(--text-secondary); cursor:pointer; transition:all 0.18s; }
-    .record-tab.active { color:var(--primary); border-bottom-color:var(--primary); }
+    /* ── Exercise Hero Card + Tabs ── */
+    .ex-hero-card {
+      background: linear-gradient(135deg, #3730A3 0%, #4F46E5 100%);
+      position: relative; overflow: hidden; z-index: 110;
+    }
+    .ex-hero-card::before {
+      content:''; position:absolute; top:-60px; right:-40px;
+      width:180px; height:180px; background:rgba(255,255,255,0.08); border-radius:50%; filter:blur(12px);
+    }
+    .ex-hero-tabs { display:flex; padding:0 4px; }
+    .ex-hero-tab {
+      flex:1; padding:13px 0 15px; background:none; border:none;
+      border-bottom:2px solid transparent;
+      color:rgba(255,255,255,0.55); font-size:15px; font-weight:700;
+      cursor:pointer; font-family:inherit; transition:all 0.18s;
+    }
+    .ex-hero-tab.active { color:#fff; border-bottom-color:#fff; }
+    .record-content-card { border-radius:0 0 20px 20px !important; margin-top:0 !important; }
 
     /* ── View Tabs (월별/목록/그래프) ── */
     .card-header-right { display:flex; align-items:center; gap:8px; }
@@ -1836,12 +1850,14 @@
   <!-- ████  EXERCISE  ████ -->
   <section id="page-exercise" class="page">
 
-    <div class="card">
-      <div class="record-tabs">
-        <button class="record-tab active" id="rec-tab-exercise" onclick="setRecordTab('exercise')">운동 기록</button>
-        <button class="record-tab" id="rec-tab-glucose" onclick="setRecordTab('glucose')">혈당 기록</button>
+    <div class="ex-hero-card" id="hero-card-exercise">
+      <div class="ex-hero-tabs">
+        <button class="ex-hero-tab active" id="rec-tab-exercise" onclick="setRecordTab('exercise')">운동 기록</button>
+        <button class="ex-hero-tab" id="rec-tab-glucose" onclick="setRecordTab('glucose')">혈당 기록</button>
       </div>
+    </div>
 
+    <div class="card record-content-card">
       <div id="rec-panel-exercise">
         <div class="card-header" style="padding-top:0">
           <div class="card-header-right">
@@ -3159,21 +3175,26 @@ function navigate(page) {
   const hdr = document.querySelector('.app-header');
   const content = document.querySelector('.app-content');
   const isHome = page === 'home';
-  // 헤더 DOM 이동: 홈이면 hero-card 안, 다른 탭이면 sentinel 앞
+  const isExercise = page === 'exercise';
+  const isFlow = isHome || isExercise;
+  // 헤더 DOM 이동: 홈/운동이면 각 hero-card 안, 다른 탭이면 sentinel 앞
   if (hdr) {
-    const heroCard = document.getElementById('hero-card-home');
-    const sentinel = document.getElementById('header-sentinel');
+    const heroCard   = document.getElementById('hero-card-home');
+    const exHeroCard = document.getElementById('hero-card-exercise');
+    const sentinel   = document.getElementById('header-sentinel');
     if (isHome && heroCard && hdr.parentNode !== heroCard) {
       heroCard.insertBefore(hdr, heroCard.firstChild);
-    } else if (!isHome && sentinel && hdr.parentNode !== sentinel.parentNode) {
+    } else if (isExercise && exHeroCard && hdr.parentNode !== exHeroCard) {
+      exHeroCard.insertBefore(hdr, exHeroCard.firstChild);
+    } else if (!isFlow && sentinel && hdr.parentNode !== sentinel.parentNode) {
       sentinel.parentNode.insertBefore(hdr, sentinel);
     }
-    hdr.classList.toggle('solid', !isHome);
-    hdr.classList.toggle('flow', isHome);
+    hdr.classList.toggle('solid', !isFlow);
+    hdr.classList.toggle('flow', isFlow);
   }
   if (content) {
     content.classList.remove('no-top-margin');
-    if (isHome) content.classList.add('no-top-margin');
+    if (isFlow) content.classList.add('no-top-margin');
   }
   const pg = document.getElementById('page-' + page);
   if (pg) pg.classList.add('active');
@@ -3348,10 +3369,11 @@ let _woShowCount = 10;
 let _woTypeFilter = 'all';
 
 function setRecordTab(tab) {
-  document.getElementById('rec-tab-exercise').classList.toggle('active', tab === 'exercise');
-  document.getElementById('rec-tab-glucose').classList.toggle('active', tab === 'glucose');
+  ['exercise','glucose'].forEach(t => {
+    document.getElementById('rec-tab-' + t)?.classList.toggle('active', t === tab);
+  });
   document.getElementById('rec-panel-exercise').style.display = tab === 'exercise' ? '' : 'none';
-  document.getElementById('rec-panel-glucose').style.display = tab === 'glucose' ? '' : 'none';
+  document.getElementById('rec-panel-glucose').style.display  = tab === 'glucose'  ? '' : 'none';
 }
 
 function setWoView(mode) {
