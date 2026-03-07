@@ -3671,24 +3671,24 @@ let _shareMsgAuto = false;
 function buildDayMessage() {
   const lines = [];
 
-  // 오늘 운동 기록 전체
+  // 운동 — 이모지 유지, 자연스러운 문장
   const tw = todayWorkouts();
   if (tw.length) {
     const totalMins = tw.reduce((s, w) => s + w.duration, 0);
-    lines.push('💪 오늘 운동 ' + tw.length + '회 · 총 ' + totalMins + '분 완료!');
-    tw.forEach(w => {
+    const woList = tw.map(w => {
       const ex = EX_TYPES.find(e => e.id === w.exId);
       const name = w.customName || (ex ? ex.name : '운동');
       const icon = ex ? ex.icon : '🏃';
-      lines.push('  ' + icon + ' ' + name + ' ' + w.duration + '분');
-    });
+      return icon + ' ' + name + ' ' + w.duration + '분';
+    }).join(', ');
+    lines.push(woList + ' 완료했어요! (총 ' + tw.length + '회 · ' + totalMins + '분)');
   }
 
-  // 오늘 혈당 기록
+  // 혈당
   const tg = todayGlucoseRecords();
   if (tg.length) {
-    lines.push('🩸 혈당 ' + tg.length + '회 기록');
-    tg.forEach(r => lines.push('  · ' + r.timing + ' ' + r.value + ' mg/dL'));
+    const glList = tg.map(r => r.timing + ' ' + r.value + ' mg/dL').join(', ');
+    lines.push('오늘 혈당은 ' + glList + ' 기록했어요.');
   }
 
   // 식사
@@ -3699,32 +3699,32 @@ function buildDayMessage() {
       : dietMap[_dietRating];
     if (label) {
       const meals = _mealTypes.length ? ' (' + _mealTypes.join(', ') + ')' : '';
-      lines.push('🥗 식사: ' + label + meals);
+      lines.push('식사는 ' + label + meals + '.');
     }
   }
 
   // 수면
   if (_sleepHours !== null && _sleepHours !== undefined) {
-    const sleepMap = { great:'푹 잤어요', good:'잘 잤어요', short:'조금 부족해요', bad:'많이 못 잤어요', over:'너무 많이 잤어요' };
+    const sleepMap = { great:'푹 잤어요', good:'잘 잤어요', short:'조금 부족했어요', bad:'많이 못 잤어요', over:'너무 많이 잤어요' };
     const sleepLabel = typeof _sleepHours === 'number'
-      ? _sleepHours + '시간'
-      : (sleepMap[_sleepHours] || _sleepHours);
-    lines.push('😴 수면: ' + sleepLabel);
+      ? _sleepHours + '시간 잤어요.'
+      : ('수면은 ' + (sleepMap[_sleepHours] || _sleepHours) + '.');
+    lines.push(sleepLabel);
   }
 
   // 영양제
   if (_suppTaken) {
-    const suppMap = { all:'모두 복용했어요', partial:'일부 복용했어요', forgot:'깜빡했어요', no:'안했어요' };
-    let suppLine = '💊 영양제: ' + (suppMap[_suppTaken] || _suppTaken);
+    const suppMap = { all:'영양제 모두 챙겨 먹었어요', partial:'영양제 일부만 챙겼어요', forgot:'영양제 깜빡했어요', no:'오늘은 영양제를 안 먹었어요' };
+    let suppLine = suppMap[_suppTaken] || '영양제 ' + _suppTaken;
     if ((_suppTaken === 'all' || _suppTaken === 'partial') && _suppList.length) {
       suppLine += ' (' + _suppList.join(', ') + ')';
     }
-    lines.push(suppLine);
+    lines.push(suppLine + '.');
   }
 
   // 메모
   const memo = document.getElementById('ex-memo')?.value.trim();
-  if (memo) lines.push('📝 ' + memo);
+  if (memo) lines.push(memo);
 
   return lines.join('\n');
 }
