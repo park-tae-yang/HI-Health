@@ -5423,6 +5423,8 @@ async function doAppLogin() {
 
   renderHeader();
   renderHome();
+  const _hdr = document.querySelector('.app-header');
+  if (_hdr) _hdr.classList.remove('solid');
   if (!S.user.name) setTimeout(() => openProfileModal(true), 400);
   setTimeout(() => {
     const lv = getLevel(S.user.points);
