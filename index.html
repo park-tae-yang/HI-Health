@@ -3380,8 +3380,13 @@ async function shareLevelCard() {
     </div>
 
     <!-- 응원 메시지 -->
-    <div style="text-align:center;position:relative">
-      <div style="font-size:14px;font-weight:800;opacity:0.9;letter-spacing:0.2px">함께 응원해주세요 💪</div>
+    <div style="text-align:center;position:relative;padding-top:4px">
+      <div style="font-size:13px;font-weight:800;opacity:0.92;margin-bottom:10px">${name}님의 운동기록을 함께 응원해주세요 :)</div>
+      <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.18);padding:8px 16px;border-radius:20px;border:1px solid rgba(255,255,255,0.25)">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        <span style="font-size:11px;font-weight:700">나도 운동기록하기</span>
+      </div>
+      <div style="font-size:9px;opacity:0.5;margin-top:7px;font-weight:500;letter-spacing:0.3px">yunjin0825.github.io/HI-Health</div>
     </div>
   `;
 
@@ -3403,7 +3408,7 @@ async function shareLevelCard() {
       const file = new File([blob], 'hi-health-level.png', { type: 'image/png' });
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         try {
-          await navigator.share({ files: [file], title: 'HI Health', text: `${name}님의 HI Health 레벨을 확인해보세요!` });
+          await navigator.share({ files: [file], title: 'HI Health', text: `${name}님의 운동기록을 함께 응원해주세요 :)\n나도 운동기록하기 👉 https://yunjin0825.github.io/HI-Health/` });
         } catch(e) {
           if (e.name !== 'AbortError') showToast('공유에 실패했어요');
         }
