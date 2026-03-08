@@ -1144,7 +1144,24 @@
       border-radius: var(--radius); margin-bottom: 14px;
     }
     .podium-item { display: flex; flex-direction: column; align-items: center; gap: 5px; }
-.podium-avatar { width:44px; height:44px; border-radius:50%; overflow:hidden; background:var(--bg); margin:0 auto; }
+    .podium-av-wrap { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    .podium-bubble {
+      background: #fff; border-radius: 8px; padding: 4px 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.13);
+      font-size: 10px; white-space: nowrap;
+      display: flex; align-items: center; gap: 4px;
+      position: relative; max-width: 90px; flex-wrap: wrap; justify-content: center;
+    }
+    .podium-bubble::after {
+      content: ''; position: absolute;
+      left: 50%; transform: translateX(-50%);
+      bottom: -5px;
+      border: 5px solid transparent;
+      border-top-color: #fff; border-bottom: 0;
+      filter: drop-shadow(0 1px 1px rgba(0,0,0,0.08));
+    }
+    .podium-bubble-lv { font-size: 13px; line-height: 1; }
+    .podium-avatar { width:44px; height:44px; border-radius:50%; overflow:hidden; background:var(--bg); margin:0 auto; }
     .podium-name { font-size: 11px; font-weight: 600; text-align: center; max-width: 70px; }
     .podium-pts { font-size: 10px; color: var(--text-secondary); }
     .podium-stand {
@@ -5325,14 +5342,21 @@ function renderLeague() {
     const standClass = ['stand-silver','stand-gold','stand-bronze'];
     const standNum   = ['2','1','3'];
     const medals     = ['🥈','🥇','🥉'];
-    document.getElementById('podium').innerHTML = podOrder.map((u, i) => `
-      <div class="podium-item">
-        <div class="podium-avatar">${u ? avHTML(u.avatar) : ''}</div>
-        <div class="podium-name">${u ? `${medals[i]} ${u.name}` : ''}</div>
-        <div class="podium-pts">${u ? u.pts + 'p' : ''}</div>
-        <div class="podium-stand ${standClass[i]}">${standNum[i]}</div>
-      </div>
-    `).join('');
+    document.getElementById('podium').innerHTML = podOrder.map((u, i) => {
+      if (!u) return `<div class="podium-item"><div class="podium-av-wrap"><div class="podium-avatar"></div></div><div class="podium-stand ${standClass[i]}">${standNum[i]}</div></div>`;
+      const lv = LEVELS[Math.min(u.lv - 1, LEVELS.length - 1)];
+      const tags = (u.tags || []).slice(0, 2).map(t => `<span class="profile-tag" style="font-size:9px;padding:1px 5px">${t}</span>`).join('');
+      return `
+        <div class="podium-item">
+          <div class="podium-av-wrap">
+            <div class="podium-bubble"><span class="podium-bubble-lv">${lv.icon}</span>${tags}</div>
+            <div class="podium-avatar">${avHTML(u.avatar)}</div>
+          </div>
+          <div class="podium-name">${medals[i]} ${u.name}</div>
+          <div class="podium-pts">${u.pts}p</div>
+          <div class="podium-stand ${standClass[i]}">${standNum[i]}</div>
+        </div>`;
+    }).join('');
 
     document.getElementById('lb-list').innerHTML = challengers.slice(3, 20).map(u => {
       const lv = LEVELS[Math.min(u.lv - 1, LEVELS.length - 1)];
@@ -5396,14 +5420,22 @@ function renderLeague() {
   const standClass = ['stand-silver','stand-gold','stand-bronze'];
   const standNum   = ['2','1','3'];
   const medals     = ['🥈','🥇','🥉'];
-  document.getElementById('podium').innerHTML = podOrder.map((u,i) => `
-    <div class="podium-item">
-      <div class="podium-avatar">${u ? avHTML(u.avatar) : ''}</div>
-      <div class="podium-name">${u ? `${medals[i]} ${u.name}` : ''}</div>
-      <div class="podium-pts">${u ? (tab==='weekly'?u.wPts:u.pts)+'p' : ''}</div>
-      <div class="podium-stand ${standClass[i]}">${standNum[i]}</div>
-    </div>
-  `).join('');
+  document.getElementById('podium').innerHTML = podOrder.map((u,i) => {
+    if (!u) return `<div class="podium-item"><div class="podium-av-wrap"><div class="podium-avatar"></div></div><div class="podium-stand ${standClass[i]}">${standNum[i]}</div></div>`;
+    const lv = LEVELS[Math.min(u.lv - 1, LEVELS.length - 1)];
+    const tags = (u.tags || []).slice(0, 2).map(t => `<span class="profile-tag" style="font-size:9px;padding:1px 5px">${t}</span>`).join('');
+    const pts = tab === 'weekly' ? u.wPts : u.pts;
+    return `
+      <div class="podium-item">
+        <div class="podium-av-wrap">
+          <div class="podium-bubble"><span class="podium-bubble-lv">${lv.icon}</span>${tags}</div>
+          <div class="podium-avatar">${avHTML(u.avatar)}</div>
+        </div>
+        <div class="podium-name">${medals[i]} ${u.name}</div>
+        <div class="podium-pts">${pts}p</div>
+        <div class="podium-stand ${standClass[i]}">${standNum[i]}</div>
+      </div>`;
+  }).join('');
 
   document.getElementById('lb-list').innerHTML = list.slice(3, 20).map(u => {
     const lv    = LEVELS[Math.min(u.lv-1, LEVELS.length-1)];
