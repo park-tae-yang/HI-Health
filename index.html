@@ -1143,6 +1143,9 @@
       background: linear-gradient(180deg, var(--primary-light) 0%, transparent 100%);
       border-radius: var(--radius); margin-bottom: 14px;
     }
+    .podium.challenger {
+      background: linear-gradient(180deg, #fce7f3 0%, #fff0f6 60%, transparent 100%);
+    }
     .podium-item { display: flex; flex-direction: column; align-items: center; gap: 5px; }
     .podium-av-wrap { display: flex; flex-direction: column; align-items: center; gap: 4px; }
     .podium-bubble {
@@ -5333,6 +5336,7 @@ function renderLeague() {
         </div>`;
     }
 
+    document.getElementById('podium').className = 'podium challenger';
     const top3 = challengers.slice(0, 3);
     const podOrder = [top3[1], top3[0], top3[2]];
     const standClass = ['stand-silver','stand-gold','stand-bronze'];
@@ -5410,6 +5414,7 @@ function renderLeague() {
   ].sort((a,b) => (tab === 'weekly' ? b.wPts - a.wPts : b.pts - a.pts))
    .map((u,i) => ({ ...u, rank: i+1 }));
 
+  document.getElementById('podium').className = 'podium';
   const top3 = list.slice(0,3);
   const podOrder = [top3[1], top3[0], top3[2]];
   const standClass = ['stand-silver','stand-gold','stand-bronze'];
