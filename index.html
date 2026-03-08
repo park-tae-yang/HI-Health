@@ -3063,6 +3063,7 @@ let S = {
   posts: JSON.parse(JSON.stringify(MOCK_POSTS_SEED)),
   redeemedRewards: [],
   pendingRewards: [],
+  rewardHistory: [],  // [{ id, name, emoji, cost, status:'pending'|'done', ts, doneTs? }]
   selectedEx: 'walking',
   duration: 30,
   leagueTab: 'weekly',
@@ -3084,6 +3085,7 @@ function save() {
       posts: S.posts,
       redeemedRewards: S.redeemedRewards,
       pendingRewards: S.pendingRewards,
+      rewardHistory: S.rewardHistory,
       myReactions: S.myReactions,
       glucoseRecords: S.glucoseRecords,
       todayLog: S.todayLog,
@@ -3142,6 +3144,14 @@ function load() {
     S.posts = d.posts || JSON.parse(JSON.stringify(MOCK_POSTS_SEED));
     S.redeemedRewards = d.redeemedRewards || [];
     S.pendingRewards  = d.pendingRewards  || [];
+    S.rewardHistory   = d.rewardHistory   || [];
+    // 기존 사용자 마이그레이션: rewardHistory 없으면 기존 데이터에서 생성
+    if (!S.rewardHistory.length && (S.redeemedRewards.length || S.pendingRewards.length)) {
+      S.rewardHistory = [
+        ...S.redeemedRewards.map(id => { const r = REWARDS_DATA.find(x=>x.id===id); return r ? { id, name:r.name, emoji:r.emoji, cost:r.cost, status:'done', ts:0 } : null; }),
+        ...S.pendingRewards.map(id => { const r = REWARDS_DATA.find(x=>x.id===id); return r ? { id, name:r.name, emoji:r.emoji, cost:r.cost, status:'pending', ts:0 } : null; }),
+      ].filter(Boolean);
+    }
     S.myReactions = d.myReactions || {};
     S.glucoseRecords = d.glucoseRecords || [];
     S.todayLog = d.todayLog || null;
@@ -4855,6 +4865,7 @@ function logout() {
   S.glucoseRecords = [];
   S.redeemedRewards = [];
   S.pendingRewards = [];
+  S.rewardHistory = [];
   S.myReactions = {};
   document.getElementById('profile-modal').classList.add('pm-hidden');
 
@@ -5837,27 +5848,26 @@ function renderRewards() {
     </div>
   `).join('');
 
-  // 보상 신청내역
+  // 교환이력
   const histEl = document.getElementById('reward-history');
   if (histEl) {
-    const all = [
-      ...S.pendingRewards.map(id => ({ id, status: 'pending' })),
-      ...S.redeemedRewards.map(id => ({ id, status: 'done' })),
-    ];
-    if (!all.length) { histEl.innerHTML = ''; }
-    else {
-      histEl.innerHTML = `<div class="reward-history-title">🎁 보상 신청내역</div>` +
-        all.map(({ id, status }) => {
-          const r = REWARDS_DATA.find(x => x.id === id);
-          if (!r) return '';
+    const history = S.rewardHistory || [];
+    if (!history.length) {
+      histEl.innerHTML = `<div class="reward-history-title">🎁 교환이력</div>
+        <div style="text-align:center;padding:20px 0;color:var(--text-muted);font-size:13px">아직 교환한 보상이 없어요</div>`;
+    } else {
+      histEl.innerHTML = `<div class="reward-history-title">🎁 교환이력</div>` +
+        history.map(h => {
+          const dateStr = h.ts ? new Date(h.ts).toLocaleDateString('ko-KR', { month:'numeric', day:'numeric' }) : '';
+          const doneDateStr = h.doneTs ? new Date(h.doneTs).toLocaleDateString('ko-KR', { month:'numeric', day:'numeric' }) : '';
           return `<div class="reward-hist-item">
-            <span class="reward-hist-emoji">${r.emoji}</span>
-            <div>
-              <div class="reward-hist-name">${r.name}</div>
-              <div class="reward-hist-cost">⭐ ${r.cost}p</div>
+            <span class="reward-hist-emoji">${h.emoji || '🎁'}</span>
+            <div style="flex:1">
+              <div class="reward-hist-name">${h.name}</div>
+              <div class="reward-hist-cost">⭐ ${h.cost}p${dateStr ? ' · ' + dateStr + ' 신청' : ''}${doneDateStr ? ' · ' + doneDateStr + ' 완료' : ''}</div>
             </div>
-            <span class="order-status-badge ${status === 'done' ? 'os-done' : 'os-pending'}">
-              ${status === 'done' ? '교환 완료' : '처리 대기'}
+            <span class="order-status-badge ${h.status === 'done' ? 'os-done' : 'os-pending'}">
+              ${h.status === 'done' ? '교환 완료' : '처리 대기'}
             </span>
           </div>`;
         }).join('');
@@ -5876,6 +5886,8 @@ function redeemReward(id) {
     () => {
       S.user.points -= r.cost;
       S.pendingRewards.push(id);
+      if (!S.rewardHistory) S.rewardHistory = [];
+      S.rewardHistory.unshift({ id, name: r.name, emoji: r.emoji, cost: r.cost, status: 'pending', ts: Date.now() });
       save();
       renderHeader();
       haptic('success');
@@ -5893,6 +5905,8 @@ function confirmReward(id) {
     () => {
       S.pendingRewards  = S.pendingRewards.filter(x => x !== id);
       S.redeemedRewards.push(id);
+      const hist = (S.rewardHistory || []).find(h => h.id === id && h.status === 'pending');
+      if (hist) { hist.status = 'done'; hist.doneTs = Date.now(); }
       save();
       haptic('success');
       showToast('✅ 교환 완료 확인!');
@@ -6457,6 +6471,7 @@ function appLogout() {
   S.glucoseRecords = [];
   S.redeemedRewards = [];
   S.pendingRewards = [];
+  S.rewardHistory = [];
   S.myReactions = {};
   localStorage.removeItem('hi_keep_login_id');
   localStorage.removeItem('hi_keep_login_name');
