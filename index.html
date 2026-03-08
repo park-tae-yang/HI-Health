@@ -3386,7 +3386,7 @@ async function shareLevelCard() {
   const runnerPngUrl = imgToPng(runnerImg, 144);
   const avatarPngUrl = imgToPng(avatarImg, 192);
   // 하단 배경 이미지: html2canvas는 object-fit 미지원 → JS로 cover+center top 직접 계산
-  const bgSectionH = 76;
+  const bgSectionH = 78;
   const bgSectionW = 360;
   let bgImgStyle = '';
   if (bgImg && bgImg.naturalWidth) {
@@ -3435,14 +3435,14 @@ async function shareLevelCard() {
     <div style="flex-shrink:0;background:linear-gradient(to bottom,rgba(0,0,0,0.22) 0%,rgba(0,0,0,0) 80px),linear-gradient(145deg,#1E1A6E 0%,#3730A3 35%,#4F46E5 68%,#6366F1 100%),linear-gradient(to bottom right,rgba(255,255,255,0.07) 0%,transparent 55%);padding:12px 18px 14px;border-radius:0 0 28px 28px;position:relative;overflow:hidden;color:#fff">
       <!-- 광택 오버레이 -->
       <div style="position:absolute;top:0;left:0;right:0;height:100%;background:linear-gradient(180deg,rgba(255,255,255,0.06) 0%,transparent 50%);pointer-events:none"></div>
-      <!-- ::before 상당: 우측 상단, 160px, blur(8px) -->
-      <div style="position:absolute;top:-50px;right:-40px;width:160px;height:160px;border-radius:50%;background:linear-gradient(to bottom,transparent 0%,rgba(255,255,255,0.07) 55%);filter:blur(8px);pointer-events:none"></div>
-      <!-- ::after 상당: 우측 하단, 100px, blur(3px) -->
-      <div style="position:absolute;bottom:-35px;right:40px;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,0.05);filter:blur(3px);pointer-events:none"></div>
-      <!-- hc-circle 좌측 대: 120px, blur(6px) -->
-      <div style="position:absolute;top:-6px;left:-45px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,0.06);filter:blur(6px);pointer-events:none"></div>
-      <!-- hc-circle 좌측 소: 65px, blur(3px) -->
-      <div style="position:absolute;top:70px;left:36px;width:65px;height:65px;border-radius:50%;background:rgba(255,255,255,0.04);filter:blur(3px);pointer-events:none"></div>
+      <!-- ::before 상당: 우측 상단, 120px, blur(14px) -->
+      <div style="position:absolute;top:-45px;right:-35px;width:120px;height:120px;border-radius:50%;background:linear-gradient(to bottom,transparent 0%,rgba(255,255,255,0.07) 55%);filter:blur(14px);pointer-events:none"></div>
+      <!-- ::after 상당: 우측 하단, 75px, blur(10px) -->
+      <div style="position:absolute;bottom:-30px;right:40px;width:75px;height:75px;border-radius:50%;background:rgba(255,255,255,0.05);filter:blur(10px);pointer-events:none"></div>
+      <!-- hc-circle 좌측 대: 95px, blur(6px) -->
+      <div style="position:absolute;top:-6px;left:-38px;width:95px;height:95px;border-radius:50%;background:rgba(255,255,255,0.06);filter:blur(6px);pointer-events:none"></div>
+      <!-- hc-circle 좌측 소: 50px, blur(3px) -->
+      <div style="position:absolute;top:68px;left:32px;width:50px;height:50px;border-radius:50%;background:rgba(255,255,255,0.04);filter:blur(3px);pointer-events:none"></div>
 
       <!-- 헤더: 로고 + 나의 건강 기록 (좌) | 아바타 (우) -->
       <div style="display:flex;align-items:center;justify-content:space-between;position:relative">
@@ -3511,7 +3511,7 @@ async function shareLevelCard() {
     </div>
 
     <!-- ③ 하단 이미지 -->
-    <div style="flex-shrink:0;height:76px;position:relative;overflow:hidden;margin-top:-8px;background:#fff">
+    <div style="flex-shrink:0;height:78px;position:relative;overflow:hidden;margin-top:-8px;background:#fff">
       ${bgPngUrl ? `<img src="${bgPngUrl}" style="${bgImgStyle}">` : ''}
       <!-- 상하 + 좌우 그라디언트 (하단 흐림 축소) -->
       <div style="position:absolute;inset:0;background:linear-gradient(to right,rgba(255,255,255,0.7) 0%,rgba(255,255,255,0) 12%,rgba(255,255,255,0) 88%,rgba(255,255,255,0.7) 100%),linear-gradient(to bottom,rgba(255,255,255,1) 0%,rgba(255,255,255,0) 30%,rgba(255,255,255,0) 85%,rgba(255,255,255,0.2) 100%);pointer-events:none;z-index:1"></div>
