@@ -2852,7 +2852,7 @@ function openCartPanel() {
   if (orders.length === 0) {
     histEl.innerHTML = '<div class="cart-panel-empty">구매내역이 없어요</div>';
   } else {
-    const statusLabel = { pending:'확인중', confirmed:'수령완료', done:'처리완료', cancelled:'취소됨' };
+    const statusLabel = { pending:'확인중', confirmed:'수령완료', shipped:'수령완료', done:'처리완료', cancelled:'취소됨' };
     const shown = orders.slice(0, 3);
     const more  = orders.length > 3;
     histEl.innerHTML = shown.map(o => `
@@ -2877,7 +2877,7 @@ function openOrderDetail(orderId) {
   const orders = JSON.parse(localStorage.getItem(SHOP_ORDERS_KEY) || '[]');
   const o = orders.find(x => x.id === orderId);
   if (!o) return;
-  const statusLabel = { pending:'확인중', confirmed:'수령완료', done:'처리완료' };
+  const statusLabel = { pending:'확인중', confirmed:'수령완료', shipped:'수령완료', done:'처리완료', cancelled:'취소됨' };
   const statusClass  = o.status === 'done' ? 'done' : o.status === 'confirmed' ? 'confirmed' : '';
   const body = document.getElementById('od-body');
   body.innerHTML = `
@@ -5557,7 +5557,7 @@ function _renderOrderCards(orders) {
   const el = document.getElementById('shop-order-history');
   if (!el) return;
   if (!orders.length) { el.innerHTML = ''; return; }
-  const statusLabel = { pending:'처리 대기', confirmed:'주문 확인', shipped:'배송 중', done:'수령 완료', cancelled:'취소' };
+  const statusLabel = { pending:'처리 대기', confirmed:'주문 확인', shipped:'수령완료', done:'수령 완료', cancelled:'취소' };
   const statusClass  = { pending:'os-pending', confirmed:'os-confirmed', shipped:'os-shipped', done:'os-done', cancelled:'os-cancelled' };
   el.innerHTML = `<div class="order-history-title">📦 구매 신청내역</div>` +
     orders.map(o => {
@@ -5611,7 +5611,7 @@ function openOrderDetail(orderId) {
   const orders = JSON.parse(localStorage.getItem(SHOP_ORDERS_KEY) || '[]');
   const o = orders.find(x => x.id === orderId);
   if (!o) return;
-  const statusLabel = { pending:'처리 대기', confirmed:'주문 확인', shipped:'배송 중', done:'수령 완료', cancelled:'취소' };
+  const statusLabel = { pending:'처리 대기', confirmed:'주문 확인', shipped:'수령완료', done:'수령 완료', cancelled:'취소' };
   const statusClass  = { pending:'os-pending', confirmed:'os-confirmed', shipped:'os-shipped', done:'os-done', cancelled:'os-cancelled' };
   const st = o.status || 'pending';
   const date = o.orderedAt ? new Date(o.orderedAt).toLocaleString('ko-KR') : '-';
