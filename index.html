@@ -1190,8 +1190,8 @@
     @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
     .post-head { display: flex; align-items: center; gap: 10px; margin-bottom: 11px; }
     .post-av { width:38px; height:38px; border-radius:50%; overflow:hidden; flex-shrink:0; background:var(--bg); }
-    .post-uname { font-size: 14px; font-weight: 600; }
-    .post-meta { font-size: 11px; color: var(--text-secondary); display: flex; align-items: center; gap: 5px; }
+    .post-uname { font-size: 13px; font-weight: 600; }
+    .post-meta { font-size: 11px; color: var(--text-secondary); display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
     .post-del { margin-left:auto; background:none; border:none; cursor:pointer; font-size:15px; opacity:0.35; transition:opacity 0.2s; padding:4px; line-height:1; flex-shrink:0; }
     .post-del:hover { opacity:1; color:#ef4444; }
     .post-edit { background:none; border:none; cursor:pointer; opacity:0.35; transition:opacity 0.2s; padding:4px; line-height:1; flex-shrink:0; margin-left:auto; }
@@ -5572,13 +5572,12 @@ function renderCommunity() {
       <div class="post-card" id="post-${p.id}">
         <div class="post-head">
           <div class="post-av">${avHTML(p.avatar)}</div>
-          <div>
-            <div class="post-uname">${p.name}</div>
-            <div class="post-meta">
-              <span>${lv.icon} ${lv.name}</span>
-              <span>·</span>
-              <span>${p.time}</span>
-            </div>
+          <div class="post-meta">
+            <span class="post-uname">${p.name}</span>
+            <span>·</span>
+            <span>${lv.icon} ${lv.name}</span>
+            <span>·</span>
+            <span>${p.time}</span>
           </div>
           ${p.userId === 0 ? `<button type="button" class="post-edit" onclick="editPost(${p.id})" title="게시물 수정">${_editSvgSm}</button><button type="button" class="post-del" style="margin-left:2px" onclick="deletePost(${p.id})" title="게시물 삭제">${_trashSvgSm}</button>` : ''}
         </div>
