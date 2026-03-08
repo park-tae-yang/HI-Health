@@ -1187,6 +1187,8 @@
     .post-meta { font-size: 11px; color: var(--text-secondary); display: flex; align-items: center; gap: 5px; }
     .post-del { margin-left:auto; background:none; border:none; cursor:pointer; font-size:15px; opacity:0.35; transition:opacity 0.2s; padding:4px; line-height:1; flex-shrink:0; }
     .post-del:hover { opacity:1; color:#ef4444; }
+    .post-edit { background:none; border:none; cursor:pointer; opacity:0.35; transition:opacity 0.2s; padding:4px; line-height:1; flex-shrink:0; margin-left:auto; }
+    .post-edit:hover { opacity:1; color:var(--primary); }
     .post-body { font-size: 14px; line-height: 1.65; margin-bottom: 13px; }
     .post-tags-row { display:flex; flex-wrap:wrap; gap:4px; margin:5px 0 10px; }
     .profile-tag { font-size:10px; padding:2px 8px; border-radius:12px; background:var(--purple-light); color:var(--purple); font-weight:600; white-space:nowrap; }
@@ -5569,7 +5571,7 @@ function renderCommunity() {
               <span>${p.time}</span>
             </div>
           </div>
-          ${p.userId === 0 ? `<button type="button" class="post-del" onclick="deletePost(${p.id})" title="게시물 삭제">${_trashSvgSm}</button>` : ''}
+          ${p.userId === 0 ? `<button type="button" class="post-edit" onclick="editPost(${p.id})" title="게시물 수정">${_editSvgSm}</button><button type="button" class="post-del" style="margin-left:2px" onclick="deletePost(${p.id})" title="게시물 삭제">${_trashSvgSm}</button>` : ''}
         </div>
         ${(() => { const tags = Array.isArray(p.userTags) ? p.userTags : typeof p.userTags === 'string' ? p.userTags.split(',').filter(Boolean) : []; return tags.length ? `<div class="post-tags-row">${tags.map(t => `<span class="profile-tag">${t}</span>`).join('')}</div>` : ''; })()}
         <div class="post-body">${p.body}</div>
@@ -5801,6 +5803,7 @@ function react(postId, stickerId) {
 }
 
 const _trashSvgSm = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>`;
+const _editSvgSm  = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`;
 const _trashSvgLg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="36" height="36"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>`;
 
 let _confirmCallback = null;
@@ -5820,6 +5823,39 @@ function confirmOk() {
   const cb = _confirmCallback;
   closeConfirm();
   if (cb) cb();
+}
+
+let _editPostId = null;
+function editPost(id) {
+  const post = S.posts.find(p => p.id === id);
+  if (!post) return;
+  _editPostId = id;
+  document.getElementById('edit-post-input').value = post.body;
+  document.getElementById('edit-post-overlay').classList.remove('pm-hidden');
+}
+function closeEditPost() {
+  document.getElementById('edit-post-overlay').classList.add('pm-hidden');
+  _editPostId = null;
+}
+function saveEditPost() {
+  const post = S.posts.find(p => p.id === _editPostId);
+  if (!post) return;
+  const newBody = document.getElementById('edit-post-input').value.trim();
+  if (!newBody) { showToast('내용을 입력해주세요 ✏️'); return; }
+  post.body = newBody;
+  save();
+  closeEditPost();
+  renderCommunity();
+  apiSync('addPost', {
+    id: String(post.id),
+    deviceId: S.deviceId,
+    userName: myDisplayName(),
+    body: newBody,
+    exTag: post.exTag || '',
+    userTags: Array.isArray(post.userTags) ? post.userTags.join(',') : (post.userTags || ''),
+    ts: String(post.id),
+  });
+  showToast('게시물이 수정되었어요! ✏️');
 }
 
 function deletePost(id) {
@@ -6957,6 +6993,17 @@ init();
 </div>
 
 <!-- Confirm Modal -->
+<div id="edit-post-overlay" class="confirm-overlay pm-hidden">
+  <div class="confirm-modal" style="text-align:left">
+    <div style="font-size:15px;font-weight:700;margin-bottom:12px">게시물 수정</div>
+    <textarea id="edit-post-input" class="share-msg-input" rows="5" style="width:100%;box-sizing:border-box"></textarea>
+    <div class="confirm-btns" style="margin-top:12px">
+      <button type="button" class="btn btn-cancel btn-full" onclick="closeEditPost()">취소</button>
+      <button type="button" class="btn btn-primary btn-full" onclick="saveEditPost()">저장</button>
+    </div>
+  </div>
+</div>
+
 <div id="confirm-overlay" class="confirm-overlay pm-hidden">
   <div class="confirm-modal">
     <div class="confirm-icon" id="confirm-icon"></div>
