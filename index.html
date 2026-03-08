@@ -924,6 +924,27 @@
     .wo-del { background:none; border:none; cursor:pointer; color:var(--text-secondary); font-size:15px; padding:4px; opacity:0.45; transition:opacity 0.2s; flex-shrink:0; line-height:1; }
     .wo-del:hover { opacity:1; color:#ef4444; }
 
+    /* ── Exercise Quick Bar ── */
+    .ex-quick-bar {
+      display: flex; align-items: center;
+      background: #fff;
+      border-radius: 14px;
+      margin: 0 0 12px;
+      padding: 4px 6px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      position: sticky; top: 60px; z-index: 100;
+    }
+    .ex-quick-bar-btn {
+      flex: 1; display: flex; align-items: center; justify-content: center;
+      gap: 6px; padding: 10px 0;
+      background: none; border: none; cursor: pointer;
+      font-family: inherit; font-size: 14px; font-weight: 600;
+      color: var(--text-secondary);
+      border-radius: 10px; transition: background 0.15s, color 0.15s;
+    }
+    .ex-quick-bar-btn:active { background: var(--bg); }
+    .ex-quick-bar-div { width: 1px; height: 20px; background: var(--border); flex-shrink: 0; }
+
     /* ── Exercise Hero Card + Tabs ── */
     .ex-hero-card {
       background: #fff;
@@ -1907,6 +1928,24 @@
 
   <!-- ████  EXERCISE  ████ -->
   <section id="page-exercise" class="page">
+
+    <div class="ex-quick-bar">
+      <button class="ex-quick-bar-btn" onclick="navigate('community');setCommunityTab('feed')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a2 2 0 01-2-2v-1"/>
+          <path d="M15 3H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l4-4h4a2 2 0 002-2V5a2 2 0 00-2-2z"/>
+        </svg>
+        커뮤니티
+      </button>
+      <div class="ex-quick-bar-div"></div>
+      <button class="ex-quick-bar-btn" onclick="navigate('community');setCommunityTab('league')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M8 6h8v8a4 4 0 0 1-8 0V6Z"/><path d="M8 9H5a2 2 0 0 0 0 4h3"/><path d="M16 9h3a2 2 0 0 1 0 4h-3"/>
+          <line x1="10" y1="18" x2="10" y2="21"/><line x1="14" y1="18" x2="14" y2="21"/><line x1="8" y1="21" x2="16" y2="21"/>
+        </svg>
+        리그
+      </button>
+    </div>
 
     <div class="ex-hero-card" id="hero-card-exercise">
       <div class="ex-hero-tabs">
