@@ -3354,17 +3354,21 @@ async function shareLevelCard() {
     try { return c.toDataURL('image/png'); } catch(e) { return ''; }
   };
 
-  const [lvIconPng, flameIconPng, runnerImg, logoPng, avatarImg] = await Promise.all([
+  const earnedBadges = earnedAchs().slice(0, 5); // 최대 5개
+
+  const [lvIconPng, flameIconPng, runnerImg, logoPng, avatarImg, ...badgeImgs] = await Promise.all([
     _svgToPng(lv.icon, 80),
     _svgToPng(flameSvg, 48),
     loadImg('icons/HI_icon_4.png'),
     loadImg('images/logo-white.png'),
     avatarSrc ? loadImg(avatarSrc) : Promise.resolve(null),
+    ...earnedBadges.map(a => loadImg(a.img)),
   ]);
 
-  const logoPngUrl    = imgToPng(logoPng, logoPng ? logoPng.naturalWidth : 240, logoPng ? logoPng.naturalHeight : 60) || 'images/logo-white.png';
-  const runnerPngUrl  = imgToPng(runnerImg, 36);
-  const avatarPngUrl  = imgToPng(avatarImg, 64);
+  const logoPngUrl   = imgToPng(logoPng, logoPng ? logoPng.naturalWidth : 240, logoPng ? logoPng.naturalHeight : 60) || 'images/logo-white.png';
+  const runnerPngUrl = imgToPng(runnerImg, 36);
+  const avatarPngUrl = imgToPng(avatarImg, 64);
+  const badgePngUrls = badgeImgs.map(img => imgToPng(img, 40)).filter(Boolean);
 
   // ── 공유 카드 DOM 생성 ────────────────────────────────────────
   // ── 인스타그램 4:5 비율 카드 (360×450px → scale×3 = 1080×1350px) ─────
@@ -3399,10 +3403,14 @@ async function shareLevelCard() {
       </div>
     </div>
 
-    <!-- 레벨 아이콘 + 이름 + 배지 -->
+    <!-- 레벨 아이콘 + 이름 + 획득배지 + 레벨배지 -->
     <div style="text-align:center;position:relative;flex-shrink:0">
       <img src="${lvIconPng}" style="width:72px;height:72px;display:block;margin:0 auto 8px">
-      <div style="font-size:24px;font-weight:900;margin-bottom:7px;letter-spacing:-0.5px">${name}님</div>
+      <div style="font-size:24px;font-weight:900;margin-bottom:8px;letter-spacing:-0.5px">${name}님</div>
+      ${badgePngUrls.length ? `
+      <div style="display:flex;justify-content:center;align-items:center;gap:6px;margin-bottom:8px">
+        ${badgePngUrls.map(url => `<img src="${url}" style="width:30px;height:30px;border-radius:50%;border:2px solid rgba(255,255,255,0.4);background:rgba(255,255,255,0.15);object-fit:contain;padding:2px">`).join('')}
+      </div>` : ''}
       <div style="display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,0.2);padding:6px 18px;border-radius:24px">
         <span style="font-size:13px;font-weight:800">레벨 ${lv.lv}</span>
         <span style="opacity:0.5;font-size:10px">·</span>
