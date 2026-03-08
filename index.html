@@ -3901,7 +3901,9 @@ function renderHome() {
   const canRedeem = REWARDS_DATA.some(r => !S.redeemedRewards.includes(r.id) && !S.pendingRewards.includes(r.id) && S.user.points >= r.cost);
   document.getElementById('pts-quick').textContent = '보유 ' + S.user.points + 'p' + (canRedeem ? ' · 교환 가능' : '');
   const myPostCnt    = (S.posts || []).length;
-  const myCommentCnt = (S.posts || []).reduce((s, p) => s + ((p.commentList || []).length), 0);
+  const myName       = myDisplayName();
+  const allPosts     = [...(S.posts || []), ...(S.communityPosts || [])];
+  const myCommentCnt = allPosts.reduce((s, p) => s + (p.commentList || []).filter(c => c.name === myName).length, 0);
   document.getElementById('comm-quick').textContent = '내 글 ' + myPostCnt + '개 · 댓글 ' + myCommentCnt + '개';
 
   // Weekly chart
