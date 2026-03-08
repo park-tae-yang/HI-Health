@@ -2861,6 +2861,7 @@ function openCartPanel() {
           <div class="cart-hist-names" style="flex:1;font-size:12px">${(o.items||[]).map(i => i.name + ' ×' + i.qty).join(', ')}</div>
           <span class="cart-hist-status">${statusLabel[o.status] || o.status}</span>
         </div>
+        <div class="cart-hist-id" style="margin-top:2px">${o.orderedAt ? o.orderedAt.slice(0,10) : ''}</div>
       </div>`).join('')
     + (more ? `<button type="button" class="cart-hist-detail-btn" style="width:100%;text-align:center;margin-top:6px;padding:4px 0" onclick="closeCartPanel();navigate('rewards');setRewardsTab('shop')">더보기 (${orders.length}건 전체보기)</button>` : '');
   }
