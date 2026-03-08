@@ -3363,17 +3363,19 @@ async function shareLevelCard() {
 
   const earnedBadges = earnedAchs().slice(0, 5); // 최대 5개
 
+  const userTags = (S.user.tags || []).slice(0, 3); // 최대 3개 태그
+
   const [lvIconPng, flameIconPng, runnerImg, logoPng, avatarImg, bgImg, ...badgeImgs] = await Promise.all([
     _svgToPng(lv.icon, 80),
     _svgToPng(flameSvg, 48),
     loadImg('icons/HI_icon_4.png'),
-    loadImg('images/logo.png'),
+    loadImg('images/logo-white.png'),
     avatarSrc ? loadImg(avatarSrc) : Promise.resolve(null),
     loadImg('images/happy-play.jpg'),
     ...earnedBadges.map(a => loadImg(a.img)),
   ]);
 
-  const logoPngUrl   = imgToPng(logoPng, logoPng ? logoPng.naturalWidth : 240, logoPng ? logoPng.naturalHeight : 60) || 'images/logo.png';
+  const logoPngUrl   = imgToPng(logoPng, logoPng ? logoPng.naturalWidth : 240, logoPng ? logoPng.naturalHeight : 60) || 'images/logo-white.png';
   const runnerPngUrl = imgToPng(runnerImg, 36);
   const avatarPngUrl = imgToPng(avatarImg, 64);
   const bgPngUrl     = bgImg ? imgToPng(bgImg, bgImg.naturalWidth, bgImg.naturalHeight) : '';
@@ -3408,14 +3410,19 @@ async function shareLevelCard() {
   const streakMsg = _shareStreakMsg();
 
   card.innerHTML = `
-    <!-- ① 히어로 섹션 (퍼플 그라디언트, 앱 헤더 동일) -->
-    <div style="flex-shrink:0;background:linear-gradient(to bottom,rgba(0,0,0,0.18) 0%,rgba(0,0,0,0) 70px),linear-gradient(135deg,#3730A3 0%,#4F46E5 100%);padding:20px 20px 28px;position:relative;overflow:hidden;color:#fff">
-      <!-- 배경 원 데코 (앱 hero-card 동일) -->
-      <div style="position:absolute;top:-60px;right:-40px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,0.07);pointer-events:none"></div>
-      <div style="position:absolute;top:30px;right:50px;width:55px;height:55px;border-radius:50%;background:rgba(255,255,255,0.05);pointer-events:none"></div>
+    <!-- ① 히어로 섹션 (앱 hero-card 완전 동일 스타일) -->
+    <div style="flex-shrink:0;background:linear-gradient(to bottom,rgba(0,0,0,0.28) 0%,rgba(0,0,0,0) 90px),linear-gradient(135deg,#3730A3 0%,#4F46E5 100%);padding:20px 20px 26px;border-radius:0 0 28px 28px;position:relative;overflow:hidden;color:#fff">
+      <!-- 원형 흐림 효과 — ::before 상당 (우측 상단 큰 원, blur) -->
+      <div style="position:absolute;top:-60px;right:-50px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,0.08);filter:blur(14px);pointer-events:none"></div>
+      <!-- ::after 상당 (우측 하단 작은 원) -->
+      <div style="position:absolute;bottom:-40px;right:40px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,0.06);filter:blur(4px);pointer-events:none"></div>
+      <!-- hc-circle 좌측 큰 원 -->
+      <div style="position:absolute;top:-50px;left:-50px;width:150px;height:150px;border-radius:50%;background:rgba(255,255,255,0.07);pointer-events:none"></div>
+      <!-- hc-circle 좌측 작은 원 -->
+      <div style="position:absolute;top:30px;left:40px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,0.05);pointer-events:none"></div>
 
       <!-- 헤더: 로고 | 나의 건강 기록 + 아바타 -->
-      <div style="display:flex;align-items:center;justify-content:space-between">
+      <div style="display:flex;align-items:center;justify-content:space-between;position:relative">
         <img src="${logoPngUrl}" alt="HI Health" style="height:22px;max-width:100px;object-fit:contain">
         <div style="display:flex;align-items:center;gap:7px">
           <span style="font-size:10px;font-weight:600;opacity:0.75;letter-spacing:0.5px">나의 건강 기록</span>
@@ -3425,44 +3432,37 @@ async function shareLevelCard() {
         </div>
       </div>
 
-      <!-- 닉네임 + 획득 배지 -->
-      <div style="display:flex;align-items:center;gap:0;margin-top:14px;flex-wrap:nowrap">
-        <span style="font-size:22px;font-weight:900;letter-spacing:-0.5px;line-height:1;margin-right:${badgePngUrls.length ? '8px' : '0'}">${name}님</span>
-        ${badgePngUrls.map((url, i) => `<img src="${url}" style="width:22px;height:22px;border-radius:50%;flex-shrink:0;${i > 0 ? 'margin-left:-5px;' : ''}box-shadow:-1px 0 4px rgba(0,0,0,0.3);position:relative;z-index:${badgePngUrls.length - i}">`).join('')}
+      <!-- 닉네임 + 태그 + 배지 (한 줄) -->
+      <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px;margin-top:14px;position:relative">
+        <span style="font-size:21px;font-weight:900;letter-spacing:-0.5px;line-height:1;flex-shrink:0">${name}님</span>
+        ${userTags.map(t => `<span style="font-size:10px;padding:3px 9px;border-radius:20px;background:rgba(255,255,255,0.92);color:#4F46E5;font-weight:700;flex-shrink:0;white-space:nowrap;box-shadow:0 1px 6px rgba(0,0,0,0.12)">${t}</span>`).join('')}
+        ${badgePngUrls.map((url, i) => `<img src="${url}" style="width:21px;height:21px;border-radius:50%;flex-shrink:0;${i > 0 ? 'margin-left:-4px;' : ''}box-shadow:-1px 0 4px rgba(0,0,0,0.3);position:relative;z-index:${badgePngUrls.length - i}">`).join('')}
       </div>
 
-      <!-- 통계 3칸 -->
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);margin-top:16px;text-align:center">
-        <div style="border-right:1px solid rgba(255,255,255,0.2);padding:0 8px">
-          <div style="font-size:24px;font-weight:900;line-height:1">${totalCnt}<span style="font-size:11px;font-weight:600;opacity:0.7">회</span></div>
-          <div style="font-size:9px;opacity:0.65;margin-top:4px;font-weight:600">총 운동횟수</div>
+      <!-- 통계 3칸 (hero-stat 글래스 스타일) -->
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px;position:relative">
+        <div style="background:rgba(255,255,255,0.15);border-radius:10px;padding:9px 5px;text-align:center;backdrop-filter:blur(10px)">
+          <div style="font-size:20px;font-weight:700;line-height:1">${totalCnt}<span style="font-size:10px;font-weight:600;opacity:0.8">회</span></div>
+          <div style="font-size:9px;opacity:0.8;margin-top:2px;font-weight:600">총 운동횟수</div>
         </div>
-        <div style="border-right:1px solid rgba(255,255,255,0.2);padding:0 8px">
-          <div style="font-size:${totalMin >= 600 ? '15px' : '22px'};font-weight:900;line-height:1">${timeStr}</div>
-          <div style="font-size:9px;opacity:0.65;margin-top:4px;font-weight:600">총 운동시간</div>
+        <div style="background:rgba(255,255,255,0.15);border-radius:10px;padding:9px 5px;text-align:center;backdrop-filter:blur(10px)">
+          <div style="font-size:${totalMin >= 600 ? '14px' : '20px'};font-weight:700;line-height:1">${timeStr}</div>
+          <div style="font-size:9px;opacity:0.8;margin-top:2px;font-weight:600">총 운동시간</div>
         </div>
-        <div style="padding:0 8px">
-          <div style="font-size:24px;font-weight:900;line-height:1">${curPts}<span style="font-size:11px;font-weight:600;opacity:0.7">p</span></div>
-          <div style="font-size:9px;opacity:0.65;margin-top:4px;font-weight:600">총 포인트</div>
+        <div style="background:rgba(255,255,255,0.15);border-radius:10px;padding:9px 5px;text-align:center;backdrop-filter:blur(10px)">
+          <div style="font-size:20px;font-weight:700;line-height:1">${curPts}<span style="font-size:10px;font-weight:600;opacity:0.8">p</span></div>
+          <div style="font-size:9px;opacity:0.8;margin-top:2px;font-weight:600">총 포인트</div>
         </div>
       </div>
     </div>
 
-    <!-- ② 레벨 카드 (화이트, 히어로 섹션에 겹쳐 떠오름) -->
-    <div style="flex-shrink:0;background:#fff;border-radius:20px 20px 16px 16px;margin:-16px 14px 0;padding:14px 16px 12px;box-shadow:0 -2px 0 rgba(55,48,163,0.06),0 6px 24px rgba(55,48,163,0.12);position:relative;z-index:2">
-      <!-- 레벨 헤더: 아이콘+이름 | 연속 배지 -->
-      <div style="display:flex;align-items:center;justify-content:space-between">
-        <div style="display:flex;align-items:center;gap:10px">
-          <img src="${lvIconPng}" style="width:42px;height:42px;flex-shrink:0">
-          <div>
-            <div style="font-size:15px;font-weight:900;color:#1E1B4B;letter-spacing:-0.3px;line-height:1.2">${lv.name} 단계</div>
-            <div style="font-size:11px;font-weight:700;color:#7C3AED;margin-top:2px">레벨 ${lv.lv}</div>
-          </div>
-        </div>
-        <div style="display:flex;align-items:center;gap:5px;background:rgba(124,58,237,0.08);border:1px solid rgba(124,58,237,0.22);padding:5px 11px;border-radius:20px;flex-shrink:0">
-          <img src="${flameIconPng}" style="width:15px;height:15px">
-          <span style="font-size:11px;font-weight:800;color:#7C3AED">${streak}일 연속</span>
-        </div>
+    <!-- ② 레벨 카드 (화이트, 히어로 섹션 아래 여백 두고 배치) -->
+    <div style="flex-shrink:0;background:#fff;border-radius:16px;margin:10px 14px 0;padding:14px 16px 12px;box-shadow:0 2px 16px rgba(109,40,217,0.08),0 1px 3px rgba(0,0,0,0.04);position:relative">
+      <!-- 레벨명 + 레벨번호 한 줄 (아이콘·연속배지 없음) -->
+      <div style="display:flex;align-items:center;gap:6px">
+        <span style="font-size:15px;font-weight:900;color:#1E1B4B;letter-spacing:-0.3px">${lv.name} 단계</span>
+        <span style="width:4px;height:4px;border-radius:50%;background:#A78BFA;display:inline-block;flex-shrink:0"></span>
+        <span style="font-size:13px;font-weight:700;color:#7C3AED">레벨 ${lv.lv}</span>
       </div>
 
       <!-- 레벨 바 -->
@@ -3477,23 +3477,24 @@ async function shareLevelCard() {
         </div>
       </div>
 
-      <!-- 연속 운동 응원 멘트 (공유하기 버튼 대체) -->
+      <!-- 연속 운동 응원 멘트 -->
       <div style="margin-top:10px;background:rgba(237,233,254,0.65);border-radius:10px;padding:8px 12px;display:flex;align-items:center;gap:8px;border:1px solid rgba(124,58,237,0.12)">
+        <img src="${flameIconPng}" style="width:18px;height:18px;flex-shrink:0">
         <span style="font-size:11px;font-weight:800;color:#3730A3;white-space:nowrap">${streak}일 연속 운동기록 중!</span>
         <span style="font-size:10px;color:#6D28D9;opacity:0.7;font-weight:600;flex:1;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${streakMsg}</span>
       </div>
     </div>
 
-    <!-- ③ 하단 섹션: happy-play 이미지 + 링크 -->
-    <div style="flex:1;position:relative;overflow:hidden;margin-top:0">
-      ${bgPngUrl ? `<img src="${bgPngUrl}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0.22">` : ''}
-      <!-- 상단 흰색 페이드 (레벨카드와 자연스럽게 연결) -->
-      <div style="position:absolute;top:0;left:0;right:0;height:55%;background:linear-gradient(180deg,#ffffff 0%,rgba(255,255,255,0) 100%);pointer-events:none"></div>
-      <!-- URL -->
+    <!-- ③ 하단 섹션: happy-play 이미지 (홈화면 동일 crop·효과) -->
+    <div style="flex:1;position:relative;overflow:hidden;margin-top:8px">
+      ${bgPngUrl ? `<img src="${bgPngUrl}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center center;opacity:0.28">` : ''}
+      <!-- 상단 흰색 페이드 -->
+      <div style="position:absolute;top:0;left:0;right:0;height:50%;background:linear-gradient(180deg,#ffffff 0%,rgba(255,255,255,0) 100%);pointer-events:none"></div>
+      <!-- URL (중앙 하단) -->
       <div style="position:absolute;bottom:10px;left:0;right:0;display:flex;align-items:center;justify-content:center;gap:8px">
-        <div style="flex:1;max-width:60px;height:1px;background:linear-gradient(90deg,transparent,rgba(124,58,237,0.25))"></div>
-        <span style="font-size:8px;color:#7C3AED;opacity:0.5;font-weight:500;letter-spacing:0.4px">yunjin0825.github.io/HI-Health</span>
-        <div style="flex:1;max-width:60px;height:1px;background:linear-gradient(90deg,rgba(124,58,237,0.25),transparent)"></div>
+        <div style="flex:1;max-width:50px;height:1px;background:linear-gradient(90deg,transparent,rgba(124,58,237,0.3))"></div>
+        <span style="font-size:8px;color:#7C3AED;opacity:0.55;font-weight:500;letter-spacing:0.4px">yunjin0825.github.io/HI-Health</span>
+        <div style="flex:1;max-width:50px;height:1px;background:linear-gradient(90deg,rgba(124,58,237,0.3),transparent)"></div>
       </div>
     </div>
   `;
