@@ -995,16 +995,20 @@
     /* ── Profile Tags ── */
     .pm-tags-section { margin:16px 0 20px; }
     .pm-tags-label { font-size:13px; font-weight:700; margin-bottom:12px; }
-    .pm-tag-category { margin-bottom:12px; }
-    .pm-tag-cat-title { font-size:11px; font-weight:700; color:var(--text-secondary); letter-spacing:0.5px; margin-bottom:6px; }
-    .pm-tag-chips { display:flex; flex-wrap:wrap; gap:6px; }
+    .pm-tag-category { margin-bottom:10px; }
+    .pm-tag-cat-title { font-size:11px; font-weight:700; color:var(--text-secondary); letter-spacing:0.5px; margin-bottom:5px; }
+    .pm-tag-chips { display:flex; flex-wrap:wrap; gap:5px; }
     .pm-tag-chip {
-      padding:5px 12px; border-radius:20px; border:1.5px solid var(--border);
-      background:var(--bg); font-size:12px; cursor:pointer; transition:all 0.18s;
+      padding:3px 9px; border-radius:20px; border:1.5px solid var(--border);
+      background:var(--bg); font-size:11px; cursor:pointer; transition:all 0.18s;
       white-space:nowrap;
     }
     .pm-tag-chip.selected { border-color:var(--purple); background:var(--purple-light); color:var(--purple); font-weight:600; }
     .pm-sel-count { font-size:11px; color:var(--text-secondary); margin-top:8px; }
+    .pm-challenge-box { margin:0 0 16px; padding:12px 14px; border-radius:12px; background:var(--purple-light); border:1px solid rgba(109,40,217,0.15); }
+    .pm-challenge-badge { display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:700; color:var(--purple); background:#fff; border-radius:20px; padding:3px 10px; margin-bottom:8px; }
+    .pm-challenge-info { font-size:12px; color:var(--text); line-height:1.6; }
+    .pm-challenge-phase { font-size:11px; font-weight:600; color:var(--purple); opacity:0.7; margin-top:4px; }
     /* Hero card tag display */
     .hero-tags { display:flex; flex-wrap:nowrap; gap:5px; margin-bottom:14px; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
     .hero-tags::-webkit-scrollbar { display:none; }
@@ -3372,8 +3376,9 @@ async function shareLevelCard() {
 
   const earnedBadges = earnedAchs().slice(0, 5); // 최대 5개
 
-  const userTags = (S.user.tags || []).slice(0, 3); // 최대 3개 태그
-  const extraTagCount = Math.max(0, (S.user.tags || []).length - 3);
+  const allTags = [...(S.user.registrationId ? ['🏅 챌린지 참여중'] : []), ...(S.user.tags || [])];
+  const userTags = allTags.slice(0, 3);
+  const extraTagCount = Math.max(0, allTags.length - 3);
 
   const [lvIconPng, flameIconPng, runnerImg, logoPng, avatarImg, bgImg, ...badgeImgs] = await Promise.all([
     _svgToPng(lv.icon, 320),
@@ -3844,7 +3849,8 @@ function renderHome() {
   document.getElementById('hero-name').textContent = myDisplayName() + '님';
   const tagsEl = document.getElementById('hero-tags');
   if (tagsEl) {
-    tagsEl.innerHTML = (S.user.tags || []).map(t => `<span class="hero-tag">${t}</span>`).join('');
+    const challengeTag = S.user.registrationId ? `<span class="hero-tag" style="background:var(--purple);color:#fff">🏅 챌린지 참여중</span>` : '';
+    tagsEl.innerHTML = challengeTag + (S.user.tags || []).map(t => `<span class="hero-tag">${t}</span>`).join('');
   }
   document.getElementById('today-cnt').textContent = tw.length;
   document.getElementById('today-min').textContent = todayMins;
@@ -5103,6 +5109,27 @@ function openProfileModal(onboarding = false) {
     document.getElementById('pm-sub').textContent   = '닉네임과 아바타를 설정해주세요';
     document.getElementById('pm-save-btn').textContent = '저장하기';
     document.getElementById('pm-close-btn').style.display = '';
+  }
+
+  // 챌린지 참여 현황
+  const chEl = document.getElementById('pm-challenge-section');
+  if (chEl) {
+    const isReg = !!S.user.registrationId;
+    const phase = getChPhase();
+    const phaseLabel = { before:'모집 예정', registration:'신청 기간', preparing:'준비 중', pre:'프리 챌린지 진행 중', main:'본 챌린지 진행 중', ended:'챌린지 종료' }[phase] || '';
+    if (isReg) {
+      chEl.innerHTML = `<div class="pm-challenge-box">
+        <div class="pm-challenge-badge">🏅 챌린지 참여중</div>
+        <div class="pm-challenge-info">HI Health 운동 챌린지에 참여하고 있어요!<br>꾸준한 운동으로 목표를 달성해보세요 💪</div>
+        <div class="pm-challenge-phase">현재 단계: ${phaseLabel}</div>
+      </div>`;
+    } else {
+      chEl.innerHTML = `<div class="pm-challenge-box" style="background:#f8f8f8;border-color:#e5e7eb">
+        <div class="pm-challenge-badge" style="color:#6b7280;background:#fff">🏃 챌린지 미참여</div>
+        <div class="pm-challenge-info" style="color:var(--text-secondary)">챌린지 탭에서 참여 신청을 할 수 있어요.</div>
+        <div class="pm-challenge-phase" style="color:var(--text-secondary)">현재 단계: ${phaseLabel}</div>
+      </div>`;
+    }
   }
 
   document.getElementById('profile-modal').classList.remove('pm-hidden');
@@ -6869,6 +6896,7 @@ init();
     <div class="pm-section-body" id="pm-section-avatar">
       <div class="avatar-grid" id="pm-avatar-grid"></div>
     </div>
+    <div id="pm-challenge-section"></div>
     <div class="pm-section-hd">
       <span class="pm-section-title">나의 태그 <span class="pm-sel-count" id="pm-sel-count"></span></span>
     </div>
