@@ -1144,8 +1144,7 @@
       border-radius: var(--radius); margin-bottom: 14px;
     }
     .podium-item { display: flex; flex-direction: column; align-items: center; gap: 5px; }
-    .podium-medal { font-size: 20px; line-height: 1; }
-    .podium-avatar { width:44px; height:44px; border-radius:50%; overflow:hidden; background:var(--bg); margin:0 auto; }
+.podium-avatar { width:44px; height:44px; border-radius:50%; overflow:hidden; background:var(--bg); margin:0 auto; }
     .podium-name { font-size: 11px; font-weight: 600; text-align: center; max-width: 70px; }
     .podium-pts { font-size: 10px; color: var(--text-secondary); }
     .podium-stand {
@@ -5328,9 +5327,8 @@ function renderLeague() {
     const medals     = ['🥈','🥇','🥉'];
     document.getElementById('podium').innerHTML = podOrder.map((u, i) => `
       <div class="podium-item">
-        <div class="podium-medal">${u ? medals[i] : ''}</div>
         <div class="podium-avatar">${u ? avHTML(u.avatar) : ''}</div>
-        <div class="podium-name">${u ? u.name : ''}</div>
+        <div class="podium-name">${u ? `${medals[i]} ${u.name}` : ''}</div>
         <div class="podium-pts">${u ? u.pts + 'p' : ''}</div>
         <div class="podium-stand ${standClass[i]}">${standNum[i]}</div>
       </div>
@@ -5400,9 +5398,8 @@ function renderLeague() {
   const medals     = ['🥈','🥇','🥉'];
   document.getElementById('podium').innerHTML = podOrder.map((u,i) => `
     <div class="podium-item">
-      <div class="podium-medal">${u ? medals[i] : ''}</div>
       <div class="podium-avatar">${u ? avHTML(u.avatar) : ''}</div>
-      <div class="podium-name">${u ? u.name : ''}</div>
+      <div class="podium-name">${u ? `${medals[i]} ${u.name}` : ''}</div>
       <div class="podium-pts">${u ? (tab==='weekly'?u.wPts:u.pts)+'p' : ''}</div>
       <div class="podium-stand ${standClass[i]}">${standNum[i]}</div>
     </div>
