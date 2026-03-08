@@ -3715,8 +3715,7 @@ function earnedAchs() {
 function myLeagueRank() {
   const tab = S.leagueTab;
   const myPts = tab === 'weekly' ? weekData().reduce((s,d) => s+Math.round(d.mins*0.8),0)
-               : tab === 'monthly' ? S.user.points
-               : S.user.points;
+               : (S.user.totalPoints || S.user.points);
   const others = MOCK_USERS.map(u => tab === 'weekly' ? u.wPts : u.pts);
   return others.filter(p => p > myPts).length + 1;
 }
@@ -3893,7 +3892,7 @@ function renderHome() {
   const _medals = {1:'🥇',2:'🥈',3:'🥉'};
   if (S.user.registrationId) {
     const chTotal = MOCK_USERS.filter(u => u.isChallenger).length + 1;
-    const chRank  = MOCK_USERS.filter(u => u.isChallenger && u.pts > S.user.points).length + 1;
+    const chRank  = MOCK_USERS.filter(u => u.isChallenger && u.pts > (S.user.totalPoints || S.user.points)).length + 1;
     document.getElementById('rank-quick-label').textContent = '(챌린지)';
     document.getElementById('my-rank-quick').textContent = (_medals[chRank] ? _medals[chRank] + ' ' : '') + chRank + '/' + chTotal + '위';
   } else {
@@ -5258,7 +5257,7 @@ function renderLeague() {
     const isRegistered = !!S.user.registrationId;
     const me = {
       id:0, name: myDisplayName() + ' (나)', avatar: S.user.avatar,
-      lv: getLevel(S.user.points).lv, pts: S.user.points,
+      lv: getLevel(S.user.totalPoints || S.user.points).lv, pts: S.user.totalPoints || S.user.points,
       wPts: myWeekPts(), change:0, isMe: true, isChallenger: isRegistered,
       tags: S.user.tags || [],
     };
@@ -5278,8 +5277,8 @@ function renderLeague() {
           <div class="mrl-pct">참가자 ${challengers.length}명</div>
         </div>
         <div class="my-rank-right">
-          <div class="mrr-label">전체 포인트</div>
-          <div class="mrr-pts">⭐ ${S.user.points}p</div>
+          <div class="mrr-label">누적 포인트</div>
+          <div class="mrr-pts">⭐ ${S.user.totalPoints || S.user.points}p</div>
           <div class="mrr-change">내 레벨: ${myLv.icon} ${myLv.name}</div>
         </div>
       `;
@@ -5325,7 +5324,7 @@ function renderLeague() {
   }
 
   // ── 일반 랭킹 ──
-  const myPts  = tab === 'weekly' ? myWeekPts() : S.user.points;
+  const myPts  = tab === 'weekly' ? myWeekPts() : (S.user.totalPoints || S.user.points);
   const myRank = myLeagueRank();
   const myLv   = getLevel(S.user.points);
   const total  = MOCK_USERS.length + 1;
@@ -5346,7 +5345,7 @@ function renderLeague() {
 
   const me = {
     id:0, name: myDisplayName() + ' (나)', avatar: S.user.avatar,
-    lv: getLevel(S.user.points).lv, pts: S.user.points,
+    lv: getLevel(S.user.totalPoints || S.user.points).lv, pts: S.user.totalPoints || S.user.points,
     wPts: myWeekPts(), change:0, isMe: true, tags: S.user.tags || [],
   };
   const list = [
