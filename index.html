@@ -4373,7 +4373,7 @@ function updatePtsPreview() {
     infoEl.textContent = `오늘 포인트 한도(${DAILY_POINTS_LIMIT}p) 도달`;
     infoEl.className = 'daily-limit-info daily-limit-info--center warn';
   } else {
-    infoEl.textContent = `오늘 ${todayWo.length}회 기록 · 남은 횟수: ${remCount}회 · 기록당 +${pts}p`;
+    infoEl.textContent = `오늘 ${todayWo.length}회 기록 · 남은 횟수: ${remCount}회 · 1분당 +${getExType(S.selectedEx).ppm}p`;
     infoEl.className = 'daily-limit-info daily-limit-info--center';
   }
 }
