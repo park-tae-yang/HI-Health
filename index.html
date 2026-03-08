@@ -3372,8 +3372,8 @@ async function shareLevelCard() {
   const userTags = (S.user.tags || []).slice(0, 3); // 최대 3개 태그
 
   const [lvIconPng, flameIconPng, runnerImg, logoPng, avatarImg, bgImg, ...badgeImgs] = await Promise.all([
-    _svgToPng(lv.icon, 80),
-    _svgToPng(flameSvg, 48),
+    _svgToPng(lv.icon, 320),
+    _svgToPng(flameSvg, 192),
     loadImg('icons/HI_icon_4.png'),
     loadImg('images/logo-white.png'),
     avatarSrc ? loadImg(avatarSrc) : Promise.resolve(null),
@@ -3382,8 +3382,8 @@ async function shareLevelCard() {
   ]);
 
   const logoPngUrl   = imgToPng(logoPng, logoPng ? logoPng.naturalWidth : 240, logoPng ? logoPng.naturalHeight : 60) || 'images/logo-white.png';
-  const runnerPngUrl = imgToPng(runnerImg, 36);
-  const avatarPngUrl = imgToPng(avatarImg, 64);
+  const runnerPngUrl = imgToPng(runnerImg, 144);
+  const avatarPngUrl = imgToPng(avatarImg, 192);
   // 하단 배경 이미지: html2canvas는 object-fit 미지원 → JS로 cover+center top 직접 계산
   const bgSectionH = 92;
   const bgSectionW = 360;
