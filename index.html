@@ -2180,7 +2180,7 @@
             <div class="share-switch-thumb"></div>
           </div>
         </div>
-        <div class="share-expand" id="share-expand" style="padding:0 14px 14px">
+        <div class="share-expand show" id="share-expand" style="padding:0 14px 14px">
           <div class="share-expand-inner">
             <textarea class="share-msg-input" id="share-msg" rows="5" placeholder="공유할 메시지를 입력하세요..." oninput="_shareMsgAuto=false"></textarea>
             <div class="share-hint">💡 내가 기록한 항목들이 자동으로 태그됩니다. 메모는 자유롭게 편집하실 수 있습니다.</div>
@@ -4127,6 +4127,8 @@ function renderExercise() {
   renderExerciseHistory();
   renderGlucose();
   updateMemoPlaceholder();
+  document.getElementById('share-toggle-btn').classList.toggle('on', _shareOn);
+  document.getElementById('share-expand').classList.toggle('show', _shareOn);
 }
 
 function updateMemoPlaceholder() {
@@ -4160,7 +4162,7 @@ function changeDur(delta) {
   updateMemoPlaceholder();
   if (_shareOn) updateSharePreview();
 }
-let _shareOn = false;
+let _shareOn = true;
 let _shareRewrite = false;
 
 function getTodayMyPost() {
@@ -4259,7 +4261,7 @@ function submitShareNow() {
 
 let _sharePhoto  = false;
 let _shareHealth = false;
-let _shareMsgAuto = false;
+let _shareMsgAuto = true;
 
 function buildDayMessage() {
   const lines = [];
