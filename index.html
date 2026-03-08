@@ -3260,6 +3260,28 @@ function loadTodayLog() {
   } catch(e) {}
 }
 
+// 날짜 기반 연속기록 응원 멘트 (매일 변경)
+function _shareStreakMsg() {
+  const msgs = [
+    '오늘도 몸이 달라지고 있어요 💪',
+    '꾸준함이 최고의 실력이에요 🔥',
+    '작은 습관이 큰 변화를 만들어요 🌱',
+    '포기하지 않는 당신, 멋져요 ⭐',
+    '건강한 하루하루가 쌓이고 있어요 🏃',
+    '오늘의 운동이 내일을 바꿔요 ✨',
+    '몸도 마음도 단단해지는 중이에요 💎',
+    '최고의 투자, 바로 건강이에요 🏆',
+    '당신의 노력이 빛나고 있어요 🌟',
+    '매일 조금씩, 분명히 달라져요 🎯',
+    '건강한 습관, 계속 이어가요 🙌',
+    '오늘도 최선을 다한 당신 수고했어요 👏',
+    '운동하는 오늘이 내일의 나를 만들어요 🌈',
+    '쉬지 않고 달리는 당신 응원해요 🚀',
+  ];
+  const day = new Date().getDate();
+  return msgs[day % msgs.length];
+}
+
 // SVG 문자열 → PNG data URL (html2canvas 호환용)
 function _svgToPng(svgStr, size) {
   return new Promise(resolve => {
@@ -3421,7 +3443,7 @@ async function shareLevelCard() {
       <img src="${flameIconPng}" style="width:34px;height:34px;flex-shrink:0">
       <div>
         <div style="font-size:14px;font-weight:900;margin-bottom:2px">${streak}일 연속 운동기록 중!</div>
-        <div style="font-size:11px;opacity:0.72;font-weight:600">꾸준한 건강 관리, 정말 대단해요</div>
+        <div style="font-size:11px;opacity:0.72;font-weight:600">${_shareStreakMsg()}</div>
       </div>
     </div>
   `;
