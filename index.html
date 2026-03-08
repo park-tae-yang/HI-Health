@@ -3410,48 +3410,49 @@ async function shareLevelCard() {
   const streakMsg = _shareStreakMsg();
 
   card.innerHTML = `
-    <!-- ① 히어로 섹션 (앱 hero-card 완전 동일 스타일) -->
-    <div style="flex-shrink:0;background:linear-gradient(to bottom,rgba(0,0,0,0.28) 0%,rgba(0,0,0,0) 90px),linear-gradient(135deg,#3730A3 0%,#4F46E5 100%);padding:20px 20px 26px;border-radius:0 0 28px 28px;position:relative;overflow:hidden;color:#fff">
-      <!-- 원형 흐림 효과 — ::before 상당 (우측 상단 큰 원, blur) -->
-      <div style="position:absolute;top:-60px;right:-50px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,0.08);filter:blur(14px);pointer-events:none"></div>
-      <!-- ::after 상당 (우측 하단 작은 원) -->
-      <div style="position:absolute;bottom:-40px;right:40px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,0.06);filter:blur(4px);pointer-events:none"></div>
-      <!-- hc-circle 좌측 큰 원 -->
-      <div style="position:absolute;top:-50px;left:-50px;width:150px;height:150px;border-radius:50%;background:rgba(255,255,255,0.07);pointer-events:none"></div>
-      <!-- hc-circle 좌측 작은 원 -->
-      <div style="position:absolute;top:30px;left:40px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,0.05);pointer-events:none"></div>
+    <!-- ① 히어로 섹션 -->
+    <div style="flex-shrink:0;background:linear-gradient(to bottom,rgba(0,0,0,0.22) 0%,rgba(0,0,0,0) 80px),linear-gradient(145deg,#1E1A6E 0%,#3730A3 35%,#4F46E5 68%,#6366F1 100%),linear-gradient(to bottom right,rgba(255,255,255,0.07) 0%,transparent 55%);padding:20px 20px 26px;border-radius:0 0 28px 28px;position:relative;overflow:hidden;color:#fff">
+      <!-- 고급 광택 오버레이 -->
+      <div style="position:absolute;top:0;left:0;right:0;height:50%;background:linear-gradient(180deg,rgba(255,255,255,0.06) 0%,transparent 100%);pointer-events:none"></div>
+      <!-- 우측 상단 블러 원 (축소) -->
+      <div style="position:absolute;top:-40px;right:-30px;width:130px;height:130px;border-radius:50%;background:rgba(255,255,255,0.09);filter:blur(18px);pointer-events:none"></div>
+      <!-- 우측 하단 블러 원 (축소) -->
+      <div style="position:absolute;bottom:-30px;right:35px;width:85px;height:85px;border-radius:50%;background:rgba(255,255,255,0.07);filter:blur(8px);pointer-events:none"></div>
+      <!-- 좌측 상단 블러 원 (축소) -->
+      <div style="position:absolute;top:-35px;left:-35px;width:105px;height:105px;border-radius:50%;background:rgba(255,255,255,0.07);filter:blur(10px);pointer-events:none"></div>
+      <!-- 좌측 소 블러 원 (축소) -->
+      <div style="position:absolute;top:28px;left:38px;width:55px;height:55px;border-radius:50%;background:rgba(255,255,255,0.05);filter:blur(5px);pointer-events:none"></div>
 
-      <!-- 헤더: 로고 | 나의 건강 기록 + 아바타 -->
+      <!-- 헤더: 로고 + 나의 건강 기록 (좌) | 아바타 (우) -->
       <div style="display:flex;align-items:center;justify-content:space-between;position:relative">
-        <img src="${logoPngUrl}" alt="HI Health" style="height:22px;max-width:100px;object-fit:contain">
-        <div style="display:flex;align-items:center;gap:7px">
-          <span style="font-size:10px;font-weight:600;opacity:0.75;letter-spacing:0.5px">나의 건강 기록</span>
-          ${avatarPngUrl
-            ? `<img src="${avatarPngUrl}" style="width:30px;height:30px;border-radius:50%;border:2px solid rgba(255,255,255,0.5);object-fit:cover">`
-            : `<div style="width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,0.2)"></div>`}
+        <div style="display:flex;align-items:center;gap:8px">
+          <img src="${logoPngUrl}" alt="HI Health" style="height:20px;max-width:90px;object-fit:contain;flex-shrink:0">
+          <span style="font-size:10px;font-weight:600;opacity:0.65;letter-spacing:0.4px;white-space:nowrap">나의 건강 기록</span>
         </div>
+        ${avatarPngUrl
+          ? `<img src="${avatarPngUrl}" style="width:30px;height:30px;border-radius:50%;border:2px solid rgba(255,255,255,0.45);object-fit:cover;flex-shrink:0">`
+          : `<div style="width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,0.18);flex-shrink:0"></div>`}
       </div>
 
-      <!-- 닉네임 + 태그 + 배지 (한 줄) -->
+      <!-- 닉네임 + 태그 (한 줄) -->
       <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px;margin-top:14px;position:relative">
         <span style="font-size:21px;font-weight:900;letter-spacing:-0.5px;line-height:1;flex-shrink:0">${name}님</span>
         ${userTags.map(t => `<span style="font-size:10px;padding:3px 9px;border-radius:20px;background:rgba(255,255,255,0.92);color:#4F46E5;font-weight:700;flex-shrink:0;white-space:nowrap;box-shadow:0 1px 6px rgba(0,0,0,0.12)">${t}</span>`).join('')}
-        ${badgePngUrls.map((url, i) => `<img src="${url}" style="width:21px;height:21px;border-radius:50%;flex-shrink:0;${i > 0 ? 'margin-left:-4px;' : ''}box-shadow:-1px 0 4px rgba(0,0,0,0.3);position:relative;z-index:${badgePngUrls.length - i}">`).join('')}
       </div>
 
-      <!-- 통계 3칸 (hero-stat 글래스 스타일) -->
+      <!-- 통계 3칸 -->
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px;position:relative">
-        <div style="background:rgba(255,255,255,0.15);border-radius:10px;padding:9px 5px;text-align:center;backdrop-filter:blur(10px)">
+        <div style="background:rgba(255,255,255,0.13);border-radius:10px;padding:9px 5px;text-align:center;border:1px solid rgba(255,255,255,0.18)">
           <div style="font-size:20px;font-weight:700;line-height:1">${totalCnt}<span style="font-size:10px;font-weight:600;opacity:0.8">회</span></div>
-          <div style="font-size:9px;opacity:0.8;margin-top:2px;font-weight:600">총 운동횟수</div>
+          <div style="font-size:9px;opacity:0.75;margin-top:2px;font-weight:600">총 운동횟수</div>
         </div>
-        <div style="background:rgba(255,255,255,0.15);border-radius:10px;padding:9px 5px;text-align:center;backdrop-filter:blur(10px)">
+        <div style="background:rgba(255,255,255,0.13);border-radius:10px;padding:9px 5px;text-align:center;border:1px solid rgba(255,255,255,0.18)">
           <div style="font-size:${totalMin >= 600 ? '14px' : '20px'};font-weight:700;line-height:1">${timeStr}</div>
-          <div style="font-size:9px;opacity:0.8;margin-top:2px;font-weight:600">총 운동시간</div>
+          <div style="font-size:9px;opacity:0.75;margin-top:2px;font-weight:600">총 운동시간</div>
         </div>
-        <div style="background:rgba(255,255,255,0.15);border-radius:10px;padding:9px 5px;text-align:center;backdrop-filter:blur(10px)">
+        <div style="background:rgba(255,255,255,0.13);border-radius:10px;padding:9px 5px;text-align:center;border:1px solid rgba(255,255,255,0.18)">
           <div style="font-size:20px;font-weight:700;line-height:1">${curPts}<span style="font-size:10px;font-weight:600;opacity:0.8">p</span></div>
-          <div style="font-size:9px;opacity:0.8;margin-top:2px;font-weight:600">총 포인트</div>
+          <div style="font-size:9px;opacity:0.75;margin-top:2px;font-weight:600">총 포인트</div>
         </div>
       </div>
     </div>
