@@ -3415,11 +3415,11 @@ async function shareLevelCard() {
   }).filter(Boolean);
 
   // ── 공유 카드 DOM 생성 ────────────────────────────────────────
-  // ── 인스타그램 4:5 (360×450px, scale×4 = 1440×1800px 고해상도) ──────
+  // ── 정사각형 (360×360px, scale×4 = 1440×1440px 고해상도) ──────
   const card = document.createElement('div');
   Object.assign(card.style, {
     position: 'fixed', left: '-9999px', top: '0',
-    width: '360px', height: '450px',
+    width: '360px', height: '360px',
     background: '#ffffff',
     fontFamily: "-apple-system,'Apple SD Gothic Neo','Noto Sans KR',sans-serif",
     boxSizing: 'border-box',
@@ -3528,7 +3528,7 @@ async function shareLevelCard() {
   try {
     const canvas = await html2canvas(card, {
       scale: 4,
-      width: 360, height: 450,
+      width: 360, height: 360,
       backgroundColor: '#FFFFFF',
       useCORS: true,
       allowTaint: true,
