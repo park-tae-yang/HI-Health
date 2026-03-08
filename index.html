@@ -1801,7 +1801,7 @@
         <div class="level-bar-dot" id="lv-bar-dot" style="left:0%"><img src="icons/HI_icon_4.png" style="width:30px;height:30px;display:block"></div>
       </div>
       <div class="level-bar-text">
-        <span id="lv-cur-pts">누적 0p</span>
+        <span id="lv-cur-pts">0p</span>
         <span id="lv-next-pts">다음 레벨까지 200p</span>
       </div>
     </div>
@@ -1843,7 +1843,7 @@
             <path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/>
           </svg>
         </div>
-        <div><div class="qi-title">보상</div><div class="qi-sub" id="pts-quick">0p 보유</div></div>
+        <div><div class="qi-title">보상</div><div class="qi-sub" id="pts-quick">보유 0p · 총 0p</div></div>
       </button>
     </div>
 
@@ -3546,14 +3546,14 @@ function renderHome() {
     bar.style.width = targetPct + '%';
     if (dot) { dot.style.transition = DOT_TRANSITION; dot.style.left = targetPct + '%'; dot.style.opacity = targetPct > 0 ? '1' : '0'; }
   }));
-  document.getElementById('lv-cur-pts').textContent = '누적 ' + tp + 'p';
+  document.getElementById('lv-cur-pts').textContent = tp + 'p';
   document.getElementById('lv-next-pts').textContent = nextLv
     ? '다음 레벨까지 ' + (nextLv.min - tp) + 'p'
     : '최고 레벨 달성! 🎉';
 
   // Quick action subtitles
   document.getElementById('my-rank-quick').textContent = myLeagueRank() + '위';
-  document.getElementById('pts-quick').textContent = S.user.points + 'p 보유';
+  document.getElementById('pts-quick').textContent = '보유 ' + S.user.points + 'p · 총 ' + (S.user.totalPoints || S.user.points) + 'p';
 
   // Weekly chart
   const wd = weekData();
