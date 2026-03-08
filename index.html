@@ -3909,7 +3909,7 @@ function renderHome() {
   const myName       = myDisplayName();
   const allPosts     = [...(S.posts || []), ...(S.communityPosts || [])];
   const myCommentCnt = allPosts.reduce((s, p) => s + (p.commentList || []).filter(c => c.name === myName).length, 0);
-  document.getElementById('comm-quick').textContent = '내 글 ' + myPostCnt + '개 · 댓글 ' + myCommentCnt + '개';
+  document.getElementById('comm-quick').textContent = myPostCnt === 0 ? '응원 메시지를 남겨보세요' : '내 글 ' + myPostCnt + '개 · 댓글 ' + myCommentCnt + '개';
 
   // Weekly chart
   const wd = weekData();
