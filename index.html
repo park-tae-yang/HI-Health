@@ -3421,7 +3421,7 @@ function navigate(page) {
   // Render the page
   if (page === 'home')      renderHome();
   if (page === 'exercise')  renderExercise();
-  if (page === 'community') { setCommunityTab('feed'); renderCommunity(); fetchAdminPosts(); markCommunityAsSeen(); }
+  if (page === 'community') { setCommunityTab('feed'); renderCommunity(); fetchAdminPosts(); fetchCommunityPosts(); markCommunityAsSeen(); }
   if (page === 'rewards')   { setRewardsTab('rewards'); renderRewards(); }
   if (page === 'challenge') renderChallenge();
   window.scrollTo({top:0, behavior:'smooth'});
@@ -5179,36 +5179,88 @@ let _adminPostsFetched = false;
 async function fetchAdminPosts() {
   if (_adminPostsFetched || !_db) return;
   try {
-    const [ap, cp] = await Promise.all([
-      _db.from('admin_posts').select('*').order('createdAt', { ascending: false }),
-      _db.from('posts').select('*').order('ts', { ascending: false }).limit(100),
-    ]);
+    const ap = await _db.from('admin_posts').select('*').order('createdAt', { ascending: false });
     if (ap.data) { S.adminPosts = ap.data; }
+    _adminPostsFetched = true;
+  } catch(e) {}
+}
+
+async function fetchCommunityPosts() {
+  if (!_db) return;
+  try {
+    const [cp, rp, cmp] = await Promise.all([
+      _db.from('posts').select('*').order('ts', { ascending: false }).limit(100),
+      _db.from('reactions').select('*'),
+      _db.from('post_comments').select('*').order('ts', { ascending: true }),
+    ]);
+
+    // 스티커 카운트 집계
+    const stickerMap = {};
+    const myReactionMap = {};
+    if (rp.data) {
+      rp.data.forEach(r => {
+        const pid = String(r.postId);
+        if (!stickerMap[pid]) stickerMap[pid] = { cheer:0, love:0, congrats:0, cool:0, together:0 };
+        if (r.stickerId in stickerMap[pid]) stickerMap[pid][r.stickerId]++;
+        if (r.deviceId === S.deviceId) {
+          if (!myReactionMap[pid]) myReactionMap[pid] = [];
+          myReactionMap[pid].push(r.stickerId);
+        }
+      });
+    }
+
+    // 댓글 집계
+    const commentMap = {};
+    if (cmp.data) {
+      cmp.data.forEach(c => {
+        const pid = String(c.postId);
+        if (!commentMap[pid]) commentMap[pid] = [];
+        commentMap[pid].push({
+          id: c.id,
+          name: c.userName || '익명',
+          avatar: '🏃',
+          lv: 1,
+          body: c.body || '',
+          time: c.ts ? new Date(Number(c.ts)).toLocaleDateString('ko-KR') : '',
+        });
+      });
+    }
+
+    // 내 포스트 스티커/댓글 업데이트
+    S.posts.forEach(p => {
+      const pid = String(p.id);
+      if (stickerMap[pid]) p.stickers = stickerMap[pid];
+      if (commentMap[pid]) { p.commentList = commentMap[pid]; p.comments = commentMap[pid].length; }
+    });
+
+    // 커뮤니티 포스트 병합
     if (cp.data) {
-      // 내 게시글과 중복 제거 후 병합
       const myIds = new Set(S.posts.map(p => String(p.id)));
       S.communityPosts = cp.data
         .filter(p => !myIds.has(String(p.id)))
-        .map(p => ({
-          id: Number(p.id) || p.id,
-          userId: 1,
-          name: p.userName || '익명',
-          avatar: '🏃',
-          lv: 1,
-          body: p.body || '',
-          exTag: p.exTag || null,
-          userTags: typeof p.userTags === 'string' ? p.userTags.split(',').filter(Boolean) : [],
-          time: p.ts ? new Date(Number(p.ts)).toLocaleDateString('ko-KR') : '',
-          stickers: { cheer:0, love:0, congrats:0, cool:0, together:0 },
-          myReactions: [],
-          comments: 0,
-          commentList: [],
-        }));
+        .map(p => {
+          const pid = String(Number(p.id) || p.id);
+          return {
+            id: Number(p.id) || p.id,
+            userId: 1,
+            name: p.userName || '익명',
+            avatar: '🏃',
+            lv: 1,
+            body: p.body || '',
+            exTag: p.exTag || null,
+            userTags: typeof p.userTags === 'string' ? p.userTags.split(',').filter(Boolean) : [],
+            time: p.ts ? new Date(Number(p.ts)).toLocaleDateString('ko-KR') : '',
+            stickers: stickerMap[pid] || { cheer:0, love:0, congrats:0, cool:0, together:0 },
+            myReactions: myReactionMap[pid] || [],
+            comments: (commentMap[pid] || []).length,
+            commentList: commentMap[pid] || [],
+          };
+        });
     }
-    _adminPostsFetched = true;
+
     renderCommunity();
     updateCommunityDot();
-  } catch(e) {}
+  } catch(e) { console.error('[fetchCommunityPosts]', e); }
 }
 
 const COMM_SEEN_KEY = 'hi_health_comm_seen';
@@ -5283,8 +5335,9 @@ function submitComment() {
   if (!post) return;
   if (!post.commentList) post.commentList = [];
   const lv = getLevel(S.user.points);
+  const commentId = String(Date.now());
   post.commentList.push({
-    id: Date.now(),
+    id: commentId,
     name: S.user.name,
     avatar: S.user.avatar,
     lv: lv.lv,
@@ -5293,6 +5346,14 @@ function submitComment() {
   });
   post.comments = post.commentList.length;
   input.value = '';
+  if (_db) _db.from('post_comments').upsert({
+    id: commentId,
+    postId: String(_commentPostId),
+    deviceId: S.deviceId,
+    userName: S.user.name,
+    body,
+    ts: commentId,
+  }, { onConflict: 'id' }).then(() => {});
   save();
   renderCommentList();
   renderCommunity();
@@ -5308,11 +5369,17 @@ function react(postId, stickerId) {
   if (idx >= 0) {
     myR.splice(idx,1);
     post.stickers[stickerId] = Math.max(0, (post.stickers[stickerId]||0) - 1);
+    if (_db) _db.from('reactions').delete()
+      .eq('postId', String(postId)).eq('deviceId', S.deviceId).eq('stickerId', stickerId)
+      .then(() => {});
   } else {
     myR.push(stickerId);
     post.stickers[stickerId] = (post.stickers[stickerId]||0) + 1;
-    // Stickers to poster
     if (post.userId !== 0) S.user.stickersReceived++;
+    if (_db) _db.from('reactions').upsert(
+      { postId: String(postId), deviceId: S.deviceId, stickerId },
+      { onConflict: 'postId,deviceId,stickerId' }
+    ).then(() => {});
   }
   save();
   renderCommunity();
@@ -6526,7 +6593,7 @@ init();
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'posts' }, async () => {
         _adminPostsFetched = false;
         const page = document.querySelector('.page.active');
-        if (page && page.id === 'page-community') fetchAdminPosts();
+        if (page && page.id === 'page-community') { fetchAdminPosts(); fetchCommunityPosts(); }
       })
       .subscribe();
     // orders 실시간 리스너 (관리자 승인 상태 자동 반영)
