@@ -7634,6 +7634,8 @@ function init() {
   if (loginScreen) loginScreen.classList.toggle('runday', IS_RUN_MODE);
   const runHero = document.getElementById('login-run-hero');
   if (runHero) runHero.style.display = IS_RUN_MODE ? '' : 'none';
+  const loginLogo = document.querySelector('.app-login-logo');
+  if (loginLogo) loginLogo.src = IS_RUN_MODE ? 'images/avatars/run1.png' : 'images/Hi_health_home.png';
   const loginSub = document.querySelector('.app-login-sub');
   const loginEmpInput = document.getElementById('login-empid-input');
   if (!IS_RUN_MODE) {
