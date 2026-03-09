@@ -7419,7 +7419,8 @@ async function doAppLogin() {
   if (!S.user.name) S.user.name = inputName;
   save();
   sessionStorage.setItem('hi_session_empid', ACTIVE_EMPID);
-  if (keepLogin) {
+  // IS_RUN_MODE(챌린지 직원)는 항상 localStorage에 저장 (카카오톡 인앱브라우저 세션 유실 방지)
+  if (keepLogin || IS_RUN_MODE) {
     localStorage.setItem('hi_keep_login_id', ACTIVE_EMPID);
     localStorage.setItem('hi_keep_login_name', inputName);
   } else {
@@ -7598,6 +7599,9 @@ function init() {
     if (loginEmpInput) { loginEmpInput.placeholder = '등록번호'; loginEmpInput.style.letterSpacing = '2px'; }
   } else {
     if (loginEmpInput) { loginEmpInput.placeholder = '사번 (예: A1801)'; loginEmpInput.style.letterSpacing = '0'; }
+    // IS_RUN_MODE: 로그인 유지 체크박스 숨김 (항상 자동 저장)
+    const keepWrap = document.querySelector('.app-login-keep');
+    if (keepWrap) keepWrap.style.display = 'none';
   }
   // 로그인 유지 또는 세션에서 자동 로그인 복원
   const keepId = localStorage.getItem('hi_keep_login_id');
