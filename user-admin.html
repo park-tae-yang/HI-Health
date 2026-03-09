@@ -553,6 +553,7 @@
             <option value="streak">연속운동순</option>
           </select>
           <button type="button" class="ctrl-btn danger" id="dup-clean-btn" onclick="deleteDuplicates()" style="display:none;">중복 삭제</button>
+          <button type="button" class="ctrl-btn" style="background:var(--amber-light);color:#92400E;" onclick="cleanBadNames()">이름 정리</button>
           <span class="ctrl-count" id="users-count"></span>
         </div>
         <div class="table-wrap">
@@ -1177,6 +1178,31 @@ async function deleteDuplicates() {
     buildUserFilter(); renderStats(); renderUsers();
     toast(`중복 이용자 ${toDelete.length}명 삭제 완료`);
   } catch(e) { toast('삭제 실패: ' + e.message); }
+  finally { showLoading(false); }
+}
+
+async function cleanBadNames() {
+  if (!_adminDb) { toast('Supabase 연결 필요'); return; }
+  const badUsers = (GD.users||[]).filter(u => isBadName(u.name));
+  if (!badUsers.length) { toast('이상한 이름이 없습니다'); return; }
+  const preview = badUsers.map(u => {
+    const cleaned = (u.name||'').replace(/images\/avatars\/\S+/gi, '').replace(/\S+\.(png|jpg|jpeg|svg|gif)/gi, '').trim();
+    return `• "${u.name}" → "${cleaned||'(삭제됨)'}"`;
+  }).join('\n');
+  if (!confirm(`이름에 이미지 경로가 포함된 이용자 ${badUsers.length}명을 정리합니다.\n\n${preview}\n\n계속하시겠습니까?`)) return;
+  showLoading(true);
+  try {
+    for (const u of badUsers) {
+      const cleaned = (u.name||'').replace(/images\/avatars\/\S+/gi, '').replace(/\S+\.(png|jpg|jpeg|svg|gif)/gi, '').trim();
+      const { error } = await _adminDb.from('users').update({ name: cleaned }).eq('deviceId', u.deviceId);
+      if (!error) {
+        const idx = GD.users.findIndex(x => x.deviceId === u.deviceId);
+        if (idx >= 0) GD.users[idx].name = cleaned;
+      }
+    }
+    renderUsers();
+    toast(`✅ 이름 정리 완료 (${badUsers.length}명)`);
+  } catch(e) { toast('실패: ' + e.message); }
   finally { showLoading(false); }
 }
 
