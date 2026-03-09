@@ -7415,9 +7415,13 @@ async function doAppLogin() {
         loadEl.style.display = 'none';
         btn.disabled = false;
         nameInput.classList.add('error');
-        errEl.textContent = '이름이 일치하지 않습니다';
+        // 등록된 이름 힌트: 첫 글자만 공개, 나머지는 *
+        const hint = storedName.length > 0
+          ? storedName[0] + '*'.repeat(storedName.length - 1)
+          : '??';
+        errEl.textContent = `이름이 일치하지 않습니다. (등록된 이름: ${hint})`;
         errEl.style.display = 'block';
-        setTimeout(() => { nameInput.classList.remove('error'); errEl.style.display = 'none'; }, 3000);
+        setTimeout(() => { nameInput.classList.remove('error'); errEl.style.display = 'none'; }, 5000);
         return;
       }
       // 이름 일치 → 기존 계정 안내

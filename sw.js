@@ -1,4 +1,4 @@
-const CACHE = 'hi-health-v179';
+const CACHE = 'hi-health-v180';
 const STATIC_ASSETS = [
   './manifest.webmanifest',
   './icons/icon.svg',
