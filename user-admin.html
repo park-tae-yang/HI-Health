@@ -994,8 +994,6 @@ async function deleteUser(deviceId, name) {
   if (!confirm(`"${name || deviceId}" 이용자를 삭제하시겠습니까?\n모든 기록이 함께 삭제됩니다.`)) return;
   showLoading(true);
   try {
-    const { error: bErr } = await db.from('blocked_devices').upsert({ deviceId }, { onConflict: 'deviceId' });
-    if (bErr) throw new Error('blocked_devices 등록 실패: ' + bErr.message + '\n\nSupabase에 blocked_devices 테이블을 먼저 생성해주세요.');
     for (const tbl of ['workouts','glucose','posts','users']) {
       const { error } = await db.from(tbl).delete().eq('deviceId', deviceId);
       if (error) throw new Error(`${tbl} 삭제 실패: ${error.message}`);
@@ -1031,8 +1029,6 @@ async function deleteDuplicates() {
   showLoading(true);
   try {
     for (const u of toDelete) {
-      const { error: bErr } = await db.from('blocked_devices').upsert({ deviceId: u.deviceId }, { onConflict: 'deviceId' });
-      if (bErr) throw new Error('blocked_devices 등록 실패: ' + bErr.message + '\n\nSupabase에 blocked_devices 테이블을 먼저 생성해주세요.');
       for (const tbl of ['workouts','glucose','posts','users']) {
         const { error } = await db.from(tbl).delete().eq('deviceId', u.deviceId);
         if (error) throw new Error(`${tbl} 삭제 실패: ${error.message}`);

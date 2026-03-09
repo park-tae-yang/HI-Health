@@ -3402,25 +3402,33 @@ function save() {
     .replace(/[\u{1F000}-\u{1FFFF}\u{2600}-\u{27FF}]/gu, '')
     .trim();
   if (_db && S.deviceId) {
-    _db.from('blocked_devices').select('deviceId').eq('deviceId', S.deviceId).maybeSingle()
-      .then(({ data, error }) => {
-        if (error) { console.warn('[blocked_devices] 체크 실패 — 동기화 중단:', error.message); return; }
-        if (data) return; // 관리자에 의해 차단된 기기 — 동기화 생략
-        apiSync('syncUser', {
-          deviceId: S.deviceId,
-          name: _cleanName,
-          avatar: S.user.avatar,
-          empId: S.user.empId || '',
-          dept: S.user.dept || '',
-          points: S.user.points,
-          streak: S.user.streak,
-          tags: (S.user.tags || []).join(','),
-          registrationId: S.user.registrationId || '',
-          lastActiveAt: new Date().toISOString(),
-          pendingRewards:  (S.pendingRewards  || []).join(','),
-          redeemedRewards: (S.redeemedRewards || []).join(','),
+    const payload = {
+      deviceId: S.deviceId,
+      name: _cleanName,
+      avatar: S.user.avatar,
+      empId: S.user.empId || '',
+      dept: S.user.dept || '',
+      points: S.user.points,
+      streak: S.user.streak,
+      tags: (S.user.tags || []).join(','),
+      registrationId: S.user.registrationId || '',
+      lastActiveAt: new Date().toISOString(),
+      pendingRewards:  (S.pendingRewards  || []).join(','),
+      redeemedRewards: (S.redeemedRewards || []).join(','),
+    };
+    const syncedKey = 'hi_synced_' + S.deviceId;
+    if (localStorage.getItem(syncedKey)) {
+      // 기존 유저 — UPDATE만 (삭제된 유저 재생성 방지)
+      _db.from('users').update(payload).eq('deviceId', S.deviceId)
+        .then(({ error }) => { if (error) console.error('[syncUser/update]', error); });
+    } else {
+      // 최초 등록 — upsert
+      _db.from('users').upsert(payload, { onConflict: 'deviceId' })
+        .then(({ error }) => {
+          if (!error) localStorage.setItem(syncedKey, '1');
+          else console.error('[syncUser/upsert]', error);
         });
-      });
+    }
   }
 }
 
@@ -7841,23 +7849,6 @@ init();
     if (!SUPABASE_URL || SUPABASE_URL === 'YOUR_SUPABASE_URL') return;
     const { createClient } = supabase;
     _db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    // 차단된 기기 확인 — 관리자가 삭제한 계정이면 로컬 데이터 초기화
-    (async () => {
-      try {
-        const empId = localStorage.getItem('hi_active_empid') || '';
-        const didKey = empId ? 'hi_device_id_' + empId : 'hi_device_id';
-        const deviceId = localStorage.getItem(didKey);
-        if (!deviceId) return;
-        const { data } = await _db.from('blocked_devices').select('deviceId').eq('deviceId', deviceId).maybeSingle();
-        if (!data) return;
-        // 차단된 기기 — localStorage 전체 초기화 후 재시작
-        const keys = Object.keys(localStorage).filter(k => k.startsWith('hi_'));
-        keys.forEach(k => localStorage.removeItem(k));
-        alert('계정 정보가 초기화되었습니다. 다시 로그인해 주세요.');
-        location.reload();
-      } catch(e) { /* 무시 */ }
-    })();
 
     // admin_posts 실시간 리스너 (커뮤니티 탭 자동 갱신)
     _db.channel('admin_posts_ch')
