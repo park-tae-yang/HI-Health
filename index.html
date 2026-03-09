@@ -6838,7 +6838,7 @@ function renderChallenge() {
           <button type="button" class="ch-share-btn" onclick="shareChReg('${myReg.id}','${myReg.name}','${myReg.dept}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg> 공유하기</button>
           ${canCancelReg ? `<button type="button" class="ch-cancel-reg-btn" onclick="cancelRegistration('${myReg.id}')">신청 취소</button>` : ''}
         </div>
-        ${showWorkout ? `<button type="button" class="btn btn-primary btn-full ch-workout-btn" style="margin-top:8px" onclick="scrollToExerciseForm()">오늘 운동 기록하기</button>` : ''}
+        <button type="button" class="btn btn-primary btn-full ch-workout-btn" style="margin-top:8px" onclick="scrollToExerciseForm()">오늘 운동 기록하기</button>
       </div>
     `;
   } else if (phase === 'registration') {
