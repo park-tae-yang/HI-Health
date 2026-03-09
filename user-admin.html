@@ -181,6 +181,13 @@
     .ch-s-val{font-size:20px;font-weight:700;line-height:1;}
     .ch-s-lbl{font-size:11px;color:var(--t3);margin-top:3px;}
 
+    /* ── ACTIVE DOT ── */
+    .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;flex-shrink:0;}
+    .dot.online{background:#10B981;}   /* 오늘 */
+    .dot.recent{background:#F59E0B;}   /* 이번 주 */
+    .dot.old{background:#D1D5DB;}      /* 그 이상 */
+    .act-time{font-size:11px;color:var(--t3);white-space:nowrap;}
+
     /* ── RANK BADGE ── */
     .rank{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;font-size:11px;font-weight:700;background:var(--bg);color:var(--t3);}
     .rank.g1{background:#FEF9C3;color:#92400E;}
@@ -287,10 +294,11 @@
               <th>운동</th>
               <th>연속</th>
               <th>챌린지</th>
+              <th>마지막 활동</th>
               <th>관리</th>
             </tr></thead>
             <tbody id="u-tbody">
-              <tr><td class="empty-cell" colspan="9">불러오는 중...</td></tr>
+              <tr><td class="empty-cell" colspan="10">불러오는 중...</td></tr>
             </tbody>
           </table>
         </div>
@@ -650,6 +658,34 @@ function renderStats() {
 /* ══════════════════════════════════════════════
    USERS
 ══════════════════════════════════════════════ */
+function activeCell(u) {
+  // lastActiveAt 우선, 없으면 최근 운동 기록으로 추정
+  let ts = u.lastActiveAt ? new Date(u.lastActiveAt).getTime() : 0;
+  if (!ts) {
+    const lastWo = GD.workouts.filter(w => w.deviceId === u.deviceId)
+      .sort((a,b) => Number(b.ts||0) - Number(a.ts||0))[0];
+    ts = lastWo ? Number(lastWo.ts||0) : 0;
+  }
+  if (!ts) return '<span class="act-time" style="color:#D1D5DB">-</span>';
+  const now = Date.now();
+  const diff = now - ts;
+  const mins = Math.floor(diff / 60000);
+  const hrs  = Math.floor(diff / 3600000);
+  const days = Math.floor(diff / 86400000);
+  let dotClass, label;
+  if (diff < 86400000) {        // 오늘
+    dotClass = 'online';
+    label = mins < 60 ? `${mins}분 전` : `${hrs}시간 전`;
+  } else if (diff < 604800000) { // 이번 주
+    dotClass = 'recent';
+    label = `${days}일 전`;
+  } else {
+    dotClass = 'old';
+    label = days < 30 ? `${days}일 전` : `${Math.floor(days/30)}개월 전`;
+  }
+  return `<span style="display:flex;align-items:center"><span class="dot ${dotClass}"></span><span class="act-time">${label}</span></span>`;
+}
+
 function isBadName(n) {
   if (!n) return false;
   const s = n.trim();
@@ -723,7 +759,7 @@ function renderUsers() {
   const tbody = document.getElementById('u-tbody');
 
   if (!page.length) {
-    tbody.innerHTML = `<tr><td class="empty-cell" colspan="9">이용자가 없습니다</td></tr>`;
+    tbody.innerHTML = `<tr><td class="empty-cell" colspan="10">이용자가 없습니다</td></tr>`;
     document.getElementById('u-pager').innerHTML = '';
     return;
   }
@@ -737,6 +773,7 @@ function renderUsers() {
     const rowClass = bad ? ' row-bad' : dup ? ' row-dup' : '';
     const safeName = (u.name||'').replace(/'/g, "\\'");
     const safeId = (u.deviceId||'').replace(/'/g, "\\'");
+    const actCell = activeCell(u);
     return `<tr class="${rowClass}">
       <td><span class="rank ${rc}">${rank}</span></td>
       <td class="td-name">${u.name||'(이름없음)'}
@@ -750,6 +787,7 @@ function renderUsers() {
       <td>${woCnt[u.deviceId]||0}</td>
       <td>${Number(u.streak)||0}일</td>
       <td>${isCh ? '✓' : '-'}</td>
+      <td>${actCell}</td>
       <td>
         <div style="display:flex;gap:4px">
           <button class="abtn det" onclick="selectUser('${safeId}','${safeName}')">상세</button>

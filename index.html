@@ -3411,6 +3411,7 @@ function save() {
     streak: S.user.streak,
     tags: (S.user.tags || []).join(','),
     registrationId: S.user.registrationId || '',
+    lastActiveAt: new Date().toISOString(),
   });
 }
 
