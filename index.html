@@ -7266,7 +7266,7 @@ async function doAppLogin() {
 
   if (!regId) {
     input.classList.add('error');
-    errEl.textContent = '등록번호를 입력해주세요';
+    errEl.textContent = IS_RUN_MODE ? '사번을 입력해주세요' : '등록번호를 입력해주세요';
     errEl.style.display = 'block';
     setTimeout(() => { input.classList.remove('error'); errEl.style.display = 'none'; }, 2000);
     return;
@@ -7497,7 +7497,13 @@ function init() {
   const runHero = document.getElementById('login-run-hero');
   if (runHero) runHero.style.display = IS_RUN_MODE ? '' : 'none';
   const loginSub = document.querySelector('.app-login-sub');
-  if (loginSub && !IS_RUN_MODE) loginSub.textContent = '등록번호와 이름을 입력해 시작하세요';
+  const loginEmpInput = document.getElementById('login-empid-input');
+  if (!IS_RUN_MODE) {
+    if (loginSub) loginSub.textContent = '등록번호와 이름을 입력해 시작하세요';
+    if (loginEmpInput) { loginEmpInput.placeholder = '등록번호'; loginEmpInput.style.letterSpacing = '2px'; }
+  } else {
+    if (loginEmpInput) { loginEmpInput.placeholder = '사번 (예: A1801)'; loginEmpInput.style.letterSpacing = '0'; }
+  }
   // 로그인 유지 또는 세션에서 자동 로그인 복원
   const keepId = localStorage.getItem('hi_keep_login_id');
   const savedEmpId = keepId || sessionStorage.getItem('hi_session_empid');
