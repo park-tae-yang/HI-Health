@@ -301,6 +301,7 @@
         <button type="button" class="btn-sheets-load" style="background:#F59E0B" onclick="migrateLocalToSupabase()">📦 localStorage 마이그레이션</button>
         <input type="text" id="sheets-migrate-url" class="sheets-url-input" placeholder="Apps Script URL 붙여넣기" style="max-width:300px">
         <button type="button" class="btn-sheets-load" style="background:#34A853" onclick="migrateFromSheets()">📊 Google Sheets 마이그레이션</button>
+        <button type="button" class="btn-sheets-load" style="background:#EF4444" onclick="resetAllData()">🗑️ 전체 데이터 초기화</button>
         <span class="sheets-status hidden" id="sheets-status"></span>
       </div>
     </div>
@@ -877,6 +878,32 @@ function initFirebaseAdmin() {
     statusEl.className = 'sheets-status sheets-err';
     statusEl.classList.remove('hidden');
   }
+}
+
+async function resetAllData() {
+  if (!_adminDb) { toast('먼저 Supabase에 연결해주세요'); return; }
+  const count = (GD?.users || []).length;
+  const answer = prompt(
+    `⚠️ 전체 데이터 초기화\n\n현재 이용자 ${count}명과 모든 운동·혈당·게시글·주문·챌린지 신청 데이터가 삭제됩니다.\n\n삭제를 진행하려면 아래 입력란에 "초기화확인" 을 입력하세요:`
+  );
+  if (answer !== '초기화확인') { if (answer !== null) toast('취소되었습니다'); return; }
+  showLoading(true);
+  try {
+    const tables = ['workouts', 'glucose', 'posts', 'orders', 'registrations', 'users'];
+    for (const tbl of tables) {
+      // Supabase는 조건 없는 delete를 막으므로 id > 0 또는 deviceId != '' 트릭 사용
+      const { error } = await _adminDb.from(tbl).delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      if (error) {
+        // id 컬럼이 없는 테이블 대비
+        await _adminDb.from(tbl).delete().neq('deviceId', '__none__').catch(() => {});
+      }
+    }
+    GD = { users:[], workouts:[], posts:[], registrations:[], orders:[], glucose:[], adminPosts: GD?.adminPosts||[] };
+    selectedDeviceId = '';
+    buildUserFilter(); renderAll();
+    toast('✅ 전체 데이터 초기화 완료. 새롭게 시작할 준비가 됐습니다!');
+  } catch(e) { toast('초기화 실패: ' + e.message); }
+  finally { showLoading(false); }
 }
 
 async function loadFromFirebase() {
