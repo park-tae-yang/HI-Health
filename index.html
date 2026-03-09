@@ -1813,7 +1813,7 @@
 <div class="app-login-screen" id="app-login-screen">
   <div class="app-login-bg-circle" style="width:320px;height:320px;top:-100px;right:-80px;background:radial-gradient(circle,rgba(251,146,60,.18) 0%,transparent 70%)"></div>
   <div class="app-login-bg-circle" style="width:240px;height:240px;bottom:-80px;left:-60px;background:radial-gradient(circle,rgba(139,92,246,.15) 0%,transparent 70%)"></div>
-  <div class="app-login-hero">
+  <div class="app-login-hero" id="login-run-hero">
     <div class="app-login-eyebrow">HI여성의원 8주년 개원기념</div>
     <div class="app-login-run">HI RUN DAY!</div>
     <div class="app-login-date">2026년 4월 15일 (수)</div>
@@ -2652,6 +2652,8 @@ function haptic(type) {
 /* ════════════════════════════════════════
    CONSTANTS
 ════════════════════════════════════════ */
+const IS_RUN_MODE = location.search.includes('run');
+
 const AVATARS = [
   'images/avatars/av1.png',
   'images/avatars/av2.png',
@@ -7378,7 +7380,7 @@ async function doAppLogin() {
 
   renderHeader();
   renderHome();
-  navigate('challenge');
+  navigate(IS_RUN_MODE ? 'challenge' : 'home');
 
   if (!S.user.name) setTimeout(() => openProfileModal(true), 400);
   setTimeout(() => {
@@ -7485,6 +7487,11 @@ function appLogout() {
 function init() {
   if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
   window.scrollTo(0, 0);
+  // ?run 파라미터 없으면 히어로 섹션 숨김, 서브타이틀 변경
+  const runHero = document.getElementById('login-run-hero');
+  if (runHero) runHero.style.display = IS_RUN_MODE ? '' : 'none';
+  const loginSub = document.querySelector('.app-login-sub');
+  if (loginSub && !IS_RUN_MODE) loginSub.textContent = '등록번호와 이름을 입력해 시작하세요';
   // 로그인 유지 또는 세션에서 자동 로그인 복원
   const keepId = localStorage.getItem('hi_keep_login_id');
   const savedEmpId = keepId || sessionStorage.getItem('hi_session_empid');
@@ -7502,7 +7509,7 @@ function init() {
   
     renderHeader();
     renderHome();
-    navigate('challenge');
+    navigate(IS_RUN_MODE ? 'challenge' : 'home');
     requestAnimationFrame(() => { window.scrollTo(0, 0); document.documentElement.scrollTop = 0; document.body.scrollTop = 0; });
     setTimeout(() => {
       const lv = getLevel(S.user.points);
