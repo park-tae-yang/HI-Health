@@ -22,10 +22,10 @@
   <meta property="og:type"        content="website">
   <meta property="og:title"       content="HI Health - 건강 챌린지">
   <meta property="og:description" content="HI 건강 챌린지 — 운동·혈당·커뮤니티">
-  <meta property="og:image"       content="https://yunjin0825.github.io/HI-Health/images/Hi_health_home.png">
-  <meta property="og:url"         content="https://yunjin0825.github.io/HI-Health/">
+  <meta property="og:image"       content="https://hi-fertility-health.com/images/Hi_health_home.png">
+  <meta property="og:url"         content="https://hi-fertility-health.com/">
   <meta name="twitter:card"       content="summary_large_image">
-  <meta name="twitter:image"      content="https://yunjin0825.github.io/HI-Health/images/Hi_health_home.png">
+  <meta name="twitter:image"      content="https://hi-fertility-health.com/images/Hi_health_home.png">
 
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
   <style>
@@ -3799,7 +3799,7 @@ async function shareLevelCard() {
       const file = new File([blob], 'hi-health-level.png', { type: 'image/png' });
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         try {
-          await navigator.share({ files: [file], title: 'HI Health', text: `${name}님의 운동기록을 함께 응원해주세요 :)\n나도 운동기록하기 👉 https://yunjin0825.github.io/HI-Health/` });
+          await navigator.share({ files: [file], title: 'HI Health', text: `${name}님의 운동기록을 함께 응원해주세요 :)\n나도 운동기록하기 👉 https://hi-fertility-health.com` });
         } catch(e) {
           if (e.name !== 'AbortError') showToast('공유에 실패했어요');
         }
