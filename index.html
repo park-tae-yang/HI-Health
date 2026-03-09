@@ -7822,6 +7822,42 @@ init();
     const { createClient } = supabase;
     _db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+    // _db 초기화 후 이미 로그인 상태면 즉시 Supabase 동기화
+    // (init()이 _db보다 먼저 실행되므로 여기서 재sync 필요)
+    setTimeout(() => {
+      if (S.deviceId && ACTIVE_EMPID) {
+        save(); // 사용자 정보 Supabase 저장
+        // Supabase에서 최신 데이터 복원 (자동 로그인 경우)
+        const _empId = ACTIVE_EMPID;
+        _db.from('users').select('*').or(`empId.eq.${_empId},empId.eq.${_empId.toLowerCase()}`).limit(1).then(async ({ data: rows }) => {
+          if (ACTIVE_EMPID !== _empId) return;
+          const u = rows?.[0] || null;
+          if (!u) return;
+          S.deviceId = u.deviceId;
+          localStorage.setItem('hi_device_id_' + _empId, u.deviceId);
+          const [w, g] = await Promise.all([
+            _db.from('workouts').select('*').eq('deviceId', u.deviceId),
+            _db.from('glucose').select('*').eq('deviceId', u.deviceId),
+          ]);
+          S.user = { ...S.user,
+            name: u.name || S.user.name,
+            avatar: S.user.avatar?.includes('images/') ? S.user.avatar : (u.avatar || S.user.avatar),
+            empId: u.empId || _empId,
+            points: Number(u.points) || 0,
+            totalPoints: Number(u.totalPoints || u.points) || 0,
+            streak: Number(u.streak) || 0,
+            tags: typeof u.tags === 'string' ? u.tags.split(',').filter(Boolean) : (u.tags || []),
+            registrationId: u.registrationId || null,
+          };
+          if (w.data?.length) S.workouts = w.data.map(x => ({ id: Number(x.id)||x.id, exId: x.exId, customName: x.exName||null, duration: Number(x.duration)||0, points: Number(x.points)||0, memo: x.memo||'', ts: Number(x.ts)||0 }));
+          if (g.data?.length) S.glucoseRecords = g.data.map(x => ({ id: Number(x.id)||x.id, value: Number(x.value), timing: x.timing, points: Number(x.points)||0, ts: x.ts }));
+          save();
+          renderHeader();
+          renderHome();
+        });
+      }
+    }, 0);
+
     // admin_posts 실시간 리스너 (커뮤니티 탭 자동 갱신)
     _db.channel('admin_posts_ch')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'admin_posts' }, async () => {
