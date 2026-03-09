@@ -884,20 +884,32 @@ async function resetAllData() {
   if (answer !== '초기화확인') { if (answer !== null) toast('취소되었습니다'); return; }
   showLoading(true);
   try {
-    const tables = ['workouts', 'glucose', 'posts', 'orders', 'registrations', 'users'];
-    for (const tbl of tables) {
-      // Supabase는 조건 없는 delete를 막으므로 id > 0 또는 deviceId != '' 트릭 사용
-      const { error } = await _adminDb.from(tbl).delete().neq('id', '00000000-0000-0000-0000-000000000000');
-      if (error) {
-        // id 컬럼이 없는 테이블 대비
-        await _adminDb.from(tbl).delete().neq('deviceId', '__none__').catch(() => {});
+    // 각 테이블의 ID를 먼저 가져와서 in() 으로 삭제 (RLS 우회)
+    const tableDefs = [
+      { tbl: 'workouts',      key: 'id' },
+      { tbl: 'glucose',       key: 'id' },
+      { tbl: 'posts',         key: 'id' },
+      { tbl: 'orders',        key: 'id' },
+      { tbl: 'registrations', key: 'id' },
+      { tbl: 'users',         key: 'deviceId' },
+    ];
+    for (const { tbl, key } of tableDefs) {
+      const { data, error: fetchErr } = await _adminDb.from(tbl).select(key);
+      if (fetchErr) { console.warn(tbl, fetchErr.message); continue; }
+      if (!data?.length) continue;
+      const ids = data.map(r => r[key]);
+      // 1000개씩 나눠서 삭제
+      for (let i = 0; i < ids.length; i += 1000) {
+        const chunk = ids.slice(i, i + 1000);
+        const { error: delErr } = await _adminDb.from(tbl).delete().in(key, chunk);
+        if (delErr) throw new Error(`${tbl} 삭제 실패: ${delErr.message}`);
       }
     }
     GD = { users:[], workouts:[], posts:[], registrations:[], orders:[], glucose:[], adminPosts: GD?.adminPosts||[] };
     selectedDeviceId = '';
     buildUserFilter(); renderAll();
     toast('✅ 전체 데이터 초기화 완료. 새롭게 시작할 준비가 됐습니다!');
-  } catch(e) { toast('초기화 실패: ' + e.message); }
+  } catch(e) { toast('초기화 실패: ' + e.message); console.error(e); }
   finally { showLoading(false); }
 }
 
