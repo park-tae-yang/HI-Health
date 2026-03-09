@@ -905,6 +905,8 @@ async function resetAllData() {
     GD = { users:[], workouts:[], posts:[], registrations:[], orders:[], glucose:[], adminPosts: GD?.adminPosts||[] };
     selectedDeviceId = '';
     buildUserFilter(); renderAll();
+    const statusEl = document.getElementById('sheets-status');
+    if (statusEl) { statusEl.textContent = '연결됨 (0명)'; statusEl.className = 'sheets-status sheets-ok'; statusEl.classList.remove('hidden'); }
     toast('✅ 전체 데이터 초기화 완료. 새롭게 시작할 준비가 됐습니다!');
   } catch(e) { toast('초기화 실패: ' + e.message); console.error(e); }
   finally { showLoading(false); }
