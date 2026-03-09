@@ -3401,20 +3401,26 @@ function save() {
     .replace(/\S+\.(png|jpg|jpeg|svg|gif|webp)/gi, '')
     .replace(/[\u{1F000}-\u{1FFFF}\u{2600}-\u{27FF}]/gu, '')
     .trim();
-  apiSync('syncUser', {
-    deviceId: S.deviceId,
-    name: _cleanName,
-    avatar: S.user.avatar,
-    empId: S.user.empId || '',
-    dept: S.user.dept || '',
-    points: S.user.points,
-    streak: S.user.streak,
-    tags: (S.user.tags || []).join(','),
-    registrationId: S.user.registrationId || '',
-    lastActiveAt: new Date().toISOString(),
-    pendingRewards:  (S.pendingRewards  || []).join(','),
-    redeemedRewards: (S.redeemedRewards || []).join(','),
-  });
+  if (_db && S.deviceId) {
+    _db.from('blocked_devices').select('deviceId').eq('deviceId', S.deviceId).maybeSingle()
+      .then(({ data }) => {
+        if (data) return; // 관리자에 의해 차단된 기기 — 동기화 생략
+        apiSync('syncUser', {
+          deviceId: S.deviceId,
+          name: _cleanName,
+          avatar: S.user.avatar,
+          empId: S.user.empId || '',
+          dept: S.user.dept || '',
+          points: S.user.points,
+          streak: S.user.streak,
+          tags: (S.user.tags || []).join(','),
+          registrationId: S.user.registrationId || '',
+          lastActiveAt: new Date().toISOString(),
+          pendingRewards:  (S.pendingRewards  || []).join(','),
+          redeemedRewards: (S.redeemedRewards || []).join(','),
+        });
+      });
+  }
 }
 
 /* ── Supabase 비동기 동기화 ── */

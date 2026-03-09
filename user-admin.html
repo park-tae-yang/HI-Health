@@ -253,7 +253,7 @@
       <button class="tab-btn" onclick="switchTab('challenge',this)">🏆 챌린지</button>
       <button class="tab-btn" onclick="switchTab('orders',this)">🛒 구매</button>
       <button class="tab-btn" onclick="switchTab('rewards',this)">🎁 보상</button>
-      <button class="tab-btn" onclick="switchTab('content',this)">📢 공지</button>
+      <button class="tab-btn" onclick="switchTab('content',this)">📝 콘텐츠 작성</button>
     </div>
 
     <!-- ── PANEL: USERS ── -->
@@ -374,6 +374,23 @@
 
     <!-- ── PANEL: POSTS ── -->
     <div class="panel" id="panel-posts">
+      <div class="ap-compose">
+        <div style="font-size:14px;font-weight:700;margin-bottom:10px">관리자 커뮤니티 글 작성</div>
+        <div style="display:flex;gap:8px;margin-bottom:8px">
+          <select class="ctrl-sel" id="pa-extag" style="flex:1">
+            <option value="">운동 태그 (선택)</option>
+            <option value="걷기">걷기</option>
+            <option value="달리기">달리기</option>
+            <option value="자전거">자전거</option>
+            <option value="수영">수영</option>
+            <option value="근력">근력</option>
+            <option value="요가">요가</option>
+            <option value="기타">기타</option>
+          </select>
+        </div>
+        <textarea id="pa-text" placeholder="커뮤니티에 게시할 내용을 입력하세요..."></textarea>
+        <button class="cbtn pri" onclick="postAdminCommunity()">커뮤니티 게시</button>
+      </div>
       <div class="ctrl-bar">
         <input class="ctrl-inp" id="po-search" placeholder="이름·내용 검색" oninput="renderPosts()">
         <span class="ctrl-count" id="po-count">0건</span>
@@ -518,7 +535,7 @@
     <!-- ── PANEL: CONTENT ── -->
     <div class="panel" id="panel-content">
       <div class="ap-compose">
-        <div style="font-size:14px;font-weight:700;margin-bottom:10px">새 공지 작성</div>
+        <div style="font-size:14px;font-weight:700;margin-bottom:10px">새 콘텐츠 작성</div>
         <div style="display:flex;gap:8px;margin-bottom:8px">
           <input class="dp-inp" id="ap-title" placeholder="제목" style="flex:2">
           <select class="ctrl-sel" id="ap-category" style="flex:1">
@@ -976,6 +993,7 @@ async function deleteUser(deviceId, name) {
   if (!confirm(`"${name || deviceId}" 이용자를 삭제하시겠습니까?\n모든 기록이 함께 삭제됩니다.`)) return;
   showLoading(true);
   try {
+    await db.from('blocked_devices').upsert({ deviceId }, { onConflict: 'deviceId' });
     for (const tbl of ['workouts','glucose','posts','users']) {
       const { error } = await db.from(tbl).delete().eq('deviceId', deviceId);
       if (error) throw new Error(`${tbl} 삭제 실패: ${error.message}`);
@@ -986,6 +1004,7 @@ async function deleteUser(deviceId, name) {
     GD.posts     = GD.posts.filter(p => p.deviceId !== deviceId);
     if (selDeviceId === deviceId) clearSel();
     renderAll();
+    setStatus(`연결됨 (${GD.users.length}명)`, true);
     toast(`"${name}" 삭제 완료`);
   } catch(e) { toast(e.message); }
   finally { showLoading(false); }
@@ -1010,6 +1029,7 @@ async function deleteDuplicates() {
   showLoading(true);
   try {
     for (const u of toDelete) {
+      await db.from('blocked_devices').upsert({ deviceId: u.deviceId }, { onConflict: 'deviceId' });
       for (const tbl of ['workouts','glucose','posts','users']) {
         const { error } = await db.from(tbl).delete().eq('deviceId', u.deviceId);
         if (error) throw new Error(`${tbl} 삭제 실패: ${error.message}`);
@@ -1020,6 +1040,7 @@ async function deleteDuplicates() {
       GD.posts    = GD.posts.filter(p => p.deviceId !== u.deviceId);
     }
     renderAll();
+    setStatus(`연결됨 (${GD.users.length}명)`, true);
     toast(`중복 이용자 ${toDelete.length}명 삭제 완료`);
   } catch(e) { toast('삭제 실패: ' + e.message); }
   finally { showLoading(false); }
@@ -1234,6 +1255,29 @@ async function deletePost(id) {
   GD.posts = GD.posts.filter(p => String(p.id) !== String(id));
   renderStats(); renderPosts();
   toast('게시글 삭제 완료');
+}
+
+async function postAdminCommunity() {
+  const body = document.getElementById('pa-text').value.trim();
+  const exTag = document.getElementById('pa-extag').value;
+  if (!body) { toast('내용을 입력하세요'); return; }
+  showLoading(true);
+  const payload = {
+    id: 'ADMIN-' + Date.now(),
+    deviceId: 'ADMIN',
+    userName: '관리자',
+    ts: Date.now(),
+    exTag: exTag || null,
+    body,
+  };
+  const { error } = await db.from('posts').insert(payload);
+  showLoading(false);
+  if (error) { toast('게시 실패: ' + error.message); return; }
+  GD.posts.unshift(payload);
+  document.getElementById('pa-text').value = '';
+  document.getElementById('pa-extag').value = '';
+  renderStats(); renderPosts();
+  toast('커뮤니티 게시 완료 ✓');
 }
 
 /* ══════════════════════════════════════════════
@@ -1572,6 +1616,7 @@ async function postAdminNotice() {
   if (!title) { toast('제목을 입력해주세요'); return; }
   if (!text)  { toast('내용을 입력해주세요'); return; }
   const payload = {
+    id: crypto.randomUUID(),
     title,
     body: text,
     category,
