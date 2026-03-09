@@ -78,53 +78,81 @@
     /* ── App Login Screen ── */
     .app-login-screen {
       position: fixed; inset: 0; z-index: 2000;
-      background: linear-gradient(150deg, #0f172a 0%, #1e1b4b 55%, #312e81 100%);
+      background: linear-gradient(150deg, #f5f3ff 0%, #ede9fe 55%, #ddd6fe 100%);
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       padding: 20px; overflow: hidden;
     }
     .app-login-screen.hidden { display: none; }
+    /* 챌린지(runday) 전용 다크 스타일 */
+    .app-login-screen.runday {
+      background: linear-gradient(150deg, #0f172a 0%, #1e1b4b 55%, #312e81 100%);
+    }
     .app-login-hero { text-align: center; margin-bottom: 32px; position: relative; z-index: 1; }
     .app-login-eyebrow { font-size: 11px; font-weight: 600; letter-spacing: 2.5px; color: rgba(255,255,255,0.45); text-transform: uppercase; margin-bottom: 8px; }
     .app-login-run { font-size: 48px; font-weight: 900; letter-spacing: -2px; color: #fb923c; line-height: 1; margin-bottom: 6px; }
     .app-login-date { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.55); margin-bottom: 4px; }
     .app-login-route { font-size: 12px; color: rgba(255,255,255,0.35); }
+    /* 일반 카드 (라이트) */
     .app-login-card {
-      background: rgba(255,255,255,0.06); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(255,255,255,0.12); border-radius: 24px; padding: 28px 24px;
+      background: rgba(255,255,255,0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(109,40,217,0.1); border-radius: 24px; padding: 28px 24px;
       width: 100%; max-width: 360px; text-align: center; position: relative; z-index: 1;
+      box-shadow: 0 8px 32px rgba(109,40,217,0.12);
     }
-    .app-login-logo { height: 36px; width: auto; margin-bottom: 14px; opacity: 0.85; }
-    .app-login-title { font-size: 15px; font-weight: 700; color: rgba(255,255,255,0.9); margin-bottom: 4px; }
-    .app-login-sub { font-size: 12px; color: rgba(255,255,255,0.45); margin-bottom: 20px; line-height: 1.5; }
+    /* 챌린지 카드 (다크) */
+    .app-login-screen.runday .app-login-card {
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+      box-shadow: none;
+    }
+    .app-login-logo { height: 36px; width: auto; margin-bottom: 14px; opacity: 0.9; }
+    .app-login-title { font-size: 15px; font-weight: 700; color: #3730A3; margin-bottom: 4px; }
+    .app-login-screen.runday .app-login-title { color: rgba(255,255,255,0.9); }
+    .app-login-sub { font-size: 12px; color: #6D28D9; opacity: 0.7; margin-bottom: 20px; line-height: 1.5; }
+    .app-login-screen.runday .app-login-sub { color: rgba(255,255,255,0.45); opacity: 1; }
     .app-login-input {
       width: 100%; padding: 13px 16px; margin-bottom: 10px;
-      border: 1px solid rgba(255,255,255,0.15); border-radius: 10px;
-      background: rgba(255,255,255,0.08); color: #fff;
+      border: 1px solid rgba(109,40,217,0.2); border-radius: 10px;
+      background: #fff; color: #1e1b4b;
       font-family: inherit; font-size: 15px; outline: none;
       text-align: center; letter-spacing: 2px; transition: border-color 0.2s;
     }
-    .app-login-input::placeholder { color: rgba(255,255,255,0.3); }
-    .app-login-input:focus { border-color: #fb923c; box-shadow: 0 0 0 3px rgba(251,146,60,0.2); }
-    .app-login-input.error { border-color: #EF4444; background: rgba(239,68,68,0.1); letter-spacing: normal; }
+    .app-login-input::placeholder { color: rgba(109,40,217,0.35); }
+    .app-login-input:focus { border-color: #7C3AED; box-shadow: 0 0 0 3px rgba(124,58,237,0.15); }
+    .app-login-screen.runday .app-login-input {
+      border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.08); color: #fff;
+    }
+    .app-login-screen.runday .app-login-input::placeholder { color: rgba(255,255,255,0.3); }
+    .app-login-screen.runday .app-login-input:focus { border-color: #fb923c; box-shadow: 0 0 0 3px rgba(251,146,60,0.2); }
+    .app-login-input.error { border-color: #EF4444; background: rgba(239,68,68,0.07); letter-spacing: normal; }
+    .app-login-screen.runday .app-login-input.error { background: rgba(239,68,68,0.1); }
     .app-login-btn {
       width: 100%; padding: 14px;
-      background: linear-gradient(135deg, #F59E0B, #D97706);
+      background: linear-gradient(135deg, #7C3AED, #4F46E5);
       color: #fff; border: none; border-radius: 10px;
       font-family: inherit; font-size: 15px; font-weight: 700;
       cursor: pointer; transition: all 0.2s; margin-top: 4px;
     }
-    .app-login-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(245,158,11,0.4); }
+    .app-login-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(124,58,237,0.35); }
+    .app-login-screen.runday .app-login-btn {
+      background: linear-gradient(135deg, #F59E0B, #D97706);
+    }
+    .app-login-screen.runday .app-login-btn:hover { box-shadow: 0 6px 18px rgba(245,158,11,0.4); }
     .app-login-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-    .app-login-loading { font-size: 13px; color: rgba(255,255,255,0.5); margin-top: 12px; display: none; }
-    .app-login-err { font-size: 13px; color: #fca5a5; margin-top: 10px; display: none; }
-    .app-login-info { font-size: 13px; color: #6ee7b7; margin-top: 10px; display: none; }
+    .app-login-loading { font-size: 13px; color: #6D28D9; opacity: 0.6; margin-top: 12px; display: none; }
+    .app-login-screen.runday .app-login-loading { color: rgba(255,255,255,0.5); opacity: 1; }
+    .app-login-err { font-size: 13px; color: #DC2626; margin-top: 10px; display: none; }
+    .app-login-screen.runday .app-login-err { color: #fca5a5; }
+    .app-login-info { font-size: 13px; color: #059669; margin-top: 10px; display: none; }
+    .app-login-screen.runday .app-login-info { color: #6ee7b7; }
     .app-login-input-name { letter-spacing: 0; text-align: left; }
     .app-login-keep {
       display: flex; align-items: center; justify-content: center;
       gap: 8px; margin: 12px 0 4px; cursor: pointer;
     }
-    .app-login-keep input[type=checkbox] { width: 16px; height: 16px; accent-color: #F59E0B; cursor: pointer; }
-    .app-login-keep span { font-size: 12px; color: rgba(255,255,255,0.45); }
+    .app-login-keep input[type=checkbox] { width: 16px; height: 16px; accent-color: #7C3AED; cursor: pointer; }
+    .app-login-keep span { font-size: 12px; color: #6D28D9; opacity: 0.55; }
+    .app-login-screen.runday .app-login-keep input[type=checkbox] { accent-color: #F59E0B; }
+    .app-login-screen.runday .app-login-keep span { color: rgba(255,255,255,0.45); opacity: 1; }
     .app-login-bg-circle { position:absolute; border-radius:50%; pointer-events:none; }
 
     /* 헤더 로그아웃 버튼 */
@@ -7590,6 +7618,8 @@ function init() {
   if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
   window.scrollTo(0, 0);
   // ?run 파라미터 없으면 히어로 섹션 숨김, 서브타이틀 변경
+  const loginScreen = document.getElementById('app-login-screen');
+  if (loginScreen) loginScreen.classList.toggle('runday', IS_RUN_MODE);
   const runHero = document.getElementById('login-run-hero');
   if (runHero) runHero.style.display = IS_RUN_MODE ? '' : 'none';
   const loginSub = document.querySelector('.app-login-sub');
