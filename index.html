@@ -2839,6 +2839,8 @@ function myDisplayName() { return S.user.nickname || S.user.name || ''; }
 const SUPABASE_URL      = 'https://nbnmvvobehjitophkqmu.supabase.co';       // Project URL
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ibm12dm9iZWhqaXRvcGhrcW11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3Nzk4NzQsImV4cCI6MjA4ODM1NTg3NH0.iZS4JvhHUqv4ZMPxm9STit6xqVp2JA5H55M8Wmd1yjY';  // anon public key
 let _db = null; // Supabase 클라이언트
+let _realLeagueUsers = null; // Supabase에서 가져온 실제 유저 목록
+let _leagueFetching = false;
 
 const EX_TYPES = [
   { id:'walking',   name:'걷기',    icon:'🚶', ppm:0.5,  bg:'#DCFCE7' },
@@ -3941,14 +3943,15 @@ function earnedAchs() {
 }
 function myLeagueRank() {
   const tab = S.leagueTab;
+  const base = _realLeagueUsers || MOCK_USERS;
   if (tab === 'level') {
     const myLv = getLevel(S.user.totalPoints || S.user.points).lv;
     const myPtsVal = S.user.totalPoints || S.user.points;
-    return MOCK_USERS.filter(u => u.lv === myLv && u.pts > myPtsVal).length + 1;
+    return base.filter(u => u.lv === myLv && u.pts > myPtsVal).length + 1;
   }
   const myPts = tab === 'weekly' ? weekData().reduce((s,d) => s+Math.round(d.mins*0.8),0)
                : (S.user.totalPoints || S.user.points);
-  const others = MOCK_USERS.map(u => tab === 'weekly' ? u.wPts : u.pts);
+  const others = base.map(u => tab === 'weekly' ? u.wPts : u.pts);
   return others.filter(p => p > myPts).length + 1;
 }
 function myWeekPts() {
@@ -4137,14 +4140,15 @@ function renderHome() {
 
   // Quick action subtitles
   const _medals = {1:'🥇',2:'🥈',3:'🥉'};
+  const _base = _realLeagueUsers || MOCK_USERS;
   if (S.user.registrationId) {
-    const chTotal = MOCK_USERS.filter(u => u.isChallenger).length + 1;
-    const chRank  = MOCK_USERS.filter(u => u.isChallenger && u.pts > (S.user.totalPoints || S.user.points)).length + 1;
+    const chTotal = _base.filter(u => u.isChallenger).length + 1;
+    const chRank  = _base.filter(u => u.isChallenger && u.pts > (S.user.totalPoints || S.user.points)).length + 1;
     document.getElementById('rank-quick-label').textContent = '(챌린지)';
     document.getElementById('my-rank-quick').textContent = (_medals[chRank] ? _medals[chRank] + ' ' : '') + chRank + '위 / 전체 ' + chTotal + '명';
   } else {
     const lgRank = myLeagueRank();
-    const lgTotal = MOCK_USERS.length + 1;
+    const lgTotal = _base.length + 1;
     document.getElementById('rank-quick-label').textContent = '';
     document.getElementById('my-rank-quick').textContent = (_medals[lgRank] ? _medals[lgRank] + ' ' : '') + lgRank + '위 / 전체 ' + lgTotal + '명';
   }
@@ -5522,6 +5526,52 @@ function logout() {
 /* ════════════════════════════════════════
    RENDER: LEAGUE
 ════════════════════════════════════════ */
+async function fetchLeagueData() {
+  if (!_db || _leagueFetching) return;
+  _leagueFetching = true;
+  try {
+    const now = new Date();
+    const dow = now.getDay();
+    const weekStart = new Date(now);
+    weekStart.setDate(now.getDate() - dow);
+    weekStart.setHours(0, 0, 0, 0);
+    const weekStartTs = weekStart.getTime();
+
+    const [{ data: allUsers }, { data: weeklyWo }] = await Promise.all([
+      _db.from('users').select('empId,name,avatar,points,tags,registrationId,deviceId'),
+      _db.from('workouts').select('deviceId,points').gte('ts', weekStartTs),
+    ]);
+
+    if (!allUsers) return;
+
+    const wPtsByDevice = {};
+    (weeklyWo || []).forEach(w => {
+      wPtsByDevice[w.deviceId] = (wPtsByDevice[w.deviceId] || 0) + (Number(w.points) || 0);
+    });
+
+    _realLeagueUsers = allUsers
+      .filter(u => u.empId !== ACTIVE_EMPID && u.name)
+      .map(u => ({
+        id: u.empId,
+        name: u.name,
+        avatar: u.avatar || AVATARS[0],
+        lv: getLevel(Number(u.points) || 0).lv,
+        pts: Number(u.points) || 0,
+        wPts: wPtsByDevice[u.deviceId] || 0,
+        change: 0,
+        isMe: false,
+        isChallenger: !!u.registrationId,
+        tags: typeof u.tags === 'string' ? u.tags.split(',').filter(Boolean) : (u.tags || []),
+      }));
+
+    renderLeague();
+  } catch(e) {
+    console.error('League fetch error:', e);
+  } finally {
+    _leagueFetching = false;
+  }
+}
+
 function renderLeague() {
   const tab = S.leagueTab;
 
@@ -5534,8 +5584,9 @@ function renderLeague() {
       wPts: myWeekPts(), change:0, isMe: true, isChallenger: isRegistered,
       tags: S.user.tags || [],
     };
+    const baseUsers = _realLeagueUsers || MOCK_USERS;
     const challengers = [
-      ...MOCK_USERS.filter(u => u.isChallenger).map(u => ({ ...u, isMe: false })),
+      ...baseUsers.filter(u => u.isChallenger).map(u => ({ ...u, isMe: false })),
       ...(isRegistered ? [me] : []),
     ].sort((a, b) => b.pts - a.pts).map((u, i) => ({ ...u, rank: i + 1 }));
 
@@ -5619,7 +5670,7 @@ function renderLeague() {
   const myRank = myLeagueRank();
   const myLv   = getLevel(S.user.points);
   const myLvNumCard = getLevel(S.user.totalPoints || S.user.points).lv;
-  const total  = tab === 'level' ? MOCK_USERS.filter(u => u.lv === myLvNumCard).length + 1 : MOCK_USERS.length + 1;
+  const total  = tab === 'level' ? baseUsers.filter(u => u.lv === myLvNumCard).length + 1 : baseUsers.length + 1;
   const pct    = Math.round((myRank / total) * 100);
 
   document.getElementById('my-rank-card').innerHTML = `
@@ -5645,9 +5696,10 @@ function renderLeague() {
     lv: getLevel(S.user.totalPoints || S.user.points).lv, pts: S.user.totalPoints || S.user.points,
     wPts: myWeekPts(), change:0, isMe: true, tags: S.user.tags || [],
   };
+  const baseUsers = _realLeagueUsers || MOCK_USERS;
   const myLvNum = getLevel(S.user.totalPoints || S.user.points).lv;
   const list = [
-    ...MOCK_USERS
+    ...baseUsers
       .filter(u => tab === 'level' ? u.lv === myLvNum : true)
       .map(u => ({ ...u, isMe: false })),
     me
@@ -5720,7 +5772,7 @@ function setCommunityTab(tab) {
   // 챌린지 신청 완료 시에만 리그의 챌린지 탭 표시
   const challengerTab = document.getElementById('league-tab-challenger');
   if (challengerTab) challengerTab.style.display = S.user.registrationId ? '' : 'none';
-  if (tab === 'league') renderLeague();
+  if (tab === 'league') { renderLeague(); fetchLeagueData(); }
 }
 
 function setRewardsTab(tab) {
