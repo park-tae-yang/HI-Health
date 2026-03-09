@@ -1651,7 +1651,8 @@
 
     .ch-reg-card { background:linear-gradient(145deg,#fffbeb,#fef3c7); border-radius:var(--radius); padding:16px; margin-bottom:14px; border:1.5px solid #fcd34d; box-shadow:0 4px 16px rgba(245,158,11,0.10); }
     .ch-reg-header { display:flex; align-items:center; gap:10px; margin-bottom:12px; padding-bottom:10px; border-bottom:1.5px solid rgba(180,130,0,0.12); }
-    .ch-reg-icon { width:34px; height:34px; background:linear-gradient(135deg,#F59E0B,#D97706); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; }
+    .ch-reg-icon { width:34px; height:34px; border-radius:50%; overflow:hidden; flex-shrink:0; border:2px solid #fcd34d; }
+    .ch-reg-icon .av-img { width:100%; height:100%; object-fit:cover; }
     .ch-reg-title { font-size:14px; font-weight:700; color:#92400e; }
     .ch-reg-subtitle { font-size:11px; color:#b45309; font-weight:500; margin-top:1px; }
     .ch-reg-rows { display:grid; grid-template-columns:1fr 1fr; gap:0; }
@@ -6747,7 +6748,7 @@ function renderChallenge() {
     regEl.innerHTML = `
       <div class="ch-reg-card">
         <div class="ch-reg-header">
-          <div class="ch-reg-icon">✅</div>
+          <div class="ch-reg-icon">${avHTML(S.user.avatar)}</div>
           <div>
             <div class="ch-reg-title">나의 신청</div>
             <div class="ch-reg-subtitle">신청번호 ${myReg.id}</div>
