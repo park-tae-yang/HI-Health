@@ -519,8 +519,22 @@
     <div class="panel" id="panel-content">
       <div class="ap-compose">
         <div style="font-size:14px;font-weight:700;margin-bottom:10px">새 공지 작성</div>
-        <textarea id="ap-text" placeholder="공지 내용을 입력하세요..."></textarea>
-        <input class="dp-inp" id="ap-link" placeholder="링크 (선택)" style="margin-bottom:8px">
+        <div style="display:flex;gap:8px;margin-bottom:8px">
+          <input class="dp-inp" id="ap-title" placeholder="제목" style="flex:2">
+          <select class="ctrl-sel" id="ap-category" style="flex:1">
+            <option value="notice">공지</option>
+            <option value="column">칼럼</option>
+            <option value="tip">팁</option>
+            <option value="video">영상</option>
+          </select>
+        </div>
+        <textarea id="ap-text" placeholder="내용을 입력하세요..."></textarea>
+        <input class="dp-inp" id="ap-media" placeholder="미디어 URL (유튜브/이미지, 선택)" style="margin-bottom:8px">
+        <select class="ctrl-sel" id="ap-mediatype" style="margin-bottom:8px">
+          <option value="">미디어 없음</option>
+          <option value="youtube">유튜브</option>
+          <option value="image">이미지</option>
+        </select>
         <button class="cbtn pri" onclick="postAdminNotice()">공지 게시</button>
       </div>
       <div class="tbl-wrap">
@@ -528,8 +542,9 @@
           <table>
             <thead><tr>
               <th>날짜</th>
+              <th>분류</th>
+              <th>제목</th>
               <th>내용</th>
-              <th>링크</th>
               <th>관리</th>
             </tr></thead>
             <tbody id="ap-tbody"></tbody>
@@ -1549,42 +1564,50 @@ async function markRewardDone(deviceId, rewardId) {
    ADMIN POSTS (공지)
 ══════════════════════════════════════════════ */
 async function postAdminNotice() {
-  const text = document.getElementById('ap-text').value.trim();
-  if (!text) { toast('내용을 입력해주세요'); return; }
-  const link = document.getElementById('ap-link').value.trim();
+  const title    = document.getElementById('ap-title').value.trim();
+  const text     = document.getElementById('ap-text').value.trim();
+  const category = document.getElementById('ap-category').value;
+  const mediaUrl = document.getElementById('ap-media').value.trim();
+  const mediaType= document.getElementById('ap-mediatype').value;
+  if (!title) { toast('제목을 입력해주세요'); return; }
+  if (!text)  { toast('내용을 입력해주세요'); return; }
   const payload = {
+    title,
     body: text,
-    link: link || null,
+    category,
+    mediaUrl: mediaUrl || null,
+    mediaType: mediaType || null,
     createdAt: new Date().toISOString(),
   };
   showLoading(true);
   const { error } = await db.from('admin_posts').insert(payload);
   showLoading(false);
-  if (error) {
-    alert('게시 실패: ' + error.message);
-    return;
-  }
-  document.getElementById('ap-text').value = '';
-  document.getElementById('ap-link').value = '';
-  // 실시간 리스너가 자동으로 loadAll 호출하므로, 로컬에도 반영
+  if (error) { alert('게시 실패: ' + error.message); return; }
+  document.getElementById('ap-title').value = '';
+  document.getElementById('ap-text').value  = '';
+  document.getElementById('ap-media').value = '';
+  document.getElementById('ap-mediatype').value = '';
   GD.adminPosts.unshift(payload);
   renderAdminPosts();
   toast('공지 게시 완료 ✓');
 }
 
+const CAT_LABEL = { notice:'공지', column:'칼럼', tip:'팁', video:'영상' };
 function renderAdminPosts() {
   const tbody = document.getElementById('ap-tbody');
   if (!GD.adminPosts.length) {
-    tbody.innerHTML = `<tr><td class="empty-cell" colspan="4">공지가 없습니다</td></tr>`;
+    tbody.innerHTML = `<tr><td class="empty-cell" colspan="5">공지가 없습니다</td></tr>`;
     return;
   }
   tbody.innerHTML = GD.adminPosts.map(p => {
     const d = p.createdAt ? new Date(p.createdAt).toLocaleDateString('ko-KR') : '-';
     const safeId = String(p.id||'').replace(/'/g,'');
+    const cat = CAT_LABEL[p.category] || p.category || '-';
     return `<tr>
       <td class="td-date">${d}</td>
-      <td>${(p.body||'').substring(0,60)}</td>
-      <td>${p.link ? `<a href="${p.link}" target="_blank" style="color:var(--p)">링크</a>` : '-'}</td>
+      <td><span class="badge ex">${cat}</span></td>
+      <td class="td-name">${p.title||'-'}</td>
+      <td class="td-memo">${(p.body||'').substring(0,50)}</td>
       <td><button class="abtn del" onclick="deleteAdminPost('${safeId}')">삭제</button></td>
     </tr>`;
   }).join('');
