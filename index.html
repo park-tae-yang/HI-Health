@@ -7003,7 +7003,7 @@ function renderChallenge() {
           <div class="ch-row2">
             <div class="ch-form-group">
               <label class="form-label">사번 <span style="color:var(--accent)">*</span></label>
-              <input type="text" class="ch-form-input" id="ch-empid" placeholder="A1801" oninput="checkChDup()">
+              <input type="text" class="ch-form-input" id="ch-empid" placeholder="A1801" value="${S.user.empId || ACTIVE_EMPID || ''}" oninput="checkChDup()">
             </div>
             <div class="ch-form-group">
               <label class="form-label">부서 <span style="color:var(--accent)">*</span></label>
