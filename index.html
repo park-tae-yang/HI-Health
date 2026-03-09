@@ -1649,19 +1649,21 @@
     .ch-phase-val   { font-size:19px; font-weight:700; }
     .ch-phase-lbl   { font-size:10px; opacity:0.8; margin-top:2px; }
 
-    .ch-reg-card { background:linear-gradient(145deg,#fffbeb,#fef3c7); border-radius:var(--radius); padding:16px; margin-bottom:14px; border:1.5px solid #fcd34d; box-shadow:0 4px 16px rgba(245,158,11,0.10); }
-    .ch-reg-header { display:flex; align-items:center; gap:10px; margin-bottom:12px; padding-bottom:10px; border-bottom:1.5px solid rgba(180,130,0,0.12); }
-    .ch-reg-icon { width:34px; height:34px; border-radius:50%; overflow:hidden; flex-shrink:0; border:2px solid #fcd34d; }
+    .ch-reg-card { margin:0 0 14px; padding:12px 14px; border-radius:12px; background:#fffbeb; border:1px solid rgba(245,158,11,0.25); }
+    .ch-reg-badge { display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:700; color:#b45309; background:#fff; border-radius:20px; padding:3px 10px; margin-bottom:10px; border:1px solid rgba(245,158,11,0.3); }
+    .ch-reg-person { display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+    .ch-reg-icon { width:32px; height:32px; border-radius:50%; overflow:hidden; flex-shrink:0; border:1.5px solid #fcd34d; }
     .ch-reg-icon .av-img { width:100%; height:100%; object-fit:cover; }
-    .ch-reg-title { font-size:14px; font-weight:700; color:#92400e; }
-    .ch-reg-subtitle { font-size:11px; color:#b45309; font-weight:500; margin-top:1px; }
-    .ch-reg-rows { display:grid; grid-template-columns:1fr 1fr; gap:0; }
-    .ch-reg-row { display:flex; flex-direction:column; gap:2px; padding:7px 8px; border-bottom:1px solid rgba(180,130,0,0.08); }
-    .ch-reg-row:nth-child(odd) { border-right:1px solid rgba(180,130,0,0.08); }
+    .ch-reg-name { font-size:13px; font-weight:700; color:#78350f; }
+    .ch-reg-sub { font-size:11px; color:#b45309; margin-top:1px; }
+    .ch-reg-rows { display:grid; grid-template-columns:1fr 1fr; gap:0; border:1px solid rgba(245,158,11,0.15); border-radius:8px; overflow:hidden; background:#fff; margin-bottom:10px; }
+    .ch-reg-row { display:flex; flex-direction:column; gap:2px; padding:7px 10px; border-bottom:1px solid rgba(245,158,11,0.1); }
+    .ch-reg-row:nth-child(odd) { border-right:1px solid rgba(245,158,11,0.1); }
     .ch-reg-row-full { grid-column:1/-1; border-right:none !important; }
     .ch-reg-label { color:#a16207; font-size:10px; font-weight:500; }
-    .ch-reg-value { font-weight:600; color:#78350f; font-size:13px; }
-    .ch-share-btn { width:100%; margin-top:12px; padding:10px; background:#F59E0B; color:#fff; border:none; border-radius:10px; font-size:13px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; }
+    .ch-reg-value { font-weight:600; color:#78350f; font-size:12px; }
+    .ch-reg-phase { font-size:11px; font-weight:600; color:#b45309; opacity:0.75; margin-bottom:10px; }
+    .ch-share-btn { flex:1; padding:8px 12px; background:#F59E0B; color:#fff; border:none; border-radius:20px; font-size:12px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:5px; }
 
     .ch-tl { display:flex; flex-direction:column; gap:0; position:relative; padding-left:34px; }
     .ch-tl::before { content:''; position:absolute; left:6px; top:10px; bottom:10px; width:2px; background:var(--border); border-radius:2px; }
@@ -6743,24 +6745,24 @@ function renderChallenge() {
     const showWorkout  = phase === 'pre' || phase === 'main';
     regEl.innerHTML = `
       <div class="ch-reg-card">
-        <div class="ch-reg-header">
+        <div class="ch-reg-badge">🏅 HI RUN DAY 신청 완료</div>
+        <div class="ch-reg-person">
           <div class="ch-reg-icon">${avHTML(S.user.avatar)}</div>
           <div>
-            <div class="ch-reg-title">나의 신청</div>
-            <div class="ch-reg-subtitle">신청번호 ${myReg.id}</div>
+            <div class="ch-reg-name">${myReg.name} · ${myReg.dept}</div>
+            <div class="ch-reg-sub">신청번호 ${myReg.id}</div>
           </div>
-          <div style="margin-left:auto;background:${statusColor}1a;color:${statusColor};font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;border:1px solid ${statusColor}40">${statusLbl}</div>
+          <div style="margin-left:auto;background:${statusColor}15;color:${statusColor};font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;border:1px solid ${statusColor}30">${statusLbl}</div>
         </div>
         <div class="ch-reg-rows">
-          <div class="ch-reg-row"><span class="ch-reg-label">이름</span><span class="ch-reg-value">${myReg.name}</span></div>
-          <div class="ch-reg-row"><span class="ch-reg-label">부서</span><span class="ch-reg-value">${myReg.dept}</span></div>
           <div class="ch-reg-row"><span class="ch-reg-label">신발 사이즈</span><span class="ch-reg-value">${myReg.shoeSize}mm</span></div>
-          <div class="ch-reg-row ch-reg-row-full"><span class="ch-reg-label">가족 참여</span><span class="ch-reg-value">${myReg.familyParticipation ? '함께 · ' + [myReg.familyGender, myReg.familyAge, myReg.familyShoeSize ? myReg.familyShoeSize + 'mm' : ''].filter(Boolean).join(' ') || '가족 1인' : '본인만'}</span></div>
+          <div class="ch-reg-row"><span class="ch-reg-label">가족 참여</span><span class="ch-reg-value">${myReg.familyParticipation ? '함께 · ' + [myReg.familyGender, myReg.familyAge, myReg.familyShoeSize ? myReg.familyShoeSize + 'mm' : ''].filter(Boolean).join(' ') || '가족 1인' : '본인만'}</span></div>
           <div class="ch-reg-row"><span class="ch-reg-label">크루즈 탑승</span><span class="ch-reg-value">${myReg.cruiseParticipation === false ? '탑승 안 함' : '탑승 희망'}</span></div>
           <div class="ch-reg-row"><span class="ch-reg-label">행사 참여</span><span class="ch-reg-value">${myReg.eventParticipation === false ? '불참' : '참여'}</span></div>
         </div>
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px;gap:8px">
-          <button type="button" class="ch-share-btn" style="flex:1;margin-top:0" onclick="shareChReg('${myReg.id}','${myReg.name}','${myReg.dept}')">📤 신청서 공유하기</button>
+        <div class="ch-reg-phase">현재 단계: ${{ before:'모집 예정', registration:'신청 기간', preparing:'준비 중', pre:'프리 챌린지 진행 중', main:'본 챌린지 진행 중', ended:'챌린지 종료' }[phase] || phase}</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <button type="button" class="ch-share-btn" onclick="shareChReg('${myReg.id}','${myReg.name}','${myReg.dept}')">📤 공유하기</button>
           ${canCancelReg ? `<button type="button" class="ch-cancel-reg-btn" onclick="cancelRegistration('${myReg.id}')">신청 취소</button>` : ''}
         </div>
         ${showWorkout ? `<button type="button" class="btn btn-primary btn-full ch-workout-btn" style="margin-top:8px" onclick="scrollToExerciseForm()">오늘 운동 기록하기</button>` : ''}
