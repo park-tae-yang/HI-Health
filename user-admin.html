@@ -905,7 +905,8 @@ function renderUsers() {
     const actCell = activeCell(u);
     return `<tr class="${rowClass}">
       <td><span class="rank ${rc}">${rank}</span></td>
-      <td class="td-name">${u.name||'(이름없음)'}
+      <td class="td-name">
+        ${u.avatar ? (u.avatar.startsWith('images/') || u.avatar.startsWith('http') ? `<img src="${u.avatar}" style="width:22px;height:22px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:4px">` : `<span style="margin-right:3px">${u.avatar}</span>`) : ''}${u.name||'(이름없음)'}
         ${bad ? '<span class="badge bad" style="margin-left:4px">이상</span>' : ''}
         ${dup ? '<span class="badge dup" style="margin-left:4px">중복</span>' : ''}
         ${isCh ? '<span class="badge ch" style="margin-left:4px">챌린지</span>' : ''}
