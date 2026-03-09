@@ -2689,6 +2689,25 @@ const PROFILE_TAGS = [
   },
 ];
 
+const CHALLENGE_TAGS = [
+  {
+    cat: '러닝 목표',
+    tags: ['5km 완주', '10km 완주', '코스 완주', '걷기 참여', '가족과 함께', '개인 기록 도전', '즐겁게 완주'],
+  },
+  {
+    cat: '나의 컨디션',
+    tags: ['훈련 중', '스트레칭 중', '페이스 조절 중', '컨디션 최고', '몸 만드는 중', '준비 완료', '긴장되지만 설레'],
+  },
+  {
+    cat: '건강 습관',
+    tags: ['매일 걷기', '식단 관리', '수면 개선', '스트레스 관리', '체중 관리', '스트레칭 매일', '충분한 수분 섭취'],
+  },
+  {
+    cat: '나의 다짐',
+    tags: ['완주할 거야', '함께 달려요', '즐겁게 달리기', '포기 안 해', '최선을 다해', '건강하게 달리자', 'HI RUN DAY 화이팅'],
+  },
+];
+
 const LEVELS = [
   { lv:1, name:'새싹',   min:0,    max:199,  color:'#22C55E',
     icon:`<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" style="vertical-align:middle">
@@ -5338,16 +5357,26 @@ function viewPhoto(id) {
 
 let _selAvatar = AVATARS[0];
 let _selTags   = [];
+let _pmIsChallenge = false;
+function activeTags() { return _pmIsChallenge ? CHALLENGE_TAGS : PROFILE_TAGS; }
 function openProfileModal(onboarding = false) {
   document.getElementById('pm-realname').textContent = S.user.name || '-';
   document.getElementById('pm-empid').textContent = ACTIVE_EMPID || '-';
   document.getElementById('pm-nickname').value = S.user.nickname || S.user.name || '';
   _selAvatar = S.user.avatar;
-  const validTags = new Set(PROFILE_TAGS.flatMap(c => c.tags));
+  _pmIsChallenge = !!getMyReg();
+  const validTags = new Set(activeTags().flatMap(c => c.tags));
   _selTags = (S.user.tags || []).filter(t => validTags.has(t));
   document.getElementById('pm-avatar-grid').innerHTML = AVATARS.map(a =>
     `<button type="button" class="avatar-opt${a===_selAvatar?' selected':''}" data-av="${a}" onclick="pickAvatar('${a}')">${avHTML(a)}</button>`
   ).join('');
+  // 아바타·태그 섹션 타이틀 변경
+  const avTitle = document.querySelector('#pm-section-avatar').previousElementSibling?.querySelector('.pm-section-title');
+  if (avTitle) avTitle.innerHTML = _pmIsChallenge ? '🏃 러너 아바타 선택' : '아바타 선택';
+  const tagTitle = document.querySelector('#pm-section-tag').previousElementSibling?.querySelector('.pm-section-title');
+  if (tagTitle) tagTitle.innerHTML = _pmIsChallenge
+    ? '🏅 러닝 태그 <span class="pm-sel-count" id="pm-sel-count"></span>'
+    : '나의 태그 <span class="pm-sel-count" id="pm-sel-count"></span>';
   // 섹션 기본 펼침
   document.getElementById('pm-section-avatar').classList.remove('collapsed');
   document.getElementById('pm-section-tag').classList.remove('collapsed');
@@ -5401,14 +5430,15 @@ function closeProfileModal() {
 function renderPmTags() {
   const listEl = document.getElementById('pm-tag-list');
   if (!listEl) return;
-  listEl.innerHTML = PROFILE_TAGS.map((cat, ci) => `
+  const tags = activeTags();
+  listEl.innerHTML = tags.map((cat, ci) => `
     <div class="pm-tag-category">
       <div class="pm-tag-cat-title">${cat.cat}</div>
       <div class="pm-tag-chips" id="pm-cat-${ci}"></div>
     </div>
   `).join('');
   // Attach buttons via JS to avoid any HTML attribute string-encoding issues
-  PROFILE_TAGS.forEach((cat, ci) => {
+  tags.forEach((cat, ci) => {
     const row = document.getElementById('pm-cat-' + ci);
     cat.tags.forEach((tag, ti) => {
       const btn = document.createElement('button');
@@ -5424,7 +5454,7 @@ function renderPmTags() {
 }
 function togglePmTag(ci, ti) {
   haptic('light');
-  const tag = PROFILE_TAGS[ci].tags[ti];
+  const tag = activeTags()[ci].tags[ti];
   const idx = _selTags.indexOf(tag);
   if (idx === -1) _selTags.push(tag); else _selTags.splice(idx, 1);
   renderPmTags();
