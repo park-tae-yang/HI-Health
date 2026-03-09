@@ -2579,10 +2579,11 @@
       <div id="ch-hero"></div>
     </div>
     <div id="ch-phase-card"></div>
-    <div id="ch-reg-status"></div>
+    <div id="ch-reg-done"></div>
     <div id="ch-timeline-wrap"></div>
     <div id="ch-benefit-wrap"></div>
     <div id="ch-event-info"></div>
+    <div id="ch-reg-form"></div>
   </section>
 
 </main>
@@ -6811,14 +6812,15 @@ function renderChallenge() {
 
   /* ── Registration status / form ── */
   const myReg = getMyReg();
-  const regEl = document.getElementById('ch-reg-status');
+  const doneEl = document.getElementById('ch-reg-done');
+  const formEl = document.getElementById('ch-reg-form');
 
   if (myReg && myReg.status !== 'cancelled') {
     const statusLbl   = { pending:'검토 중', confirmed:'선정 완료', cancelled:'미선정' }[myReg.status] || myReg.status;
     const statusColor = myReg.status === 'confirmed' ? '#166534' : myReg.status === 'cancelled' ? '#991b1b' : '#92400e';
     const canCancelReg = myReg.status === 'pending' && now <= CH.deadline;
     const showWorkout  = phase === 'pre' || phase === 'main';
-    regEl.innerHTML = `
+    doneEl.innerHTML = `
       <div class="ch-reg-card">
         <div class="ch-reg-badge">🏅 HI RUN DAY 신청 완료</div>
         <div class="ch-reg-person">
@@ -6843,8 +6845,10 @@ function renderChallenge() {
         <button type="button" class="btn btn-primary btn-full ch-workout-btn" style="margin-top:8px;padding:8px;font-size:11px" onclick="scrollToExerciseForm()">오늘 운동 기록하기</button>
       </div>
     `;
+    formEl.innerHTML = '';
   } else if (phase === 'registration') {
-    regEl.innerHTML = `
+    doneEl.innerHTML = '';
+    formEl.innerHTML = `
       <div class="card">
         <div class="card-header">
           <span class="card-title">챌린지 신청</span>
@@ -6949,14 +6953,16 @@ function renderChallenge() {
       </div>
     `;
   } else if (phase === 'before') {
-    regEl.innerHTML = `
+    doneEl.innerHTML = `
       <div class="card" style="text-align:center;padding:24px 20px">
         <div style="font-size:13px;font-weight:700;margin-bottom:4px">신청 기간 오픈 예정</div>
         <div style="font-size:12px;color:var(--text-secondary)">2월 27일부터 이 화면에서 바로 신청하실 수 있어요</div>
       </div>
     `;
+    formEl.innerHTML = '';
   } else {
-    regEl.innerHTML = '';
+    doneEl.innerHTML = '';
+    formEl.innerHTML = '';
   }
 
   /* ── Event Info ── */
