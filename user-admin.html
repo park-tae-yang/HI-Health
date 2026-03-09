@@ -552,7 +552,7 @@
           <option value="youtube">유튜브</option>
           <option value="image">이미지</option>
         </select>
-        <button class="cbtn pri" onclick="postAdminNotice()">공지 게시</button>
+        <button class="cbtn pri" onclick="postAdminNotice()">콘텐츠 게시</button>
       </div>
       <div class="tbl-wrap">
         <div class="tbl-scroll">
@@ -1652,9 +1652,54 @@ function renderAdminPosts() {
       <td><span class="badge ex">${cat}</span></td>
       <td class="td-name">${p.title||'-'}</td>
       <td class="td-memo">${(p.body||'').substring(0,50)}</td>
-      <td><button class="abtn del" onclick="deleteAdminPost('${safeId}')">삭제</button></td>
+      <td>
+        <div style="display:flex;gap:4px">
+          <button class="abtn det" onclick="editAdminPost('${safeId}')">수정</button>
+          <button class="abtn del" onclick="deleteAdminPost('${safeId}')">삭제</button>
+        </div>
+      </td>
     </tr>`;
   }).join('');
+}
+
+function editAdminPost(id) {
+  const p = GD.adminPosts.find(x => String(x.id) === String(id));
+  if (!p) return;
+  document.getElementById('ap-title').value    = p.title || '';
+  document.getElementById('ap-text').value     = p.body  || '';
+  document.getElementById('ap-category').value = p.category || 'notice';
+  document.getElementById('ap-media').value    = p.mediaUrl  || '';
+  document.getElementById('ap-mediatype').value= p.mediaType || '';
+  const btn = document.querySelector('[onclick="postAdminNotice()"]');
+  btn.textContent = '수정 저장';
+  btn.onclick = async () => {
+    const title    = document.getElementById('ap-title').value.trim();
+    const text     = document.getElementById('ap-text').value.trim();
+    const category = document.getElementById('ap-category').value;
+    const mediaUrl = document.getElementById('ap-media').value.trim();
+    const mediaType= document.getElementById('ap-mediatype').value;
+    if (!title) { toast('제목을 입력해주세요'); return; }
+    if (!text)  { toast('내용을 입력해주세요'); return; }
+    showLoading(true);
+    const { error } = await db.from('admin_posts').update({
+      title, body: text, category,
+      mediaUrl: mediaUrl || null,
+      mediaType: mediaType || null,
+    }).eq('id', id);
+    showLoading(false);
+    if (error) { toast('수정 실패: ' + error.message); return; }
+    const idx = GD.adminPosts.findIndex(x => String(x.id) === String(id));
+    if (idx !== -1) GD.adminPosts[idx] = { ...GD.adminPosts[idx], title, body: text, category, mediaUrl: mediaUrl||null, mediaType: mediaType||null };
+    document.getElementById('ap-title').value = '';
+    document.getElementById('ap-text').value  = '';
+    document.getElementById('ap-media').value = '';
+    document.getElementById('ap-mediatype').value = '';
+    btn.textContent = '콘텐츠 게시';
+    btn.onclick = postAdminNotice;
+    renderAdminPosts();
+    toast('수정 완료 ✓');
+  };
+  document.getElementById('ap-title').scrollIntoView({ behavior: 'smooth' });
 }
 
 async function deleteAdminPost(id) {
