@@ -5380,7 +5380,7 @@ function openProfileModal(onboarding = false) {
   ).join('');
   // 아바타·태그 섹션 타이틀 변경
   const avTitle = document.querySelector('#pm-section-avatar').previousElementSibling?.querySelector('.pm-section-title');
-  if (avTitle) avTitle.innerHTML = _pmIsChallenge ? '🏃 러너 아바타 선택' : '아바타 선택';
+  if (avTitle) avTitle.innerHTML = _pmIsChallenge ? '챌린지 아바타 선택' : '아바타 선택';
   const tagTitle = document.querySelector('#pm-section-tag').previousElementSibling?.querySelector('.pm-section-title');
   if (tagTitle) tagTitle.innerHTML = _pmIsChallenge
     ? '🏅 러닝 태그 <span class="pm-sel-count" id="pm-sel-count"></span>'
