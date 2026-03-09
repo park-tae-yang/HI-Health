@@ -103,6 +103,10 @@
     .btn-detail:hover { background:var(--primary); color:#fff; }
     .empty-table { padding:52px; text-align:center; color:var(--text-3); }
     .empty-icon { font-size:48px; margin-bottom:12px; }
+    .badge-bad-name { display:inline-block; background:#FEE2E2; color:#DC2626; border-radius:4px; font-size:10px; font-weight:700; padding:1px 5px; margin-left:4px; }
+    .badge-dup { display:inline-block; background:#FEF3C7; color:#B45309; border-radius:4px; font-size:10px; font-weight:700; padding:1px 5px; margin-left:4px; }
+    tr.row-bad-name td { background:#FFF8F8; }
+    tr.row-dup td { background:#FFFBEB; }
 
     /* USER INFO CARD */
     .user-info-card { background:var(--card); border-radius:var(--radius); padding:24px; box-shadow:var(--shadow); margin-bottom:16px; }
@@ -541,12 +545,18 @@
       <div id="users-list-section" style="display:none;">
         <div class="controls">
           <input type="text" class="ctrl-search" id="users-search" placeholder="이름, 등록번호, 부서로 검색..." oninput="onUsersSearch()">
+          <select class="ctrl-select" id="users-filter" onchange="userPage=0;renderUsers()">
+            <option value="all">전체 보기</option>
+            <option value="bad">이상한 이름</option>
+            <option value="dup">중복 이용자</option>
+          </select>
           <select class="ctrl-select" id="users-sort" onchange="renderUsers()">
             <option value="name">이름순</option>
             <option value="points">포인트순</option>
             <option value="workouts">운동 횟수순</option>
             <option value="streak">연속운동순</option>
           </select>
+          <button type="button" class="ctrl-btn danger" id="dup-clean-btn" onclick="deleteDuplicates()" style="display:none;">중복 삭제</button>
           <span class="ctrl-count" id="users-count"></span>
         </div>
         <div class="table-wrap">
@@ -1068,20 +1078,51 @@ function onUsersSearch() {
 }
 
 /* ── USERS LIST ── */
+function isBadName(name) {
+  if (!name) return false;
+  const n = name.trim();
+  if (/https?:\/\//i.test(n)) return true;
+  if (n.length > 30) return true;
+  if (/^[\d\s\-\/\.]+$/.test(n)) return true; // 숫자/기호만
+  if (/[\/\\@]/.test(n)) return true;           // 경로/이메일 구분자
+  return false;
+}
+
+function getDupEmpIds() {
+  if (!GD) return new Set();
+  const empIdCount = {};
+  (GD.users || []).forEach(u => {
+    const id = (u.empId || '').trim();
+    if (id) empIdCount[id] = (empIdCount[id] || 0) + 1;
+  });
+  return new Set(Object.entries(empIdCount).filter(([,c]) => c > 1).map(([id]) => id));
+}
+
 function getFilteredSortedUsers() {
   if (!GD) return [];
   const q = (document.getElementById('users-search')?.value || '').toLowerCase();
   const sort = document.getElementById('users-sort')?.value || 'name';
+  const filterMode = document.getElementById('users-filter')?.value || 'all';
   const workoutCounts = {};
   (GD.workouts || []).forEach(w => { workoutCounts[w.deviceId] = (workoutCounts[w.deviceId] || 0) + 1; });
 
+  const dupEmpIds = getDupEmpIds();
+
   let users = (GD.users || []).filter(u => {
-    if (!q) return true;
-    return (u.name||'').toLowerCase().includes(q)
+    // 검색 필터
+    if (q && !((u.name||'').toLowerCase().includes(q)
       || (u.registrationId||'').toLowerCase().includes(q)
       || (u.empId||'').toLowerCase().includes(q)
-      || (u.dept||'').toLowerCase().includes(q);
+      || (u.dept||'').toLowerCase().includes(q))) return false;
+    // 분류 필터
+    if (filterMode === 'bad') return isBadName(u.name);
+    if (filterMode === 'dup') return dupEmpIds.has((u.empId||'').trim());
+    return true;
   });
+
+  // 중복 삭제 버튼 표시
+  const dupBtn = document.getElementById('dup-clean-btn');
+  if (dupBtn) dupBtn.style.display = filterMode === 'dup' && users.length ? '' : 'none';
 
   users = [...users].sort((a, b) => {
     if (sort === 'points') return (Number(b.points)||0) - (Number(a.points)||0);
@@ -1105,6 +1146,8 @@ function renderUsers() {
   (GD.workouts||[]).forEach(w => { workoutCounts[w.deviceId] = (workoutCounts[w.deviceId]||0)+1; });
   (GD.posts||[]).forEach(p => { postCounts[p.deviceId] = (postCounts[p.deviceId]||0)+1; });
 
+  const dupEmpIds2 = getDupEmpIds();
+
   const pageUsers = users.slice(userPage * USER_PAGE_SIZE, (userPage + 1) * USER_PAGE_SIZE);
   const offset = userPage * USER_PAGE_SIZE;
 
@@ -1118,16 +1161,23 @@ function renderUsers() {
       const isSelected = u.deviceId === selectedDeviceId;
       const wo = workoutCounts[u.deviceId] || 0;
       const po = postCounts[u.deviceId] || 0;
-      return `<tr class="user-row${isSelected?' selected':''}" onclick="selectUser('${u.deviceId}','${(u.name||'').replace(/'/g,"\\'")}')">
+      const badName = isBadName(u.name);
+      const isDup = dupEmpIds2.has((u.empId||'').trim());
+      const rowClass = badName ? ' row-bad-name' : (isDup ? ' row-dup' : '');
+      const nameBadge = badName ? '<span class="badge-bad-name">이상</span>' : (isDup ? '<span class="badge-dup">중복</span>' : '');
+      return `<tr class="user-row${isSelected?' selected':''}${rowClass}" onclick="selectUser('${u.deviceId}','${(u.name||'').replace(/'/g,"\\'")}')">
         <td><span class="rank-badge ${rankClass}">${rank}</span></td>
-        <td class="td-name">${u.avatar||'🏃'} ${u.name||'(이름없음)'}</td>
+        <td class="td-name">${u.avatar||'🏃'} ${u.name||'(이름없음)'}${nameBadge}</td>
         <td><span class="td-user">${u.registrationId||u.empId||'-'}</span></td>
         <td>${u.dept||'-'}</td>
         <td class="pts-badge">${(Number(u.points)||0).toLocaleString()}</td>
         <td>${wo}</td>
         <td>${Number(u.streak)||0}일</td>
         <td>${po}</td>
-        <td><button class="action-btn btn-detail" onclick="event.stopPropagation();selectUser('${u.deviceId}','${(u.name||'').replace(/'/g,"\\'")}')">상세</button></td>
+        <td>
+          <button class="action-btn btn-detail" onclick="event.stopPropagation();selectUser('${u.deviceId}','${(u.name||'').replace(/'/g,"\\'")}')">상세</button>
+          <button class="action-btn btn-delete" onclick="event.stopPropagation();deleteUser('${u.deviceId}','${(u.name||'').replace(/'/g,"\\'")}')">삭제</button>
+        </td>
       </tr>`;
     }).join('');
   }
@@ -1159,6 +1209,59 @@ function goUserPage(page) {
   userPage = page;
   renderUsers();
   document.getElementById('panel-users').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+async function deleteUser(deviceId, name) {
+  if (!confirm(`"${name || deviceId}" 이용자를 삭제하시겠습니까?\n운동 기록, 게시글 등 모든 데이터가 함께 삭제됩니다.`)) return;
+  if (!_adminDb) { toast('Supabase 연결 필요'); return; }
+  showLoading(true);
+  try {
+    await Promise.all([
+      _adminDb.from('users').delete().eq('deviceId', deviceId),
+      _adminDb.from('workouts').delete().eq('deviceId', deviceId),
+      _adminDb.from('glucose').delete().eq('deviceId', deviceId),
+      _adminDb.from('posts').delete().eq('deviceId', deviceId),
+    ]);
+    GD.users = GD.users.filter(u => u.deviceId !== deviceId);
+    GD.workouts = GD.workouts.filter(w => w.deviceId !== deviceId);
+    GD.glucose = (GD.glucose||[]).filter(g => g.deviceId !== deviceId);
+    GD.posts = GD.posts.filter(p => p.deviceId !== deviceId);
+    if (selectedDeviceId === deviceId) { selectedDeviceId = ''; document.getElementById('users-detail-section').style.display = 'none'; }
+    buildUserFilter(); renderStats(); renderUsers();
+    toast(`"${name}" 삭제 완료`);
+  } catch(e) { toast('삭제 실패: ' + e.message); }
+  finally { showLoading(false); }
+}
+
+async function deleteDuplicates() {
+  const dupEmpIds = getDupEmpIds();
+  if (!dupEmpIds.size) { toast('중복 이용자가 없습니다'); return; }
+  // 각 empId별로 points 가장 많은 1명 유지, 나머지 삭제
+  const toDelete = [];
+  dupEmpIds.forEach(empId => {
+    const group = (GD.users||[]).filter(u => (u.empId||'').trim() === empId);
+    group.sort((a, b) => (Number(b.points)||0) - (Number(a.points)||0));
+    group.slice(1).forEach(u => toDelete.push(u));
+  });
+  if (!confirm(`중복된 사번의 이용자 ${toDelete.length}명을 삭제합니다.\n(각 사번에서 포인트가 가장 높은 계정 1개씩 남깁니다)\n\n삭제 대상:\n${toDelete.map(u => `• ${u.name||'(이름없음)'} (${u.empId})`).join('\n')}\n\n계속하시겠습니까?`)) return;
+  showLoading(true);
+  try {
+    for (const u of toDelete) {
+      await Promise.all([
+        _adminDb.from('users').delete().eq('deviceId', u.deviceId),
+        _adminDb.from('workouts').delete().eq('deviceId', u.deviceId),
+        _adminDb.from('glucose').delete().eq('deviceId', u.deviceId),
+        _adminDb.from('posts').delete().eq('deviceId', u.deviceId),
+      ]);
+      GD.users = GD.users.filter(x => x.deviceId !== u.deviceId);
+      GD.workouts = GD.workouts.filter(w => w.deviceId !== u.deviceId);
+      GD.glucose = (GD.glucose||[]).filter(g => g.deviceId !== u.deviceId);
+      GD.posts = GD.posts.filter(p => p.deviceId !== u.deviceId);
+    }
+    buildUserFilter(); renderStats(); renderUsers();
+    toast(`중복 이용자 ${toDelete.length}명 삭제 완료`);
+  } catch(e) { toast('삭제 실패: ' + e.message); }
+  finally { showLoading(false); }
 }
 
 function selectUser(deviceId, name) {
