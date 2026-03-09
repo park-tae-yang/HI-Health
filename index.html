@@ -7087,7 +7087,7 @@ function renderChallenge() {
 function checkChDup() {
   const empId = document.getElementById('ch-empid').value.trim().toUpperCase();
   if (!empId) { document.getElementById('ch-dup-warn').classList.remove('show'); return; }
-  const dup = JSON.parse(localStorage.getItem(CH_REG_KEY) || '[]').find(r => r.empId.toUpperCase() === empId);
+  const dup = JSON.parse(localStorage.getItem(CH_REG_KEY) || '[]').find(r => r.empId.toUpperCase() === empId && r.status !== 'cancelled');
   document.getElementById('ch-dup-warn').classList.toggle('show', !!dup);
 }
 
@@ -7113,7 +7113,7 @@ function submitChReg(e) {
   if (!ok) { showToast('⚠️ 개인정보 동의가 필요합니다'); return; }
 
   const regs = JSON.parse(localStorage.getItem(CH_REG_KEY) || '[]');
-  if (regs.find(r => r.empId === empId)) { showToast('⚠️ 이미 신청하신 사번입니다'); return; }
+  if (regs.find(r => r.empId === empId && r.status !== 'cancelled')) { showToast('⚠️ 이미 신청하신 사번입니다'); return; }
 
   const famChecked = document.getElementById('ch-fam-check')?.checked || false;
   const cruiseVal = document.querySelector('input[name="ch-cruise"]:checked')?.value || 'yes';
