@@ -1553,21 +1553,21 @@ async function postAdminNotice() {
   if (!text) { toast('내용을 입력해주세요'); return; }
   const link = document.getElementById('ap-link').value.trim();
   const payload = {
-    id: 'AP-' + Date.now(),
     body: text,
     link: link || null,
     createdAt: new Date().toISOString(),
   };
   showLoading(true);
-  const { data, error } = await db.from('admin_posts').insert(payload).select();
+  const { error } = await db.from('admin_posts').insert(payload);
   showLoading(false);
   if (error) {
-    alert('게시 실패\n\n' + error.message + '\n\nSupabase 대시보드 → admin_posts 테이블 → RLS 정책에서 INSERT를 허용해주세요.');
+    alert('게시 실패: ' + error.message);
     return;
   }
   document.getElementById('ap-text').value = '';
   document.getElementById('ap-link').value = '';
-  GD.adminPosts.unshift(data?.[0] || payload);
+  // 실시간 리스너가 자동으로 loadAll 호출하므로, 로컬에도 반영
+  GD.adminPosts.unshift(payload);
   renderAdminPosts();
   toast('공지 게시 완료 ✓');
 }
