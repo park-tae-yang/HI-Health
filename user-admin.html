@@ -327,13 +327,19 @@
     <!-- ── PANEL: WORKOUTS ── -->
     <div class="panel" id="panel-workouts">
       <div class="ctrl-bar">
-        <input class="ctrl-inp" id="wo-search" placeholder="이름·종류·메모 검색" oninput="renderWorkouts()">
-        <select class="ctrl-sel" id="wo-type" onchange="renderWorkouts()"><option value="">전체 종류</option></select>
-        <select class="ctrl-sel" id="wo-period" onchange="renderWorkouts()">
+        <input class="ctrl-inp" id="wo-search" placeholder="이름·종류·메모 검색" oninput="woReset()">
+        <select class="ctrl-sel" id="wo-user" onchange="woReset()"><option value="">전체 이용자</option></select>
+        <select class="ctrl-sel" id="wo-type" onchange="woReset()"><option value="">전체 종류</option></select>
+        <select class="ctrl-sel" id="wo-period" onchange="woReset()">
           <option value="">전체 기간</option>
           <option value="today">오늘</option>
           <option value="week">이번 주</option>
           <option value="month">이번 달</option>
+        </select>
+        <select class="ctrl-sel" id="wo-pagesize" onchange="woReset()">
+          <option value="50">50건씩</option>
+          <option value="100">100건씩</option>
+          <option value="200">200건씩</option>
         </select>
         <span class="ctrl-count" id="wo-count">0건</span>
       </div>
@@ -903,6 +909,7 @@ async function resetAllData() {
    WORKOUTS
 ══════════════════════════════════════════════ */
 function buildExTypes() {
+  // 운동 종류
   const sel = document.getElementById('wo-type');
   const used = [...new Set(GD.workouts.map(w => w.exId || 'custom'))];
   sel.innerHTML = '<option value="">전체 종류</option>';
@@ -911,14 +918,28 @@ function buildExTypes() {
     o.value = id; o.textContent = (EX_ICON[id]||'') + ' ' + (EX_MAP[id]||id);
     sel.appendChild(o);
   });
+  // 이용자 드롭다운
+  const uSel = document.getElementById('wo-user');
+  const prevUser = uSel.value;
+  uSel.innerHTML = '<option value="">전체 이용자</option>';
+  [...GD.users].sort((a,b) => (a.name||'').localeCompare(b.name||'','ko')).forEach(u => {
+    const o = document.createElement('option');
+    o.value = u.deviceId; o.textContent = u.name || u.deviceId;
+    uSel.appendChild(o);
+  });
+  uSel.value = prevUser;
 }
 
+function woReset() { wPage = 0; renderWorkouts(); }
+
 function filteredWorkouts() {
-  const q    = document.getElementById('wo-search').value.toLowerCase();
-  const type = document.getElementById('wo-type').value;
-  const per  = document.getElementById('wo-period').value;
-  const now  = new Date();
+  const q      = document.getElementById('wo-search').value.toLowerCase();
+  const userId = document.getElementById('wo-user').value;
+  const type   = document.getElementById('wo-type').value;
+  const per    = document.getElementById('wo-period').value;
+  const now    = new Date();
   return GD.workouts.filter(w => {
+    if (userId && w.deviceId !== userId) return false;
     const exName = EX_MAP[w.exId] || w.exId || '';
     if (q && ![exName, w.memo||'', w.userName||''].some(s => s.toLowerCase().includes(q))) return false;
     if (type && w.exId !== type) return false;
@@ -937,10 +958,11 @@ function filteredWorkouts() {
 
 function renderWorkouts() {
   const list = filteredWorkouts();
-  document.getElementById('wo-count').textContent = list.length + '건';
-  const totalPages = Math.max(1, Math.ceil(list.length / PAGE));
+  const pageSize = parseInt(document.getElementById('wo-pagesize')?.value) || 50;
+  document.getElementById('wo-count').textContent = list.length.toLocaleString() + '건';
+  const totalPages = Math.max(1, Math.ceil(list.length / pageSize));
   if (wPage >= totalPages) wPage = totalPages - 1;
-  const page = list.slice(wPage * PAGE, (wPage+1) * PAGE);
+  const page = list.slice(wPage * pageSize, (wPage+1) * pageSize);
   const tbody = document.getElementById('wo-tbody');
   if (!page.length) {
     tbody.innerHTML = `<tr><td class="empty-cell" colspan="7">운동 기록이 없습니다</td></tr>`;
@@ -1228,21 +1250,24 @@ function switchTab(name, btn) {
 /* ══════════════════════════════════════════════
    PAGINATION
 ══════════════════════════════════════════════ */
+// 페이지네이션 핸들러 — 전역 맵으로 관리
+const _pagerCb = {};
 function renderPager(id, total, totalPages, curPage, onPage) {
+  _pagerCb[id] = onPage;
   const el = document.getElementById(id);
   if (totalPages <= 1) { el.innerHTML = ''; return; }
   const max = 5;
   let s = Math.max(0, curPage - Math.floor(max/2));
   let e = Math.min(totalPages, s + max);
   if (e - s < max) s = Math.max(0, e - max);
-  let html = `<button class="pg-btn" onclick="(${onPage.toString()})(0)" ${curPage===0?'disabled':''}>«</button>`;
-  html += `<button class="pg-btn" onclick="(${onPage.toString()})(${curPage-1})" ${curPage===0?'disabled':''}>‹</button>`;
-  for (let i = s; i < e; i++) {
-    html += `<button class="pg-btn${i===curPage?' active':''}" onclick="(${onPage.toString()})(${i})">${i+1}</button>`;
-  }
-  html += `<button class="pg-btn" onclick="(${onPage.toString()})(${curPage+1})" ${curPage===totalPages-1?'disabled':''}>›</button>`;
-  html += `<button class="pg-btn" onclick="(${onPage.toString()})(${totalPages-1})" ${curPage===totalPages-1?'disabled':''}>»</button>`;
-  html += `<span class="pg-info">${curPage+1} / ${totalPages} (${total}건)</span>`;
+  const btn = (p, label, disabled) =>
+    `<button class="pg-btn${p===curPage?' active':''}" onclick="_pagerCb['${id}'](${p})" ${disabled?'disabled':''}>${label}</button>`;
+  let html = btn(0, '«', curPage===0);
+  html += btn(curPage-1, '‹', curPage===0);
+  for (let i = s; i < e; i++) html += btn(i, i+1, false);
+  html += btn(curPage+1, '›', curPage===totalPages-1);
+  html += btn(totalPages-1, '»', curPage===totalPages-1);
+  html += `<span class="pg-info">${curPage+1} / ${totalPages} 페이지 (${total.toLocaleString()}건)</span>`;
   el.innerHTML = html;
 }
 
