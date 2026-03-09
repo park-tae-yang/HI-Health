@@ -2103,7 +2103,7 @@
           <div class="glucose-val-display">
             <input type="number" class="dur-val" id="dur-val" value="30" min="5" max="180"
                    inputmode="numeric"
-                   oninput="S.duration=Math.max(5,Math.min(180,parseInt(this.value)||5));updatePtsPreview();updateMemoPlaceholder();if(_shareOn)updateSharePreview()">
+                   oninput="S.duration=Math.max(5,Math.min(180,parseInt(this.value)||5));updatePtsPreview();updateMemoPlaceholder();updateSharePreview()">
             <span class="glucose-val-unit">분</span>
           </div>
           <button type="button" class="dur-btn" onclick="changeDur(5)">+</button>
@@ -2219,7 +2219,7 @@
             </button>
           </div>
           <div class="custom-ex-wrap" id="diet-custom-wrap">
-            <input type="text" class="ch-form-input" id="diet-custom-input" placeholder="오늘 식사를 한 줄로 적어보세요" maxlength="40" oninput="setDiet('custom'); if(_shareOn) updateSharePreview(); saveTodayLog()">
+            <input type="text" class="ch-form-input" id="diet-custom-input" placeholder="오늘 식사를 한 줄로 적어보세요" maxlength="40" oninput="setDiet('custom'); updateSharePreview(); saveTodayLog()">
           </div>
         </div>
       </div>
@@ -2262,7 +2262,7 @@
             </button>
           </div>
           <div class="custom-ex-wrap" id="sleep-custom-wrap">
-            <input type="number" class="ch-form-input" id="sleep-custom-input" placeholder="수면 시간을 입력하세요 (예: 6.5)" min="0" max="24" step="0.5" oninput="_sleepHours = parseFloat(this.value) || null; if(_shareOn) updateSharePreview(); saveTodayLog()">
+            <input type="number" class="ch-form-input" id="sleep-custom-input" placeholder="수면 시간을 입력하세요 (예: 6.5)" min="0" max="24" step="0.5" oninput="_sleepHours = parseFloat(this.value) || null; updateSharePreview(); saveTodayLog()">
           </div>
         </div>
       </div>
@@ -2318,7 +2318,7 @@
             </button>
           </div>
           <div class="custom-ex-wrap" id="supp-card-custom-wrap">
-            <input type="text" class="ch-form-input" id="supp-card-custom-input" placeholder="오늘 영양제 복용을 한 줄로 적어보세요" maxlength="40" oninput="_suppTaken = this.value.trim() || null; if(_shareOn) updateSharePreview();">
+            <input type="text" class="ch-form-input" id="supp-card-custom-input" placeholder="오늘 영양제 복용을 한 줄로 적어보세요" maxlength="40" oninput="_suppTaken = this.value.trim() || null; updateSharePreview();">
           </div>
         </div>
       </div>
@@ -2343,7 +2343,7 @@
         </div>
         <input type="file" id="photo-input" accept="image/*" onchange="handlePhotoInput(this)">
       </div>
-      <textarea class="form-textarea" id="ex-memo" rows="2" placeholder="메모를 남겨보세요" style="display:none" oninput="updateMemoPlaceholder(); if(_shareOn) updateSharePreview()"></textarea>
+      <textarea class="form-textarea" id="ex-memo" rows="2" placeholder="메모를 남겨보세요" style="display:none" oninput="updateMemoPlaceholder(); updateSharePreview()"></textarea>
 
 
     </div>
@@ -4493,14 +4493,14 @@ function selectEx(id) {
   S.selectedEx = id;
   renderExercise();
   updateMemoPlaceholder();
-  if (_shareOn) updateSharePreview();
+  updateSharePreview();
 }
 function changeDur(delta) {
   S.duration = Math.max(5, Math.min(180, S.duration + delta));
   document.getElementById('dur-val').value = S.duration;
   updatePtsPreview();
   updateMemoPlaceholder();
-  if (_shareOn) updateSharePreview();
+  updateSharePreview();
 }
 let _shareOn = false;
 let _shareRewrite = false;
@@ -4678,6 +4678,15 @@ function buildDayMessage() {
 }
 
 function updateSharePreview() {
+  // 메시지는 공유 ON/OFF 무관하게 항상 업데이트
+  const msgEl = document.getElementById('share-msg');
+  if (msgEl && (_shareMsgAuto || !msgEl.value.trim())) {
+    msgEl.value = buildDayMessage();
+    _shareMsgAuto = true;
+  }
+
+  if (!_shareOn) return; // 이하 시각적 요소는 공유 ON일 때만
+
   const ex = EX_TYPES.find(e => e.id === S.selectedEx);
   if (!ex) return;
   const name = S.selectedEx === 'custom'
@@ -4686,12 +4695,6 @@ function updateSharePreview() {
   const tag = ex.icon + ' ' + name + ' ' + S.duration + '분';
   const tagEl = document.getElementById('share-ex-tag');
   if (tagEl) tagEl.textContent = tag;
-
-  const msgEl = document.getElementById('share-msg');
-  if (msgEl && (_shareMsgAuto || !msgEl.value.trim())) {
-    msgEl.value = buildDayMessage();
-    _shareMsgAuto = true;
-  }
 
   renderShareOptions();
 }
@@ -4987,7 +4990,7 @@ function setDiet(rating) {
   if (_dietRating === rating) {
     _dietRating = null;
     document.getElementById({ 'good':'diet-good', 'norm':'diet-norm', 'snack':'diet-snack', 'over':'diet-over', 'bad':'diet-bad' }[rating])?.classList.remove('on');
-    if (_shareOn) updateSharePreview();
+    updateSharePreview();
     saveTodayLog();
     return;
   }
@@ -4996,7 +4999,7 @@ function setDiet(rating) {
   document.querySelectorAll('#diet-good,#diet-norm,#diet-snack,#diet-over,#diet-bad,#diet-custom-btn').forEach(e => e.classList.remove('on'));
   document.getElementById('diet-custom-wrap')?.classList.remove('show');
   if (map[rating]) document.getElementById(map[rating]).classList.add('on');
-  if (_shareOn) updateSharePreview();
+  updateSharePreview();
   saveTodayLog();
 }
 function changeSleep(delta) {
@@ -5006,7 +5009,7 @@ function changeSleep(delta) {
   document.getElementById('sleep-val').textContent = _sleepHours % 1 === 0 ? _sleepHours : _sleepHours.toFixed(1);
   document.getElementById('sleep-custom-wrap')?.classList.remove('show');
   document.getElementById('sleep-custom-btn')?.classList.remove('on');
-  if (_shareOn) updateSharePreview();
+  updateSharePreview();
   saveTodayLog();
 }
 function setSleepCard(rating) {
@@ -5015,7 +5018,7 @@ function setSleepCard(rating) {
   if (_sleepCard === rating) {
     _sleepCard = null;
     document.getElementById('sleep-' + rating)?.classList.remove('on');
-    if (_shareOn) updateSharePreview();
+    updateSharePreview();
     saveTodayLog();
     return;
   }
@@ -5023,7 +5026,7 @@ function setSleepCard(rating) {
   document.querySelectorAll('#sleep-great,#sleep-good,#sleep-short,#sleep-bad,#sleep-over,#sleep-custom-btn').forEach(e => e.classList.remove('on'));
   document.getElementById('sleep-custom-wrap')?.classList.remove('show');
   document.getElementById('sleep-' + rating)?.classList.add('on');
-  if (_shareOn) updateSharePreview();
+  updateSharePreview();
   saveTodayLog();
 }
 function toggleSleepCustom() {
@@ -5046,7 +5049,7 @@ function setSupp(val) {
   if (_suppTaken === val) {
     _suppTaken = null;
     document.getElementById('supp-' + val)?.classList.remove('on');
-    if (_shareOn) updateSharePreview();
+    updateSharePreview();
     saveTodayLog();
     return;
   }
@@ -5056,7 +5059,7 @@ function setSupp(val) {
   });
   document.getElementById('supp-' + val)?.classList.add('on');
   document.getElementById('supp-card-custom-wrap')?.classList.remove('show');
-  if (_shareOn) updateSharePreview();
+  updateSharePreview();
   saveTodayLog();
 }
 function toggleSuppCardCustom() {
@@ -5102,7 +5105,7 @@ function toggleMeal(name) {
   if (idx === -1) _mealTypes.push(name); else _mealTypes.splice(idx, 1);
   const btn = document.querySelector('.hc-meal-chip[data-name="' + name + '"]');
   if (btn) btn.classList.toggle('on', _mealTypes.includes(name));
-  if (_shareOn) updateSharePreview();
+  updateSharePreview();
   saveTodayLog();
 }
 function toggleSuppItem(name) {
@@ -5111,7 +5114,7 @@ function toggleSuppItem(name) {
   if (idx === -1) _suppList.push(name); else _suppList.splice(idx, 1);
   const btn = document.querySelector('.hc-supp-preset[data-name="' + name + '"]');
   if (btn) btn.classList.toggle('on', _suppList.includes(name));
-  if (_shareOn) updateSharePreview();
+  updateSharePreview();
   saveTodayLog();
 }
 function addCustomSupp() {
@@ -5151,7 +5154,7 @@ function addSuppDirect() {
   chip.textContent = val + ' ✕';
   chip.onclick = () => { _suppList = _suppList.filter(s => s !== val); chip.remove(); saveTodayLog(); };
   list.appendChild(chip);
-  if (_shareOn) updateSharePreview();
+  updateSharePreview();
   saveTodayLog();
 }
 
