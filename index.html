@@ -7432,8 +7432,8 @@ async function doAppLogin() {
 
   btn.disabled = false;
 
-  // Supabase에서 empId로 사용자 조회 → 어느 기기에서든 데이터 복원
-  if (_db && ACTIVE_EMPID && !S.workouts.length && !S.user.points) {
+  // Supabase에서 empId로 사용자 조회 → 항상 최신 데이터 복원
+  if (_db && ACTIVE_EMPID) {
     _db.from('users').select('*').or(`empId.eq.${ACTIVE_EMPID},empId.eq.${ACTIVE_EMPID.toLowerCase()}`).limit(1).then(async ({ data: rows }) => {
       const u = rows?.[0] || null;
       if (!u) return; // Supabase에 없으면 신규 사용자
@@ -7454,6 +7454,7 @@ async function doAppLogin() {
         empId: u.empId || ACTIVE_EMPID,
         dept: u.dept || '',
         points: Number(u.points) || 0,
+        totalPoints: Number(u.totalPoints || u.points) || 0,
         streak: Number(u.streak) || 0,
         tags: typeof u.tags === 'string' ? u.tags.split(',').filter(Boolean) : (u.tags || []),
         registrationId: u.registrationId || null,
@@ -7626,6 +7627,47 @@ function init() {
         if (bar) { bar.style.width = '0%'; setTimeout(() => bar.style.width = pct + '%', 100); }
       }
     }, 200);
+    // 자동 로그인 시에도 Supabase 최신 데이터 동기화
+    if (_db && savedEmpId) {
+      _db.from('users').select('*').or(`empId.eq.${savedEmpId},empId.eq.${savedEmpId.toLowerCase()}`).limit(1).then(async ({ data: rows }) => {
+        const u = rows?.[0] || null;
+        if (!u) return;
+        const did = u.deviceId;
+        S.deviceId = did;
+        localStorage.setItem('hi_device_id_' + savedEmpId, did);
+        const [w, g] = await Promise.all([
+          _db.from('workouts').select('*').eq('deviceId', did),
+          _db.from('glucose').select('*').eq('deviceId', did),
+        ]);
+        S.user = { ...S.user,
+          name: u.name || S.user.name,
+          avatar: S.user.avatar?.includes('images/') ? S.user.avatar : (u.avatar || S.user.avatar),
+          empId: u.empId || savedEmpId,
+          dept: u.dept || '',
+          points: Number(u.points) || 0,
+          totalPoints: Number(u.totalPoints || u.points) || 0,
+          streak: Number(u.streak) || 0,
+          tags: typeof u.tags === 'string' ? u.tags.split(',').filter(Boolean) : (u.tags || []),
+          registrationId: u.registrationId || null,
+        };
+        if (w.data?.length) {
+          S.workouts = w.data.map(x => ({
+            id: Number(x.id) || x.id, exId: x.exId, customName: x.exName || null,
+            duration: Number(x.duration) || 0, points: Number(x.points) || 0,
+            memo: x.memo || '', ts: Number(x.ts) || 0,
+          }));
+        }
+        if (g.data?.length) {
+          S.glucoseRecords = g.data.map(x => ({
+            id: Number(x.id) || x.id, value: Number(x.value), timing: x.timing,
+            points: Number(x.points) || 0, ts: x.ts,
+          }));
+        }
+        save();
+        renderHeader();
+        renderHome();
+      });
+    }
   }
   // 세션 없으면 로그인 화면이 기본 표시됨
 }
