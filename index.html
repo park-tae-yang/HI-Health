@@ -1649,16 +1649,18 @@
     .ch-phase-val   { font-size:19px; font-weight:700; }
     .ch-phase-lbl   { font-size:10px; opacity:0.8; margin-top:2px; }
 
-    .ch-reg-card { background:linear-gradient(145deg,#f0fdf4,#dcfce7); border-radius:var(--radius); padding:20px; margin-bottom:14px; border:1.5px solid #86efac; box-shadow:0 4px 16px rgba(34,197,94,0.12); }
-    .ch-reg-header { display:flex; align-items:center; gap:10px; margin-bottom:14px; padding-bottom:12px; border-bottom:1.5px solid rgba(22,101,52,0.12); }
-    .ch-reg-icon { width:36px; height:36px; background:linear-gradient(135deg,#22c55e,#16a34a); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:17px; flex-shrink:0; }
-    .ch-reg-title { font-size:15px; font-weight:700; color:#15803d; }
-    .ch-reg-subtitle { font-size:11px; color:#4ade80; font-weight:500; margin-top:1px; }
-    .ch-reg-rows { display:flex; flex-direction:column; gap:0; }
-    .ch-reg-row { display:flex; justify-content:space-between; align-items:center; font-size:13px; padding:8px 0; border-bottom:1px solid rgba(22,101,52,0.08); }
-    .ch-reg-row:last-child { border-bottom:none; }
-    .ch-reg-label { color:#6b7280; font-size:12px; }
-    .ch-reg-value { font-weight:600; color:#15803d; }
+    .ch-reg-card { background:linear-gradient(145deg,#fffbeb,#fef3c7); border-radius:var(--radius); padding:16px; margin-bottom:14px; border:1.5px solid #fcd34d; box-shadow:0 4px 16px rgba(245,158,11,0.10); }
+    .ch-reg-header { display:flex; align-items:center; gap:10px; margin-bottom:12px; padding-bottom:10px; border-bottom:1.5px solid rgba(180,130,0,0.12); }
+    .ch-reg-icon { width:34px; height:34px; background:linear-gradient(135deg,#F59E0B,#D97706); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; }
+    .ch-reg-title { font-size:14px; font-weight:700; color:#92400e; }
+    .ch-reg-subtitle { font-size:11px; color:#b45309; font-weight:500; margin-top:1px; }
+    .ch-reg-rows { display:grid; grid-template-columns:1fr 1fr; gap:0; }
+    .ch-reg-row { display:flex; flex-direction:column; gap:2px; padding:7px 8px; border-bottom:1px solid rgba(180,130,0,0.08); }
+    .ch-reg-row:nth-child(odd) { border-right:1px solid rgba(180,130,0,0.08); }
+    .ch-reg-row-full { grid-column:1/-1; border-right:none !important; }
+    .ch-reg-label { color:#a16207; font-size:10px; font-weight:500; }
+    .ch-reg-value { font-weight:600; color:#78350f; font-size:13px; }
+    .ch-share-btn { width:100%; margin-top:12px; padding:10px; background:#F59E0B; color:#fff; border:none; border-radius:10px; font-size:13px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; }
 
     .ch-tl { display:flex; flex-direction:column; gap:0; position:relative; padding-left:34px; }
     .ch-tl::before { content:''; position:absolute; left:6px; top:10px; bottom:10px; width:2px; background:var(--border); border-radius:2px; }
@@ -6624,6 +6626,15 @@ function getMyReg() {
     .find(r => r.id === S.user.registrationId) || null;
 }
 
+function shareChReg(id, name, dept) {
+  const text = `[HI RUN DAY 신청 완료]\n이름: ${name}\n부서: ${dept}\n신청번호: ${id}\n\n4월 15일(수) 함께 달려요! 🏃`;
+  if (navigator.share) {
+    navigator.share({ title: 'HI RUN DAY 신청', text }).catch(() => {});
+  } else {
+    navigator.clipboard.writeText(text).then(() => showToast('📋 클립보드에 복사됐어요')).catch(() => showToast('공유를 지원하지 않는 환경입니다'));
+  }
+}
+
 function cancelRegistration(regId) {
   if (!confirm('정말 취소하시겠습니까?')) return;
   const regs = JSON.parse(localStorage.getItem(CH_REG_KEY) || '[]');
@@ -6747,12 +6758,13 @@ function renderChallenge() {
           <div class="ch-reg-row"><span class="ch-reg-label">이름</span><span class="ch-reg-value">${myReg.name}</span></div>
           <div class="ch-reg-row"><span class="ch-reg-label">부서</span><span class="ch-reg-value">${myReg.dept}</span></div>
           <div class="ch-reg-row"><span class="ch-reg-label">신발 사이즈</span><span class="ch-reg-value">${myReg.shoeSize}mm</span></div>
-          <div class="ch-reg-row"><span class="ch-reg-label">가족 참여</span><span class="ch-reg-value">${myReg.familyParticipation ? '가족 함께 (' + myReg.familyCount + '인)' + (myReg.familyShoeSize ? ' · 신발 ' + myReg.familyShoeSize + 'mm' : '') : '본인만'}</span></div>
+          <div class="ch-reg-row"><span class="ch-reg-label">가족 참여</span><span class="ch-reg-value">${myReg.familyParticipation ? '가족 함께 ' + myReg.familyCount + '인' : '본인만'}</span></div>
           <div class="ch-reg-row"><span class="ch-reg-label">크루즈 탑승</span><span class="ch-reg-value">${myReg.cruiseParticipation === false ? '탑승 안 함' : '탑승 희망'}</span></div>
           <div class="ch-reg-row"><span class="ch-reg-label">행사 참여</span><span class="ch-reg-value">${myReg.eventParticipation === false ? '불참' : '참여'}</span></div>
         </div>
-        ${showWorkout ? `<button type="button" class="btn btn-primary btn-full ch-workout-btn" style="margin-top:14px" onclick="scrollToExerciseForm()">오늘 운동 기록하기</button>` : ''}
-        ${canCancelReg ? `<button type="button" class="btn btn-full ch-cancel-reg-btn" style="margin-top:10px" onclick="cancelRegistration('${myReg.id}')">신청 취소</button>` : ''}
+        <button type="button" class="ch-share-btn" onclick="shareChReg('${myReg.id}','${myReg.name}','${myReg.dept}')">📤 신청서 공유하기</button>
+        ${showWorkout ? `<button type="button" class="btn btn-primary btn-full ch-workout-btn" style="margin-top:8px" onclick="scrollToExerciseForm()">오늘 운동 기록하기</button>` : ''}
+        ${canCancelReg ? `<button type="button" class="btn btn-full ch-cancel-reg-btn" style="margin-top:8px" onclick="cancelRegistration('${myReg.id}')">신청 취소</button>` : ''}
       </div>
     `;
   } else if (phase === 'registration') {
