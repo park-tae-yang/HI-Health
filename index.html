@@ -6758,7 +6758,7 @@ function renderChallenge() {
           <div class="ch-reg-row"><span class="ch-reg-label">이름</span><span class="ch-reg-value">${myReg.name}</span></div>
           <div class="ch-reg-row"><span class="ch-reg-label">부서</span><span class="ch-reg-value">${myReg.dept}</span></div>
           <div class="ch-reg-row"><span class="ch-reg-label">신발 사이즈</span><span class="ch-reg-value">${myReg.shoeSize}mm</span></div>
-          <div class="ch-reg-row"><span class="ch-reg-label">가족 참여</span><span class="ch-reg-value">${myReg.familyParticipation ? '가족 함께 ' + myReg.familyCount + '인' : '본인만'}</span></div>
+          <div class="ch-reg-row ch-reg-row-full"><span class="ch-reg-label">가족 참여</span><span class="ch-reg-value">${myReg.familyParticipation ? '함께 · ' + [myReg.familyGender, myReg.familyAge, myReg.familyShoeSize ? myReg.familyShoeSize + 'mm' : ''].filter(Boolean).join(' ') || '가족 1인' : '본인만'}</span></div>
           <div class="ch-reg-row"><span class="ch-reg-label">크루즈 탑승</span><span class="ch-reg-value">${myReg.cruiseParticipation === false ? '탑승 안 함' : '탑승 희망'}</span></div>
           <div class="ch-reg-row"><span class="ch-reg-label">행사 참여</span><span class="ch-reg-value">${myReg.eventParticipation === false ? '불참' : '참여'}</span></div>
         </div>
@@ -6814,26 +6814,37 @@ function renderChallenge() {
           </div>
           <div class="ch-form-group">
             <label class="form-label">가족 참여 여부</label>
-            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-              <label class="ch-radio-label" style="margin:0"><input type="checkbox" id="ch-fam-check" onchange="toggleChFam(this)"> 가족 함께</label>
-              <select class="ch-form-select" id="ch-fam-shoe" style="display:none;width:auto;min-width:110px">
-                <option value="">신발 사이즈</option>
-                <option value="220">220mm</option>
-                <option value="225">225mm</option>
-                <option value="230">230mm</option>
-                <option value="235">235mm</option>
-                <option value="240">240mm</option>
-                <option value="245">245mm</option>
-                <option value="250">250mm</option>
-                <option value="255">255mm</option>
-                <option value="260">260mm</option>
-                <option value="265">265mm</option>
-                <option value="270">270mm</option>
-                <option value="275">275mm</option>
-                <option value="280">280mm</option>
-                <option value="285">285mm</option>
-                <option value="290">290mm</option>
-              </select>
+            <label class="ch-radio-label" style="margin:0 0 8px"><input type="checkbox" id="ch-fam-check" onchange="toggleChFam(this)"> 가족 함께 참여</label>
+            <div id="ch-fam-detail" style="display:none;background:var(--bg-secondary,#f8fafc);border-radius:10px;padding:12px;margin-top:4px">
+              <div style="font-size:11px;font-weight:600;color:var(--text-secondary);margin-bottom:8px">가족 정보 (러닝화 지급용)</div>
+              <div class="ch-row2">
+                <div class="ch-form-group" style="margin-bottom:0">
+                  <label class="form-label">성별</label>
+                  <select class="ch-form-select" id="ch-fam-gender">
+                    <option value="">선택</option>
+                    <option value="남">남</option>
+                    <option value="여">여</option>
+                  </select>
+                </div>
+                <div class="ch-form-group" style="margin-bottom:0">
+                  <label class="form-label">나이</label>
+                  <select class="ch-form-select" id="ch-fam-age">
+                    <option value="">선택</option>
+                    <option>10대</option><option>20대</option><option>30대</option>
+                    <option>40대</option><option>50대</option><option>60대 이상</option>
+                  </select>
+                </div>
+              </div>
+              <div class="ch-form-group" style="margin-top:8px;margin-bottom:0">
+                <label class="form-label">신발 사이즈</label>
+                <select class="ch-form-select" id="ch-fam-shoe">
+                  <option value="">사이즈(mm)</option>
+                  <option>215</option><option>220</option><option>225</option><option>230</option><option>235</option>
+                  <option>240</option><option>245</option><option>250</option><option>255</option>
+                  <option>260</option><option>265</option><option>270</option><option>275</option>
+                  <option>280</option><option>285</option><option>290</option>
+                </select>
+              </div>
             </div>
             <input type="hidden" id="ch-fam-cnt" value="1">
           </div>
@@ -7092,8 +7103,8 @@ function checkChDup() {
 }
 
 function toggleChFam(el) {
-  const shoeEl = document.getElementById('ch-fam-shoe');
-  if (shoeEl) shoeEl.style.display = el.checked ? 'block' : 'none';
+  const detail = document.getElementById('ch-fam-detail');
+  if (detail) detail.style.display = el.checked ? 'block' : 'none';
 }
 
 function submitChReg(e) {
@@ -7124,6 +7135,8 @@ function submitChReg(e) {
     familyParticipation: famChecked,
     familyCount: famChecked ? 1 : 0,
     familyShoeSize: famChecked ? document.getElementById('ch-fam-shoe').value : '',
+    familyGender: famChecked ? document.getElementById('ch-fam-gender').value : '',
+    familyAge: famChecked ? document.getElementById('ch-fam-age').value : '',
     cruiseParticipation: cruiseVal === 'yes',
     eventParticipation: eventVal === 'yes',
     note:'', status:'pending', adminNote:'',
