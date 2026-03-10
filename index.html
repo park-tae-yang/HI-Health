@@ -4367,9 +4367,10 @@ function renderHome() {
   const woCnt = (S.workouts || []).length;
   const glCnt = (S.glucoseRecords || []).length;
   document.getElementById('rec-quick').textContent = (woCnt === 0 && glCnt === 0) ? '기록을 시작해보세요' : '운동 ' + woCnt + '회 · 혈당 ' + glCnt + '회';
-  const myPostCnt    = (S.posts || []).length;
+  const myPosts      = (S.posts || []).filter(p => Number(p?.userId) === 0);
+  const myPostCnt    = myPosts.length;
   const myName       = myDisplayName();
-  const allPosts     = [...(S.posts || []), ...(S.communityPosts || [])];
+  const allPosts     = [...myPosts, ...(S.communityPosts || [])];
   const myCommentCnt = allPosts.reduce((s, p) => s + (p.commentList || []).filter(c => c.name === myName).length, 0);
   document.getElementById('comm-quick').textContent = myPostCnt === 0 ? '응원 메시지를 남겨보세요' : '내 글 ' + myPostCnt + '개 · 댓글 ' + myCommentCnt + '개';
 
@@ -6020,6 +6021,7 @@ function cleanupLocalUserKeys({ empId, deviceId, registrationId, storageKey, ord
   sessionStorage.removeItem('hi_session_empid');
   localStorage.removeItem('hi_keep_login_id');
   localStorage.removeItem('hi_keep_login_name');
+  localStorage.removeItem(COMM_SEEN_KEY);
 
   try {
     const regs = JSON.parse(localStorage.getItem(CH_REG_KEY) || '[]');
@@ -6041,6 +6043,10 @@ function resetToLoggedOutState() {
   STORAGE_KEY  = 'hi_health_v2';
   SHOP_ORDERS_KEY = 'hi_health_shop_orders';
   SHOP_CART_KEY   = 'hi_health_cart';
+  _realLeagueUsers = null;
+  _leagueFetching = false;
+  _adminPostsFetched = false;
+  _feedFilter = 'all';
 
   S.deviceId = null;
   S.user = { name:'', nickname:'', avatar:'🏃', empId:'', dept:'', points:0, totalPoints:0, streak:0, stickersReceived:0, registrationId:null, tags:[] };
@@ -6082,7 +6088,7 @@ function setDeleteMyDataBusy(on) {
   const btn = document.getElementById('pm-delete-data-btn');
   if (!btn) return;
   btn.disabled = on;
-  btn.textContent = on ? '삭제 중...' : '이 기기 + 서버 데이터 삭제';
+  btn.textContent = on ? '모든 데이터 삭제 초기화 중...' : '모든 데이터 삭제 초기화';
 }
 
 async function deleteMyDeviceAndServerData() {
@@ -6200,7 +6206,10 @@ async function fetchLeagueData() {
       _db.from('workouts').select('deviceId,points').gte('ts', String(weekStartTs)),
     ]);
 
-    if (!allUsers || !allUsers.length) return;
+    if (!allUsers || !allUsers.length) {
+      _realLeagueUsers = null;
+      return;
+    }
 
     const wPtsByDevice = {};
     (weeklyWo || []).forEach(w => {
@@ -6208,7 +6217,10 @@ async function fetchLeagueData() {
     });
 
     const filtered = allUsers.filter(u => u.deviceId !== S.deviceId && u.name);
-    if (!filtered.length) return; // 다른 유저 없으면 mock 유지
+    if (!filtered.length) {
+      _realLeagueUsers = null;
+      return; // 다른 유저 없으면 mock 유지
+    }
 
     _realLeagueUsers = filtered
       .map(u => ({
@@ -8031,10 +8043,8 @@ async function doAppLogin() {
         loadEl.style.display = 'none';
         btn.disabled = false;
         nameInput.classList.add('error');
-        const hint = storedName.length > 0
-          ? storedName[0] + '*'.repeat(storedName.length - 1)
-          : '??';
-        errEl.textContent = `이름이 일치하지 않습니다. (등록된 이름: ${hint})`;
+        infoEl.style.display = 'none';
+        errEl.textContent = '중복된 등록번호가 있습니다';
         errEl.style.display = 'block';
         setTimeout(() => { nameInput.classList.remove('error'); errEl.style.display = 'none'; }, 5000);
         return;
@@ -8357,7 +8367,7 @@ init();
     </div>
     <button type="button" class="btn btn-primary btn-full" id="pm-save-btn" onclick="saveProfile()">저장하기</button>
     <button type="button" class="pm-logout-btn" id="pm-logout-btn" onclick="appLogout()">로그아웃</button>
-    <button type="button" class="pm-delete-btn" id="pm-delete-data-btn" onclick="requestDeleteMyDeviceAndServerData()">이 기기 + 서버 데이터 삭제</button>
+    <button type="button" class="pm-delete-btn" id="pm-delete-data-btn" onclick="requestDeleteMyDeviceAndServerData()">모든 데이터 삭제 초기화</button>
   </div>
 </div>
 
