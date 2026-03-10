@@ -281,7 +281,7 @@
       </div>
 
       <div class="ctrl-bar">
-        <input class="ctrl-inp" id="u-search" placeholder="이름·사번·부서 검색" oninput="onUserSearch()">
+        <input class="ctrl-inp" id="u-search" placeholder="이름·사번·등록번호·부서 검색" oninput="onUserSearch()">
         <select class="ctrl-sel" id="u-filter" onchange="renderUsers()">
           <option value="all">전체</option>
           <option value="bad">이상한 이름</option>
@@ -295,6 +295,7 @@
           <option value="streak">연속일순</option>
         </select>
         <span class="ctrl-count" id="u-count">0명</span>
+        <button class="cbtn amb" id="restore-users-btn" style="display:none" onclick="restoreUsersFromActivity()">users 복구</button>
         <button class="cbtn dan" id="dup-btn" style="display:none" onclick="deleteDuplicates()">중복 삭제</button>
         <button class="cbtn dan" onclick="resetAllData()">전체 초기화</button>
         <button class="cbtn sky" onclick="loadAll()">↻ 새로고침</button>
@@ -307,6 +308,7 @@
               <th>#</th>
               <th>이름</th>
               <th>사번</th>
+              <th>등록번호</th>
               <th>부서</th>
               <th>포인트</th>
               <th>운동</th>
@@ -316,7 +318,7 @@
               <th>관리</th>
             </tr></thead>
             <tbody id="u-tbody">
-              <tr><td class="empty-cell" colspan="10">불러오는 중...</td></tr>
+              <tr><td class="empty-cell" colspan="11">불러오는 중...</td></tr>
             </tbody>
           </table>
         </div>
@@ -335,6 +337,7 @@
           <div class="dp-field"><label>포인트</label><input class="dp-inp" type="number" id="d-points"></div>
           <div class="dp-field"><label>연속 달성일</label><input class="dp-inp" type="number" id="d-streak"></div>
           <div class="dp-field"><label>사번</label><input class="dp-inp" id="d-empid" readonly style="background:var(--bg)"></div>
+          <div class="dp-field"><label>등록번호</label><input class="dp-inp" id="d-registration-id" readonly style="background:var(--bg)"></div>
           <div class="dp-field"><label>부서</label><input class="dp-inp" id="d-dept" readonly style="background:var(--bg)"></div>
         </div>
         <div class="dp-pts-adj" style="margin-bottom:14px">
@@ -421,7 +424,7 @@
         <div class="ch-s-pill"><div class="ch-s-val" id="ch-cruise">-</div><div class="ch-s-lbl">크루즈</div></div>
       </div>
       <div class="ctrl-bar">
-        <input class="ctrl-inp" id="ch-search" placeholder="이름·사번·부서 검색" oninput="renderChallenge()">
+        <input class="ctrl-inp" id="ch-search" placeholder="신청번호·이름·사번·부서 검색" oninput="renderChallenge()">
         <select class="ctrl-sel" id="ch-sfilter" onchange="renderChallenge()">
           <option value="">전체 상태</option>
           <option value="pending">대기</option>
@@ -665,6 +668,10 @@ let selDeviceId = '';
 let uPage = 0, wPage = 0;
 const PAGE = 50;
 let uSearchTimer = null;
+let _pollTimer = null;
+let _loadInFlight = null;
+let _queuedLoadOpts = null;
+let _lastDataSignature = '';
 
 /* ══════════════════════════════════════════════
    AUTH
@@ -690,6 +697,13 @@ function doLogout() {
   document.getElementById('pw-input').value = '';
   GD = { users:[], workouts:[], posts:[], glucose:[], registrations:[], orders:[], adminPosts:[] };
   selDeviceId = '';
+  if (_pollTimer) clearInterval(_pollTimer);
+  _pollTimer = null;
+  _rtChannels.forEach(ch => { try { db?.removeChannel(ch); } catch(e) {} });
+  _rtChannels = [];
+  _lastDataSignature = '';
+  _queuedLoadOpts = null;
+  _loadInFlight = null;
   db = null;
 }
 
@@ -716,7 +730,8 @@ function initSupabase() {
   setupRealtime();
 
   // 폴링 백업: 5초마다 갱신
-  setInterval(() => loadAll(), 5000);
+  if (_pollTimer) clearInterval(_pollTimer);
+  _pollTimer = setInterval(() => loadAll({ silent: true }), 5000);
 }
 
 let _rtChannels = [];
@@ -732,7 +747,7 @@ function setupRealtime() {
   const ch = db.channel('adm_all');
   tables.forEach(tbl => {
     ch.on('postgres_changes', { event: '*', schema: 'public', table: tbl }, () => {
-      loadAll();
+      loadAll({ silent: true });
     });
   });
   ch.subscribe(status => {
@@ -747,40 +762,334 @@ function setupRealtime() {
   _rtChannels.push(ch);
 }
 
-async function loadAll() {
+function deriveUsersFromActivity(workouts, posts, glucose, registrations, orders) {
+  const map = new Map();
+  const norm = v => String(v || '').trim();
+  const regEmpIds = new Set((registrations || []).map(r => norm(r.empId)).filter(Boolean));
+  const findByEmpId = empId => {
+    const id = norm(empId);
+    if (!id) return null;
+    return [...map.values()].find(u => norm(u.empId) === id) || null;
+  };
+  const inferEmpIdFromDeviceId = deviceId => {
+    const id = norm(deviceId);
+    if (!id.startsWith('u') || id.length <= 8) return '';
+    const candidate = id.slice(1, -7);
+    return regEmpIds.has(candidate) ? candidate : '';
+  };
+  const numTs = v => {
+    const n = Number(v);
+    if (Number.isFinite(n) && n > 0) return n;
+    const t = Date.parse(String(v || ''));
+    return Number.isFinite(t) ? t : 0;
+  };
+  const ensure = rawId => {
+    const id = norm(rawId);
+    if (!id) return null;
+    if (!map.has(id)) {
+      map.set(id, {
+        deviceId: id,
+        name: '',
+        avatar: '🏃',
+        empId: inferEmpIdFromDeviceId(id),
+        dept: '',
+        points: 0,
+        streak: 0,
+        registrationId: null,
+        lastActiveAt: null,
+        __derived: true,
+        _lastActiveTs: 0,
+      });
+    }
+    return map.get(id);
+  };
+  const touch = (u, ts) => {
+    if (!u) return;
+    const n = numTs(ts);
+    if (n > (u._lastActiveTs || 0)) {
+      u._lastActiveTs = n;
+      u.lastActiveAt = new Date(n).toISOString();
+    }
+  };
+
+  (workouts || []).forEach(w => {
+    const u = ensure(w.deviceId);
+    if (!u) return;
+    if (!u.name) u.name = norm(w.userName);
+    u.points += Number(w.points) || 0;
+    touch(u, w.ts || w.createdAt);
+  });
+
+  (glucose || []).forEach(g => {
+    const u = ensure(g.deviceId);
+    if (!u) return;
+    if (!u.name) u.name = norm(g.userName);
+    u.points += Number(g.points) || 0;
+    touch(u, g.ts || g.createdAt);
+  });
+
+  (posts || []).forEach(p => {
+    const u = ensure(p.deviceId);
+    if (!u) return;
+    if (!u.name) u.name = norm(p.userName);
+    touch(u, p.ts || p.createdAt);
+  });
+
+  (orders || []).forEach(o => {
+    const u = ensure(o.deviceId);
+    if (!u) return;
+    if (!u.name) u.name = norm(o.userName || o.name);
+    touch(u, o.orderedAt || o.createdAt);
+  });
+
+  (registrations || []).forEach(r => {
+    const regDeviceId = norm(r.deviceId);
+    const regEmpId = norm(r.empId);
+    let u = null;
+    if (regDeviceId) u = map.get(regDeviceId) || null;
+    if (!u && regEmpId) u = findByEmpId(regEmpId);
+    if (!u) u = ensure(regDeviceId || (regEmpId ? ('emp:' + regEmpId) : ''));
+    if (!u) return;
+    if (!u.name) u.name = norm(r.name);
+    if (!u.empId) u.empId = regEmpId;
+    if (!u.dept) u.dept = norm(r.dept);
+    if (!u.registrationId) u.registrationId = r.id || null;
+    touch(u, r.registeredAt || r.createdAt || r.ts);
+  });
+
+  return [...map.values()].map(u => {
+    delete u._lastActiveTs;
+    return u;
+  });
+}
+
+function normalizeUserRow(u) {
+  const pending = (u.pendingRewards ?? u.pendingrewards ?? '');
+  const done = (u.redeemedRewards ?? u.redeemedrewards ?? '');
+  const regId = (u.registrationId ?? u.registrationid ?? '');
+  return {
+    ...u,
+    registrationId: regId,
+    lastActiveAt: u.lastActiveAt || u.lastactiveat || null,
+    pendingRewards: pending,
+    redeemedRewards: done,
+  };
+}
+
+function isActiveRegistration(r) {
+  return String(r?.status || 'pending').trim() !== 'cancelled';
+}
+
+function regTs(r) {
+  const t = Date.parse(String(r?.registeredAt || r?.createdAt || r?.ts || ''));
+  return Number.isFinite(t) ? t : 0;
+}
+
+function isSyntheticDerivedDeviceId(deviceId) {
+  const id = String(deviceId || '').trim();
+  return id.startsWith('emp:') || id.startsWith('reg:');
+}
+
+function mergeRegistrationsWithUsers(registrations, users) {
+  const rows = [...(registrations || [])].map(r => ({ ...r, __derived: false }));
+  const existing = new Set(rows.map(r => String(r.id || '').trim()).filter(Boolean));
+  (users || []).forEach(u => {
+    const regId = String(u.registrationId || u.registrationid || '').trim();
+    if (!regId || existing.has(regId)) return;
+    rows.push({
+      id: regId,
+      deviceId: u.deviceId || '',
+      empId: u.empId || '',
+      name: u.name || '',
+      dept: u.dept || '',
+      phone: '',
+      shoeSize: '',
+      familyParticipation: false,
+      familyCount: 0,
+      status: 'pending',
+      registeredAt: u.lastActiveAt || u.lastactiveat || '',
+      __derived: true,
+    });
+    existing.add(regId);
+  });
+  return rows;
+}
+
+function mergeUsersWithRegistrations(users, registrations) {
+  const norm = v => String(v || '').trim();
+  const rows = [...(users || [])].map(u => ({ ...normalizeUserRow(u), __isChallenger: false }));
+  const byDeviceId = new Map();
+  const byEmpId = new Map();
+  const byRegId = new Map();
+  const indexUser = u => {
+    const deviceId = norm(u.deviceId);
+    const empId = norm(u.empId);
+    const regId = norm(u.registrationId || u.registrationid);
+    if (deviceId) byDeviceId.set(deviceId, u);
+    if (empId) byEmpId.set(empId, u);
+    if (regId) byRegId.set(regId, u);
+  };
+  rows.forEach(indexUser);
+
+  [...(registrations || [])]
+    .sort((a, b) => {
+      const activeDiff = Number(isActiveRegistration(b)) - Number(isActiveRegistration(a));
+      if (activeDiff) return activeDiff;
+      return regTs(b) - regTs(a);
+    })
+    .forEach(r => {
+      const regId = norm(r.id);
+      const deviceId = norm(r.deviceId);
+      const empId = norm(r.empId);
+      let u = null;
+      if (regId) u = byRegId.get(regId) || null;
+      if (!u && deviceId) u = byDeviceId.get(deviceId) || null;
+      if (!u && empId) u = byEmpId.get(empId) || null;
+      if (!u) {
+        u = normalizeUserRow({
+          deviceId: deviceId || (empId ? ('emp:' + empId) : ('reg:' + regId)),
+          name: r.name || '',
+          avatar: '🏃',
+          empId,
+          dept: r.dept || '',
+          points: 0,
+          streak: 0,
+          registrationId: regId || '',
+          lastActiveAt: r.registeredAt || r.createdAt || r.ts || null,
+          __derived: true,
+        });
+        u.__isChallenger = false;
+        rows.push(u);
+      }
+      if (!u.name) u.name = norm(r.name);
+      if (!u.empId && empId) u.empId = empId;
+      if (!u.dept) u.dept = norm(r.dept);
+      if (!u.lastActiveAt && (r.registeredAt || r.createdAt || r.ts)) {
+        u.lastActiveAt = r.registeredAt || r.createdAt || r.ts;
+      }
+      if (!u.registrationId && regId) u.registrationId = regId;
+      if (isActiveRegistration(r)) {
+        u.__isChallenger = true;
+        if (regId) u.registrationId = regId;
+      }
+      indexUser(u);
+    });
+
+  rows.forEach(u => {
+    if (typeof u.__isChallenger !== 'boolean') {
+      u.__isChallenger = false;
+    }
+  });
+
+  return rows;
+}
+
+function sortedRows(rows, keys) {
+  return [...(rows || [])].sort((a, b) => {
+    for (const key of keys) {
+      const av = String(a?.[key] ?? '');
+      const bv = String(b?.[key] ?? '');
+      if (av < bv) return -1;
+      if (av > bv) return 1;
+    }
+    return 0;
+  });
+}
+
+function buildDataSignature(data) {
+  return JSON.stringify({
+    users: sortedRows(data.users, ['deviceId', 'registrationId', 'empId', 'name']),
+    workouts: sortedRows(data.workouts, ['id', 'deviceId', 'ts', 'createdAt']),
+    posts: sortedRows(data.posts, ['id', 'deviceId', 'ts', 'createdAt']),
+    glucose: sortedRows(data.glucose, ['id', 'deviceId', 'ts', 'createdAt']),
+    registrations: sortedRows(data.registrations, ['id', 'deviceId', 'empId']),
+    orders: sortedRows(data.orders, ['id', 'deviceId', 'orderedAt', 'createdAt']),
+    adminPosts: sortedRows(data.adminPosts, ['id', 'createdAt']),
+  });
+}
+
+function queueLoad(opts = {}) {
+  const next = { silent: !!opts.silent };
+  if (_queuedLoadOpts) {
+    _queuedLoadOpts = { silent: _queuedLoadOpts.silent && next.silent };
+    return;
+  }
+  _queuedLoadOpts = next;
+}
+
+async function loadAll(opts = {}) {
+  const req = { silent: !!opts.silent };
+  const hadSignature = !!_lastDataSignature;
   if (!db) return;
-  showLoading(true);
+  if (_loadInFlight) {
+    queueLoad(req);
+    return _loadInFlight;
+  }
+  const client = db;
+  if (!req.silent) showLoading(true);
+  _loadInFlight = (async () => {
   try {
     const [u, w, p, g, r, o, ap] = await Promise.all([
-      db.from('users').select('*'),
-      db.from('workouts').select('*'),
-      db.from('posts').select('*'),
-      db.from('glucose').select('*'),
-      db.from('registrations').select('*'),
-      db.from('orders').select('*').order('orderedAt', { ascending: false }),
-      db.from('admin_posts').select('*').order('createdAt', { ascending: false }),
+      client.from('users').select('*'),
+      client.from('workouts').select('*'),
+      client.from('posts').select('*'),
+      client.from('glucose').select('*'),
+      client.from('registrations').select('*'),
+      client.from('orders').select('*').order('orderedAt', { ascending: false }),
+      client.from('admin_posts').select('*').order('createdAt', { ascending: false }),
     ]);
+    if (db !== client) return;
     if (u.error) { console.error('[users]', u.error); setStatus('users 오류: ' + u.error.message, false); return; }
-    GD.users         = u.data  || [];
-    GD.workouts      = w.data  || [];
-    GD.posts         = p.data  || [];
-    GD.glucose       = g.data  || [];
-    GD.registrations = r.data  || [];
-    GD.orders        = (o.data || []).map(ord => ({
+    const rawUsers = u.data || [];
+    const fallbackUsers = rawUsers.length
+      ? []
+      : deriveUsersFromActivity(w.data || [], p.data || [], g.data || [], r.data || [], o.data || []);
+    const nextUsersBase = rawUsers.length ? rawUsers.map(normalizeUserRow) : fallbackUsers;
+    const nextRegistrations = mergeRegistrationsWithUsers(r.data || [], nextUsersBase);
+    const nextUsers = mergeUsersWithRegistrations(nextUsersBase, nextRegistrations);
+    const nextOrders = (o.data || []).map(ord => ({
       ...ord,
       items: typeof ord.items === 'string' ? (() => { try { return JSON.parse(ord.items); } catch(e) { return []; } })() : (ord.items||[]),
     }));
-    GD.adminPosts    = ap.data || [];
+    const nextData = {
+      users: nextUsers,
+      workouts: w.data || [],
+      posts: p.data || [],
+      glucose: g.data || [],
+      registrations: nextRegistrations,
+      orders: nextOrders,
+      adminPosts: ap.data || [],
+    };
+    const nextSignature = buildDataSignature(nextData);
+    const changed = nextSignature !== _lastDataSignature;
     const _now = new Date().toLocaleTimeString('ko-KR', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
-    setStatus(`연결됨 ${GD.users.length}명 · ${_now}`, true);
-    renderAll();
-    buildExTypes();
+    if (changed) {
+      GD = nextData;
+      _lastDataSignature = nextSignature;
+      renderAll();
+      buildExTypes();
+    }
+    if (!req.silent || changed || !hadSignature) {
+      if (!rawUsers.length && fallbackUsers.length) {
+        setStatus(`연결됨 ${GD.users.length}명 · 활동데이터 기반(임시) · ${_now}`, true);
+      } else {
+        setStatus(`연결됨 ${GD.users.length}명 · ${_now}`, true);
+      }
+    }
   } catch(e) {
     setStatus('연결 실패', false);
     toast('오류: ' + e.message);
   } finally {
-    showLoading(false);
+    if (!req.silent) showLoading(false);
+    _loadInFlight = null;
+    if (_queuedLoadOpts) {
+      const next = _queuedLoadOpts;
+      _queuedLoadOpts = null;
+      loadAll(next);
+    }
   }
+  })();
+  return _loadInFlight;
 }
 
 /* ══════════════════════════════════════════════
@@ -815,7 +1124,8 @@ function renderStats() {
 ══════════════════════════════════════════════ */
 function activeCell(u) {
   // lastActiveAt 우선, 없으면 최근 운동 기록으로 추정
-  let ts = u.lastActiveAt ? new Date(u.lastActiveAt).getTime() : 0;
+  const activeAt = u.lastActiveAt || u.lastactiveat;
+  let ts = activeAt ? new Date(activeAt).getTime() : 0;
   if (!ts) {
     const lastWo = GD.workouts.filter(w => w.deviceId === u.deviceId)
       .sort((a,b) => Number(b.ts||0) - Number(a.ts||0))[0];
@@ -877,7 +1187,7 @@ function onUserSearch() {
 }
 
 function isChallenger(u) {
-  return !!(u.registrationId && u.registrationId.trim());
+  return !!u?.__isChallenger;
 }
 
 function filteredUsers() {
@@ -889,7 +1199,7 @@ function filteredUsers() {
     if (uTab === 'gen') { if (isChallenger(u)) return false; }
     if (uTab === 'ch')  { if (!isChallenger(u)) return false; }
     // 검색
-    if (q && ![(u.name||''),(u.empId||''),(u.dept||'')].some(s => s.toLowerCase().includes(q))) return false;
+    if (q && ![(u.name||''),(u.empId||''),(u.registrationId||''),(u.dept||'')].some(s => s.toLowerCase().includes(q))) return false;
     // 드롭다운 필터
     if (mode === 'bad') return isBadName(u.name);
     if (mode === 'dup') return dupIds.has((u.empId||'').trim());
@@ -925,6 +1235,12 @@ function renderUsers() {
   const dupBtn = document.getElementById('dup-btn');
   dupBtn.style.display = dupIds.size ? '' : 'none';
   dupBtn.textContent = `중복 삭제 (${dupIds.size}건)`;
+  const restoreBtn = document.getElementById('restore-users-btn');
+  if (restoreBtn) {
+    const derivedCnt = GD.users.filter(u => u.__derived && !isSyntheticDerivedDeviceId(u.deviceId)).length;
+    restoreBtn.style.display = derivedCnt ? '' : 'none';
+    restoreBtn.textContent = `users 복구 (${derivedCnt}명)`;
+  }
 
   const list = sortedUsers(filteredUsers());
   const total = list.length;
@@ -937,7 +1253,7 @@ function renderUsers() {
   const tbody = document.getElementById('u-tbody');
 
   if (!page.length) {
-    tbody.innerHTML = `<tr><td class="empty-cell" colspan="10">이용자가 없습니다</td></tr>`;
+    tbody.innerHTML = `<tr><td class="empty-cell" colspan="11">이용자가 없습니다</td></tr>`;
     document.getElementById('u-pager').innerHTML = '';
     return;
   }
@@ -947,7 +1263,7 @@ function renderUsers() {
     const rc = rank === 1 ? 'g1' : rank === 2 ? 'g2' : rank === 3 ? 'g3' : '';
     const bad = isBadName(u.name);
     const dup = dupIds.has((u.empId||'').trim());
-    const isCh = chIds.has((u.empId||'').trim());
+    const isCh = isChallenger(u);
     const rowClass = bad ? ' row-bad' : dup ? ' row-dup' : '';
     const safeName = (u.name||'').replace(/'/g, "\\'");
     const safeId = (u.deviceId||'').replace(/'/g, "\\'");
@@ -959,8 +1275,10 @@ function renderUsers() {
         ${bad ? '<span class="badge bad" style="margin-left:4px">이상</span>' : ''}
         ${dup ? '<span class="badge dup" style="margin-left:4px">중복</span>' : ''}
         ${isCh ? '<span class="badge ch" style="margin-left:4px">챌린지</span>' : ''}
+        ${u.__derived ? '<span class="badge" style="margin-left:4px">임시</span>' : ''}
       </td>
       <td>${u.empId||'-'}</td>
+      <td>${u.registrationId||'-'}</td>
       <td>${u.dept||'-'}</td>
       <td><span class="badge pts">+${(Number(u.points)||0).toLocaleString()}p</span></td>
       <td>${woCnt[u.deviceId]||0}</td>
@@ -992,6 +1310,7 @@ function selectUser(deviceId, name) {
   document.getElementById('d-points').value = Number(u.points) || 0;
   document.getElementById('d-streak').value = Number(u.streak) || 0;
   document.getElementById('d-empid').value  = u.empId  || '';
+  document.getElementById('d-registration-id').value = u.registrationId || '-';
   document.getElementById('d-dept').value   = u.dept   || '';
   document.getElementById('u-detail-title').textContent = (u.avatar||'') + ' ' + (u.name||'이용자') + ' 상세';
   document.getElementById('u-detail').style.display = '';
@@ -1008,6 +1327,8 @@ function hideDetail() { clearSel(); }
 
 async function saveUserDetail() {
   if (!selDeviceId) { toast('이용자를 먼저 선택해주세요'); return; }
+  const cur = GD.users.find(x => x.deviceId === selDeviceId);
+  if (cur?.__derived) { toast('임시 이용자는 수정할 수 없습니다. 앱 로그인 후 users가 생성되면 수정해주세요.'); return; }
   const name   = document.getElementById('d-name').value.trim();
   const avatar = document.getElementById('d-avatar').value.trim();
   const points = Math.max(0, parseInt(document.getElementById('d-points').value)||0);
@@ -1028,6 +1349,7 @@ async function adjPoints(sign) {
   if (!v) { toast('조정값을 입력하세요'); return; }
   const u = GD.users.find(x => x.deviceId === selDeviceId);
   if (!u) return;
+  if (u.__derived) { toast('임시 이용자는 포인트 조정이 불가합니다. users 생성 후 진행해주세요.'); return; }
   const newPts = Math.max(0, (Number(u.points)||0) + sign * v);
   showLoading(true);
   const { error } = await db.from('users').update({ points: newPts }).eq('deviceId', selDeviceId);
@@ -1065,6 +1387,45 @@ function deleteSelUser() {
   deleteUser(selDeviceId, u?.name || selDeviceId);
 }
 
+async function restoreUsersFromActivity() {
+  const derived = GD.users.filter(u => u.__derived && !isSyntheticDerivedDeviceId(u.deviceId));
+  if (!derived.length) { toast('복구할 임시 이용자가 없습니다'); return; }
+  if (!confirm(`임시 이용자 ${derived.length}명을 users 테이블로 복구할까요?\n기존 deviceId가 있으면 업데이트됩니다.`)) return;
+  showLoading(true);
+  try {
+    const nowIso = new Date().toISOString();
+    const rows = derived.map(u => ({
+      deviceId: String(u.deviceId || '').trim(),
+      name: String(u.name || '').trim() || '이용자',
+      avatar: String(u.avatar || '🏃'),
+      empId: String(u.empId || '').trim(),
+      dept: String(u.dept || '').trim(),
+      points: Number(u.points) || 0,
+      streak: Number(u.streak) || 0,
+      tags: '',
+      registrationId: u.registrationId || '',
+      lastactiveat: u.lastActiveAt || nowIso,
+      pendingrewards: '',
+      redeemedrewards: '',
+    })).filter(r => r.deviceId);
+
+    if (!rows.length) { toast('복구 가능한 deviceId가 없습니다'); return; }
+
+    for (let i = 0; i < rows.length; i += 500) {
+      const { error } = await db.from('users').upsert(rows.slice(i, i + 500), { onConflict: 'deviceId' });
+      if (error) throw error;
+    }
+
+    toast(`users 복구 완료 ✓ (${rows.length}명)`);
+    await loadAll();
+  } catch (e) {
+    const msg = [e?.message, e?.details, e?.hint].filter(Boolean).join(' | ');
+    toast('users 복구 실패: ' + (msg || '알 수 없는 오류'));
+  } finally {
+    showLoading(false);
+  }
+}
+
 async function deleteDuplicates() {
   const dupIds = getDupEmpIds();
   if (!dupIds.size) { toast('중복 이용자 없음'); return; }
@@ -1099,7 +1460,23 @@ async function resetAllData() {
   if (!confirm(`⚠️ 전체 데이터 초기화\n\n이용자 ${cnt}명과 모든 운동·혈당·게시글·챌린지 신청 데이터가 영구 삭제됩니다.\n\n정말 삭제하시겠습니까?`)) return;
   showLoading(true);
   try {
+    const deleteByIds = async (tbl, key, ids) => {
+      const uniq = [...new Set((ids || []).map(v => String(v || '').trim()).filter(Boolean))];
+      if (!uniq.length) return;
+      for (let i = 0; i < uniq.length; i += 1000) {
+        const { error } = await db.from(tbl).delete().in(key, uniq.slice(i, i + 1000));
+        if (error) throw new Error(`${tbl} 삭제 실패: ${error.message}`);
+      }
+    };
+
+    const { data: posts, error: postsErr } = await db.from('posts').select('id');
+    if (postsErr) throw new Error(`posts 조회 실패: ${postsErr.message}`);
+    const postIds = (posts || []).map(p => p.id);
+    await deleteByIds('reactions', 'postId', postIds);
+    await deleteByIds('post_comments', 'postId', postIds);
+
     const defs = [
+      { tbl:'orders',   key:'id' },
       { tbl:'workouts', key:'id' },
       { tbl:'glucose',  key:'id' },
       { tbl:'posts',    key:'id' },
@@ -1107,15 +1484,13 @@ async function resetAllData() {
       { tbl:'users',    key:'deviceId' },
     ];
     for (const { tbl, key } of defs) {
-      const { data } = await db.from(tbl).select(key);
+      const { data, error } = await db.from(tbl).select(key);
+      if (error) throw new Error(`${tbl} 조회 실패: ${error.message}`);
       if (!data?.length) continue;
       const ids = data.map(r => r[key]);
-      for (let i = 0; i < ids.length; i += 1000) {
-        const { error } = await db.from(tbl).delete().in(key, ids.slice(i, i+1000));
-        if (error) throw new Error(`${tbl} 삭제 실패: ${error.message}`);
-      }
+      await deleteByIds(tbl, key, ids);
     }
-    GD = { users:[], workouts:[], posts:[], glucose:[], registrations:[], adminPosts: GD.adminPosts };
+    GD = { users:[], workouts:[], posts:[], glucose:[], registrations:[], orders:[], adminPosts: GD.adminPosts };
     selDeviceId = '';
     setStatus('연결됨 (0명)', true);
     renderAll();
@@ -1314,7 +1689,7 @@ function renderChallenge() {
   const sf = document.getElementById('ch-sfilter').value;
   const list = GD.registrations.filter(r => {
     if (sf && r.status !== sf) return false;
-    if (q && ![(r.name||''),(r.empId||''),(r.dept||'')].some(s => s.toLowerCase().includes(q))) return false;
+    if (q && ![(r.id||''),(r.name||''),(r.empId||''),(r.dept||'')].some(s => s.toLowerCase().includes(q))) return false;
     return true;
   }).sort((a,b) => new Date(b.registeredAt||0) - new Date(a.registeredAt||0));
 
@@ -1383,11 +1758,31 @@ function showChDetail(id) {
 
 async function updateChStatus(id, status) {
   showLoading(true);
-  const { error } = await db.from('registrations').update({ status }).eq('id', id);
+  const cur = GD.registrations.find(x => String(x.id) === String(id));
+  let error = null;
+  if (cur?.__derived) {
+    const res = await db.from('registrations').upsert({
+      id: cur.id,
+      deviceId: cur.deviceId || '',
+      empId: cur.empId || '',
+      name: cur.name || '',
+      dept: cur.dept || '',
+      phone: cur.phone || '',
+      shoeSize: cur.shoeSize || '',
+      familyParticipation: !!cur.familyParticipation,
+      familyCount: Number(cur.familyCount) || 0,
+      status,
+      registeredAt: cur.registeredAt || new Date().toISOString(),
+    }, { onConflict: 'id' });
+    error = res.error || null;
+  } else {
+    const res = await db.from('registrations').update({ status }).eq('id', id);
+    error = res.error || null;
+  }
   showLoading(false);
   if (error) { toast('실패: ' + error.message); return; }
   const r = GD.registrations.find(x => String(x.id) === String(id));
-  if (r) r.status = status;
+  if (r) { r.status = status; r.__derived = false; }
   closeModal('ch-modal');
   renderChallenge();
   toast(status === 'confirmed' ? '✅ 확정 처리 완료' : '취소 처리 완료');
@@ -1554,14 +1949,16 @@ function exportOrdersCsv() {
 function getRewardRows() {
   const rows = [];
   GD.users.forEach(u => {
+    const pendingRaw = u.pendingRewards ?? u.pendingrewards;
+    const doneRaw = u.redeemedRewards ?? u.redeemedrewards;
     // pending: pendingRewards (아직 지급 안됨)
-    const pending = typeof u.pendingRewards === 'string'
-      ? u.pendingRewards.split(',').filter(Boolean)
-      : (u.pendingRewards || []);
+    const pending = typeof pendingRaw === 'string'
+      ? pendingRaw.split(',').filter(Boolean)
+      : (pendingRaw || []);
     // done: redeemedRewards (지급 완료)
-    const done = typeof u.redeemedRewards === 'string'
-      ? u.redeemedRewards.split(',').filter(Boolean)
-      : (u.redeemedRewards || []);
+    const done = typeof doneRaw === 'string'
+      ? doneRaw.split(',').filter(Boolean)
+      : (doneRaw || []);
     pending.forEach(rid => {
       const r = REWARD_LIST.find(x => x.id === rid);
       rows.push({ deviceId: u.deviceId, userName: u.name||'(이름없음)', empId: u.empId||'-',
@@ -1619,24 +2016,28 @@ function renderRewards() {
 async function markRewardDone(deviceId, rewardId) {
   const u = GD.users.find(x => x.deviceId === deviceId);
   if (!u) return;
+  const pendingRaw = u.pendingRewards ?? u.pendingrewards;
+  const doneRaw = u.redeemedRewards ?? u.redeemedrewards;
   // pendingRewards에서 제거, redeemedRewards에 추가
-  let pending = typeof u.pendingRewards === 'string'
-    ? u.pendingRewards.split(',').filter(Boolean)
-    : [...(u.pendingRewards || [])];
-  let done = typeof u.redeemedRewards === 'string'
-    ? u.redeemedRewards.split(',').filter(Boolean)
-    : [...(u.redeemedRewards || [])];
+  let pending = typeof pendingRaw === 'string'
+    ? pendingRaw.split(',').filter(Boolean)
+    : [...(pendingRaw || [])];
+  let done = typeof doneRaw === 'string'
+    ? doneRaw.split(',').filter(Boolean)
+    : [...(doneRaw || [])];
   pending = pending.filter(id => id !== rewardId);
   if (!done.includes(rewardId)) done.push(rewardId);
   showLoading(true);
   const { error } = await db.from('users').update({
-    pendingRewards: pending.join(','),
-    redeemedRewards: done.join(','),
+    pendingrewards: pending.join(','),
+    redeemedrewards: done.join(','),
   }).eq('deviceId', deviceId);
   showLoading(false);
   if (error) { toast('실패: ' + error.message); return; }
   u.pendingRewards = pending.join(',');
   u.redeemedRewards = done.join(',');
+  u.pendingrewards = pending.join(',');
+  u.redeemedrewards = done.join(',');
   renderRewards();
   toast('보상 지급 완료 처리 ✓');
 }

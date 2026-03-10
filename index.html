@@ -878,34 +878,40 @@
     .wo-health-tag-glucose { background:#FEE2E2; color:#DC2626; }
 
     /* ── Community Share ── */
+    .share-section {
+      margin-bottom:13px;
+      background:var(--card);
+      border:1.5px solid var(--border);
+      border-radius:18px;
+      box-shadow:0 10px 30px rgba(18,20,28,0.06);
+      overflow:hidden;
+      padding:0;
+    }
     .share-toggle-card {
-      display:flex; align-items:center; gap:12px; padding:13px 14px;
-      border-radius:var(--radius); border:1.5px solid var(--border);
-      background:var(--bg-secondary); cursor:pointer; transition:all 0.2s;
+      display:flex; align-items:center; gap:12px; padding:16px 16px 14px;
+      background:linear-gradient(120deg, #f8fafc 0%, #eef2ff 55%, #fef3c7 100%);
+      cursor:default; transition:all 0.2s;
       -webkit-user-select:none; user-select:none; margin-bottom:0;
+      border:none; border-radius:0;
     }
-    .share-toggle-card.on { border-color:var(--primary); background:var(--primary-light); }
+    .share-toggle-card.on { background:linear-gradient(120deg, #eef2ff 0%, #e0f2fe 55%, #fef3c7 100%); }
     .share-toggle-icon-wrap {
-      font-size:20px; width:40px; height:40px; flex-shrink:0;
+      font-size:18px; width:42px; height:42px; flex-shrink:0;
       display:flex; align-items:center; justify-content:center;
-      background:var(--bg); border-radius:10px; transition:background 0.2s;
+      background:#fff; border-radius:12px; box-shadow:0 6px 18px rgba(15,23,42,0.08);
+      transition:transform 0.2s, background 0.2s;
     }
-    .share-toggle-card.on .share-toggle-icon-wrap { background:var(--primary-light); }
+    .share-toggle-card:active .share-toggle-icon-wrap { transform:scale(0.98); }
     .share-toggle-text { flex:1; min-width:0; }
-    .share-toggle-title { display:block; font-size:14px; font-weight:700; color:var(--text); transition:color 0.2s; }
-    .share-toggle-card.on .share-toggle-title { color:var(--primary); }
-    .share-toggle-sub { display:block; font-size:11px; color:var(--text-secondary); margin-top:2px; }
-    .share-toggle-chevron {
-      flex-shrink:0; display:flex; align-items:center; justify-content:center;
-      width:28px; height:28px; border-radius:50%; background:var(--border);
-      transition:transform 0.25s;
-    }
-    .share-toggle-card.on .share-toggle-chevron { transform:rotate(180deg); }
+    .share-toggle-title { display:block; font-size:15px; font-weight:800; color:#111827; letter-spacing:-0.2px; }
+    .share-toggle-card.on .share-toggle-title { color:#1d4ed8; }
+    .share-toggle-sub { display:block; font-size:11px; color:rgba(17,24,39,0.6); margin-top:2px; }
+    .share-toggle-chevron { display:none; }
     .share-expand { display:none; animation:fadeIn 0.2s ease; }
     .share-expand.show { display:block; }
     .share-expand-inner {
-      margin-top:10px; background:var(--bg); border:1.5px solid var(--border);
-      border-radius:var(--radius-sm); padding:12px 13px;
+      margin:12px 14px 0; background:var(--bg); border:1.5px solid var(--border);
+      border-radius:14px; padding:12px 13px;
     }
     .share-ex-tag-wrap { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
     .share-expand-label { font-size:11px; font-weight:600; color:var(--text-secondary); }
@@ -921,7 +927,6 @@
     }
     .share-msg-input:focus { outline:none; border-color:var(--primary); }
     .share-hint { font-size:11px; color:var(--text-secondary); margin-top:5px; }
-    .share-section { margin-bottom:13px; }
     .share-memo-preview { font-size:12px; color:#7c3aed; background:#f5f3ff; border-radius:6px; padding:6px 9px; margin-bottom:8px; line-height:1.5; white-space:pre-wrap; }
     .share-opts-label { font-size:11px; color:var(--text-secondary); font-weight:600; margin:8px 0 6px; }
     .share-opts-row { display:flex; gap:7px; flex-wrap:wrap; margin-bottom:8px; }
@@ -1053,15 +1058,43 @@
     .wo-month-btn { background:none; border:none; font-size:22px; cursor:pointer; color:var(--text-secondary); padding:0 6px; line-height:1; transition:color 0.2s; }
     .wo-month-btn:hover { color:var(--primary); }
     .wo-month-btn:disabled { opacity:0.3; cursor:default; }
-    .dn-card { flex-shrink:0; width:76px; background:var(--bg-secondary); border-radius:10px; padding:8px 10px; cursor:pointer; border:1.5px solid transparent; transition:border-color 0.15s; }
-    .dn-card.selected { border-color:var(--primary); background:var(--primary-light); }
-    .dn-card-date { font-size:11px; font-weight:700; color:var(--text); margin-bottom:3px; }
-    .dn-card-text { font-size:11px; color:var(--text-secondary); overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; line-height:1.4; }
+    .dn-card {
+      flex-shrink:0; width:calc(100% - 10px); max-width:100%; background:var(--card);
+      border-radius:14px; padding:10px; cursor:default;
+      border:1.5px solid var(--border); transition:all 0.15s;
+      display:flex; align-items:center; gap:10px;
+      box-shadow:0 6px 18px rgba(15,23,42,0.06);
+    }
+    .dn-card:hover { transform:translateY(-1px); }
+    .dn-card.selected { border-color:var(--primary); box-shadow:0 10px 22px rgba(37,99,235,0.18); }
+    .dn-thumb {
+      width:52px; height:52px; border-radius:12px; flex-shrink:0;
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      background:linear-gradient(135deg, #e0f2fe 0%, #eef2ff 45%, #fef3c7 100%);
+      color:#1f2937; text-align:center; font-weight:700;
+      border:1px solid rgba(15,23,42,0.08);
+    }
+    .dn-thumb-img {
+      width:52px; height:52px; border-radius:12px; flex-shrink:0;
+      object-fit:cover; display:block;
+      border:1px solid rgba(15,23,42,0.08);
+      box-shadow:0 6px 14px rgba(15,23,42,0.12);
+    }
+    .dn-thumb-date { font-size:11px; line-height:1.1; }
+    .dn-thumb-day { font-size:10px; opacity:0.7; margin-top:3px; }
+    .dn-card-date { font-size:11px; font-weight:700; color:var(--text); }
+    .dn-card-text { font-size:11px; color:var(--text-secondary); margin-top:4px; line-height:1.35; white-space:normal; }
     .dn-cal-header { font-size:11px; color:var(--text-muted); font-weight:600; padding:3px 0; text-align:center; }
-    .dn-cal-day { font-size:12px; padding:5px 2px; border-radius:6px; text-align:center; line-height:1; }
-    .dn-cal-day.has-note { background:var(--primary-light); color:var(--primary); font-weight:700; cursor:pointer; }
-    .dn-cal-day.today { font-weight:700; }
-    .dn-cal-day.selected { background:var(--primary); color:#fff !important; }
+    .dn-cal-day {
+      font-size:12px; padding:6px 2px; border-radius:6px; text-align:center; line-height:1;
+      position:relative; display:flex; align-items:center; justify-content:center;
+      color:var(--text);
+    }
+    .dn-cal-num { display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border-radius:50%; }
+    .dn-cal-day.has-note { font-weight:700; cursor:pointer; }
+    .dn-cal-day.has-note .dn-cal-num { border:1.5px solid var(--primary); color:var(--primary); }
+    .dn-cal-day.selected .dn-cal-num { background:var(--primary); color:#fff; }
+    .dn-cal-day.today .dn-cal-num { box-shadow:0 0 0 1px rgba(15,23,42,0.25) inset; }
     .wo-month-lbl { font-size:15px; font-weight:700; }
     /* ── Month Day Group ── */
     .wo-day-group { display:flex; align-items:center; justify-content:space-between; padding:10px 0 6px; margin-top:4px; }
@@ -1082,8 +1115,12 @@
     .pm-close-btn { background:none; border:none; font-size:20px; cursor:pointer; color:var(--text-secondary); padding:0 0 0 8px; line-height:1; flex-shrink:0; }
     .pm-close-btn:hover { color:var(--text); }
     .pm-header-right { display:flex; align-items:center; gap:8px; }
-    .pm-logout-btn { display:block; width:100%; margin-top:10px; background:none; border:none; color:var(--text-secondary); font-family:inherit; font-size:13px; cursor:pointer; padding:8px 0; text-align:center; }
+    .pm-logout-btn, .pm-delete-btn { display:block; width:100%; margin-top:10px; background:none; border:none; font-family:inherit; font-size:13px; cursor:pointer; padding:8px 0; text-align:center; }
+    .pm-logout-btn { color:var(--text-secondary); }
     .pm-logout-btn:hover { color:var(--red); }
+    .pm-delete-btn { color:var(--red); margin-top:4px; font-weight:700; }
+    .pm-delete-btn:hover { color:#B91C1C; }
+    .pm-delete-btn:disabled { opacity:0.55; cursor:default; }
     .pm-title { font-size:18px; font-weight:700; text-align:center; flex:1; }
     .pm-sub { font-size:13px; color:var(--text-secondary); text-align:center; margin-bottom:20px; }
     /* ── Profile Tags ── */
@@ -2150,7 +2187,7 @@
           <div class="glucose-val-display">
             <input type="number" class="dur-val" id="dur-val" value="30" min="5" max="180"
                    inputmode="numeric"
-                   oninput="S.duration=Math.max(5,Math.min(180,parseInt(this.value)||5));updatePtsPreview();updateMemoPlaceholder();updateSharePreview()">
+                   oninput="S.duration=Math.max(5,Math.min(180,parseInt(this.value)||5));S.durationTouched=true;document.getElementById('dur-val')?.classList.add('active');updatePtsPreview();updateMemoPlaceholder();updateSharePreview();updateRecordBtnStates()">
             <span class="glucose-val-unit">분</span>
           </div>
           <button type="button" class="dur-btn" onclick="changeDur(5)">+</button>
@@ -2187,7 +2224,8 @@
           <button type="button" class="custom-ex-link" id="sa-gt-time" onclick="toggleGlucoseTimeInput()">✏️ 측정시간 직접입력</button>
         </div>
         <div class="custom-ex-wrap" id="sa-glucose-time-wrap">
-          <input type="time" id="sa-glucose-time" class="glucose-time-input" oninput="_glucoseTime=this.value">
+          <input type="time" id="sa-glucose-time" class="glucose-time-input"
+                 oninput="_glucoseTime=this.value;_glucoseValTouched=false;document.getElementById('sa-glucose-num')?.classList.remove('active');updateRecordBtnStates()">
         </div>
         <div class="glucose-input-wrap-sa">
           <button type="button" class="dur-btn" onclick="changeGlucoseVal(-5)">−</button>
@@ -2422,10 +2460,10 @@
           <!-- 저장된 기록 -->
           <div id="day-notes-section" style="display:none;margin-top:14px;border-top:1px solid var(--border);padding-top:12px">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-              <span style="font-size:12px;font-weight:600;color:var(--text-secondary)">저장된 기록</span>
+              <span style="font-size:12px;font-weight:600;color:var(--text-secondary)">저장된 기록 <span id="dn-count" style="font-weight:700;color:var(--text)">0</span></span>
               <div class="wo-view-tabs">
-                <button type="button" class="wo-view-tab active" id="dn-tab-list" onclick="setDayNotesView('list')">목록</button>
-                <button type="button" class="wo-view-tab" id="dn-tab-cal" onclick="setDayNotesView('cal')">캘린더</button>
+                <button type="button" class="wo-view-tab active" id="dn-tab-all" onclick="clearDnFilter()">전체보기</button>
+                <button type="button" class="wo-view-tab" id="dn-tab-cal" onclick="setDayNotesView('cal')">캘린더로보기</button>
               </div>
             </div>
             <div id="dn-list-view">
@@ -2438,13 +2476,6 @@
                 <button type="button" class="wo-month-btn" onclick="changeDnMonth(1)">›</button>
               </div>
               <div id="dn-cal-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px"></div>
-            </div>
-            <div id="dn-note-display" style="display:none;margin-top:10px;background:var(--bg-secondary);border-radius:10px;padding:12px 14px">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-                <span id="dn-note-date" style="font-size:12px;font-weight:600;color:var(--text-secondary)"></span>
-                <button type="button" onclick="closeDnNote()" style="font-size:13px;color:var(--text-muted);background:none;border:none;cursor:pointer;line-height:1">✕</button>
-              </div>
-              <div id="dn-note-text" style="font-size:13px;color:var(--text);line-height:1.7;white-space:pre-wrap"></div>
             </div>
           </div>
         </div>
@@ -3441,6 +3472,7 @@ let S = {
   pendingRewards: [],
   rewardHistory: [],  // [{ id, name, emoji, cost, status:'pending'|'done', ts, doneTs? }]
   selectedEx: null,
+  durationTouched: false,
   duration: 30,
   leagueTab: 'weekly',
   myReactions: {},   // postId -> [stickerId,...]
@@ -3489,9 +3521,9 @@ function save() {
       streak: S.user.streak,
       tags: (S.user.tags || []).join(','),
       registrationId: S.user.registrationId || '',
-      lastActiveAt: new Date().toISOString(),
-      pendingRewards:  (S.pendingRewards  || []).join(','),
-      redeemedRewards: (S.redeemedRewards || []).join(','),
+      lastactiveat: new Date().toISOString(),
+      pendingrewards:  (S.pendingRewards  || []).join(','),
+      redeemedrewards: (S.redeemedRewards || []).join(','),
     };
     const syncedKey = 'hi_synced_' + S.deviceId;
     if (localStorage.getItem(syncedKey)) {
@@ -3981,6 +4013,10 @@ function scheduleMidnightReset() {
   const _smEl = document.getElementById('sleep-custom-input'); if (_smEl) _smEl.value = '';
     resetHealthChecks();
     clearPhoto(null);
+    _shareRewrite = false;
+    const sm = document.getElementById('share-msg'); if (sm) sm.value = '';
+    renderMyDaySave();
+    updateSharePreview();
     save();
     scheduleMidnightReset();
   }, next - now);
@@ -4629,15 +4665,17 @@ function updateMemoPlaceholder() {
   const base = `오늘 ${name} ${S.duration}분 완료했어요! ${icon}`;
 }
 function updateRecordBtnStates() {
-  document.getElementById('log-exercise-btn')?.classList.toggle('btn-inactive', !S.selectedEx);
-  document.getElementById('log-glucose-btn')?.classList.remove('btn-inactive');
+  const canLogExercise = !!S.selectedEx && !!S.durationTouched;
+  document.getElementById('log-exercise-btn')?.classList.toggle('btn-inactive', !canLogExercise);
+  const canLogGlucose = !!_glucoseValTouched && (!!_glucoseTiming || !!_glucoseTime);
+  document.getElementById('log-glucose-btn')?.classList.toggle('btn-inactive', !canLogGlucose);
   const durHint = document.getElementById('dur-hint');
-  if (durHint) durHint.style.display = S.selectedEx ? 'none' : '';
+  if (durHint) durHint.style.display = canLogExercise ? 'none' : '';
 }
 function selectEx(id) {
   haptic('light');
   S.selectedEx = id;
-  document.getElementById('dur-val')?.classList.add('active');
+  S.durationTouched = false;
   renderExercise();
   updateMemoPlaceholder();
   updateSharePreview();
@@ -4648,11 +4686,13 @@ function changeDur(delta) {
   const durEl = document.getElementById('dur-val');
   durEl.value = S.duration;
   durEl.classList.add('active');
+  S.durationTouched = true;
   const h = document.getElementById('dur-hint');
   if (h) h.style.display = 'none';
   updatePtsPreview();
   updateMemoPlaceholder();
   updateSharePreview();
+  updateRecordBtnStates();
 }
 let _shareOn = true;
 let _shareRewrite = false;
@@ -4660,11 +4700,20 @@ let _dayNotes = {};
 let _dnView = 'list';
 let _dnCalYear = new Date().getFullYear();
 let _dnCalMonth = new Date().getMonth();
-let _dnSelDate = null;
+let _dnFilterDate = null;
+
+function getLocalDateKey(d = new Date()) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
 
 function loadDayNotes() {
   try { _dayNotes = JSON.parse(localStorage.getItem('hi_health_day_notes_' + (ACTIVE_EMPID || '')) || '{}'); }
   catch(e) { _dayNotes = {}; }
+  _dnFilterDate = null;
+  _dnView = 'list';
 }
 function persistDayNotes() {
   try { localStorage.setItem('hi_health_day_notes_' + (ACTIVE_EMPID || ''), JSON.stringify(_dayNotes)); }
@@ -4673,21 +4722,43 @@ function persistDayNotes() {
 function renderDayNotes() {
   const sec = document.getElementById('day-notes-section');
   if (!sec) return;
-  const hasAny = Object.keys(_dayNotes).length > 0;
-  sec.style.display = hasAny ? '' : 'none';
+  sec.style.display = '';
+  const cntEl = document.getElementById('dn-count');
+  if (cntEl) cntEl.textContent = Object.keys(_dayNotes).length;
   if (_dnView === 'list') renderDnList();
   else renderDnCalendar();
 }
 function renderDnList() {
   const el = document.getElementById('dn-scroll');
   if (!el) return;
-  const entries = Object.entries(_dayNotes).sort((a, b) => b[0].localeCompare(a[0]));
+  const entries = Object.entries(_dayNotes)
+    .filter(([dk]) => !_dnFilterDate || dk === _dnFilterDate)
+    .sort((a, b) => b[0].localeCompare(a[0]));
+  if (!entries.length) {
+    el.innerHTML = '<div style="font-size:12px;color:var(--text-secondary);padding:8px 2px">저장된 기록이 없어요.</div>';
+    return;
+  }
   const dayNames = ['일','월','화','수','목','금','토'];
-  el.innerHTML = entries.map(([dk, { note }]) => {
+  el.innerHTML = entries.map(([dk, { note, photo }]) => {
     const d = new Date(dk + 'T00:00:00');
-    const label = (d.getMonth()+1) + '/' + d.getDate() + ' (' + dayNames[d.getDay()] + ')';
-    const preview = note.split('\n')[0].slice(0, 18);
-    return `<div class="dn-card${_dnSelDate===dk?' selected':''}" onclick="showDnNote('${dk}')"><div class="dn-card-date">${label}</div><div class="dn-card-text">${preview}</div></div>`;
+    const month = d.getMonth() + 1;
+    const date = d.getDate();
+    const day = dayNames[d.getDay()];
+    const preview = note.replace(/\s*\n+\s*/g, ' ').replace(/\s{2,}/g, ' ').trim();
+    const thumb = photo
+      ? `<img class="dn-thumb-img" src="${photo}" alt="기록 사진">`
+      : `<div class="dn-thumb">
+          <div class="dn-thumb-date">${month}/${date}</div>
+          <div class="dn-thumb-day">${day}</div>
+        </div>`;
+    return `
+      <div class="dn-card">
+        ${thumb}
+        <div>
+          <div class="dn-card-text">${preview}</div>
+        </div>
+      </div>
+    `;
   }).join('');
 }
 function renderDnCalendar() {
@@ -4695,7 +4766,7 @@ function renderDnCalendar() {
   const label = document.getElementById('dn-cal-label');
   if (!grid || !label) return;
   label.textContent = _dnCalYear + '년 ' + (_dnCalMonth + 1) + '월';
-  const today = new Date().toISOString().slice(0, 10);
+  const today = getLocalDateKey();
   const firstDay = new Date(_dnCalYear, _dnCalMonth, 1).getDay();
   const daysInMonth = new Date(_dnCalYear, _dnCalMonth + 1, 0).getDate();
   const dayNames = ['일','월','화','수','목','금','토'];
@@ -4704,10 +4775,20 @@ function renderDnCalendar() {
   for (let d = 1; d <= daysInMonth; d++) {
     const dk = _dnCalYear + '-' + String(_dnCalMonth+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
     const hasNote = !!_dayNotes[dk];
-    const cls = ['dn-cal-day', hasNote?'has-note':'', dk===today?'today':'', _dnSelDate===dk?'selected':''].filter(Boolean).join(' ');
-    html += `<div class="${cls}"${hasNote?` onclick="showDnNote('${dk}')"`:''}>${d}</div>`;
+    const cls = ['dn-cal-day', hasNote?'has-note':'', dk===today?'today':'', dk===_dnFilterDate?'selected':''].filter(Boolean).join(' ');
+    html += `<div class="${cls}"${hasNote?` onclick="setDnFilter('${dk}')"`:''}><span class="dn-cal-num">${d}</span></div>`;
   }
   grid.innerHTML = html;
+}
+function setDnFilter(dk) {
+  _dnFilterDate = (_dnFilterDate === dk) ? null : dk;
+  setDayNotesView('list');
+  renderDnCalendar();
+}
+function clearDnFilter() {
+  _dnFilterDate = null;
+  setDayNotesView('list');
+  renderDnCalendar();
 }
 function changeDnMonth(delta) {
   _dnCalMonth += delta;
@@ -4715,27 +4796,10 @@ function changeDnMonth(delta) {
   if (_dnCalMonth > 11) { _dnCalMonth = 0; _dnCalYear++; }
   renderDnCalendar();
 }
-function showDnNote(dk) {
-  _dnSelDate = _dnSelDate === dk ? null : dk;
-  const noteDisplay = document.getElementById('dn-note-display');
-  if (!_dnSelDate || !noteDisplay) { if (noteDisplay) noteDisplay.style.display = 'none'; renderDnList(); renderDnCalendar(); return; }
-  const entry = _dayNotes[dk];
-  if (!entry) return;
-  const d = new Date(dk + 'T00:00:00');
-  document.getElementById('dn-note-date').textContent = d.getFullYear() + '년 ' + (d.getMonth()+1) + '월 ' + d.getDate() + '일';
-  document.getElementById('dn-note-text').textContent = entry.note;
-  noteDisplay.style.display = 'block';
-  renderDnList(); renderDnCalendar();
-}
-function closeDnNote() {
-  _dnSelDate = null;
-  document.getElementById('dn-note-display').style.display = 'none';
-  renderDnList(); renderDnCalendar();
-}
 function setDayNotesView(v) {
   _dnView = v;
-  document.getElementById('dn-tab-list')?.classList.toggle('active', v === 'list');
   document.getElementById('dn-tab-cal')?.classList.toggle('active', v === 'cal');
+  document.getElementById('dn-tab-all')?.classList.toggle('active', v === 'list' && !_dnFilterDate);
   document.getElementById('dn-list-view').style.display = v === 'list' ? '' : 'none';
   document.getElementById('dn-cal-view').style.display = v === 'cal' ? '' : 'none';
   if (v === 'list') renderDnList(); else renderDnCalendar();
@@ -4934,8 +4998,8 @@ function saveMyDay() {
   const msgEl = document.getElementById('share-msg');
   const msg = msgEl ? msgEl.value.trim() : buildDayMessage();
   if (!msg) { showToast('기록된 항목이 없어요. 운동이나 하루 정보를 먼저 입력해주세요.'); return; }
-  const todayKey = new Date().toISOString().slice(0, 10);
-  _dayNotes[todayKey] = { ts: Date.now(), note: msg };
+  const todayKey = getLocalDateKey();
+  _dayNotes[todayKey] = { ts: Date.now(), note: msg, photo: _photoData || null };
   persistDayNotes();
   if (!S.todayLog) S.todayLog = { date: new Date().toDateString() };
   S.todayLog.myDayNote = msg;
@@ -5008,7 +5072,7 @@ function updatePtsPreview() {
   }
 }
 function logExercise() {
-  if (!S.selectedEx || !S.duration) {
+  if (!S.selectedEx || !S.durationTouched) {
     haptic('error');
     const hint = document.getElementById('log-exercise-hint');
     if (hint) {
@@ -5084,6 +5148,11 @@ function logExercise() {
   document.getElementById('ex-memo').value = '';
   if (S.selectedEx === 'custom') document.getElementById('custom-ex-name').value = '';
   resetHealthChecks();
+  // 기록 후 종목/시간 초기화
+  S.selectedEx = null;
+  S.duration = 30;
+  S.durationTouched = false;
+  document.getElementById('dur-val')?.classList.remove('active');
   save();
   // 운동 기록 구글 시트 동기화
   const lastW = S.workouts[0];
@@ -5435,6 +5504,7 @@ function addSuppDirect() {
 
 /* ── Blood Glucose ── */
 let _glucoseVal    = 100;
+let _glucoseValTouched = false;
 let _glucoseTiming = null;
 let _glucoseTime   = '';
 
@@ -5450,6 +5520,7 @@ function toggleGlucoseTimeInput() {
     _glucoseTime = '';
     const el = document.getElementById('sa-glucose-time');
     if (el) el.value = '';
+    updateRecordBtnStates();
   } else {
     document.getElementById('sa-glucose-time')?.focus();
   }
@@ -5478,7 +5549,7 @@ function getGlucoseStatus(val, timing) {
 
 function syncGlucoseUI() {
   const numEl = document.getElementById('sa-glucose-num');
-  const active = _glucoseVal !== 100 || _glucoseTiming !== null;
+  const active = _glucoseValTouched;
   if (numEl) {
     numEl.textContent = _glucoseVal;
     numEl.classList.toggle('active', active);
@@ -5492,14 +5563,18 @@ function syncGlucoseUI() {
 function changeGlucoseVal(delta) {
   haptic('light');
   _glucoseVal = Math.max(40, Math.min(400, _glucoseVal + delta));
+  _glucoseValTouched = true;
   const h = document.getElementById('glucose-hint');
   if (h) h.style.display = 'none';
   syncGlucoseUI();
+  updateRecordBtnStates();
 }
 
 function setGlucoseTiming(timing) {
   haptic('light');
   _glucoseTiming = _glucoseTiming === timing ? null : timing;
+  _glucoseValTouched = false;
+  document.getElementById('sa-glucose-num')?.classList.remove('active');
   syncGlucoseUI();
   updateRecordBtnStates();
 }
@@ -5510,17 +5585,24 @@ function todayGlucoseRecords() {
 }
 
 function logGlucoseStandalone() {
+  if (!_glucoseValTouched || (!_glucoseTiming && !_glucoseTime)) {
+    haptic('error');
+    const hint = document.getElementById('log-glucose-hint');
+    if (hint) {
+      hint.textContent = !_glucoseTiming && !_glucoseTime
+        ? '혈당 시점을 선택하거나 시간을 입력해주세요'
+        : '혈당 수치를 입력해주세요';
+      hint.style.display = 'block';
+      clearTimeout(hint._t);
+      hint._t = setTimeout(() => { hint.style.display = 'none'; }, 2500);
+    }
+    return;
+  }
   // 하루 기록 횟수 제한
   const todayGl = todayGlucoseRecords();
   if (todayGl.length >= DAILY_GLUCOSE_LIMIT) {
     haptic('error');
     showToast(`⚠️ 하루 최대 ${DAILY_GLUCOSE_LIMIT}회까지 혈당을 기록할 수 있어요`);
-    return;
-  }
-  // 같은 시점 중복 기록 방지 (시점 선택 시에만)
-  if (_glucoseTiming && todayGl.some(r => r.timing === _glucoseTiming)) {
-    haptic('error');
-    showToast(`⚠️ 오늘 '${_glucoseTiming}' 혈당은 이미 기록했어요`);
     return;
   }
   haptic('success');
@@ -5546,7 +5628,7 @@ function logGlucoseStandalone() {
     points: rec.points,
     ts: rec.ts,
   });
-  _glucoseVal = 100; _glucoseTiming = null; _glucoseTime = '';
+  _glucoseVal = 100; _glucoseTiming = null; _glucoseTime = ''; _glucoseValTouched = false;
   const timeEl = document.getElementById('sa-glucose-time');
   if (timeEl) timeEl.value = '';
   document.getElementById('sa-glucose-time-wrap')?.classList.remove('show');
@@ -5554,6 +5636,7 @@ function logGlucoseStandalone() {
   const gh = document.getElementById('glucose-hint');
   if (gh) gh.style.display = '';
   syncGlucoseUI();
+  updateRecordBtnStates();
   renderGlucose();
   renderHeader();
   renderRecordTabDots();
@@ -5768,9 +5851,30 @@ let _selAvatar = AVATARS[0];
 let _selTags   = [];
 let _pmIsChallenge = false;
 function activeTags() { return _pmIsChallenge ? CHALLENGE_TAGS : PROFILE_TAGS; }
+function getProfileIdentity() {
+  const loginEmpId = String(
+    ACTIVE_EMPID ||
+    S.user.empId ||
+    sessionStorage.getItem('hi_session_empid') ||
+    localStorage.getItem('hi_keep_login_id') ||
+    document.getElementById('login-empid-input')?.value ||
+    ''
+  ).trim().toUpperCase();
+  const loginName = String(
+    S.user.name ||
+    localStorage.getItem('hi_keep_login_name') ||
+    document.getElementById('login-name-input')?.value ||
+    ''
+  ).trim();
+  return { empId: loginEmpId, name: loginName };
+}
+
 function openProfileModal(onboarding = false) {
-  document.getElementById('pm-realname').textContent = S.user.name || '-';
-  document.getElementById('pm-empid').textContent = ACTIVE_EMPID || '-';
+  const identity = getProfileIdentity();
+  if (!S.user.empId && identity.empId) S.user.empId = identity.empId;
+  if (!S.user.name && identity.name) S.user.name = identity.name;
+  document.getElementById('pm-realname').textContent = identity.name || '-';
+  document.getElementById('pm-empid').textContent = identity.empId || '-';
   document.getElementById('pm-nickname').value = S.user.nickname || S.user.name || '';
   _selAvatar = S.user.avatar;
   _pmIsChallenge = !!getMyReg();
@@ -5888,17 +5992,59 @@ function saveProfile() {
   haptic('medium');
   showToast('프로필이 저장되었습니다');
 }
-function logout() {
-  if (!confirm('로그아웃 하면 이 기기의 운동 기록, 포인트 등 모든 데이터가 초기화됩니다.\n계속하시겠어요?')) return;
-  localStorage.removeItem(STORAGE_KEY);
-  ACTIVE_EMPID = '';
-  STORAGE_KEY  = 'hi_health_v2';
-  SHOP_ORDERS_KEY = 'hi_health_shop_orders';
+
+let _deleteMyDataBusy = false;
+
+function cleanupLocalUserKeys({ empId, deviceId, registrationId, storageKey, ordersKey, cartKey }) {
+  const normEmpId = String(empId || '').trim();
+  const normDeviceId = String(deviceId || '').trim();
+  const normRegId = String(registrationId || '').trim();
+  const curStorageKey = storageKey || STORAGE_KEY;
+  const curOrdersKey = ordersKey || SHOP_ORDERS_KEY;
+  const curCartKey = cartKey || SHOP_CART_KEY;
+
+  localStorage.removeItem(curStorageKey);
+  localStorage.removeItem(curOrdersKey);
+  localStorage.removeItem(curCartKey);
+
+  if (normEmpId) {
+    localStorage.removeItem('hi_health_tags_' + normEmpId);
+    localStorage.removeItem('hi_health_day_notes_' + normEmpId);
+    localStorage.removeItem('hi_today_photo_' + normEmpId);
+    localStorage.removeItem('hi_device_id_' + normEmpId);
+  }
+  if (normDeviceId) {
+    localStorage.removeItem('hi_synced_' + normDeviceId);
+  }
+
   sessionStorage.removeItem('hi_session_empid');
   localStorage.removeItem('hi_keep_login_id');
   localStorage.removeItem('hi_keep_login_name');
+
+  try {
+    const regs = JSON.parse(localStorage.getItem(CH_REG_KEY) || '[]');
+    const nextRegs = regs.filter(r => {
+      const rid = String(r?.id || '').trim();
+      const remp = String(r?.empId || '').trim().toUpperCase();
+      const rdev = String(r?.deviceId || '').trim();
+      if (normRegId && rid === normRegId) return false;
+      if (normEmpId && remp === normEmpId.toUpperCase()) return false;
+      if (normDeviceId && rdev === normDeviceId) return false;
+      return true;
+    });
+    localStorage.setItem(CH_REG_KEY, JSON.stringify(nextRegs));
+  } catch(e) {}
+}
+
+function resetToLoggedOutState() {
+  ACTIVE_EMPID = '';
+  STORAGE_KEY  = 'hi_health_v2';
+  SHOP_ORDERS_KEY = 'hi_health_shop_orders';
+  SHOP_CART_KEY   = 'hi_health_cart';
+
   S.deviceId = null;
-  S.user = { name:'', avatar:'🏃', points:0, streak:0, stickersReceived:0, registrationId:null, tags:[] };
+  S.user = { name:'', nickname:'', avatar:'🏃', empId:'', dept:'', points:0, totalPoints:0, streak:0, stickersReceived:0, registrationId:null, tags:[] };
+  _dayNotes = {};
   S.workouts = [];
   S.posts = JSON.parse(JSON.stringify(MOCK_POSTS_SEED));
   S.glucoseRecords = [];
@@ -5906,14 +6052,133 @@ function logout() {
   S.pendingRewards = [];
   S.rewardHistory = [];
   S.myReactions = {};
-  document.getElementById('profile-modal').classList.add('pm-hidden');
+  S.communityPosts = [];
+  S.adminPosts = [];
+  S.todayLog = null;
 
+  const pmNick = document.getElementById('pm-nickname');
+  if (pmNick) pmNick.value = '';
+  const pmName = document.getElementById('pm-realname');
+  if (pmName) pmName.textContent = '-';
+  const pmEmpid = document.getElementById('pm-empid');
+  if (pmEmpid) pmEmpid.textContent = '-';
+  const pmAvGrid = document.getElementById('pm-avatar-grid');
+  if (pmAvGrid) pmAvGrid.innerHTML = '';
+  const pmChSection = document.getElementById('pm-challenge-section');
+  if (pmChSection) pmChSection.innerHTML = '';
+
+  document.getElementById('profile-modal').classList.add('pm-hidden');
   document.getElementById('app-login-screen').classList.remove('hidden');
   document.getElementById('login-empid-input').value = '';
   document.getElementById('login-name-input').value = '';
   document.getElementById('login-keep-checkbox').checked = true;
+
   renderHeader();
   renderHome();
+}
+
+function setDeleteMyDataBusy(on) {
+  _deleteMyDataBusy = on;
+  const btn = document.getElementById('pm-delete-data-btn');
+  if (!btn) return;
+  btn.disabled = on;
+  btn.textContent = on ? '삭제 중...' : '이 기기 + 서버 데이터 삭제';
+}
+
+async function deleteMyDeviceAndServerData() {
+  if (_deleteMyDataBusy) return;
+  const empId = String(ACTIVE_EMPID || S.user.empId || '').trim();
+  const savedDeviceId = empId ? localStorage.getItem('hi_device_id_' + empId) : '';
+  const deviceId = String(S.deviceId || savedDeviceId || '').trim();
+  const registrationId = String(S.user.registrationId || '').trim();
+  const storageKey = STORAGE_KEY;
+  const ordersKey = SHOP_ORDERS_KEY;
+  const cartKey = SHOP_CART_KEY;
+
+  if (!_db) { showToast('서버 연결이 준비되지 않았어요. 잠시 후 다시 시도해주세요.'); return; }
+  if (!empId && !deviceId) { showToast('삭제할 사용자 정보를 찾지 못했어요. 다시 로그인 후 시도해주세요.'); return; }
+
+  setDeleteMyDataBusy(true);
+  try {
+    const failures = [];
+    const runDelete = async (label, promiseFactory) => {
+      try {
+        const res = await promiseFactory();
+        if (res?.error) failures.push(`${label}: ${res.error.message}`);
+      } catch (e) {
+        failures.push(`${label}: ${e.message}`);
+      }
+    };
+
+    const postIds = new Set(
+      (S.posts || [])
+        .filter(p => Number(p?.userId) === 0)
+        .map(p => String(p?.id || ''))
+        .filter(Boolean)
+    );
+    if (deviceId) {
+      const { data, error } = await _db.from('posts').select('id').eq('deviceId', deviceId);
+      if (error) failures.push(`posts 조회: ${error.message}`);
+      (data || []).forEach(p => postIds.add(String(p.id || '')));
+    }
+
+    for (const postId of postIds) {
+      await runDelete(`reactions(${postId})`, () => _db.from('reactions').delete().eq('postId', postId));
+      await runDelete(`post_comments(${postId})`, () => _db.from('post_comments').delete().eq('postId', postId));
+    }
+
+    if (deviceId) {
+      await runDelete('reactions', () => _db.from('reactions').delete().eq('deviceId', deviceId));
+      await runDelete('post_comments', () => _db.from('post_comments').delete().eq('deviceId', deviceId));
+      await runDelete('posts', () => _db.from('posts').delete().eq('deviceId', deviceId));
+      await runDelete('orders', () => _db.from('orders').delete().eq('deviceId', deviceId));
+      await runDelete('workouts', () => _db.from('workouts').delete().eq('deviceId', deviceId));
+      await runDelete('glucose', () => _db.from('glucose').delete().eq('deviceId', deviceId));
+      await runDelete('users', () => _db.from('users').delete().eq('deviceId', deviceId));
+      await runDelete('registrations(deviceId)', () => _db.from('registrations').delete().eq('deviceId', deviceId));
+    }
+    if (empId) {
+      const lowerEmpId = empId.toLowerCase();
+      await runDelete('registrations(empId)', () => _db.from('registrations').delete().or(`empId.eq.${empId},empId.eq.${lowerEmpId}`));
+    }
+
+    if (failures.length) {
+      throw new Error(failures.join(' / '));
+    }
+
+    cleanupLocalUserKeys({ empId, deviceId, registrationId, storageKey, ordersKey, cartKey });
+    resetToLoggedOutState();
+    haptic('delete');
+    showToast('이 기기와 서버 데이터가 삭제되었습니다');
+  } catch (e) {
+    console.error('[deleteMyDeviceAndServerData]', e);
+    showToast('삭제 실패: ' + (e?.message || '알 수 없는 오류'));
+  } finally {
+    setDeleteMyDataBusy(false);
+  }
+}
+
+function requestDeleteMyDeviceAndServerData() {
+  showConfirm({
+    icon: _trashSvgLg,
+    title: '모든 데이터 영구 삭제',
+    msg: '이 기기에 저장된 기록과 서버의 운동, 혈당, 게시글, 댓글, 리액션, 주문, 챌린지 신청 정보가 모두 삭제됩니다.\n이 작업은 되돌릴 수 없습니다.',
+    okLabel: '영구 삭제',
+    onOk: () => deleteMyDeviceAndServerData(),
+  });
+}
+
+function logout() {
+  if (!confirm('로그아웃 하면 이 기기의 운동 기록, 포인트 등 모든 데이터가 초기화됩니다.\n계속하시겠어요?')) return;
+  cleanupLocalUserKeys({
+    empId: ACTIVE_EMPID || S.user.empId,
+    deviceId: S.deviceId,
+    registrationId: S.user.registrationId,
+    storageKey: STORAGE_KEY,
+    ordersKey: SHOP_ORDERS_KEY,
+    cartKey: SHOP_CART_KEY,
+  });
+  resetToLoggedOutState();
 }
 
 /* ════════════════════════════════════════
@@ -6617,11 +6882,29 @@ function deletePost(id) {
     title: '게시물 삭제',
     msg: '정말 삭제하시겠어요?\n삭제한 글은 복구할 수 없습니다.',
     okLabel: '삭제',
-    onOk: () => {
+    onOk: async () => {
       haptic('delete');
-      S.posts = S.posts.filter(p => p.id !== id);
+      const pid = String(id);
+      S.posts = S.posts.filter(p => String(p.id) !== pid);
+      S.communityPosts = (S.communityPosts || []).filter(p => String(p.id) !== pid);
       save();
       renderCommunity();
+      if (_db) {
+        try {
+          await _db.from('reactions').delete().eq('postId', pid);
+          await _db.from('post_comments').delete().eq('postId', pid);
+          const { error } = await _db.from('posts').delete().eq('id', pid);
+          if (error) {
+            console.error('[deletePost/posts]', error);
+            showToast('삭제는 되었지만 서버 반영에 실패했어요. 다시 시도해주세요.');
+            return;
+          }
+        } catch (e) {
+          console.error('[deletePost]', e);
+          showToast('삭제는 되었지만 서버 반영에 실패했어요. 다시 시도해주세요.');
+          return;
+        }
+      }
       showToast('게시물이 삭제되었습니다');
     },
   });
@@ -7686,8 +7969,6 @@ function submitChReg(e) {
     shoeSize: lastReg.shoeSize,
     familyParticipation: lastReg.familyParticipation,
     familyCount: lastReg.familyCount,
-    familyShoeSize: lastReg.familyShoeSize,
-    eventParticipation: lastReg.eventParticipation,
     status: lastReg.status,
     registeredAt: lastReg.registeredAt,
   });
@@ -7938,42 +8219,10 @@ function loadSheetsUserData(data) {
 function appLogout() {
   if (!confirm('로그아웃 하시겠습니까?')) return;
   save();
-  ACTIVE_EMPID = '';
-  STORAGE_KEY  = 'hi_health_v2';
-  SHOP_ORDERS_KEY = 'hi_health_shop_orders';
   sessionStorage.removeItem('hi_session_empid');
-  // 상태 초기화
-  S.deviceId = null;
-  S.user = { name:'', nickname:'', avatar:'🏃', empId:'', dept:'', points:0, totalPoints:0, streak:0, stickersReceived:0, registrationId:null, tags:[] };
-  _dayNotes = {};
-  S.workouts = [];
-  S.posts = JSON.parse(JSON.stringify(MOCK_POSTS_SEED));
-  S.glucoseRecords = [];
-  S.redeemedRewards = [];
-  S.pendingRewards = [];
-  S.rewardHistory = [];
-  S.myReactions = {};
   localStorage.removeItem('hi_keep_login_id');
   localStorage.removeItem('hi_keep_login_name');
-  // 프로필 모달 DOM 초기화 (다음 계정 로그인 시 이전 데이터 잔류 방지)
-  const pmNick = document.getElementById('pm-nickname');
-  if (pmNick) pmNick.value = '';
-  const pmName = document.getElementById('pm-realname');
-  if (pmName) pmName.textContent = '-';
-  const pmEmpid = document.getElementById('pm-empid');
-  if (pmEmpid) pmEmpid.textContent = '-';
-  const pmAvGrid = document.getElementById('pm-avatar-grid');
-  if (pmAvGrid) pmAvGrid.innerHTML = '';
-  const pmChSection = document.getElementById('pm-challenge-section');
-  if (pmChSection) pmChSection.innerHTML = '';
-
-  document.getElementById('app-login-screen').classList.remove('hidden');
-  document.getElementById('login-empid-input').value = '';
-  document.getElementById('login-name-input').value = '';
-  document.getElementById('login-keep-checkbox').checked = true;
-  // 화면 초기화 (이전 데이터 DOM에서 제거)
-  renderHeader();
-  renderHome();
+  resetToLoggedOutState();
 }
 
 /* ════════════════════════════════════════
@@ -8010,6 +8259,7 @@ function init() {
     SHOP_CART_KEY   = 'hi_health_cart_' + savedEmpId;
     load();
     loadTodayLog();
+    loadDayNotes();
     scheduleMidnightReset();
     loadCart();
     S.user.empId = savedEmpId;
@@ -8107,6 +8357,7 @@ init();
     </div>
     <button type="button" class="btn btn-primary btn-full" id="pm-save-btn" onclick="saveProfile()">저장하기</button>
     <button type="button" class="pm-logout-btn" id="pm-logout-btn" onclick="appLogout()">로그아웃</button>
+    <button type="button" class="pm-delete-btn" id="pm-delete-data-btn" onclick="requestDeleteMyDeviceAndServerData()">이 기기 + 서버 데이터 삭제</button>
   </div>
 </div>
 
@@ -8229,9 +8480,9 @@ init();
         }
       })
       .subscribe();
-    // posts 실시간 리스너 (새 게시글 자동 반영)
+    // posts 실시간 리스너 (게시글 추가/수정/삭제 자동 반영)
     _db.channel('posts_ch')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'posts' }, async () => {
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'posts' }, async () => {
         _adminPostsFetched = false;
         const page = document.querySelector('.page.active');
         if (page && page.id === 'page-community') { fetchAdminPosts(); fetchCommunityPosts(); }
