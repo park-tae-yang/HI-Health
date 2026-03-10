@@ -431,6 +431,8 @@
     }
     .btn-primary { background: var(--primary); color: #fff; }
     .btn-primary:active { opacity: 0.82; transform: scale(0.98); }
+    .btn-primary:disabled { background: var(--border); color: var(--text-muted); cursor: not-allowed; transform: none; opacity: 1; }
+    .btn-inactive { background: var(--border) !important; color: #B0B4BC !important; transform: none !important; transition: background 0.2s, color 0.2s; }
     .btn-secondary { background: var(--primary-light); color: var(--primary); }
     .btn-success   { background: #34C759; color: #fff; }
     .btn-full { width: 100%; }
@@ -741,7 +743,15 @@
       font-family: inherit; white-space: nowrap;
     }
     .custom-ex-link.selected { border-color: var(--primary); color: var(--primary); font-weight: 600; background: #EEF2FF; border-style: solid; }
-    #custom-ex-name { font-size: 11px; padding: 8px 11px; }
+    .chip-direct-btn {
+      display: flex; align-items: center; gap: 5px;
+      flex-shrink: 0; padding: 7px 14px; border-radius: 999px;
+      border: 1.5px dashed var(--border); background: none;
+      font-size: 13px; color: var(--text-secondary); cursor: pointer;
+      font-family: inherit; white-space: nowrap;
+    }
+    .chip-direct-btn.selected { border-color: var(--primary); color: var(--primary); font-weight: 600; background: #EEF2FF; border-style: solid; }
+    #custom-ex-name, #meal-direct-input, #supp-direct-input { font-size: 11px; padding: 8px 11px; }
 
     /* ── Duration Control ── */
     .duration-wrap { display: flex; align-items: center; justify-content: center; gap: 24px; margin: 16px 0 10px; }
@@ -755,10 +765,12 @@
     .dur-btn:active { border-color: var(--primary); color: var(--primary); transform: scale(0.92); }
     .dur-display { text-align: center; min-width: 90px; }
     .dur-val {
-      font-size: 32px; font-weight: 700; color: var(--primary); line-height: 1;
+      font-size: 32px; font-weight: 700; color: #D1D1D6; line-height: 1;
       width: 70px; border: none; background: transparent; text-align: center; outline: none;
       -moz-appearance: textfield; appearance: textfield; caret-color: var(--primary);
+      transition: color 0.15s;
     }
+    .dur-val.active { color: var(--primary); }
     .dur-val::-webkit-outer-spin-button, .dur-val::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
     .dur-unit { font-size: 14px; color: var(--text-secondary); font-weight: 500; margin-top: 2px; }
 
@@ -777,13 +789,13 @@
     .daily-limit-info--center { text-align: center; margin-bottom: 8px; }
 
     /* ── Workout History Items ── */
-    .workout-item { display: flex; align-items: center; gap: 8px; padding: 11px 0; border-bottom: 1px solid var(--border); }
+    .workout-item { display: flex; align-items: center; gap: 6px; padding: 7px 0; border-bottom: 1px solid var(--border); }
     .workout-item:last-child { border-bottom: none; }
-    .wo-icon { font-size: 20px; flex-shrink: 0; line-height: 1; }
-    .wo-name { font-size: 14px; font-weight: 700; white-space: nowrap; }
-    .wo-meta { font-size: 13px; color: var(--text-secondary); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .wo-pts { font-size: 14px; font-weight: 800; color: #5B21B6; white-space: nowrap; }
-    .wo-photo { width:48px; height:48px; object-fit:cover; border-radius:8px; flex-shrink:0; cursor:pointer; border:1.5px solid var(--border); }
+    .wo-icon { font-size: 16px; flex-shrink: 0; line-height: 1; }
+    .wo-name { font-size: 12px; font-weight: 700; white-space: nowrap; }
+    .wo-meta { font-size: 11px; color: var(--text-secondary); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .wo-pts { font-size: 12px; font-weight: 800; color: #5B21B6; white-space: nowrap; }
+    .wo-photo { width:36px; height:36px; object-fit:cover; border-radius:6px; flex-shrink:0; cursor:pointer; border:1.5px solid var(--border); }
 
     .photo-upload-area {
       border: 2px dashed var(--border); border-radius: var(--radius-sm);
@@ -822,10 +834,10 @@
       font-size:13px; cursor:pointer; white-space:nowrap; transition:all 0.18s;
     }
     .hc-rate-btn.on { border-color:var(--primary); background:#EEF2FF; color:var(--primary); }
-    .diet-card-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:4px; }
+    .diet-card-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:4px; }
     .diet-card {
       display:flex; flex-direction:column; align-items:center; justify-content:center;
-      gap:5px; padding:12px 6px; border-radius:14px;
+      gap:6px; padding:14px 6px; border-radius:14px;
       border:1.5px solid var(--border); background:#fff;
       cursor:pointer; transition:all 0.18s; font-family:inherit;
     }
@@ -833,6 +845,14 @@
     .diet-card-label { font-size:12px; color:var(--text-secondary); text-align:center; word-break:keep-all; }
     .diet-card.on { border-color:var(--primary); background:#EEF2FF; }
     .diet-card.on .diet-card-label { color:var(--primary); font-weight:600; }
+    .diet-card-inline-input {
+      width:100%; background:transparent;
+      border:1.5px dashed var(--border); border-radius:7px;
+      font-size:11px; text-align:center; padding:4px 4px;
+      color:var(--text); outline:none; font-family:inherit; min-width:0;
+    }
+    .diet-card.on .diet-card-inline-input { border-color:var(--primary); color:var(--primary); }
+    .ch-form-input.dashed, .ch-form-input.dashed:focus { border-style:dashed; }
     .hc-sub-label { font-size:11px; font-weight:600; color:var(--text-secondary); margin:8px 0 5px; }
     .hc-sub-chips { display:flex; gap:5px; flex-wrap:wrap; }
     .hc-sub-chip {
@@ -848,8 +868,9 @@
     .hc-custom-supp input { flex:1; padding:6px 10px; border:1.5px solid var(--border); border-radius:var(--radius-sm); font-size:12px; background:var(--bg); }
     .hc-custom-supp button { padding:6px 12px; border-radius:var(--radius-sm); border:none; background:var(--primary); color:#fff; font-size:12px; font-weight:600; cursor:pointer; }
     .hc-custom-list { margin-top:6px; }
-    .hc-sleep-row { display:flex; align-items:center; justify-content:center; gap:16px; margin:4px 0; }
-    .hc-sleep-val { font-size:24px; font-weight:700; color:var(--primary); line-height:1; }
+    .hc-sleep-row { display:flex; align-items:center; justify-content:center; gap:16px; margin:8px 0 4px; }
+    .hc-sleep-val { font-size:24px; font-weight:700; color:#D1D1D6; line-height:1; transition:color 0.15s; }
+    .hc-sleep-val.active { color:var(--primary); }
     .hc-sleep-unit { font-size:12px; color:var(--text-secondary); margin-top:2px; text-align:center; }
     .wo-health-tags { display:flex; gap:5px; flex-wrap:wrap; margin-top:5px; }
     .wo-health-tag { font-size:10px; padding:2px 7px; border-radius:10px; background:var(--primary-light); color:var(--primary); font-weight:600; }
@@ -925,7 +946,8 @@
     /* ── Blood Glucose ── */
     .glucose-input-wrap { display:flex; align-items:center; justify-content:center; gap:16px; margin-bottom:12px; }
     .glucose-val-display { text-align:center; }
-    .glucose-val-num  { font-size:32px; font-weight:700; color:var(--primary); line-height:1; }
+    .glucose-val-num  { font-size:32px; font-weight:700; color:#D1D1D6; line-height:1; transition:color 0.15s; }
+    .glucose-val-num.active { color:var(--primary); }
     .glucose-val-unit { font-size:11px; color:var(--text-secondary); margin-top:2px; }
     .glucose-timing-row { display:flex; gap:6px; flex-wrap:wrap; }
     .glucose-timing-btn {
@@ -937,16 +959,16 @@
 
     .glucose-card-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
     .glucose-badge-red { background:#FEE2E2; color:#DC2626; }
-    .glucose-input-wrap-sa { display:flex; align-items:center; justify-content:center; gap:16px; margin:12px 0 8px; }
+    .glucose-input-wrap-sa { display:flex; align-items:center; justify-content:center; gap:16px; margin:16px 0 10px; }
     .glucose-time-toggle { border-style:dashed !important; }
     .glucose-time-toggle.on { border-style:solid !important; }
     .glucose-time-expand { display:none; margin-top:8px; }
     .glucose-time-expand.show { display:block; }
     .glucose-time-input {
-      width:140px; padding:7px 11px; border:1.5px solid var(--border); border-radius:var(--radius-sm);
+      width:100%; padding:7px 11px; border:1.5px dashed var(--border); border-radius:var(--radius-sm);
       font-size:13px; font-family:inherit; background:var(--bg); color:var(--text); box-sizing:border-box;
     }
-    .glucose-time-input:focus { outline:none; border-color:var(--primary); }
+    .glucose-time-input:focus { outline:none; border-color:var(--primary); border-style:dashed; }
     .glucose-log-btn { margin-top:10px; }
     .load-more-btn {
       display:block; width:100%; margin-top:10px; padding:9px;
@@ -957,20 +979,20 @@
     .glucose-history-list { margin-top:12px; }
     .wo-empty { text-align:center; font-size:13px; color:var(--text-secondary); padding:20px 0 8px; }
     .glucose-item {
-      display:flex; align-items:center; gap:12px;
-      padding:11px 0; border-bottom:1px solid var(--border);
+      display:flex; align-items:center; gap:8px;
+      padding:7px 0; border-bottom:1px solid var(--border);
     }
     .glucose-item:last-child { border-bottom:none; }
     .glucose-badge {
-      min-width:58px; padding:5px 8px; border-radius:10px;
+      min-width:48px; padding:4px 6px; border-radius:8px;
       text-align:center; flex-shrink:0;
     }
-    .glucose-badge-val  { font-size:16px; font-weight:700; line-height:1; }
-    .glucose-badge-unit { font-size:9px; opacity:0.8; }
+    .glucose-badge-val  { font-size:13px; font-weight:700; line-height:1; }
+    .glucose-badge-unit { font-size:8px; opacity:0.8; }
     .glucose-info { flex:1; }
-    .glucose-timing-lbl { font-size:13px; font-weight:600; }
-    .glucose-time       { font-size:11px; color:var(--text-secondary); margin-top:1px; }
-    .glucose-status-tag  { font-size:10px; font-weight:700; padding:2px 8px; border-radius:10px; margin-top:3px; display:inline-block; }
+    .glucose-timing-lbl { font-size:11px; font-weight:600; }
+    .glucose-time       { font-size:10px; color:var(--text-secondary); margin-top:1px; }
+    .glucose-status-tag  { font-size:9px; font-weight:700; padding:1px 6px; border-radius:8px; margin-top:2px; display:inline-block; }
     .glucose-status-low  { background:#DBEAFE; color:#1D4ED8; }
     .glucose-status-ok   { background:#D1FAE5; color:#065F46; }
     .glucose-status-warn { background:#FEF3C7; color:#92400E; }
@@ -982,12 +1004,8 @@
     .wo-del:hover { opacity:1; color:#ef4444; }
 
 /* ── Exercise Hero Card + Tabs ── */
-    .ex-hero-card {
-      background: #fff;
-      position: relative; overflow: hidden; z-index: 50;
-      box-shadow: 0 1px 0 var(--border);
-      margin: -18px -18px 0;
-    }
+    .ex-hero-card { display:none; }
+    #page-exercise { padding-top: 0; }
     .ex-hero-tabs { display:flex; padding:0 22px; }
     .ex-hero-tab {
       flex:1; padding:13px 0 15px; background:none; border:none;
@@ -996,13 +1014,21 @@
       cursor:pointer; font-family:inherit; transition:all 0.18s;
     }
     .ex-hero-tab.active { color:var(--primary); border-bottom-color:var(--primary); }
+    .rec-switch-btn {
+      flex:1; padding:13px 8px; border-radius:14px; border:2px solid var(--border);
+      background:var(--card); font-size:14px; font-weight:700; color:var(--text-secondary);
+      cursor:pointer; display:flex; align-items:center; justify-content:center;
+      gap:6px; transition:all 0.18s; font-family:inherit; line-height:1.2;
+    }
+    .rec-switch-btn.active { border-color:var(--primary); background:var(--primary-light); color:var(--primary); }
+    .today-tab-dot { display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--primary); margin-left:3px; vertical-align:middle; flex-shrink:0; }
     .record-content-card { border-radius:0 0 20px 20px !important; margin:0 -18px 20px !important; }
     .today-log-card { margin-left:-18px !important; margin-right:-18px !important; border-radius:20px !important; padding:0 !important; }
     .today-log-card .ex-hero-tabs { padding-left:18px; padding-right:18px; }
-    .today-log-card .hc-section { padding-left:18px; padding-right:18px; }
+    .today-log-card .hc-section { padding-left:18px; padding-right:18px; padding-top:18px; }
     .today-log-card #hc-diet-sec,
     .today-log-card #hc-sleep-sec,
-    .today-log-card #hc-supp-sec { padding-bottom:18px; }
+    .today-log-card #hc-supp-sec { padding-bottom:24px; }
     .today-log-card #ex-memo { margin-left:18px; margin-right:18px; width:calc(100% - 36px); }
 
     /* ── View Tabs (월별/목록/그래프) ── */
@@ -1027,6 +1053,15 @@
     .wo-month-btn { background:none; border:none; font-size:22px; cursor:pointer; color:var(--text-secondary); padding:0 6px; line-height:1; transition:color 0.2s; }
     .wo-month-btn:hover { color:var(--primary); }
     .wo-month-btn:disabled { opacity:0.3; cursor:default; }
+    .dn-card { flex-shrink:0; width:76px; background:var(--bg-secondary); border-radius:10px; padding:8px 10px; cursor:pointer; border:1.5px solid transparent; transition:border-color 0.15s; }
+    .dn-card.selected { border-color:var(--primary); background:var(--primary-light); }
+    .dn-card-date { font-size:11px; font-weight:700; color:var(--text); margin-bottom:3px; }
+    .dn-card-text { font-size:11px; color:var(--text-secondary); overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; line-height:1.4; }
+    .dn-cal-header { font-size:11px; color:var(--text-muted); font-weight:600; padding:3px 0; text-align:center; }
+    .dn-cal-day { font-size:12px; padding:5px 2px; border-radius:6px; text-align:center; line-height:1; }
+    .dn-cal-day.has-note { background:var(--primary-light); color:var(--primary); font-weight:700; cursor:pointer; }
+    .dn-cal-day.today { font-weight:700; }
+    .dn-cal-day.selected { background:var(--primary); color:#fff !important; }
     .wo-month-lbl { font-size:15px; font-weight:700; }
     /* ── Month Day Group ── */
     .wo-day-group { display:flex; align-items:center; justify-content:space-between; padding:10px 0 6px; margin-top:4px; }
@@ -2093,20 +2128,22 @@
   <!-- ████  EXERCISE  ████ -->
   <section id="page-exercise" class="page">
 
-<div class="ex-hero-card" id="hero-card-exercise">
-      <div class="ex-hero-tabs">
-        <button class="ex-hero-tab active" id="rec-tab-exercise" onclick="setRecordTab('exercise')">운동 기록</button>
-        <button class="ex-hero-tab" id="rec-tab-glucose" onclick="setRecordTab('glucose')">혈당 기록</button>
-      </div>
+    <div style="display:flex;border-bottom:2px solid var(--border);margin:0 -18px;background:#fff">
+      <button class="ex-hero-tab active" id="rec-tab-exercise" onclick="setRecordTab('exercise')" style="flex:1;padding:18px 0 20px;font-size:15px">운동 기록<span class="today-tab-dot" id="dot-exercise" style="display:none"></span></button>
+      <button class="ex-hero-tab" id="rec-tab-glucose" onclick="setRecordTab('glucose')" style="flex:1;padding:18px 0 20px;font-size:15px">혈당 기록<span class="today-tab-dot" id="dot-glucose" style="display:none"></span></button>
     </div>
 
     <div class="card record-content-card">
       <div id="rec-panel-exercise">
         <div class="ex-type-grid" id="ex-type-grid"></div>
         <div id="custom-ex-wrap" class="custom-ex-wrap">
-          <input type="text" class="ch-form-input" id="custom-ex-name"
-                 placeholder="운동 이름을 입력하세요 (예: 줄넘기, 스키...)"
-                 maxlength="20" oninput="updatePtsPreview()">
+          <div style="display:flex;gap:6px">
+            <input type="text" class="ch-form-input dashed" id="custom-ex-name"
+                   placeholder="운동 이름을 입력하세요 (예: 줄넘기, 스키...)"
+                   maxlength="20" oninput="updatePtsPreview()"
+                   onkeydown="if(event.key==='Enter')addCustomExType()">
+            <button type="button" onclick="addCustomExType()" style="padding:8px 14px;border-radius:var(--radius-sm);border:none;background:var(--primary);color:#fff;font-size:13px;cursor:pointer;white-space:nowrap">추가</button>
+          </div>
         </div>
         <div class="glucose-input-wrap-sa">
           <button type="button" class="dur-btn" onclick="changeDur(-5)">−</button>
@@ -2118,9 +2155,11 @@
           </div>
           <button type="button" class="dur-btn" onclick="changeDur(5)">+</button>
         </div>
-        <button class="btn btn-primary btn-full btn-record" onclick="logExercise()">운동 기록하기</button>
+        <p id="dur-hint" style="text-align:center;font-size:12px;color:#B0B4BC;margin:0 0 6px">버튼을 눌러 운동시간을 기록해주세요</p>
+        <button class="btn btn-primary btn-full btn-record btn-inactive" id="log-exercise-btn" onclick="logExercise()">운동 기록하기</button>
+        <div id="log-exercise-hint" style="display:none;text-align:center;font-size:12px;color:var(--primary);margin-top:6px;animation:fadeIn 0.15s ease"></div>
         <div id="daily-limit-info" class="daily-limit-info daily-limit-info--center" style="margin-top:6px;margin-bottom:16px"></div>
-        <hr style="border:none;border-top:1px solid var(--border);margin:0 0 14px">
+        <hr style="border:none;border-top:1px solid var(--border);margin:28px 0 18px">
         <div class="card-header" style="padding-top:0;justify-content:center">
           <div class="card-header-right">
             <span class="badge badge-success" id="wo-total-badge">총 0회</span>
@@ -2145,7 +2184,7 @@
           <button type="button" class="ex-type-btn" id="sa-gt-after2h"  onclick="setGlucoseTiming('식후2h')">식후 2h</button>
           <button type="button" class="ex-type-btn" id="sa-gt-before"   onclick="setGlucoseTiming('식전')">식전</button>
           <button type="button" class="ex-type-btn" id="sa-gt-bedtime"  onclick="setGlucoseTiming('취침전')">취침 전</button>
-          <button type="button" class="custom-ex-link" id="sa-gt-time" onclick="toggleGlucoseTimeInput()">🕐 시간 입력</button>
+          <button type="button" class="custom-ex-link" id="sa-gt-time" onclick="toggleGlucoseTimeInput()">✏️ 측정시간 직접입력</button>
         </div>
         <div class="custom-ex-wrap" id="sa-glucose-time-wrap">
           <input type="time" id="sa-glucose-time" class="glucose-time-input" oninput="_glucoseTime=this.value">
@@ -2158,9 +2197,11 @@
           </div>
           <button type="button" class="dur-btn" onclick="changeGlucoseVal(5)">+</button>
         </div>
-        <button class="btn btn-primary btn-full glucose-log-btn" onclick="logGlucoseStandalone()">혈당 기록하기</button>
+        <p id="glucose-hint" style="text-align:center;font-size:12px;color:#B0B4BC;margin:0 0 6px">버튼을 눌러 혈당수치를 기록해주세요</p>
+        <button class="btn btn-primary btn-full glucose-log-btn btn-inactive" id="log-glucose-btn" onclick="logGlucoseStandalone()">혈당 기록하기</button>
+        <div id="log-glucose-hint" style="display:none;text-align:center;font-size:12px;color:var(--primary);margin-top:6px;animation:fadeIn 0.15s ease"></div>
         <div id="glucose-daily-info" class="daily-limit-info daily-limit-info--center" style="margin-top:6px;margin-bottom:16px"></div>
-        <hr style="border:none;border-top:1px solid var(--border);margin:0 0 14px">
+        <hr style="border:none;border-top:1px solid var(--border);margin:28px 0 18px">
         <div class="card-header" style="padding-top:0;justify-content:center">
           <div class="card-header-right">
             <span class="badge glucose-badge-red" id="glucose-total-badge">총 0회</span>
@@ -2175,34 +2216,31 @@
     </div>
 
     <div class="card today-log-card">
-      <div style="padding:14px 18px 0; display:flex; align-items:center; justify-content:space-between; gap:8px">
+      <div style="padding:14px 18px 0;display:flex;align-items:center;justify-content:space-between">
         <p class="card-title" style="margin:0">오늘 하루는 어땠나요?</p>
-        <div style="display:flex; align-items:center; gap:8px; flex-shrink:0">
-          <span style="font-size:11px; color:var(--text-muted); white-space:nowrap; line-height:1">기록은 자정에 초기화돼요</span>
-          <button type="button" onclick="resetTodayLogNow()" style="font-size:10px; color:var(--text-muted); background:var(--bg-secondary); border:1px solid var(--border); border-radius:8px; padding:3px 8px; cursor:pointer; white-space:nowrap; line-height:1">지금 초기화</button>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:10px;color:var(--text-muted)">기록은 자정에 초기화돼요</span>
+          <button type="button" onclick="resetTodayLogNow()" style="font-size:11px;color:var(--text-muted);background:none;border:1px solid var(--border);border-radius:6px;cursor:pointer;padding:3px 8px">지금 초기화</button>
         </div>
       </div>
-      <div class="ex-hero-tabs" style="margin-top:10px; border-bottom:1px solid var(--border)">
-        <button class="ex-hero-tab active" id="today-tab-diet"  onclick="setTodayTab('diet')">식사</button>
-        <button class="ex-hero-tab"        id="today-tab-sleep" onclick="setTodayTab('sleep')">수면</button>
-        <button class="ex-hero-tab"        id="today-tab-supp"  onclick="setTodayTab('supp')">영양제</button>
+      <div class="ex-hero-tabs" style="margin-top:10px;border-bottom:1px solid var(--border)">
+        <button class="ex-hero-tab active" id="today-tab-diet"  onclick="setTodayTab('diet')">식사<span class="today-tab-dot" id="dot-diet" style="display:none"></span></button>
+        <button class="ex-hero-tab"        id="today-tab-sleep" onclick="setTodayTab('sleep')">수면<span class="today-tab-dot" id="dot-sleep" style="display:none"></span></button>
+        <button class="ex-hero-tab"        id="today-tab-supp"  onclick="setTodayTab('supp')">영양제<span class="today-tab-dot" id="dot-supp" style="display:none"></span></button>
       </div>
 
       <!-- 식사 panel -->
       <div id="today-panel-diet">
         <div class="hc-section" id="hc-diet-sec" style="border-top:none">
-          <div class="hc-sub-chips" style="margin-bottom:10px; flex-wrap:nowrap; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; padding-bottom:2px">
-            <button type="button" class="hc-sub-chip hc-meal-chip" data-name="아침" onclick="toggleMeal('아침')">아침</button>
-            <button type="button" class="hc-sub-chip hc-meal-chip" data-name="브런치" onclick="toggleMeal('브런치')">브런치</button>
-            <button type="button" class="hc-sub-chip hc-meal-chip" data-name="점심" onclick="toggleMeal('점심')">점심</button>
-            <button type="button" class="hc-sub-chip hc-meal-chip" data-name="저녁" onclick="toggleMeal('저녁')">저녁</button>
-            <button type="button" class="hc-sub-chip hc-meal-chip" data-name="간식" onclick="toggleMeal('간식')">간식</button>
-            <button type="button" class="hc-sub-chip hc-meal-chip" data-name="야식" onclick="toggleMeal('야식')">야식</button>
-            <button type="button" class="hc-sub-chip hc-meal-chip" data-name="외식" onclick="toggleMeal('외식')">외식</button>
-            <button type="button" class="hc-sub-chip hc-meal-chip" data-name="배달음식" onclick="toggleMeal('배달음식')">배달음식</button>
-            <button type="button" class="hc-sub-chip hc-meal-chip" data-name="술자리" onclick="toggleMeal('술자리')">술자리</button>
+          <div id="meal-chips-row" class="hc-sub-chips" style="margin-bottom:10px; flex-wrap:nowrap; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; padding-bottom:2px"></div>
+          <div class="custom-ex-wrap" id="meal-direct-wrap">
+            <div style="display:flex;gap:6px">
+              <input type="text" class="ch-form-input dashed" id="meal-direct-input" placeholder="식사 종류를 입력하세요 (예: 브런치, 배달음식, 술자리...)" maxlength="20" style="flex:1"
+                     onkeydown="if(event.key==='Enter')addMealDirect()">
+              <button type="button" onclick="addMealDirect()" style="padding:8px 14px;border-radius:var(--radius-sm);border:none;background:var(--primary);color:#fff;font-size:13px;cursor:pointer;white-space:nowrap">추가</button>
+            </div>
           </div>
-          <div class="diet-card-grid" style="margin-top:16px">
+          <div class="diet-card-grid" style="margin-top:18px">
             <button type="button" class="diet-card" id="diet-good"  onclick="setDiet('good')">
               <span class="diet-card-emoji">😋</span>
               <span class="diet-card-label">잘 챙겨먹음</span>
@@ -2223,14 +2261,19 @@
               <span class="diet-card-emoji">🥺</span>
               <span class="diet-card-label">한 끼 건너뜀</span>
             </button>
-            <button type="button" class="diet-card" id="diet-custom-btn" onclick="toggleDietCustom()">
+            <div class="diet-card" id="diet-custom-btn" onclick="document.getElementById('diet-custom-inline').focus()">
               <span class="diet-card-emoji">✏️</span>
-              <span class="diet-card-label">직접 입력</span>
-            </button>
+              <input type="text" id="diet-custom-inline" class="diet-card-inline-input"
+                maxlength="12" placeholder="직접 입력"
+                onclick="event.stopPropagation()"
+                onfocus="onDietCustomFocus()"
+                onblur="if(!this.value.trim())document.getElementById('diet-custom-btn').classList.remove('on')"
+                oninput="onDietCustomInline(this)">
+            </div>
           </div>
-          <div class="custom-ex-wrap" id="diet-custom-wrap">
-            <input type="text" class="ch-form-input" id="diet-custom-input" placeholder="오늘 식사를 한 줄로 적어보세요" maxlength="40" oninput="setDiet('custom'); updateSharePreview(); saveTodayLog()">
-          </div>
+          <textarea id="diet-memo-input" rows="2" placeholder="오늘 먹은 것을 자유롭게 적어보세요 예: 닭가슴살, 샐러드..." maxlength="100"
+            style="width:100%;margin-top:10px;padding:10px 13px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-family:inherit;color:var(--text);background:var(--bg);resize:none;line-height:1.5;box-sizing:border-box"
+            oninput="_dietMemo=this.value.trim();updateSharePreview();saveTodayLog()"></textarea>
         </div>
       </div>
 
@@ -2245,7 +2288,8 @@
             </div>
             <button type="button" class="dur-btn" onclick="changeSleep(0.5)">+</button>
           </div>
-          <div class="diet-card-grid" style="margin-top:12px">
+          <p id="sleep-time-hint" style="text-align:center;font-size:12px;color:#B0B4BC;margin:6px 0 0">버튼을 눌러 시간을 기록해주세요</p>
+          <div class="diet-card-grid" style="margin-top:16px">
             <button type="button" class="diet-card" id="sleep-great" onclick="setSleepCard('great')">
               <span class="diet-card-emoji">😴</span>
               <span class="diet-card-label">푹 잤어요</span>
@@ -2266,13 +2310,15 @@
               <span class="diet-card-emoji">💤</span>
               <span class="diet-card-label">너무 많이 잤어요</span>
             </button>
-            <button type="button" class="diet-card" id="sleep-custom-btn" onclick="toggleSleepCustom()">
+            <div class="diet-card" id="sleep-custom-btn" onclick="document.getElementById('sleep-custom-inline').focus()">
               <span class="diet-card-emoji">✏️</span>
-              <span class="diet-card-label">직접 입력</span>
-            </button>
-          </div>
-          <div class="custom-ex-wrap" id="sleep-custom-wrap">
-            <input type="number" class="ch-form-input" id="sleep-custom-input" placeholder="수면 시간을 입력하세요 (예: 6.5)" min="0" max="24" step="0.5" oninput="_sleepHours = parseFloat(this.value) || null; updateSharePreview(); saveTodayLog()">
+              <input type="text" id="sleep-custom-inline" class="diet-card-inline-input"
+                maxlength="12" placeholder="직접 입력"
+                onclick="event.stopPropagation()"
+                onfocus="document.getElementById('sleep-custom-btn').classList.add('on')"
+                onblur="if(!this.value.trim())document.getElementById('sleep-custom-btn').classList.remove('on')"
+                oninput="onSleepCustomInline(this)">
+            </div>
           </div>
         </div>
       </div>
@@ -2280,28 +2326,15 @@
       <!-- 영양제 panel -->
       <div id="today-panel-supp" style="display:none">
         <div class="hc-section" id="hc-supp-sec" style="border-top:none">
-          <div class="hc-sub-chips" style="flex-wrap:nowrap; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; padding-bottom:2px; margin-bottom:12px">
-            <button type="button" class="hc-sub-chip hc-supp-preset" data-name="비타민C"    onclick="toggleSuppItem('비타민C')">비타민C</button>
-            <button type="button" class="hc-sub-chip hc-supp-preset" data-name="비타민D"    onclick="toggleSuppItem('비타민D')">비타민D</button>
-            <button type="button" class="hc-sub-chip hc-supp-preset" data-name="오메가3"    onclick="toggleSuppItem('오메가3')">오메가3</button>
-            <button type="button" class="hc-sub-chip hc-supp-preset" data-name="철분"       onclick="toggleSuppItem('철분')">철분</button>
-            <button type="button" class="hc-sub-chip hc-supp-preset" data-name="칼슘"       onclick="toggleSuppItem('칼슘')">칼슘</button>
-            <button type="button" class="hc-sub-chip hc-supp-preset" data-name="마그네슘"   onclick="toggleSuppItem('마그네슘')">마그네슘</button>
-            <button type="button" class="hc-sub-chip hc-supp-preset" data-name="유산균"     onclick="toggleSuppItem('유산균')">유산균</button>
-            <button type="button" class="hc-sub-chip hc-supp-preset" data-name="종합비타민" onclick="toggleSuppItem('종합비타민')">종합비타민</button>
-            <button type="button" class="hc-sub-chip hc-supp-preset" data-name="아르기닌"   onclick="toggleSuppItem('아르기닌')">아르기닌</button>
-            <button type="button" class="hc-sub-chip hc-supp-preset" data-name="코큐텐"     onclick="toggleSuppItem('코큐텐')">코큐텐</button>
-            <button type="button" class="hc-sub-chip hc-supp-preset" data-name="엽산"       onclick="toggleSuppItem('엽산')">엽산</button>
-            <button type="button" class="custom-ex-link" id="supp-direct-btn" onclick="toggleSuppDirect()">✏️ 직접 입력</button>
-          </div>
+          <div id="supp-chips-row" class="hc-sub-chips" style="flex-wrap:nowrap; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; padding-bottom:2px; margin-bottom:12px"></div>
           <div class="custom-ex-wrap" id="supp-direct-wrap">
             <div style="display:flex;gap:6px">
-              <input type="text" class="ch-form-input" id="supp-direct-input" placeholder="영양제 이름을 입력하세요" maxlength="20" style="flex:1">
+              <input type="text" class="ch-form-input dashed" id="supp-direct-input" placeholder="영양제 이름을 입력하세요" maxlength="20" style="flex:1"
+                     onkeydown="if(event.key==='Enter')addSuppDirect()">
               <button type="button" onclick="addSuppDirect()" style="padding:8px 14px;border-radius:var(--radius-sm);border:none;background:var(--primary);color:#fff;font-size:13px;cursor:pointer;white-space:nowrap">추가</button>
             </div>
-            <div id="supp-custom-list" class="hc-custom-list" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px"></div>
           </div>
-          <div class="diet-card-grid" style="grid-template-columns:repeat(3,1fr); margin-top:4px">
+          <div class="diet-card-grid" style="grid-template-columns:repeat(3,1fr); margin-top:14px">
             <button type="button" class="diet-card" id="supp-all"     onclick="setSupp('all')">
               <span class="diet-card-emoji">✅</span>
               <span class="diet-card-label">모두 복용했어요</span>
@@ -2322,13 +2355,15 @@
               <span class="diet-card-emoji">📦</span>
               <span class="diet-card-label">영양제가 떨어졌어요</span>
             </button>
-            <button type="button" class="diet-card" id="supp-custom-card" onclick="toggleSuppCardCustom()">
+            <div class="diet-card" id="supp-custom-card" onclick="document.getElementById('supp-custom-inline').focus()">
               <span class="diet-card-emoji">✏️</span>
-              <span class="diet-card-label">직접 입력</span>
-            </button>
-          </div>
-          <div class="custom-ex-wrap" id="supp-card-custom-wrap">
-            <input type="text" class="ch-form-input" id="supp-card-custom-input" placeholder="오늘 영양제 복용을 한 줄로 적어보세요" maxlength="40" oninput="_suppTaken = this.value.trim() || null; updateSharePreview();">
+              <input type="text" id="supp-custom-inline" class="diet-card-inline-input"
+                maxlength="12" placeholder="직접 입력"
+                onclick="event.stopPropagation()"
+                onfocus="onSuppCustomFocus()"
+                onblur="if(!this.value.trim())document.getElementById('supp-custom-card').classList.remove('on')"
+                oninput="onSuppCustomInline(this)">
+            </div>
           </div>
         </div>
       </div>
@@ -2358,28 +2393,59 @@
 
     </div>
 
-    <div class="share-section" style="margin-bottom:14px">
-      <div class="card" style="margin-bottom:0;padding:0;overflow:hidden">
-        <div class="share-toggle-card on" id="share-toggle-btn" onclick="toggleShare()" style="border:none;border-radius:0;background:var(--card)">
-          <div class="share-toggle-icon-wrap">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a2 2 0 01-2-2v-1"/>
-              <path d="M15 3H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l4-4h4a2 2 0 002-2V5a2 2 0 00-2-2z"/>
-            </svg>
-          </div>
-          <div class="share-toggle-text">
-            <span class="share-toggle-title">커뮤니티에 공유하기</span>
-            <span class="share-toggle-sub" id="share-toggle-sub">오늘 나의 하루를 친구들과 나눠보세요</span>
-          </div>
-          <div class="share-toggle-chevron">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-          </div>
+    <!-- 내 하루 저장 / 공유 -->
+    <div class="card share-section" style="margin-bottom:14px;padding:0;overflow:hidden">
+      <div class="share-toggle-card on" id="share-toggle-btn" onclick="toggleShare()" style="border:none;border-radius:0;background:var(--card)">
+        <div class="share-toggle-icon-wrap">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a2 2 0 01-2-2v-1"/>
+            <path d="M15 3H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l4-4h4a2 2 0 002-2V5a2 2 0 00-2-2z"/>
+          </svg>
         </div>
-        <div class="share-expand show" id="share-expand" style="padding:0 18px 18px">
-          <div class="share-expand-inner">
-            <textarea class="share-msg-input" id="share-msg" rows="5" placeholder="공유할 메시지를 입력하세요..." oninput="_shareMsgAuto=false"></textarea>
-            <div class="share-hint">💡 내가 기록한 항목들이 자동으로 태그됩니다. 메모는 자유롭게 편집하실 수 있습니다.</div>
-            <button type="button" class="btn btn-primary" id="share-submit-btn" onclick="submitShareNow()" style="width:100%;margin-top:10px;border-radius:12px">지금 공유하기</button>
+        <div class="share-toggle-text">
+          <span class="share-toggle-title">오늘 하루 기록</span>
+          <span class="share-toggle-sub" id="share-toggle-sub">저장하거나 커뮤니티에 공유해보세요</span>
+        </div>
+        <div class="share-toggle-chevron">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+      </div>
+      <div class="share-expand show" id="share-expand" style="padding:0 18px 18px">
+        <div class="share-expand-inner">
+          <textarea class="share-msg-input" id="share-msg" rows="5" placeholder="기록된 내용이 자동으로 채워져요..."></textarea>
+          <div class="share-hint">💡 운동·혈당은 기록할 때마다 누적 추가돼요. 식사·수면·영양제는 현재 상태로 자동 업데이트됩니다.</div>
+          <div style="display:flex;gap:8px;margin-top:10px">
+            <button type="button" id="my-day-save-btn" onclick="saveMyDay()" class="btn btn-secondary" style="flex:1;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:5px;font-size:13px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>저장하기</button>
+            <button type="button" class="btn btn-primary" id="share-submit-btn" onclick="submitShareNow()" style="flex:1;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:5px;font-size:13px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>커뮤니티에 공유하기</button>
+          </div>
+          <div id="my-day-saved-info" style="display:none;text-align:center;font-size:11px;color:var(--success);margin-top:6px"></div>
+          <!-- 저장된 기록 -->
+          <div id="day-notes-section" style="display:none;margin-top:14px;border-top:1px solid var(--border);padding-top:12px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+              <span style="font-size:12px;font-weight:600;color:var(--text-secondary)">저장된 기록</span>
+              <div class="wo-view-tabs">
+                <button type="button" class="wo-view-tab active" id="dn-tab-list" onclick="setDayNotesView('list')">목록</button>
+                <button type="button" class="wo-view-tab" id="dn-tab-cal" onclick="setDayNotesView('cal')">캘린더</button>
+              </div>
+            </div>
+            <div id="dn-list-view">
+              <div id="dn-scroll" style="display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;-webkit-overflow-scrolling:touch;scrollbar-width:none"></div>
+            </div>
+            <div id="dn-cal-view" style="display:none">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+                <button type="button" class="wo-month-btn" onclick="changeDnMonth(-1)">‹</button>
+                <span id="dn-cal-label" style="font-size:13px;font-weight:700;color:var(--text)"></span>
+                <button type="button" class="wo-month-btn" onclick="changeDnMonth(1)">›</button>
+              </div>
+              <div id="dn-cal-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px"></div>
+            </div>
+            <div id="dn-note-display" style="display:none;margin-top:10px;background:var(--bg-secondary);border-radius:10px;padding:12px 14px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+                <span id="dn-note-date" style="font-size:12px;font-weight:600;color:var(--text-secondary)"></span>
+                <button type="button" onclick="closeDnNote()" style="font-size:13px;color:var(--text-muted);background:none;border:none;cursor:pointer;line-height:1">✕</button>
+              </div>
+              <div id="dn-note-text" style="font-size:13px;color:var(--text);line-height:1.7;white-space:pre-wrap"></div>
+            </div>
           </div>
         </div>
       </div>
@@ -2914,6 +2980,7 @@ const EX_TYPES = [
   { id:'stretching',  name:'스트레칭',   icon:'🤸', ppm:0.4,  bg:'#CFFAFE' },
   { id:'hiking',      name:'등산',       icon:'🥾', ppm:0.9,  bg:'#D1FAE5' },
   { id:'tennis',      name:'테니스',     icon:'🎾', ppm:0.9,  bg:'#ECFCCB' },
+  { id:'pilates',     name:'필라테스',  icon:'🧎', ppm:0.8,  bg:'#FAF5FF' },
   { id:'aerial-yoga', name:'플라잉요가', icon:'🪢', ppm:0.8,  bg:'#FDF4FF' },
   { id:'climbing',    name:'클라이밍',   icon:'🧗', ppm:1.1,  bg:'#FFF7ED' },
   { id:'kendo',       name:'검도',       icon:'🥋', ppm:1.0,  bg:'#FEF9C3' },
@@ -3373,7 +3440,7 @@ let S = {
   redeemedRewards: [],
   pendingRewards: [],
   rewardHistory: [],  // [{ id, name, emoji, cost, status:'pending'|'done', ts, doneTs? }]
-  selectedEx: 'walking',
+  selectedEx: null,
   duration: 30,
   leagueTab: 'weekly',
   myReactions: {},   // postId -> [stickerId,...]
@@ -3504,31 +3571,38 @@ function load() {
 
 function saveTodayLog() {
   const today = new Date().toDateString();
-  const sleepCustomShown = document.getElementById('sleep-custom-wrap')?.classList.contains('show');
   S.todayLog = {
     date: today,
     dietRating: _dietRating,
+    dietMemo: _dietMemo,
     mealTypes: [..._mealTypes],
     sleepHours: _sleepHours,
     sleepCard: _sleepCard,
-    sleepCustomVal: sleepCustomShown ? (document.getElementById('sleep-custom-input')?.value || '') : '',
+    sleepMemo: _sleepMemo,
     suppTaken: _suppTaken,
     suppList: [..._suppList],
+    myDayNote: S.todayLog?.myDayNote || null,
+    myDayNoteTs: S.todayLog?.myDayNoteTs || null,
   };
   save();
 }
 
 function loadTodayLog() {
+  renderMealChips();
+  renderSuppChips();
   const today = new Date().toDateString();
   if (!S.todayLog || S.todayLog.date !== today) {
     S.todayLog = null;
+    syncSleepHint();
     return;
   }
   const d = S.todayLog;
   _dietRating = d.dietRating || null;
+  _dietMemo   = d.dietMemo   || '';
   _mealTypes  = d.mealTypes  || [];
   _sleepHours = d.sleepHours ?? null;
   _sleepCard  = d.sleepCard  || null;
+  _sleepMemo  = d.sleepMemo  || '';
   _suppTaken  = d.suppTaken  || null;
   _suppList   = d.suppList   || [];
   // UI 복원
@@ -3539,24 +3613,20 @@ function loadTodayLog() {
       document.getElementById(dietMap[_dietRating])?.classList.add('on');
     } else {
       // 직접입력 복원
-      const inp = document.getElementById('diet-custom-input');
+      const inp = document.getElementById('diet-custom-inline');
       if (inp) inp.value = _dietRating;
-      document.getElementById('diet-custom-wrap')?.classList.add('show');
       document.getElementById('diet-custom-btn')?.classList.add('on');
     }
   }
-  _mealTypes.forEach(n => document.querySelector('.hc-meal-chip[data-name="'+n+'"]')?.classList.add('on'));
-  if (_sleepCard) {
-    document.getElementById('sleep-val').textContent = _sleepHours !== null ? (_sleepHours % 1 === 0 ? _sleepHours : _sleepHours.toFixed(1)) : '7';
-    document.getElementById('sleep-' + _sleepCard)?.classList.add('on');
-  } else if (d.sleepCustomVal) {
-    // 수면 직접입력 복원
-    const inp = document.getElementById('sleep-custom-input');
-    if (inp) inp.value = d.sleepCustomVal;
-    document.getElementById('sleep-custom-wrap')?.classList.add('show');
+  renderMealChips();
+  const dietMemoEl = document.getElementById('diet-memo-input');
+  if (dietMemoEl && _dietMemo) dietMemoEl.value = _dietMemo;
+  syncSleepHint();
+  if (_sleepCard) document.getElementById('sleep-' + _sleepCard)?.classList.add('on');
+  if (_sleepMemo) {
+    const sleepMemoEl = document.getElementById('sleep-custom-inline');
+    if (sleepMemoEl) sleepMemoEl.value = _sleepMemo;
     document.getElementById('sleep-custom-btn')?.classList.add('on');
-  } else if (_sleepHours !== null) {
-    document.getElementById('sleep-val').textContent = _sleepHours % 1 === 0 ? _sleepHours : _sleepHours.toFixed(1);
   }
   const presetSuppKeys = ['all', 'partial', 'forgot', 'no', 'empty'];
   const suppCardMap = { all:'supp-all', partial:'supp-partial', forgot:'supp-forgot', no:'supp-no', empty:'supp-empty' };
@@ -3565,27 +3635,12 @@ function loadTodayLog() {
       document.getElementById(suppCardMap[_suppTaken])?.classList.add('on');
     } else {
       // 영양제 직접입력 복원
-      const inp = document.getElementById('supp-card-custom-input');
+      const inp = document.getElementById('supp-custom-inline');
       if (inp) inp.value = _suppTaken;
-      document.getElementById('supp-card-custom-wrap')?.classList.add('show');
       document.getElementById('supp-custom-card')?.classList.add('on');
     }
   }
-  const SUPP_PRESETS = ['종합비타민','아르기닌','코큐텐','엽산'];
-  _suppList.forEach(n => {
-    const preset = document.querySelector('.hc-supp-preset[data-name="'+n+'"]');
-    if (preset) { preset.classList.add('on'); return; }
-    // 직접입력 항목 칩 복원
-    const list = document.getElementById('supp-custom-list');
-    if (!list) return;
-    const chip = document.createElement('button');
-    chip.type = 'button'; chip.className = 'hc-sub-chip on';
-    chip.textContent = n + ' ✕';
-    chip.onclick = () => { _suppList = _suppList.filter(s => s !== n); chip.remove(); saveTodayLog(); };
-    list.appendChild(chip);
-    document.getElementById('supp-direct-wrap')?.classList.add('show');
-    document.getElementById('supp-direct-btn')?.classList.add('selected');
-  });
+  renderSuppChips();
   // 사진 복원
   try {
     const p = JSON.parse(localStorage.getItem('hi_today_photo_' + (ACTIVE_EMPID||'x')) || 'null');
@@ -3600,6 +3655,8 @@ function loadTodayLog() {
       document.getElementById('photo-upload-area')?.classList.add('has-photo');
     }
   } catch(e) {}
+  renderTodayTabDots();
+  updateSharePreview();
 }
 
 // 연속일수 기반 응원 멘트
@@ -3898,22 +3955,19 @@ async function shareLevelCard() {
 }
 
 function resetTodayLogNow() {
+  if (!confirm('오늘 기록된 식사, 수면, 영양제 기록이 모두 사라집니다.\n초기화할까요?')) return;
   haptic('medium');
   S.todayLog = null;
-  _dietRating = null; _mealTypes = []; _sleepHours = null; _sleepCard = null; _suppTaken = null; _suppList = [];
+  _dietRating = null; _dietMemo = ''; _mealTypes = []; _sleepHours = null; _sleepCard = null; _sleepMemo = ''; _suppTaken = null; _suppList = [];
+  const _dmEl = document.getElementById('diet-memo-input'); if (_dmEl) _dmEl.value = '';
   resetHealthChecks();
   clearPhoto(null);
-  // 직접입력 필드 초기화
-  const dietInp = document.getElementById('diet-custom-input');
-  if (dietInp) dietInp.value = '';
-  document.getElementById('diet-custom-wrap')?.classList.remove('show');
-  document.getElementById('diet-custom-btn')?.classList.remove('on');
-  const sleepInp = document.getElementById('sleep-custom-input');
-  if (sleepInp) sleepInp.value = '';
-  document.getElementById('sleep-custom-wrap')?.classList.remove('show');
-  document.getElementById('sleep-custom-btn')?.classList.remove('on');
-  document.getElementById('sleep-val').textContent = '7';
+  const svEl = document.getElementById('sleep-val');
+  if (svEl) { svEl.textContent = '7'; svEl.classList.remove('active'); }
+  _shareRewrite = false;
   save();
+  updateSharePreview();
+  renderTodayTabDots();
   showToast('오늘 기록이 초기화됐어요');
 }
 
@@ -3922,7 +3976,9 @@ function scheduleMidnightReset() {
   const next = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 5);
   setTimeout(() => {
     S.todayLog = null;
-    _dietRating = null; _mealTypes = []; _sleepHours = null; _sleepCard = null; _suppTaken = null; _suppList = [];
+    _dietRating = null; _dietMemo = ''; _mealTypes = []; _sleepHours = null; _sleepCard = null; _sleepMemo = ''; _suppTaken = null; _suppList = [];
+  const _dmEl = document.getElementById('diet-memo-input'); if (_dmEl) _dmEl.value = '';
+  const _smEl = document.getElementById('sleep-custom-input'); if (_smEl) _smEl.value = '';
     resetHealthChecks();
     clearPhoto(null);
     save();
@@ -3936,7 +3992,18 @@ function scheduleMidnightReset() {
 function getLevel(pts) {
   return LEVELS.slice().reverse().find(l => pts >= l.min) || LEVELS[0];
 }
+function removeCustomExType(name) {
+  haptic('light');
+  _customExTypes = _customExTypes.filter(n => n !== name);
+  localStorage.setItem('hi_custom_ex_types', JSON.stringify(_customExTypes));
+  if (S.selectedEx === 'custom_' + name) { S.selectedEx = null; updateRecordBtnStates(); }
+  renderExercise();
+}
 function getExType(id) {
+  if (id && id.startsWith('custom_')) {
+    const name = id.slice(7);
+    return { id, name, icon: '🏃', ppm: 0.8, bg: '#F3F4F6' };
+  }
   return EX_TYPES.find(e => e.id === id) || EX_TYPES[0];
 }
 function calcPts(exId, dur) {
@@ -4312,6 +4379,37 @@ function renderHome() {
 /* ════════════════════════════════════════
    RENDER: EXERCISE
 ════════════════════════════════════════ */
+/* ── Custom exercise types (user-added) ── */
+let _customExTypes  = JSON.parse(localStorage.getItem('hi_custom_ex_types')  || '[]');
+
+const MEAL_PRESET_TYPES = ['아침','점심','저녁','간식','야식'];
+const SUPP_PRESET_TYPES = ['종합비타민','아르기닌','코큐텐','엽산'];
+let _customMealTypes = JSON.parse(localStorage.getItem('hi_custom_meal_types') || '[]');
+let _customSuppTypes = JSON.parse(localStorage.getItem('hi_custom_supp_types') || '[]');
+
+function addCustomExType() {
+  const input = document.getElementById('custom-ex-name');
+  const name = input.value.trim();
+  if (!name) return;
+  if (_customExTypes.includes(name)) {
+    // 이미 있으면 바로 선택
+    S.selectedEx = 'custom_' + name;
+    input.value = '';
+    document.getElementById('custom-ex-wrap')?.classList.remove('show');
+    renderExercise();
+    updateRecordBtnStates();
+    return;
+  }
+  haptic('light');
+  _customExTypes.push(name);
+  localStorage.setItem('hi_custom_ex_types', JSON.stringify(_customExTypes));
+  input.value = '';
+  S.selectedEx = 'custom_' + name;
+  document.getElementById('custom-ex-wrap')?.classList.remove('show');
+  renderExercise();
+  updateRecordBtnStates();
+}
+
 /* ── Workout view state ── */
 let _woViewMode = 'recent';
 let _woMonthOffset = 0;
@@ -4331,6 +4429,21 @@ function setRecordTab(tab) {
   });
   document.getElementById('rec-panel-exercise').style.display = tab === 'exercise' ? '' : 'none';
   document.getElementById('rec-panel-glucose').style.display  = tab === 'glucose'  ? '' : 'none';
+  updateRecordBtnStates();
+}
+function renderRecordTabDots() {
+  const de = document.getElementById('dot-exercise');
+  const dg = document.getElementById('dot-glucose');
+  if (de) de.style.display = todayWorkouts().length > 0 ? 'inline-block' : 'none';
+  if (dg) dg.style.display = todayGlucoseRecords().length > 0 ? 'inline-block' : 'none';
+}
+function renderTodayTabDots() {
+  const d = document.getElementById('dot-diet');
+  const s = document.getElementById('dot-sleep');
+  const sp = document.getElementById('dot-supp');
+  if (d)  d.style.display  = (_dietRating || _mealTypes.length > 0) ? 'inline-block' : 'none';
+  if (s)  s.style.display  = (_sleepCard || _sleepHours !== null) ? 'inline-block' : 'none';
+  if (sp) sp.style.display = _suppTaken   ? 'inline-block' : 'none';
 }
 
 function setWoView(mode) {
@@ -4470,16 +4583,25 @@ function renderExercise() {
   if (ptsEl)  ptsEl.textContent  = '+' + todayPts + 'p';
 
   // Exercise type buttons (including custom at end of scroll row)
-  const isCustom = S.selectedEx === 'custom';
+  const isCustomInput = S.selectedEx === 'custom';
+  const customBtns = _customExTypes.map(name => {
+    const id = 'custom_' + name;
+    const selected = S.selectedEx === id;
+    return `<button class="ex-type-btn ${selected ? 'selected' : ''}" onclick="selectEx('${id}')">
+      <span class="ex-type-name">${name}</span>
+      <span onclick="event.stopPropagation();removeCustomExType('${name}')" style="margin-left:3px;opacity:0.4;font-size:10px;line-height:1">✕</span>
+    </button>`;
+  }).join('');
   document.getElementById('ex-type-grid').innerHTML =
     EX_TYPES.filter(e => e.id !== 'custom').map(e => `
       <button class="ex-type-btn ${S.selectedEx === e.id ? 'selected' : ''}"
               onclick="selectEx('${e.id}')"><span class="ex-type-icon">${e.icon}</span><span class="ex-type-name">${e.name}</span></button>
     `).join('')
-    + `<button class="custom-ex-link ${isCustom ? 'selected' : ''}" onclick="selectEx('custom')">✏️ 직접 입력</button>`;
+    + customBtns
+    + `<button class="custom-ex-link ${isCustomInput ? 'selected' : ''}" onclick="selectEx('custom')">✏️ 직접 입력</button>`;
 
   const cw = document.getElementById('custom-ex-wrap');
-  if (cw) cw.classList.toggle('show', isCustom);
+  if (cw) cw.classList.toggle('show', isCustomInput);
 
   const durEl = document.getElementById('dur-val');
   if (durEl) durEl.value = S.duration;
@@ -4487,9 +4609,14 @@ function renderExercise() {
 
   renderExerciseHistory();
   renderGlucose();
+  updateRecordBtnStates();
+  syncGlucoseUI();
   updateMemoPlaceholder();
   document.getElementById('share-toggle-btn').classList.toggle('on', _shareOn);
   document.getElementById('share-expand').classList.toggle('show', _shareOn);
+  renderMyDaySave();
+  renderTodayTabDots();
+  renderRecordTabDots();
 }
 
 function updateMemoPlaceholder() {
@@ -4500,31 +4627,119 @@ function updateMemoPlaceholder() {
   const icon = ex ? ex.icon : '💪';
   const memo = document.getElementById('ex-memo')?.value.trim();
   const base = `오늘 ${name} ${S.duration}분 완료했어요! ${icon}`;
-  const shareMsg = document.getElementById('share-msg');
-  if (shareMsg) {
-    shareMsg.placeholder = memo ? `${base} ${memo}` : base;
-    // Also update value if it was auto-filled (not manually edited)
-    if (_shareMsgAuto) {
-      shareMsg.value = memo ? `${base} ${memo}` : base;
-    }
-  }
+}
+function updateRecordBtnStates() {
+  document.getElementById('log-exercise-btn')?.classList.toggle('btn-inactive', !S.selectedEx);
+  document.getElementById('log-glucose-btn')?.classList.remove('btn-inactive');
+  const durHint = document.getElementById('dur-hint');
+  if (durHint) durHint.style.display = S.selectedEx ? 'none' : '';
 }
 function selectEx(id) {
   haptic('light');
   S.selectedEx = id;
+  document.getElementById('dur-val')?.classList.add('active');
   renderExercise();
   updateMemoPlaceholder();
   updateSharePreview();
+  updateRecordBtnStates();
 }
 function changeDur(delta) {
   S.duration = Math.max(5, Math.min(180, S.duration + delta));
-  document.getElementById('dur-val').value = S.duration;
+  const durEl = document.getElementById('dur-val');
+  durEl.value = S.duration;
+  durEl.classList.add('active');
+  const h = document.getElementById('dur-hint');
+  if (h) h.style.display = 'none';
   updatePtsPreview();
   updateMemoPlaceholder();
   updateSharePreview();
 }
 let _shareOn = true;
 let _shareRewrite = false;
+let _dayNotes = {};
+let _dnView = 'list';
+let _dnCalYear = new Date().getFullYear();
+let _dnCalMonth = new Date().getMonth();
+let _dnSelDate = null;
+
+function loadDayNotes() {
+  try { _dayNotes = JSON.parse(localStorage.getItem('hi_health_day_notes_' + (ACTIVE_EMPID || '')) || '{}'); }
+  catch(e) { _dayNotes = {}; }
+}
+function persistDayNotes() {
+  try { localStorage.setItem('hi_health_day_notes_' + (ACTIVE_EMPID || ''), JSON.stringify(_dayNotes)); }
+  catch(e) {}
+}
+function renderDayNotes() {
+  const sec = document.getElementById('day-notes-section');
+  if (!sec) return;
+  const hasAny = Object.keys(_dayNotes).length > 0;
+  sec.style.display = hasAny ? '' : 'none';
+  if (_dnView === 'list') renderDnList();
+  else renderDnCalendar();
+}
+function renderDnList() {
+  const el = document.getElementById('dn-scroll');
+  if (!el) return;
+  const entries = Object.entries(_dayNotes).sort((a, b) => b[0].localeCompare(a[0]));
+  const dayNames = ['일','월','화','수','목','금','토'];
+  el.innerHTML = entries.map(([dk, { note }]) => {
+    const d = new Date(dk + 'T00:00:00');
+    const label = (d.getMonth()+1) + '/' + d.getDate() + ' (' + dayNames[d.getDay()] + ')';
+    const preview = note.split('\n')[0].slice(0, 18);
+    return `<div class="dn-card${_dnSelDate===dk?' selected':''}" onclick="showDnNote('${dk}')"><div class="dn-card-date">${label}</div><div class="dn-card-text">${preview}</div></div>`;
+  }).join('');
+}
+function renderDnCalendar() {
+  const grid = document.getElementById('dn-cal-grid');
+  const label = document.getElementById('dn-cal-label');
+  if (!grid || !label) return;
+  label.textContent = _dnCalYear + '년 ' + (_dnCalMonth + 1) + '월';
+  const today = new Date().toISOString().slice(0, 10);
+  const firstDay = new Date(_dnCalYear, _dnCalMonth, 1).getDay();
+  const daysInMonth = new Date(_dnCalYear, _dnCalMonth + 1, 0).getDate();
+  const dayNames = ['일','월','화','수','목','금','토'];
+  let html = dayNames.map(d => `<div class="dn-cal-header">${d}</div>`).join('');
+  for (let i = 0; i < firstDay; i++) html += '<div></div>';
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dk = _dnCalYear + '-' + String(_dnCalMonth+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+    const hasNote = !!_dayNotes[dk];
+    const cls = ['dn-cal-day', hasNote?'has-note':'', dk===today?'today':'', _dnSelDate===dk?'selected':''].filter(Boolean).join(' ');
+    html += `<div class="${cls}"${hasNote?` onclick="showDnNote('${dk}')"`:''}>${d}</div>`;
+  }
+  grid.innerHTML = html;
+}
+function changeDnMonth(delta) {
+  _dnCalMonth += delta;
+  if (_dnCalMonth < 0) { _dnCalMonth = 11; _dnCalYear--; }
+  if (_dnCalMonth > 11) { _dnCalMonth = 0; _dnCalYear++; }
+  renderDnCalendar();
+}
+function showDnNote(dk) {
+  _dnSelDate = _dnSelDate === dk ? null : dk;
+  const noteDisplay = document.getElementById('dn-note-display');
+  if (!_dnSelDate || !noteDisplay) { if (noteDisplay) noteDisplay.style.display = 'none'; renderDnList(); renderDnCalendar(); return; }
+  const entry = _dayNotes[dk];
+  if (!entry) return;
+  const d = new Date(dk + 'T00:00:00');
+  document.getElementById('dn-note-date').textContent = d.getFullYear() + '년 ' + (d.getMonth()+1) + '월 ' + d.getDate() + '일';
+  document.getElementById('dn-note-text').textContent = entry.note;
+  noteDisplay.style.display = 'block';
+  renderDnList(); renderDnCalendar();
+}
+function closeDnNote() {
+  _dnSelDate = null;
+  document.getElementById('dn-note-display').style.display = 'none';
+  renderDnList(); renderDnCalendar();
+}
+function setDayNotesView(v) {
+  _dnView = v;
+  document.getElementById('dn-tab-list')?.classList.toggle('active', v === 'list');
+  document.getElementById('dn-tab-cal')?.classList.toggle('active', v === 'cal');
+  document.getElementById('dn-list-view').style.display = v === 'list' ? '' : 'none';
+  document.getElementById('dn-cal-view').style.display = v === 'cal' ? '' : 'none';
+  if (v === 'list') renderDnList(); else renderDnCalendar();
+}
 
 function getTodayMyPost() {
   const today = new Date().toDateString();
@@ -4541,15 +4756,14 @@ function toggleShare() {
     if (existing) {
       _shareRewrite = true;
       document.getElementById('share-toggle-sub').textContent = '오늘 이미 공유했어요 · 다시 작성하면 덮어씌워져요';
-      document.getElementById('share-submit-btn').textContent = '수정하기';
-      _shareMsgAuto = false;
+      document.getElementById('share-submit-btn').innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>수정하기';
       const _rwMsgEl = document.getElementById('share-msg');
       if (_rwMsgEl) _rwMsgEl.value = existing.body || '';
       updateSharePreview();
     } else {
       _shareRewrite = false;
-      document.getElementById('share-toggle-sub').textContent = '오늘 나의 하루를 친구들과 나눠보세요';
-      document.getElementById('share-submit-btn').textContent = '지금 공유하기';
+      document.getElementById('share-toggle-sub').textContent = '저장하거나 커뮤니티에 공유해보세요';
+      document.getElementById('share-submit-btn').innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>커뮤니티에 공유하기';
       updateSharePreview();
     }
   }
@@ -4610,9 +4824,8 @@ function submitShareNow() {
   }
   // 공유 완료 후 "오늘 이미 공유" 상태로 전환 (패널 유지)
   _shareRewrite = true;
-  _shareMsgAuto = false;
   document.getElementById('share-toggle-sub').textContent = '오늘 이미 공유했어요 · 다시 작성하면 덮어씌워져요';
-  document.getElementById('share-submit-btn').textContent = '수정하기';
+  document.getElementById('share-submit-btn').innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>수정하기';
   save();
   const commFeed = document.getElementById('posts-feed');
   if (commFeed) renderCommunity();
@@ -4620,7 +4833,6 @@ function submitShareNow() {
 
 let _sharePhoto  = false;
 let _shareHealth = false;
-let _shareMsgAuto = true;
 
 function buildDayMessage() {
   const lines = [];
@@ -4664,26 +4876,28 @@ function buildDayMessage() {
       lines.push('식사는 ' + label + meals + '.');
     }
   }
+  if (_dietMemo) lines.push('식단: ' + _dietMemo);
 
   // 수면
   if (_sleepHours !== null || _sleepCard !== null) {
     const sleepTextMap = { great:'푹 잤어요', good:'잘 잤어요', short:'조금 부족했어요', bad:'많이 못 잤어요', over:'너무 많이 잤어요' };
     let sleepLabel;
     if (_sleepCard && _sleepHours !== null) {
-      sleepLabel = (sleepTextMap[_sleepCard] || _sleepCard) + ' (' + _sleepHours + '시간).';
+      sleepLabel = '잠은 ' + (sleepTextMap[_sleepCard] || _sleepCard) + ' (' + _sleepHours + '시간).';
     } else if (_sleepCard) {
-      sleepLabel = (sleepTextMap[_sleepCard] || _sleepCard) + '.';
+      sleepLabel = '잠은 ' + (sleepTextMap[_sleepCard] || _sleepCard) + '.';
     } else {
-      sleepLabel = _sleepHours + '시간 잤어요.';
+      sleepLabel = '잠은 ' + _sleepHours + '시간 잤어요.';
     }
     lines.push(sleepLabel);
   }
+  if (_sleepMemo) lines.push('수면 메모: ' + _sleepMemo);
 
   // 영양제
   if (_suppTaken) {
     const suppMap = { all:'영양제 모두 챙겨 먹었어요', partial:'영양제 일부만 챙겼어요', forgot:'영양제 깜빡했어요', no:'오늘은 영양제를 안 먹었어요', empty:'영양제가 떨어졌어요' };
     let suppLine = suppMap[_suppTaken] || _suppTaken;
-    if ((_suppTaken === 'all' || _suppTaken === 'partial') && _suppList.length) {
+    if (_suppList.length) {
       suppLine += ' (' + _suppList.join(', ') + ')';
     }
     lines.push(suppLine + '.');
@@ -4696,13 +4910,46 @@ function buildDayMessage() {
   return lines.join('\n');
 }
 
-function updateSharePreview() {
-  // 메시지는 공유 ON/OFF 무관하게 항상 업데이트
-  const msgEl = document.getElementById('share-msg');
-  if (msgEl && (_shareMsgAuto || !msgEl.value.trim())) {
-    msgEl.value = buildDayMessage();
-    _shareMsgAuto = true;
+function renderMyDaySave() {
+  const saveBtnEl = document.getElementById('my-day-save-btn');
+  const savedInfoEl = document.getElementById('my-day-saved-info');
+  if (!saveBtnEl || !savedInfoEl) return;
+  const saved = S.todayLog?.myDayNote;
+  const _saveIco = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>';
+  if (saved) {
+    saveBtnEl.innerHTML = _saveIco + '다시 저장';
+    const ts = S.todayLog.myDayNoteTs
+      ? new Date(S.todayLog.myDayNoteTs).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })
+      : '';
+    savedInfoEl.style.display = 'block';
+    savedInfoEl.textContent = ts ? '저장됨 · ' + ts : '저장됨';
+  } else {
+    saveBtnEl.innerHTML = _saveIco + '저장하기';
+    savedInfoEl.style.display = 'none';
   }
+  renderDayNotes();
+}
+
+function saveMyDay() {
+  const msgEl = document.getElementById('share-msg');
+  const msg = msgEl ? msgEl.value.trim() : buildDayMessage();
+  if (!msg) { showToast('기록된 항목이 없어요. 운동이나 하루 정보를 먼저 입력해주세요.'); return; }
+  const todayKey = new Date().toISOString().slice(0, 10);
+  _dayNotes[todayKey] = { ts: Date.now(), note: msg };
+  persistDayNotes();
+  if (!S.todayLog) S.todayLog = { date: new Date().toDateString() };
+  S.todayLog.myDayNote = msg;
+  S.todayLog.myDayNoteTs = Date.now();
+  saveTodayLog();
+  renderMyDaySave();
+  renderDayNotes();
+  showToast('오늘 하루가 저장되었어요!');
+}
+
+function updateSharePreview() {
+  const msgEl = document.getElementById('share-msg');
+  if (msgEl && !_shareRewrite) msgEl.value = buildDayMessage();
+  renderMyDaySave();
 
   if (!_shareOn) return; // 이하 시각적 요소는 공유 ON일 때만
 
@@ -4761,6 +5008,17 @@ function updatePtsPreview() {
   }
 }
 function logExercise() {
+  if (!S.selectedEx || !S.duration) {
+    haptic('error');
+    const hint = document.getElementById('log-exercise-hint');
+    if (hint) {
+      hint.textContent = !S.selectedEx ? '운동 종목을 선택해주세요' : '운동 시간을 설정해주세요';
+      hint.style.display = 'block';
+      clearTimeout(hint._t);
+      hint._t = setTimeout(() => { hint.style.display = 'none'; }, 2500);
+    }
+    return;
+  }
   const customName = S.selectedEx === 'custom'
     ? document.getElementById('custom-ex-name').value.trim()
     : '';
@@ -4818,10 +5076,8 @@ function logExercise() {
   _shareRewrite = false;
   _sharePhoto   = false;
   _shareHealth  = false;
-  _shareMsgAuto = true;  // 메시지 자동 재생성
-  _shareOn      = true;  // 패널 열림 유지
-  document.getElementById('share-msg').value = '';
-  document.getElementById('share-toggle-sub').textContent = '오늘 나의 하루를 친구들과 나눠보세요';
+  _shareOn      = true;
+  document.getElementById('share-toggle-sub').textContent = '저장하거나 커뮤니티에 공유해보세요';
   const soEl = document.getElementById('share-options');
   if (soEl) soEl.innerHTML = '';
 
@@ -4886,6 +5142,9 @@ function deleteWorkout(id) {
       save();
       renderHeader();
       renderExercise();
+      renderRecordTabDots();
+      _shareRewrite = false;
+      updateSharePreview();
       showToast('운동 기록이 삭제되었습니다');
     },
   });
@@ -4896,9 +5155,11 @@ let _photoData = null;
 
 /* ── Health Check ── */
 let _dietRating = null;
+let _dietMemo   = '';
 let _mealTypes  = [];
 let _sleepHours = null;
 let _sleepCard  = null;
+let _sleepMemo  = '';
 let _suppTaken  = null;
 let _suppList   = [];
 
@@ -4910,53 +5171,76 @@ function toggleHC(type) {
   sec.classList.toggle('show', opening);
   btn.classList.toggle('active', opening);
   if (!opening) {
-    if (type === 'diet')  { _dietRating = null; _mealTypes = []; document.querySelectorAll('[id^="diet-"],.hc-meal-chip').forEach(e => e.classList.remove('on')); }
-    if (type === 'sleep') { _sleepHours = null; _sleepCard = null; document.getElementById('sleep-val').textContent = '7'; document.querySelectorAll('#sleep-great,#sleep-good,#sleep-short,#sleep-bad,#sleep-over,#sleep-custom-btn').forEach(e => e.classList.remove('on')); document.getElementById('sleep-custom-wrap')?.classList.remove('show'); }
+    if (type === 'diet')  { _dietRating = null; _mealTypes = []; document.querySelectorAll('[id^="diet-"]').forEach(e => e.classList.remove('on')); document.getElementById('meal-direct-wrap')?.classList.remove('show'); renderMealChips(); }
+    if (type === 'sleep') { _sleepHours = null; _sleepCard = null; _sleepMemo = ''; document.querySelectorAll('#sleep-great,#sleep-good,#sleep-short,#sleep-bad,#sleep-over,#sleep-custom-btn').forEach(e => e.classList.remove('on')); const _smi = document.getElementById('sleep-custom-inline'); if(_smi) _smi.value=''; syncSleepHint(); }
     if (type === 'supp')  { clearSuppSection(); }
   }
 }
-function toggleDietCustom() {
-  const wrap = document.getElementById('diet-custom-wrap');
-  const btn  = document.getElementById('diet-custom-btn');
-  const open = !wrap.classList.contains('show');
-  wrap.classList.toggle('show', open);
-  btn.classList.toggle('on', open);
-  if (open) {
-    document.querySelectorAll('#diet-good,#diet-norm,#diet-snack,#diet-over,#diet-bad').forEach(e => e.classList.remove('on'));
-    document.getElementById('diet-custom-input').focus();
-  } else {
-    _dietRating = null;
-  }
+function onDietCustomFocus() {
+  document.getElementById('diet-custom-btn').classList.add('on');
+  document.querySelectorAll('#diet-good,#diet-norm,#diet-snack,#diet-over,#diet-bad').forEach(e => e.classList.remove('on'));
+  _dietRating = document.getElementById('diet-custom-inline').value.trim() || null;
+}
+function onDietCustomInline(el) {
+  _dietRating = el.value.trim() || null;
+  document.getElementById('diet-custom-btn').classList.toggle('on', !!_dietRating || document.activeElement === el);
+  updateSharePreview();
+  saveTodayLog();
+  renderTodayTabDots();
+}
+function onSleepCustomInline(el) {
+  _sleepMemo = el.value.trim();
+  document.getElementById('sleep-custom-btn').classList.toggle('on', !!_sleepMemo || document.activeElement === el);
+  updateSharePreview();
+  saveTodayLog();
+}
+function onSuppCustomFocus() {
+  ['supp-all','supp-partial','supp-forgot','supp-no','supp-empty'].forEach(id => document.getElementById(id)?.classList.remove('on'));
+  document.getElementById('supp-custom-card').classList.add('on');
+  _suppTaken = document.getElementById('supp-custom-inline').value.trim() || null;
+}
+function onSuppCustomInline(el) {
+  _suppTaken = el.value.trim() || null;
+  document.getElementById('supp-custom-card').classList.toggle('on', !!_suppTaken || document.activeElement === el);
+  updateSharePreview();
+  saveTodayLog();
+  renderTodayTabDots();
 }
 function setDiet(rating) {
-  if (rating !== 'custom') haptic('light');
-  if (rating === 'custom') {
-    _dietRating = document.getElementById('diet-custom-input').value.trim() || null;
-    return;
-  }
+  haptic('light');
   // 이미 선택된 카드 재클릭 → 선택 해제
   if (_dietRating === rating) {
     _dietRating = null;
     document.getElementById({ 'good':'diet-good', 'norm':'diet-norm', 'snack':'diet-snack', 'over':'diet-over', 'bad':'diet-bad' }[rating])?.classList.remove('on');
     updateSharePreview();
     saveTodayLog();
+    renderTodayTabDots();
     return;
   }
   _dietRating = rating;
   const map = { 'good':'diet-good', 'norm':'diet-norm', 'snack':'diet-snack', 'over':'diet-over', 'bad':'diet-bad' };
   document.querySelectorAll('#diet-good,#diet-norm,#diet-snack,#diet-over,#diet-bad,#diet-custom-btn').forEach(e => e.classList.remove('on'));
-  document.getElementById('diet-custom-wrap')?.classList.remove('show');
+  const _dci = document.getElementById('diet-custom-inline'); if (_dci) _dci.value = '';
   if (map[rating]) document.getElementById(map[rating]).classList.add('on');
   updateSharePreview();
   saveTodayLog();
+  renderTodayTabDots();
+}
+function syncSleepHint() {
+  const hint = document.getElementById('sleep-time-hint');
+  const valEl = document.getElementById('sleep-val');
+  const active = _sleepHours !== null;
+  if (hint) hint.style.display = active ? 'none' : '';
+  if (valEl) {
+    valEl.textContent = active ? (_sleepHours % 1 === 0 ? _sleepHours : _sleepHours.toFixed(1)) : '7';
+    valEl.classList.toggle('active', active);
+  }
 }
 function changeSleep(delta) {
   haptic('light');
   const cur = typeof _sleepHours === 'number' ? _sleepHours : 7;
   _sleepHours = Math.max(2, Math.min(12, cur + delta));
-  document.getElementById('sleep-val').textContent = _sleepHours % 1 === 0 ? _sleepHours : _sleepHours.toFixed(1);
-  document.getElementById('sleep-custom-wrap')?.classList.remove('show');
-  document.getElementById('sleep-custom-btn')?.classList.remove('on');
+  syncSleepHint();
   updateSharePreview();
   saveTodayLog();
 }
@@ -4971,26 +5255,13 @@ function setSleepCard(rating) {
     return;
   }
   _sleepCard = rating;
-  document.querySelectorAll('#sleep-great,#sleep-good,#sleep-short,#sleep-bad,#sleep-over,#sleep-custom-btn').forEach(e => e.classList.remove('on'));
-  document.getElementById('sleep-custom-wrap')?.classList.remove('show');
+  document.querySelectorAll('#sleep-great,#sleep-good,#sleep-short,#sleep-bad,#sleep-over').forEach(e => e.classList.remove('on'));
   document.getElementById('sleep-' + rating)?.classList.add('on');
   updateSharePreview();
   saveTodayLog();
+  renderTodayTabDots();
 }
-function toggleSleepCustom() {
-  const wrap = document.getElementById('sleep-custom-wrap');
-  const btn  = document.getElementById('sleep-custom-btn');
-  const open = !wrap.classList.contains('show');
-  wrap.classList.toggle('show', open);
-  btn.classList.toggle('on', open);
-  if (open) {
-    document.querySelectorAll('#sleep-great,#sleep-good,#sleep-short,#sleep-bad,#sleep-over').forEach(e => e.classList.remove('on'));
-    document.getElementById('sleep-custom-input').focus();
-    _sleepHours = null;
-  } else {
-    _sleepHours = null;
-  }
-}
+
 function setSupp(val) {
   haptic('light');
   // 이미 선택된 카드 재클릭 → 선택 해제
@@ -5005,32 +5276,22 @@ function setSupp(val) {
   ['supp-all','supp-partial','supp-forgot','supp-no','supp-empty','supp-custom-card'].forEach(id => {
     document.getElementById(id)?.classList.remove('on');
   });
+  const _sci2 = document.getElementById('supp-custom-inline'); if (_sci2) _sci2.value = '';
   document.getElementById('supp-' + val)?.classList.add('on');
-  document.getElementById('supp-card-custom-wrap')?.classList.remove('show');
   updateSharePreview();
   saveTodayLog();
-}
-function toggleSuppCardCustom() {
-  const wrap = document.getElementById('supp-card-custom-wrap');
-  const btn  = document.getElementById('supp-custom-card');
-  const open = !wrap.classList.contains('show');
-  wrap.classList.toggle('show', open);
-  btn.classList.toggle('on', open);
-  if (open) {
-    ['supp-all','supp-partial','supp-forgot','supp-no','supp-empty'].forEach(id => {
-      document.getElementById(id)?.classList.remove('on');
-    });
-    _suppTaken = null;
-    document.getElementById('supp-card-custom-input').focus();
-  } else {
-    _suppTaken = null;
-  }
+  renderTodayTabDots();
 }
 function resetHealthChecks() {
   document.querySelectorAll('[id^="diet-"]').forEach(e => e.classList.remove('on'));
-  document.querySelectorAll('.hc-meal-chip').forEach(e => e.classList.remove('on'));
-  _dietRating = null; _mealTypes = []; _sleepHours = null; _sleepCard = null;
-  document.querySelectorAll('#sleep-great,#sleep-good,#sleep-short,#sleep-bad,#sleep-over').forEach(e => e.classList.remove('on'));
+  _dietRating = null; _mealTypes = [];
+  const _dci = document.getElementById('diet-custom-inline'); if (_dci) _dci.value = '';
+  document.getElementById('meal-direct-wrap')?.classList.remove('show');
+  renderMealChips();
+  _sleepHours = null; _sleepCard = null; _sleepMemo = '';
+  document.querySelectorAll('#sleep-great,#sleep-good,#sleep-short,#sleep-bad,#sleep-over,#sleep-custom-btn').forEach(e => e.classList.remove('on'));
+  const _sci = document.getElementById('sleep-custom-inline'); if (_sci) _sci.value = '';
+  syncSleepHint();
   clearSuppSection();
 }
 function clearSuppSection() {
@@ -5038,12 +5299,56 @@ function clearSuppSection() {
   ['supp-all','supp-partial','supp-forgot','supp-no','supp-empty','supp-custom-card'].forEach(id => {
     document.getElementById(id)?.classList.remove('on');
   });
-  document.querySelectorAll('.hc-supp-preset').forEach(e => e.classList.remove('on'));
-  document.getElementById('supp-card-custom-wrap')?.classList.remove('show');
-  document.getElementById('supp-card-custom-input') && (document.getElementById('supp-card-custom-input').value = '');
+  const _suCI = document.getElementById('supp-custom-inline'); if (_suCI) _suCI.value = '';
   document.getElementById('supp-direct-wrap')?.classList.remove('show');
-  document.getElementById('supp-direct-btn')?.classList.remove('selected');
   document.getElementById('supp-direct-input') && (document.getElementById('supp-direct-input').value = '');
+  renderSuppChips();
+}
+
+/* ── Meal / Supplement chip renderers ── */
+function renderMealChips() {
+  const row = document.getElementById('meal-chips-row');
+  if (!row) return;
+  const isDirectOpen = document.getElementById('meal-direct-wrap')?.classList.contains('show');
+  const presetBtns = MEAL_PRESET_TYPES.map(name => {
+    const on = _mealTypes.includes(name);
+    return `<button type="button" class="hc-sub-chip hc-meal-chip${on?' on':''}" data-name="${name}" onclick="toggleMeal('${name}')">${name}</button>`;
+  }).join('');
+  const customBtns = _customMealTypes.map(name => {
+    const on = _mealTypes.includes(name);
+    return `<button type="button" class="hc-sub-chip hc-meal-chip${on?' on':''}" data-name="${name}" onclick="toggleMeal('${name}')">${name}<span onclick="event.stopPropagation();removeCustomMealType('${name}')" style="margin-left:3px;opacity:0.4;font-size:10px;line-height:1">✕</span></button>`;
+  }).join('');
+  const directBtn = `<button type="button" id="meal-direct-btn" class="chip-direct-btn${isDirectOpen?' selected':''}" onclick="toggleMealDirect()">✏️ 직접 입력</button>`;
+  row.innerHTML = presetBtns + customBtns + directBtn;
+}
+function renderSuppChips() {
+  const row = document.getElementById('supp-chips-row');
+  if (!row) return;
+  const isDirectOpen = document.getElementById('supp-direct-wrap')?.classList.contains('show');
+  const presetBtns = SUPP_PRESET_TYPES.map(name => {
+    const on = _suppList.includes(name);
+    return `<button type="button" class="hc-sub-chip hc-supp-preset${on?' on':''}" data-name="${name}" onclick="toggleSuppItem('${name}')">${name}</button>`;
+  }).join('');
+  const customBtns = _customSuppTypes.map(name => {
+    const on = _suppList.includes(name);
+    return `<button type="button" class="hc-sub-chip hc-supp-preset${on?' on':''}" data-name="${name}" onclick="toggleSuppItem('${name}')">${name}<span onclick="event.stopPropagation();removeCustomSuppType('${name}')" style="margin-left:3px;opacity:0.4;font-size:10px;line-height:1">✕</span></button>`;
+  }).join('');
+  const directBtn = `<button type="button" id="supp-direct-btn" class="chip-direct-btn${isDirectOpen?' selected':''}" onclick="toggleSuppDirect()">✏️ 직접 입력</button>`;
+  row.innerHTML = presetBtns + customBtns + directBtn;
+}
+function removeCustomMealType(name) {
+  haptic('light');
+  _customMealTypes = _customMealTypes.filter(n => n !== name);
+  localStorage.setItem('hi_custom_meal_types', JSON.stringify(_customMealTypes));
+  if (_mealTypes.includes(name)) { _mealTypes = _mealTypes.filter(n => n !== name); renderTodayTabDots(); saveTodayLog(); }
+  renderMealChips();
+}
+function removeCustomSuppType(name) {
+  haptic('light');
+  _customSuppTypes = _customSuppTypes.filter(n => n !== name);
+  localStorage.setItem('hi_custom_supp_types', JSON.stringify(_customSuppTypes));
+  if (_suppList.includes(name)) { _suppList = _suppList.filter(n => n !== name); saveTodayLog(); }
+  renderSuppChips();
 }
 
 /* ── Meal / Supplement detail ── */
@@ -5051,17 +5356,16 @@ function toggleMeal(name) {
   haptic('light');
   const idx = _mealTypes.indexOf(name);
   if (idx === -1) _mealTypes.push(name); else _mealTypes.splice(idx, 1);
-  const btn = document.querySelector('.hc-meal-chip[data-name="' + name + '"]');
-  if (btn) btn.classList.toggle('on', _mealTypes.includes(name));
+  renderMealChips();
   updateSharePreview();
   saveTodayLog();
+  renderTodayTabDots();
 }
 function toggleSuppItem(name) {
   haptic('light');
   const idx = _suppList.indexOf(name);
   if (idx === -1) _suppList.push(name); else _suppList.splice(idx, 1);
-  const btn = document.querySelector('.hc-supp-preset[data-name="' + name + '"]');
-  if (btn) btn.classList.toggle('on', _suppList.includes(name));
+  renderSuppChips();
   updateSharePreview();
   saveTodayLog();
 }
@@ -5080,6 +5384,30 @@ function addCustomSupp() {
   chip.onclick = () => { _suppList = _suppList.filter(s => s !== val); chip.remove(); };
   list.appendChild(chip);
 }
+function toggleMealDirect() {
+  const wrap = document.getElementById('meal-direct-wrap');
+  const btn  = document.getElementById('meal-direct-btn');
+  const open = !wrap.classList.contains('show');
+  wrap.classList.toggle('show', open);
+  btn.classList.toggle('selected', open);
+  if (open) document.getElementById('meal-direct-input').focus();
+}
+function addMealDirect() {
+  const input = document.getElementById('meal-direct-input');
+  const val = input.value.trim();
+  if (!val) return;
+  haptic('light');
+  if (!_customMealTypes.includes(val)) {
+    _customMealTypes.push(val);
+    localStorage.setItem('hi_custom_meal_types', JSON.stringify(_customMealTypes));
+  }
+  if (!_mealTypes.includes(val)) _mealTypes.push(val);
+  input.value = '';
+  document.getElementById('meal-direct-wrap')?.classList.remove('show');
+  renderMealChips();
+  renderTodayTabDots();
+  saveTodayLog();
+}
 function toggleSuppDirect() {
   const wrap = document.getElementById('supp-direct-wrap');
   const btn  = document.getElementById('supp-direct-btn');
@@ -5091,17 +5419,16 @@ function toggleSuppDirect() {
 function addSuppDirect() {
   const input = document.getElementById('supp-direct-input');
   const val = input.value.trim();
-  if (!val || _suppList.includes(val)) { input.value = ''; return; }
+  if (!val) return;
   haptic('light');
-  _suppList.push(val);
+  if (!_customSuppTypes.includes(val)) {
+    _customSuppTypes.push(val);
+    localStorage.setItem('hi_custom_supp_types', JSON.stringify(_customSuppTypes));
+  }
+  if (!_suppList.includes(val)) _suppList.push(val);
   input.value = '';
-  const list = document.getElementById('supp-custom-list');
-  const chip = document.createElement('button');
-  chip.type = 'button';
-  chip.className = 'hc-sub-chip on';
-  chip.textContent = val + ' ✕';
-  chip.onclick = () => { _suppList = _suppList.filter(s => s !== val); chip.remove(); saveTodayLog(); };
-  list.appendChild(chip);
+  document.getElementById('supp-direct-wrap')?.classList.remove('show');
+  renderSuppChips();
   updateSharePreview();
   saveTodayLog();
 }
@@ -5128,16 +5455,34 @@ function toggleGlucoseTimeInput() {
   }
 }
 
-function getGlucoseStatus(val) {
-  if (val < 70)  return { label:'저혈당', cls:'glucose-status-low' };
+function getGlucoseStatus(val, timing) {
+  // 대한당뇨병학회 기준 (시점별 적용)
+  if (val < 70) return { label:'저혈당', cls:'glucose-status-low' };
+  const isFasting = timing === '공복' || timing === '식전';
+  const isPost    = timing === '식후' || timing === '식후2h';
+  if (isFasting) {
+    if (val < 100) return { label:'정상',   cls:'glucose-status-ok' };
+    if (val < 126) return { label:'주의',   cls:'glucose-status-warn' };
+    return               { label:'고혈당', cls:'glucose-status-high' };
+  }
+  if (isPost) {
+    if (val < 140) return { label:'정상',   cls:'glucose-status-ok' };
+    if (val < 200) return { label:'주의',   cls:'glucose-status-warn' };
+    return               { label:'고혈당', cls:'glucose-status-high' };
+  }
+  // 취침전 또는 미선택: 일반 기준
   if (val < 140) return { label:'정상',   cls:'glucose-status-ok' };
   if (val < 180) return { label:'주의',   cls:'glucose-status-warn' };
-  return             { label:'고혈당', cls:'glucose-status-high' };
+  return               { label:'고혈당', cls:'glucose-status-high' };
 }
 
 function syncGlucoseUI() {
   const numEl = document.getElementById('sa-glucose-num');
-  if (numEl) numEl.textContent = _glucoseVal;
+  const active = _glucoseVal !== 100 || _glucoseTiming !== null;
+  if (numEl) {
+    numEl.textContent = _glucoseVal;
+    numEl.classList.toggle('active', active);
+  }
   GLUCOSE_TIMINGS.forEach(t => {
     const el = document.getElementById('sa-gt-' + TIMING_ID_MAP[t]);
     if (el) el.classList.toggle('selected', _glucoseTiming === t);
@@ -5147,6 +5492,8 @@ function syncGlucoseUI() {
 function changeGlucoseVal(delta) {
   haptic('light');
   _glucoseVal = Math.max(40, Math.min(400, _glucoseVal + delta));
+  const h = document.getElementById('glucose-hint');
+  if (h) h.style.display = 'none';
   syncGlucoseUI();
 }
 
@@ -5154,6 +5501,7 @@ function setGlucoseTiming(timing) {
   haptic('light');
   _glucoseTiming = _glucoseTiming === timing ? null : timing;
   syncGlucoseUI();
+  updateRecordBtnStates();
 }
 
 function todayGlucoseRecords() {
@@ -5203,10 +5551,15 @@ function logGlucoseStandalone() {
   if (timeEl) timeEl.value = '';
   document.getElementById('sa-glucose-time-wrap')?.classList.remove('show');
   document.getElementById('sa-gt-time')?.classList.remove('selected');
+  const gh = document.getElementById('glucose-hint');
+  if (gh) gh.style.display = '';
   syncGlucoseUI();
   renderGlucose();
   renderHeader();
-  const st = getGlucoseStatus(rec.value);
+  renderRecordTabDots();
+  _shareRewrite = false;
+  updateSharePreview();
+  const st = getGlucoseStatus(rec.value, rec.timing);
   showToast(`🩸 혈당 기록 완료! ${rec.value} mg/dL (${st.label}) +${GLUCOSE_POINTS}p`);
 }
 
@@ -5226,6 +5579,9 @@ function deleteGlucose(id) {
       save();
       renderHeader();
       renderGlucose();
+      renderRecordTabDots();
+      _shareRewrite = false;
+      updateSharePreview();
       showToast('혈당 기록이 삭제되었습니다');
     },
   });
@@ -5274,7 +5630,7 @@ function glucoseGraphHTML() {
   const linePts = recent.map((r, i) => `${toX(i).toFixed(1)},${toY(r.value).toFixed(1)}`).join(' ');
 
   const dots = recent.map((r, i) => {
-    const col = dotColor[getGlucoseStatus(r.value).cls] || '#6366f1';
+    const col = dotColor[getGlucoseStatus(r.value, r.timing).cls] || '#6366f1';
     return `<circle cx="${toX(i).toFixed(1)}" cy="${toY(r.value).toFixed(1)}" r="4" fill="${col}" stroke="#fff" stroke-width="1.5"/>`;
   }).join('');
 
@@ -5339,7 +5695,7 @@ function renderGlucose() {
   const visible = recs.slice(0, _glShowCount);
   const remain  = recs.length - visible.length;
   el.innerHTML = visible.map(r => {
-    const st = getGlucoseStatus(r.value);
+    const st = getGlucoseStatus(r.value, r.timing);
     const d  = new Date(r.ts);
     const timeStr = (d.getMonth()+1) + '/' + d.getDate() + ' ' +
                     String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
@@ -7424,8 +7780,10 @@ async function doAppLogin() {
   STORAGE_KEY  = 'hi_health_v2_' + regId;
   SHOP_ORDERS_KEY = 'hi_health_shop_orders_' + regId;
   SHOP_CART_KEY   = 'hi_health_cart_' + regId;
+  S.user.tags = []; // 이전 계정 태그 잔류 방지
   load();
   loadTodayLog();
+  loadDayNotes();
   scheduleMidnightReset();
   if (!S.user.name) S.user.name = inputName;
   // 태그 복구: 로그아웃 후 localStorage에서 복원
@@ -7587,6 +7945,7 @@ function appLogout() {
   // 상태 초기화
   S.deviceId = null;
   S.user = { name:'', nickname:'', avatar:'🏃', empId:'', dept:'', points:0, totalPoints:0, streak:0, stickersReceived:0, registrationId:null, tags:[] };
+  _dayNotes = {};
   S.workouts = [];
   S.posts = JSON.parse(JSON.stringify(MOCK_POSTS_SEED));
   S.glucoseRecords = [];
