@@ -718,8 +718,8 @@
       scrollbar-width: none; -ms-overflow-style: none; margin-bottom: 4px;
     }
     .ex-type-grid::-webkit-scrollbar { display: none; }
-    .custom-ex-wrap { display:none; margin-top:8px; }
-    .custom-ex-wrap.show { display:block; }
+    .custom-ex-wrap { display:none; margin-top:8px; width:100%; min-width:0; }
+    .custom-ex-wrap.show { display:block; width:100%; }
     .ex-type-btn {
       display: flex; flex-direction: row; align-items: center;
       gap: 5px; padding: 6px 12px; border-radius: 999px;
@@ -879,22 +879,23 @@
 
     /* ── Community Share ── */
     .share-section {
-      margin-bottom:13px;
-      background:var(--card);
-      border:1.5px solid var(--border);
-      border-radius:18px;
-      box-shadow:0 10px 30px rgba(18,20,28,0.06);
+      margin-bottom:14px;
+      background:
+        radial-gradient(circle at top right, rgba(14,165,233,0.16), transparent 34%),
+        linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+      border-radius:24px;
+      box-shadow:0 18px 40px rgba(15,23,42,0.08);
       overflow:hidden;
       padding:0;
     }
     .share-toggle-card {
-      display:flex; align-items:center; gap:12px; padding:16px 16px 14px;
-      background:linear-gradient(120deg, #f8fafc 0%, #eef2ff 55%, #fef3c7 100%);
+      display:flex; align-items:flex-start; gap:12px; padding:18px 18px 10px;
+      background:linear-gradient(135deg, rgba(239,246,255,0.95) 0%, rgba(238,242,255,0.96) 52%, rgba(255,247,237,0.94) 100%);
       cursor:default; transition:all 0.2s;
       -webkit-user-select:none; user-select:none; margin-bottom:0;
       border:none; border-radius:0;
     }
-    .share-toggle-card.on { background:linear-gradient(120deg, #eef2ff 0%, #e0f2fe 55%, #fef3c7 100%); }
+    .share-toggle-card.on { background:linear-gradient(135deg, rgba(224,242,254,0.98) 0%, rgba(224,231,255,0.98) 48%, rgba(255,237,213,0.96) 100%); }
     .share-toggle-icon-wrap {
       font-size:18px; width:42px; height:42px; flex-shrink:0;
       display:flex; align-items:center; justify-content:center;
@@ -903,15 +904,19 @@
     }
     .share-toggle-card:active .share-toggle-icon-wrap { transform:scale(0.98); }
     .share-toggle-text { flex:1; min-width:0; }
-    .share-toggle-title { display:block; font-size:15px; font-weight:800; color:#111827; letter-spacing:-0.2px; }
+    .share-toggle-title { display:block; font-size:17px; font-weight:800; color:#111827; letter-spacing:-0.3px; }
     .share-toggle-card.on .share-toggle-title { color:#1d4ed8; }
-    .share-toggle-sub { display:block; font-size:11px; color:rgba(17,24,39,0.6); margin-top:2px; }
+    .share-toggle-sub { display:block; font-size:12px; color:rgba(17,24,39,0.62); margin-top:4px; line-height:1.45; }
     .share-toggle-chevron { display:none; }
     .share-expand { display:none; animation:fadeIn 0.2s ease; }
     .share-expand.show { display:block; }
     .share-expand-inner {
-      margin:12px 14px 0; background:var(--bg); border:1.5px solid var(--border);
-      border-radius:14px; padding:12px 13px;
+      margin:10px 14px 14px;
+      background:rgba(255,255,255,0.82);
+      border:1px solid rgba(226,232,240,0.9);
+      border-radius:18px;
+      padding:14px;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,0.9);
     }
     .share-ex-tag-wrap { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
     .share-expand-label { font-size:11px; font-weight:600; color:var(--text-secondary); }
@@ -921,12 +926,12 @@
     }
     .share-preview-tag { font-size:11px; font-weight:700; color:var(--primary); margin-bottom:5px; }
     .share-msg-input {
-      width:100%; padding:9px 11px; border:1.5px solid var(--border);
-      border-radius:var(--radius-sm); font-size:13px; font-family:inherit;
-      background:var(--bg); resize:none; line-height:1.5;
+      width:100%; padding:12px 13px; border:1.5px solid rgba(203,213,225,0.9);
+      border-radius:14px; font-size:13px; font-family:inherit;
+      background:rgba(248,250,252,0.95); resize:none; line-height:1.6;
     }
-    .share-msg-input:focus { outline:none; border-color:var(--primary); }
-    .share-hint { font-size:11px; color:var(--text-secondary); margin-top:5px; }
+    .share-msg-input:focus { outline:none; border-color:var(--primary); background:#fff; }
+    .share-hint { font-size:11px; color:var(--text-secondary); margin-top:7px; line-height:1.5; }
     .share-memo-preview { font-size:12px; color:#7c3aed; background:#f5f3ff; border-radius:6px; padding:6px 9px; margin-bottom:8px; line-height:1.5; white-space:pre-wrap; }
     .share-opts-label { font-size:11px; color:var(--text-secondary); font-weight:600; margin:8px 0 6px; }
     .share-opts-row { display:flex; gap:7px; flex-wrap:wrap; margin-bottom:8px; }
@@ -970,9 +975,11 @@
     .glucose-time-expand { display:none; margin-top:8px; }
     .glucose-time-expand.show { display:block; }
     .glucose-time-input {
-      width:100%; padding:7px 11px; border:1.5px dashed var(--border); border-radius:var(--radius-sm);
+      display:block; width:100%; max-width:100%; min-width:0;
+      padding:7px 11px; border:1.5px dashed var(--border); border-radius:var(--radius-sm);
       font-size:13px; font-family:inherit; background:var(--bg); color:var(--text); box-sizing:border-box;
     }
+    #sa-glucose-time-wrap { width:100%; min-width:0; overflow:hidden; }
     .glucose-time-input:focus { outline:none; border-color:var(--primary); border-style:dashed; }
     .glucose-log-btn { margin-top:10px; }
     .load-more-btn {
@@ -1181,8 +1188,14 @@
     .confirm-icon { margin-bottom:12px; color:var(--text-secondary); display:flex; justify-content:center; }
     .confirm-title { font-size:17px; font-weight:700; margin-bottom:8px; }
     .confirm-msg { font-size:13px; color:var(--text-secondary); line-height:1.6; margin-bottom:22px; }
-    .confirm-btns { display:flex; gap:10px; }
-    .confirm-btns .btn { flex:1; }
+    .confirm-btns { display:flex; gap:8px; }
+    .confirm-btns .btn {
+      flex:1;
+      font-size:12px;
+      white-space:nowrap;
+      padding-left:14px;
+      padding-right:14px;
+    }
     .btn-cancel { background:var(--bg); border:1.5px solid var(--border); }
 
     .form-label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 7px; }
@@ -2485,33 +2498,24 @@
     </div>
 
     <!-- 내 하루 저장 / 공유 -->
-    <div class="card share-section" style="margin-bottom:14px;padding:0;overflow:hidden">
-      <div class="share-toggle-card on" id="share-toggle-btn" onclick="toggleShare()" style="border:none;border-radius:0;background:var(--card)">
-        <div class="share-toggle-icon-wrap">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a2 2 0 01-2-2v-1"/>
-            <path d="M15 3H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l4-4h4a2 2 0 002-2V5a2 2 0 00-2-2z"/>
-          </svg>
-        </div>
+    <div class="card share-section">
+      <div class="share-toggle-card on" id="share-toggle-btn">
         <div class="share-toggle-text">
           <span class="share-toggle-title">오늘 하루 기록</span>
           <span class="share-toggle-sub" id="share-toggle-sub">저장하거나 커뮤니티에 공유해보세요</span>
         </div>
-        <div class="share-toggle-chevron">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-        </div>
       </div>
-      <div class="share-expand show" id="share-expand" style="padding:0 18px 18px">
+      <div class="share-expand show" id="share-expand">
         <div class="share-expand-inner">
           <textarea class="share-msg-input" id="share-msg" rows="5" placeholder="기록된 내용이 자동으로 채워져요..."></textarea>
           <div class="share-hint">💡 운동·혈당은 기록할 때마다 누적 추가돼요. 식사·수면·영양제는 현재 상태로 자동 업데이트됩니다.</div>
           <div style="display:flex;gap:8px;margin-top:10px">
-            <button type="button" id="my-day-save-btn" onclick="saveMyDay()" class="btn btn-secondary" style="flex:1;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:5px;font-size:13px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>저장하기</button>
-            <button type="button" class="btn btn-primary" id="share-submit-btn" onclick="submitShareNow()" style="flex:1;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:5px;font-size:13px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>커뮤니티에 공유하기</button>
+            <button type="button" id="my-day-save-btn" onclick="saveMyDay()" class="btn btn-secondary" style="flex:1;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:4px;font-size:12px;white-space:nowrap;padding-left:14px;padding-right:14px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>저장하기</button>
+            <button type="button" class="btn btn-primary" id="share-submit-btn" onclick="submitShareNow()" style="flex:1;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:4px;font-size:12px;white-space:nowrap;padding-left:14px;padding-right:14px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a2 2 0 01-2-2v-1"/><path d="M15 3H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l4-4h4a2 2 0 002-2V5a2 2 0 00-2-2z"/></svg>커뮤니티에 공유하기</button>
           </div>
           <div id="my-day-saved-info" style="display:none;text-align:center;font-size:11px;color:var(--success);margin-top:6px"></div>
           <!-- 저장된 기록 -->
-          <div id="day-notes-section" style="display:none;margin-top:14px;border-top:1px solid var(--border);padding-top:12px">
+          <div id="day-notes-section" style="margin-top:14px;border-top:1px solid var(--border);padding-top:12px">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
               <span style="font-size:12px;font-weight:600;color:var(--text-secondary)">저장된 기록 <span id="dn-count" style="font-weight:700;color:var(--text)">0</span></span>
               <div class="wo-view-tabs">
@@ -4704,8 +4708,9 @@ function renderExercise() {
   updateRecordBtnStates();
   syncGlucoseUI();
   updateMemoPlaceholder();
-  document.getElementById('share-toggle-btn').classList.toggle('on', _shareOn);
-  document.getElementById('share-expand').classList.toggle('show', _shareOn);
+  _shareOn = true;
+  document.getElementById('share-toggle-btn').classList.add('on');
+  document.getElementById('share-expand').classList.add('show');
   renderMyDaySave();
   renderTodayTabDots();
   renderRecordTabDots();
@@ -4895,26 +4900,9 @@ function getTodayMyPost() {
 }
 
 function toggleShare() {
-  haptic('light');
-  _shareOn = !_shareOn;
-  document.getElementById('share-toggle-btn').classList.toggle('on', _shareOn);
-  document.getElementById('share-expand').classList.toggle('show', _shareOn);
-  if (_shareOn) {
-    const existing = getTodayMyPost();
-    if (existing) {
-      _shareRewrite = true;
-      document.getElementById('share-toggle-sub').textContent = '오늘 이미 공유했어요 · 다시 작성하면 덮어씌워져요';
-      document.getElementById('share-submit-btn').innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>수정하기';
-      const _rwMsgEl = document.getElementById('share-msg');
-      if (_rwMsgEl) _rwMsgEl.value = existing.body || '';
-      updateSharePreview();
-    } else {
-      _shareRewrite = false;
-      document.getElementById('share-toggle-sub').textContent = '저장하거나 커뮤니티에 공유해보세요';
-      document.getElementById('share-submit-btn').innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>커뮤니티에 공유하기';
-      updateSharePreview();
-    }
-  }
+  _shareOn = true;
+  document.getElementById('share-toggle-btn')?.classList.add('on');
+  document.getElementById('share-expand')?.classList.add('show');
 }
 
 function submitShareNow() {
@@ -4973,7 +4961,7 @@ function submitShareNow() {
   // 공유 완료 후 "오늘 이미 공유" 상태로 전환 (패널 유지)
   _shareRewrite = true;
   document.getElementById('share-toggle-sub').textContent = '오늘 이미 공유했어요 · 다시 작성하면 덮어씌워져요';
-  document.getElementById('share-submit-btn').innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>수정하기';
+  document.getElementById('share-submit-btn').innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a2 2 0 01-2-2v-1"/><path d="M15 3H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l4-4h4a2 2 0 002-2V5a2 2 0 00-2-2z"/></svg>수정하기';
   save();
   const commFeed = document.getElementById('posts-feed');
   if (commFeed) renderCommunity();
