@@ -539,7 +539,6 @@
     .home-logo-wrap { text-align: center; padding: 18px 0 10px; }
     .home-logo-img  { height: 72px; width: auto; display: inline-block; }
     .hero-greeting { font-size: 13px; opacity: 0.85; margin-bottom: 3px; }
-    /* .hero-name overridden below with flex layout */
     .hero-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; }
     .hero-stat {
       background: rgba(255,255,255,0.15); border-radius: 10px;
@@ -548,88 +547,116 @@
     .hero-stat-value { font-size: 18px; font-weight: 700; }
     .hero-stat-label { font-size: 10px; opacity: 0.8; margin-top: 2px; }
 
-    .level-card {
+    .level-card.home-level-card {
+      padding: 16px 16px 14px;
+      margin-bottom: 16px;
       background: #fff;
-      border-radius: var(--radius);
-      padding: 16px 16px 20px; margin-bottom: 16px;
+      border-radius: 20px;
       box-shadow: 0 2px 16px rgba(109,40,217,0.08), 0 1px 3px rgba(0,0,0,0.04);
-      overflow: hidden;
+      overflow: visible;
     }
-    .level-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
-    .level-info { display: flex; align-items: center; gap: 10px; }
-    .level-icon-bg {
-      width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;
-      background: linear-gradient(135deg, #F3E8FF 0%, #EDE9FE 100%);
-      display: flex; align-items: center; justify-content: center;
+    .level-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 6px; }
+    .level-info { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .level-copy { min-width: 0; }
+    .level-icon-large { font-size: 42px; line-height: 1; display: flex; align-items: center; }
+    .level-title-row { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; }
+    .level-name { font-size: 18px; font-weight: 900; color: #0F172A; letter-spacing: -0.35px; }
+    .level-num { font-size: 11px; color: var(--primary); font-weight: 800; }
+    .level-note {
+      margin-top: 5px;
+      font-size: 10px; font-weight: 600; line-height: 1.35;
+      color: #64748B;
     }
-    .level-icon-large { font-size: 52px; line-height: 1; display: flex; align-items: center; }
-    .level-title-row { display: flex; align-items: baseline; gap: 5px; }
-    .level-name { font-size: 15px; font-weight: 400; color: var(--text); }
-    .level-num { font-size: 13px; color: var(--text-secondary); font-weight: 400; }
     .streak-badge {
-      display: flex; flex-direction: row; align-items: center; gap: 3px;
-      background: #fff; padding: 4px 8px;
-      border-radius: 20px; color: #B91C2E;
+      display:inline-flex; align-items:center; gap:5px;
+      padding:7px 10px;
+      border-radius:999px;
+      background:var(--primary-light);
+      border:1px solid rgba(79,70,229,0.12);
+      color:var(--primary);
+      white-space:nowrap;
+      box-shadow:none;
     }
-    .streak-badge .streak-val { font-size: 13px; font-weight: 800; line-height: 1; }
-    .streak-badge .streak-label { font-size: 12px; font-weight: 600; opacity: 0.8; }
+    .streak-badge .streak-label { font-size:10px; font-weight:700; color:#6366F1; }
+    .streak-badge .streak-val { font-size:14px; font-weight:900; line-height:1; color:#312E81; }
+    .streak-badge .streak-unit { font-size:10px; font-weight:700; line-height:1; color:#6366F1; }
 
-    /* Progress bar */
-    @keyframes barShimmer {
-      0%   { transform: translateX(-100%) skewX(-15deg); }
-      100% { transform: translateX(350%)  skewX(-15deg); }
+    .level-progress-head {
+      display:flex; align-items:center; justify-content:space-between;
+      margin: 12px 0 6px;
     }
-    @keyframes dotPulse {
-      0%, 100% { box-shadow: 0 0 0 0 rgba(109,40,217,0.45); }
-      50%       { box-shadow: 0 0 0 5px rgba(109,40,217,0); }
+    .level-progress-label {
+      font-size:9px; font-weight:700; color:#64748B; letter-spacing:0.03em;
     }
-    @keyframes runnerAnim {
-      0%   { transform: translate(-50%, -50%) rotate(-4deg) scaleX(1);    }
-      20%  { transform: translate(-50%, -65%) rotate(0deg)  scaleX(0.92); }
-      40%  { transform: translate(-50%, -50%) rotate(4deg)  scaleX(1);    }
-      60%  { transform: translate(-50%, -65%) rotate(0deg)  scaleX(0.92); }
-      80%  { transform: translate(-50%, -50%) rotate(-4deg) scaleX(1);    }
-      100% { transform: translate(-50%, -50%) rotate(0deg)  scaleX(1);    }
+    .level-progress-rate {
+      display:inline-flex; align-items:center; justify-content:center;
+      min-width:44px; height:22px; padding:0 9px;
+      border-radius:999px;
+      background:var(--primary-light);
+      color:var(--primary); font-size:10px; font-weight:800;
+      box-shadow:none;
     }
     .level-bar-bg {
-      width: 100%; height: 14px; background: #F0F0F0;
-      border-radius: 7px; overflow: visible; position: relative;
-      box-shadow: inset 0 2px 4px rgba(0,0,0,0.08);
+      width: 100%; height: 12px;
+      background:linear-gradient(180deg, #E6ECF8 0%, #EFF4FB 100%);
+      border-radius: 999px; overflow: visible; position: relative;
+      box-shadow: inset 0 1px 2px rgba(15,23,42,0.06);
     }
     .level-bar-fill {
       height: 100%;
-      background: linear-gradient(90deg, #DDD6FE, #C4B5FD);
-      border-radius: 9px;
-      transition: width 3.2s cubic-bezier(0.34, 1.06, 0.64, 1);
+      background: linear-gradient(90deg, #4F46E5 0%, #3B82F6 56%, #22C1C3 100%);
+      border-radius: 999px;
+      transition: width 2.4s cubic-bezier(0.34, 1.06, 0.64, 1);
       position: relative; overflow: hidden;
-      box-shadow: 0 2px 8px rgba(124,58,237,0.4);
+      box-shadow: 0 4px 10px rgba(79,70,229,0.16);
+    }
+    .level-bar-fill::after {
+      content:'';
+      position:absolute; inset:0;
+      background:linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.35) 52%, rgba(255,255,255,0) 100%);
+      opacity:0.55;
     }
     .level-bar-dot {
       position: absolute; top: 50%; left: 0;
-      transform: translate(-50%, -50%) rotate(0deg) scaleX(1);
-      font-size: 18px; line-height: 1;
-      transition: left 3.2s cubic-bezier(0.34, 0.98, 0.64, 1);
-      animation: runnerAnim 2.2s ease-in-out 3.0s 1 forwards;
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      border: 3px solid #fff;
+      background: linear-gradient(135deg, #4F46E5 0%, #22C1C3 100%);
+      transform: translate(-50%, -50%);
+      transition: left 2.4s cubic-bezier(0.34, 0.98, 0.64, 1);
       pointer-events: none;
-      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.18));
+      box-shadow: 0 3px 10px rgba(79,70,229,0.16);
     }
     .level-bar-text {
-      display: flex; justify-content: space-between;
-      font-size: 10px; color: var(--text-secondary); margin-top: 6px; font-weight: 500;
+      display: flex; justify-content: space-between; gap: 10px;
+      font-size: 9px; color: #64748B; margin-top: 8px; font-weight: 700;
     }
-    .level-bar-text .lv-pct { font-weight: 700; color: #7C3AED; }
     .level-share-btn {
-      display: flex; align-items: center; gap: 4px;
-      margin-top: 10px; padding: 6px 12px;
-      background: linear-gradient(135deg, #F3E8FF 0%, #EDE9FE 100%);
-      border: 1.5px solid rgba(124,58,237,0.18);
-      border-radius: 20px; cursor: pointer;
-      font-size: 11px; font-weight: 700; color: #7C3AED;
-      font-family: inherit; width: 100%;
-      justify-content: center;
-      transition: background 0.18s, transform 0.14s;
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      margin-top: 12px; padding: 10px 12px;
+      width: 100%;
+      border: 1px solid rgba(79,70,229,0.14);
+      border-radius: 14px;
+      cursor: pointer;
+      color: var(--primary);
+      font-family: inherit;
+      background: var(--primary-light);
+      box-shadow: none;
+      transition: transform 0.14s ease, box-shadow 0.18s ease, border-color 0.18s ease;
     }
-    .level-share-btn:active { transform: scale(0.97); }
+    .level-share-btn:active { transform: scale(0.985); }
+    .level-share-btn:disabled { cursor: default; opacity: 0.82; }
+    .level-share-label,
+    .level-share-arrow {
+      display: inline-flex; align-items: center;
+      flex-shrink: 0;
+    }
+    .level-share-label { font-size: 11px; font-weight: 800; letter-spacing: -0.1px; }
+    .level-share-arrow {
+      width: 22px; height: 22px; border-radius: 999px;
+      background: #fff;
+      color: var(--primary);
+    }
     .level-share-btn svg { flex-shrink: 0; }
 
     .quick-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 12px; margin-bottom: 14px; }
@@ -658,7 +685,8 @@
       flex-shrink: 0;
       background: linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%);
       color: #4F46E5;
-      position: relative; transition: color 0.2s, background 0.2s; z-index: 1;
+      position: relative; z-index: 1;
+      transition: color 0.2s, background 0.2s;
     }
     .qi-icon svg { width: 24px !important; height: 24px !important; }
     .qi-title, .qi-sub { position: relative; z-index: 1; }
@@ -673,7 +701,9 @@
     .week-day { display: flex; flex-direction: column; align-items: center; gap: 4px; }
     .week-label { font-size: 9px; color: var(--text-secondary); }
     .week-date { font-size: 9px; color: var(--text-secondary); opacity: 0.7; }
-    .week-bar { width: 100%; height: 40px; background: var(--border); border-radius: 5px; display: flex; align-items: flex-end; overflow: hidden; }
+    .week-bar {
+      width: 100%; height: 40px; background: var(--border); border-radius: 5px; display: flex; align-items: flex-end; overflow: hidden;
+    }
     .week-fill { width: 100%; background: linear-gradient(180deg, #6366F1, var(--primary)); border-radius: 5px; transition: height 0.9s ease; }
     .week-val { font-size: 9px; font-weight: 600; color: var(--text); }
     .week-day:first-child .week-label { color: #F472B6; }
@@ -2131,36 +2161,43 @@
       </div>
     </div>
     <div id="hero-spacer"></div>
-
-    <div class="level-card">
+    <div class="level-card home-level-card">
       <div class="level-header">
         <div class="level-info">
           <span class="level-icon-large" id="lv-icon"></span>
-          <div class="level-title-row">
-            <span class="level-name" id="lv-name">새싹</span>
-            <span class="level-num" id="lv-num">Level 1</span>
+          <div class="level-copy">
+            <div class="level-title-row">
+              <span class="level-name" id="lv-name">새싹</span>
+              <span class="level-num" id="lv-num">Level 1</span>
+            </div>
+            <div class="level-note">오늘의 기록이 다음 레벨로 이어집니다</div>
           </div>
         </div>
         <div class="streak-badge">
-          <img src="images/badge_run.png" alt="연속" style="width:18px;height:18px;object-fit:contain;">
+          <span class="streak-label">연속</span>
           <span class="streak-val" id="streak-num">0</span>
-          <span class="streak-label">일 연속</span>
+          <span class="streak-unit">일</span>
         </div>
+      </div>
+      <div class="level-progress-head">
+        <span class="level-progress-label">현재 진행률</span>
+        <span class="level-progress-rate" id="lv-progress-rate">0%</span>
       </div>
       <div class="level-bar-bg" style="position:relative">
         <div class="level-bar-fill" id="lv-bar" style="width:0%"></div>
-        <div class="level-bar-dot" id="lv-bar-dot" style="left:0%"><img src="icons/HI_icon_4.png" style="width:30px;height:30px;display:block"></div>
+        <div class="level-bar-dot" id="lv-bar-dot" style="left:0%"></div>
       </div>
       <div class="level-bar-text">
         <span id="lv-cur-pts">0p</span>
         <span id="lv-next-pts">다음 레벨까지 200p</span>
       </div>
       <button type="button" class="level-share-btn" onclick="shareLevelCard()">
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
-          <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
-        </svg>
-        내 레벨 공유하기
+        <span class="level-share-label">레벨 카드 공유</span>
+        <span class="level-share-arrow">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M7 17L17 7"/><path d="M9 7h8v8"/>
+          </svg>
+        </span>
       </button>
     </div>
 
@@ -2884,10 +2921,31 @@ const AVATARS = [
   'images/avatars/av8.png',
   'images/avatars/av9.png',
   'images/avatars/av10.png',
+  'images/avatars/av11.png',
+  'images/avatars/av12.png',
+  'images/avatars/av13.png',
+  'images/avatars/av14.png',
+  'images/avatars/av15.png',
+  'images/avatars/av16.png',
+  'images/avatars/av17.png',
+  'images/avatars/av18.png',
+  'images/avatars/av19.png',
+  'images/avatars/av20.png',
 ];
+const AVATAR_SET = new Set(AVATARS);
+function normalizeAvatar(src) {
+  const raw = String(src || '').trim();
+  if (AVATAR_SET.has(raw)) return raw;
+  const runMatch = raw.match(/images\/avatars\/run(\d+)\.png$/i);
+  if (runMatch) {
+    const mapped = `images/avatars/av${Math.max(1, Math.min(20, Number(runMatch[1]) || 1))}.png`;
+    return AVATAR_SET.has(mapped) ? mapped : AVATARS[0];
+  }
+  return AVATARS[0];
+}
 function avHTML(src) {
   const fallback = AVATARS[0];
-  const s = (src && src.includes('images/')) ? src : fallback;
+  const s = normalizeAvatar(src);
   return `<img src="${s}" class="av-img" onerror="if(this.dataset.err)return;this.dataset.err=1;this.src='${fallback}'">`;
 }
 
@@ -2902,22 +2960,12 @@ const PROFILE_TAGS = [
   },
   {
     cat: '건강 습관',
-    tags: ['식단 관리', '스트레스 관리', '매일 걷기', '수면 개선', '금주 실천', '금연 중', '엽산 복용', '오메가3 챙기기', '영양 관리', '체중 관리'],
+    tags: ['식단 관리', '스트레스 관리', '매일 걷기', '수면 개선', '금주 실천', '금연 중', '엽산 복용', '오메가3 챙기기', '영양 관리', '체중 관리', '스트레칭 매일', '충분한 수분 섭취'],
   },
   {
     cat: '나의 다짐',
-    tags: ['포기 안 해요', '희망 잃지 않아요', '함께 이겨내요', '남편과 함께', '간절히 기원중', '긍정 마인드', '아기 기다려요', '내 몸 믿어요', '나를 응원해요', '좋은 소식 기대해요'],
+    tags: ['포기 안 해요', '희망 잃지 않아요', '함께 이겨내요', '남편과 함께', '간절히 기원중', '긍정 마인드', '아기 기다려요', '내 몸 믿어요', '나를 응원해요', '좋은 소식 기대해요', '완주할 거야', '함께 달려요', '즐겁게 달리기', '포기 안 해', '최선을 다해', '건강하게 달리자', 'HI RUN DAY 화이팅'],
   },
-];
-
-const RUN_AVATARS = [
-  'images/avatars/run1.png','images/avatars/run2.png','images/avatars/run3.png',
-  'images/avatars/run4.png','images/avatars/run5.png','images/avatars/run6.png',
-  'images/avatars/run7.png','images/avatars/run8.png','images/avatars/run9.png',
-  'images/avatars/run10.png',
-];
-
-const CHALLENGE_TAGS = [
   {
     cat: '러닝 목표',
     tags: ['5km 완주', '10km 완주', '코스 완주', '걷기 참여', '가족과 함께', '개인 기록 도전', '즐겁게 완주'],
@@ -2925,14 +2973,6 @@ const CHALLENGE_TAGS = [
   {
     cat: '나의 컨디션',
     tags: ['훈련 중', '스트레칭 중', '페이스 조절 중', '컨디션 최고', '몸 만드는 중', '준비 완료', '긴장되지만 설레'],
-  },
-  {
-    cat: '건강 습관',
-    tags: ['매일 걷기', '식단 관리', '수면 개선', '스트레스 관리', '체중 관리', '스트레칭 매일', '충분한 수분 섭취'],
-  },
-  {
-    cat: '나의 다짐',
-    tags: ['완주할 거야', '함께 달려요', '즐겁게 달리기', '포기 안 해', '최선을 다해', '건강하게 달리자', 'HI RUN DAY 화이팅'],
   },
 ];
 
@@ -3522,7 +3562,7 @@ const WEEK_DAYS = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
 ════════════════════════════════════════ */
 let S = {
   deviceId: null,
-  user: { name:'', avatar:'🏃', points:0, totalPoints:0, streak:0, stickersReceived:0, registrationId:null, tags:[] },
+  user: { name:'', avatar:AVATARS[0], points:0, totalPoints:0, streak:0, stickersReceived:0, registrationId:null, tags:[] },
   workouts: [],
   posts: JSON.parse(JSON.stringify(MOCK_POSTS_SEED)),
   redeemedRewards: [],
@@ -3809,13 +3849,24 @@ async function shareLevelCard() {
     showToast('라이브러리 로딩 중입니다. 잠시 후 다시 시도해주세요.');
     return;
   }
+  const levelShareBtnHTML = (title) => `
+    <span class="level-share-label">${title}</span>
+    <span class="level-share-arrow">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M7 17L17 7"/><path d="M9 7h8v8"/>
+      </svg>
+    </span>
+  `;
   const btn = document.querySelector('.level-share-btn');
-  if (btn) { btn.disabled = true; btn.textContent = '이미지 생성 중...'; }
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = levelShareBtnHTML('이미지 생성 중...');
+  }
 
   const restoreBtn = () => {
     if (!btn) return;
     btn.disabled = false;
-    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> 내 레벨 공유하기';
+    btn.innerHTML = levelShareBtnHTML('레벨 카드 공유');
   };
 
   // ── 데이터 수집 ────────────────────────────────────────────
@@ -3828,13 +3879,6 @@ async function shareLevelCard() {
   const totalCnt = S.workouts.length;
   const totalMin = S.workouts.reduce((s, w) => s + (w.duration || 0), 0);
   const timeStr  = totalMin >= 60 ? `${Math.floor(totalMin/60)}h ${totalMin%60}m` : `${totalMin}분`;
-
-  // ── SVG 아이콘 → PNG data URL (html2canvas 호환) ──────────────
-  const flameSvg = `<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" width="40" height="40">
-    <path d="M20 5C16 12 9 18 9 26C9 32.6 14 37 20 37C26 37 31 32.6 31 26C31 18 24 12 20 5Z" fill="#F97316"/>
-    <path d="M20 12C17.5 16 13 20 13 25.5C13 29.5 16.2 33 20 33C23.8 33 27 29.5 27 25.5C27 20 22.5 16 20 12Z" fill="#FB923C"/>
-    <path d="M20 20C18.5 22.5 17 25 17 27.5C17 30 18.3 32 20 32C21.7 32 23 30 23 27.5C23 25 21.5 22.5 20 20Z" fill="#FEF3C7"/>
-  </svg>`;
 
   const avatarSrc = (S.user.avatar && S.user.avatar.includes('images/')) ? S.user.avatar : (AVATARS[0] || '');
 
@@ -3853,24 +3897,18 @@ async function shareLevelCard() {
     try { return c.toDataURL('image/png'); } catch(e) { return ''; }
   };
 
-  const earnedBadges = earnedAchs().slice(0, 5); // 최대 5개
-
-  const allTags = [...(hasActiveChallengeRegistration() ? ['🏅 챌린지 참여중'] : []), ...(S.user.tags || [])];
+  const allTags = [...(hasActiveChallengeRegistration() ? ['챌린지 참여중'] : []), ...(S.user.tags || [])];
   const userTags = allTags.slice(0, 3);
   const extraTagCount = Math.max(0, allTags.length - 3);
 
-  const [lvIconPng, flameIconPng, runnerImg, logoPng, avatarImg, bgImg, ...badgeImgs] = await Promise.all([
+  const [lvIconPng, logoPng, avatarImg, bgImg] = await Promise.all([
     _svgToPng(lv.icon, 320),
-    _svgToPng(flameSvg, 192),
-    loadImg('icons/HI_icon_4.png'),
     loadImg('images/logo-white.png'),
     avatarSrc ? loadImg(avatarSrc) : Promise.resolve(null),
     loadImg('images/happy-play.jpg'),
-    ...earnedBadges.map(a => loadImg(a.img)),
   ]);
 
   const logoPngUrl   = imgToPng(logoPng, logoPng ? logoPng.naturalWidth : 240, logoPng ? logoPng.naturalHeight : 60) || 'images/logo-white.png';
-  const runnerPngUrl = imgToPng(runnerImg, 144);
   const avatarPngUrl = imgToPng(avatarImg, 192);
   // 하단 배경 이미지: html2canvas는 object-fit 미지원 → JS로 cover+center top 직접 계산
   const bgSectionH = 78;
@@ -3887,20 +3925,6 @@ async function shareLevelCard() {
     bgImgStyle = `position:absolute;width:${dw}px;height:${dh}px;left:${left}px;top:0;opacity:0.75`;
   }
   const bgPngUrl     = bgImg ? imgToPng(bgImg, bgImg.naturalWidth, bgImg.naturalHeight) : '';
-  // 배지: 연보라 원형 배경 위에 이미지 합성
-  const badgePngUrls = badgeImgs.map(img => {
-    if (!img) return '';
-    const sz = 32, pad = 4;
-    const c = document.createElement('canvas');
-    c.width = c.height = sz;
-    const ctx = c.getContext('2d');
-    ctx.beginPath();
-    ctx.arc(sz/2, sz/2, sz/2, 0, Math.PI*2);
-    ctx.fillStyle = '#EDE9FE';
-    ctx.fill();
-    ctx.drawImage(img, pad, pad, sz - pad*2, sz - pad*2);
-    try { return c.toDataURL('image/png'); } catch(e) { return ''; }
-  }).filter(Boolean);
 
   // ── 공유 카드 DOM 생성 ────────────────────────────────────────
   // ── 정사각형 (360×360px, scale×4 = 1440×1440px 고해상도) ──────
@@ -3915,27 +3939,19 @@ async function shareLevelCard() {
     display: 'flex', flexDirection: 'column',
   });
 
-  const streakMsg = _shareStreakMsg(streak);
-
   card.innerHTML = `
     <!-- ① 히어로 섹션 -->
-    <div style="flex-shrink:0;background:linear-gradient(to bottom,rgba(0,0,0,0.22) 0%,rgba(0,0,0,0) 80px),linear-gradient(145deg,#1E1A6E 0%,#3730A3 35%,#4F46E5 68%,#6366F1 100%),linear-gradient(to bottom right,rgba(255,255,255,0.07) 0%,transparent 55%);padding:12px 18px 14px;border-radius:0 0 28px 28px;position:relative;overflow:hidden;color:#fff">
+    <div style="flex-shrink:0;background:linear-gradient(180deg,rgba(255,255,255,0.12) 0%,rgba(255,255,255,0) 36%),linear-gradient(135deg,#4F46E5 0%,#3B82F6 52%,#22C1C3 100%);padding:12px 18px 12px;border-radius:0 0 24px 24px;position:relative;overflow:hidden;color:#fff">
       <!-- 광택 오버레이 -->
-      <div style="position:absolute;top:0;left:0;right:0;height:100%;background:linear-gradient(180deg,rgba(255,255,255,0.06) 0%,transparent 50%);pointer-events:none"></div>
-      <!-- ::before 상당: 우측 상단, 160px, blur(14px) -->
-      <div style="position:absolute;top:-50px;right:-40px;width:160px;height:160px;border-radius:50%;background:linear-gradient(to bottom,transparent 0%,rgba(255,255,255,0.07) 55%);filter:blur(14px);pointer-events:none"></div>
-      <!-- ::after 상당: 우측 하단, 75px, blur(10px) -->
-      <div style="position:absolute;bottom:-30px;right:40px;width:75px;height:75px;border-radius:50%;background:rgba(255,255,255,0.05);filter:blur(10px);pointer-events:none"></div>
-      <!-- hc-circle 좌측 대: 95px, blur(6px) -->
-      <div style="position:absolute;top:-6px;left:-38px;width:95px;height:95px;border-radius:50%;background:rgba(255,255,255,0.06);filter:blur(6px);pointer-events:none"></div>
-      <!-- hc-circle 좌측 소: 50px, blur(3px) -->
-      <div style="position:absolute;top:68px;left:32px;width:50px;height:50px;border-radius:50%;background:rgba(255,255,255,0.04);filter:blur(3px);pointer-events:none"></div>
+      <div style="position:absolute;top:0;left:0;right:0;height:100%;background:linear-gradient(180deg,rgba(255,255,255,0.08) 0%,transparent 52%);pointer-events:none"></div>
+      <div style="position:absolute;top:-34px;right:-22px;width:132px;height:132px;border-radius:50%;background:rgba(255,255,255,0.14);filter:blur(14px);pointer-events:none"></div>
+      <div style="position:absolute;bottom:-24px;right:32px;width:82px;height:82px;border-radius:50%;background:rgba(255,255,255,0.08);filter:blur(8px);pointer-events:none"></div>
 
       <!-- 헤더: 로고 + 나의 건강 기록 (좌) | 아바타 (우) -->
       <div style="display:flex;align-items:center;justify-content:space-between;position:relative">
         <div style="display:flex;align-items:center;gap:8px">
           <img src="${logoPngUrl}" alt="HI Health" style="height:20px;max-width:90px;object-fit:contain;flex-shrink:0">
-          <span style="font-size:10px;font-weight:600;opacity:0.65;letter-spacing:0.4px;white-space:nowrap">나의 건강 기록</span>
+          <span style="font-size:10px;font-weight:700;opacity:0.72;letter-spacing:0.4px;white-space:nowrap">나의 건강 기록</span>
         </div>
         ${avatarPngUrl
           ? `<div style="width:34px;height:34px;border-radius:50%;border:2px solid rgba(255,255,255,0.5);background:#fff;overflow:hidden;flex-shrink:0"><img src="${avatarPngUrl}" style="width:100%;height:100%;object-fit:cover;display:block"></div>`
@@ -3945,55 +3961,60 @@ async function shareLevelCard() {
       <!-- 닉네임 + 태그 (3개 이상은 2줄 허용) -->
       <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px;margin-top:8px;position:relative">
         <span style="font-size:19px;font-weight:900;letter-spacing:-0.5px;line-height:1;flex-shrink:0;display:inline-block;vertical-align:middle">${name}님</span>
-        ${userTags.map(t => `<span style="font-size:9px;padding:2px 7px;border-radius:20px;background:rgba(255,255,255,0.92);color:#4F46E5;font-weight:700;flex-shrink:0;white-space:nowrap;box-shadow:0 1px 6px rgba(0,0,0,0.12);line-height:1;display:inline-block;vertical-align:middle">${t}</span>`).join('')}
+        ${userTags.map(t => `<span style="font-size:9px;padding:4px 8px;border-radius:20px;background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.16);color:#fff;font-weight:700;flex-shrink:0;white-space:nowrap;line-height:1;display:inline-block;vertical-align:middle">${t}</span>`).join('')}
         ${extraTagCount > 0 ? `<span style="display:inline-flex;align-items:center;gap:3px;flex-shrink:0"><span style="width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,0.85);display:inline-block"></span><span style="width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,0.55);display:inline-block"></span><span style="width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,0.25);display:inline-block"></span></span>` : ''}
       </div>
 
       <!-- 통계 3칸 (border 제거 — 원래 hero-stat과 동일) -->
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:12px;position:relative">
-        <div style="background:rgba(255,255,255,0.15);border-radius:10px;padding:6px 5px;text-align:center">
+        <div style="background:rgba(255,255,255,0.16);border:1px solid rgba(255,255,255,0.14);border-radius:14px;padding:7px 5px;text-align:center">
           <div style="font-size:18px;font-weight:700;line-height:1">${totalCnt}<span style="font-size:9px;font-weight:600;opacity:0.8">회</span></div>
           <div style="font-size:8px;opacity:0.8;margin-top:2px;font-weight:600">총 운동횟수</div>
         </div>
-        <div style="background:rgba(255,255,255,0.15);border-radius:10px;padding:6px 5px;text-align:center">
+        <div style="background:rgba(255,255,255,0.16);border:1px solid rgba(255,255,255,0.14);border-radius:14px;padding:7px 5px;text-align:center">
           <div style="font-size:${totalMin >= 600 ? '13px' : '18px'};font-weight:700;line-height:1">${timeStr}</div>
           <div style="font-size:8px;opacity:0.8;margin-top:2px;font-weight:600">총 운동시간</div>
         </div>
-        <div style="background:rgba(255,255,255,0.15);border-radius:10px;padding:6px 5px;text-align:center">
+        <div style="background:rgba(255,255,255,0.16);border:1px solid rgba(255,255,255,0.14);border-radius:14px;padding:7px 5px;text-align:center">
           <div style="font-size:18px;font-weight:700;line-height:1">${curPts}<span style="font-size:9px;font-weight:600;opacity:0.8">p</span></div>
           <div style="font-size:8px;opacity:0.8;margin-top:2px;font-weight:600">총 포인트</div>
         </div>
       </div>
     </div>
 
-    <!-- ② 레벨 카드 (화이트, 히어로 섹션 아래 여백 두고 배치) -->
-    <div style="flex-shrink:0;background:#fff;border-radius:16px;margin:6px 12px 0;padding:10px 14px 8px;box-shadow:0 2px 16px rgba(109,40,217,0.08),0 1px 3px rgba(0,0,0,0.04);position:relative">
-      <!-- 레벨 아이콘 + 레벨명 + 레벨번호 한 줄 -->
-      <div style="display:flex;align-items:center;gap:10px">
-        <img src="${lvIconPng}" style="width:34px;height:34px;flex-shrink:0">
-        <div style="display:flex;align-items:center;gap:6px">
-          <span style="font-size:15px;font-weight:900;color:#1E1B4B;letter-spacing:-0.3px">${lv.name}</span>
-          <span style="width:4px;height:4px;border-radius:50%;background:#A78BFA;display:inline-block;flex-shrink:0"></span>
-          <span style="font-size:13px;font-weight:700;color:#7C3AED">Level ${lv.lv}</span>
+    <!-- ② 레벨 카드 (화이트, 심플 버전) -->
+    <div style="flex-shrink:0;background:#fff;border:1px solid #DCE6F7;border-radius:18px;margin:8px 12px 0;padding:12px 14px 12px;box-shadow:0 8px 18px rgba(79,70,229,0.06);position:relative">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+        <div style="display:flex;align-items:center;gap:10px;min-width:0">
+          <img src="${lvIconPng}" style="width:34px;height:34px;flex-shrink:0">
+          <div style="min-width:0">
+            <div style="display:flex;align-items:center;gap:6px">
+              <span style="font-size:15px;font-weight:900;color:#1E1B4B;letter-spacing:-0.3px">${lv.name}</span>
+              <span style="font-size:11px;font-weight:800;color:#4F46E5">Level ${lv.lv}</span>
+            </div>
+            <div style="font-size:10px;color:#64748B;margin-top:3px;font-weight:600">오늘의 기록이 다음 레벨로 이어집니다</div>
+          </div>
+        </div>
+        <div style="display:inline-flex;align-items:center;gap:4px;padding:7px 10px;border-radius:999px;background:#EEF2FF;border:1px solid rgba(79,70,229,0.12);color:#4F46E5;white-space:nowrap">
+          <span style="font-size:10px;font-weight:700;color:#6366F1">연속</span>
+          <span style="font-size:14px;font-weight:900;color:#312E81;line-height:1">${streak}</span>
+          <span style="font-size:10px;font-weight:700;color:#6366F1">일</span>
         </div>
       </div>
 
-      <!-- 레벨 바 -->
-      <div style="margin-top:8px">
-        <div style="display:flex;justify-content:space-between;font-size:9px;color:#6D28D9;opacity:0.55;margin-bottom:5px;font-weight:600">
-          <span>${curPts}p</span>
-          <span>${nextLv ? `다음 레벨까지 ${nextLv.min - curPts}p` : '최고 레벨 달성!'}</span>
-        </div>
-        <div style="width:100%;height:8px;background:rgba(124,58,237,0.1);border-radius:4px;overflow:visible;position:relative">
-          <div style="width:${pct}%;height:100%;background:linear-gradient(90deg,#7C3AED,#A78BFA);border-radius:4px;box-shadow:0 0 8px rgba(124,58,237,0.35)"></div>
-          ${runnerPngUrl ? `<img src="${runnerPngUrl}" style="width:28px;height:28px;position:absolute;top:50%;left:${pct}%;transform:translate(-50%,-50%);filter:drop-shadow(0 1px 3px rgba(109,40,217,0.3))">` : ''}
-        </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px;margin-bottom:7px">
+        <span style="font-size:9px;font-weight:700;color:#64748B">현재 진행률</span>
+        <span style="display:inline-flex;align-items:center;justify-content:center;min-width:44px;height:22px;padding:0 9px;border-radius:999px;background:#EEF2FF;color:#4F46E5;font-size:10px;font-weight:800">${pct}%</span>
       </div>
-
-      <!-- 연속 운동 응원 멘트 -->
-      <div style="margin-top:14px;background:rgba(237,233,254,0.65);border-radius:10px;padding:6px 10px;display:flex;align-items:center;justify-content:center;gap:6px;border:1px solid rgba(124,58,237,0.12)">
-        <span style="font-size:10px;font-weight:800;color:#3730A3;white-space:nowrap;line-height:1;display:inline-block;vertical-align:middle">${streak}일 연속 운동기록 중!</span>
-        <span style="font-size:10px;color:#6D28D9;opacity:0.7;font-weight:600;white-space:nowrap;line-height:1;display:inline-block;vertical-align:middle">${streakMsg}</span>
+      <div style="width:100%;height:12px;background:linear-gradient(180deg,#E6ECF8 0%,#EFF4FB 100%);border-radius:999px;overflow:visible;position:relative;box-shadow:inset 0 1px 2px rgba(15,23,42,0.06)">
+        <div style="width:${pct}%;height:100%;background:linear-gradient(90deg,#4F46E5 0%,#3B82F6 56%,#22C1C3 100%);border-radius:999px;box-shadow:0 4px 10px rgba(79,70,229,0.16);position:relative;overflow:hidden">
+          <div style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(255,255,255,0) 0%,rgba(255,255,255,0.35) 52%,rgba(255,255,255,0) 100%);opacity:0.55"></div>
+        </div>
+        <div style="width:16px;height:16px;border-radius:50%;border:3px solid #fff;background:linear-gradient(135deg,#4F46E5 0%,#22C1C3 100%);position:absolute;top:50%;left:${pct}%;transform:translate(-50%,-50%);box-shadow:0 3px 10px rgba(79,70,229,0.16)"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:9px;font-weight:700;color:#64748B">
+        <span>${curPts}p</span>
+        <span>${nextLv ? `다음 레벨까지 ${nextLv.min - curPts}p` : '최고 레벨 달성'}</span>
       </div>
     </div>
 
@@ -4390,13 +4411,15 @@ function renderHome() {
   bar.style.width = '0%';
   const tp = S.user.totalPoints || S.user.points;
   const targetPct = nextLv
-    ? ((tp - lv.min) / (nextLv.min - lv.min) * 100).toFixed(1)
-    : '100';
+    ? Math.max(0, Math.min(100, Number(((tp - lv.min) / (nextLv.min - lv.min) * 100).toFixed(1))))
+    : 100;
   const dot = document.getElementById('lv-bar-dot');
-  const BAR_TRANSITION = 'width 3.2s cubic-bezier(0.34,0.98,0.64,1)';
-  const DOT_TRANSITION = 'left 3.2s cubic-bezier(0.34,0.98,0.64,1)';
+  const rate = document.getElementById('lv-progress-rate');
+  const BAR_TRANSITION = 'width 2.4s cubic-bezier(0.34,0.98,0.64,1)';
+  const DOT_TRANSITION = 'left 2.4s cubic-bezier(0.34,0.98,0.64,1)';
   bar.style.transition = 'none'; bar.style.width = '0%';
   if (dot) { dot.style.transition = 'none'; dot.style.left = '0%'; dot.style.opacity = '0'; }
+  if (rate) rate.textContent = Math.round(targetPct) + '%';
   requestAnimationFrame(() => requestAnimationFrame(() => {
     bar.style.transition = BAR_TRANSITION;
     bar.style.width = targetPct + '%';
@@ -4405,7 +4428,7 @@ function renderHome() {
   document.getElementById('lv-cur-pts').textContent = tp + 'p';
   document.getElementById('lv-next-pts').textContent = nextLv
     ? '다음 레벨까지 ' + (nextLv.min - tp) + 'p'
-    : '최고 레벨 달성! 🎉';
+    : '최고 레벨 달성';
 
   // Quick action subtitles
   const _medals = {1:'🥇',2:'🥈',3:'🥉'};
@@ -5933,8 +5956,7 @@ function viewPhoto(id) {
 
 let _selAvatar = AVATARS[0];
 let _selTags   = [];
-let _pmIsChallenge = false;
-function activeTags() { return _pmIsChallenge ? CHALLENGE_TAGS : PROFILE_TAGS; }
+function activeTags() { return PROFILE_TAGS; }
 function getProfileIdentity() {
   const loginEmpId = String(
     ACTIVE_EMPID ||
@@ -5960,21 +5982,16 @@ function openProfileModal(onboarding = false) {
   document.getElementById('pm-realname').textContent = identity.name || '-';
   document.getElementById('pm-empid').textContent = identity.empId || '-';
   document.getElementById('pm-nickname').value = S.user.nickname || S.user.name || '';
-  _selAvatar = S.user.avatar;
-  _pmIsChallenge = !!getMyReg();
+  _selAvatar = normalizeAvatar(S.user.avatar);
   const validTags = new Set(activeTags().flatMap(c => c.tags));
   _selTags = (S.user.tags || []).filter(t => validTags.has(t));
-  const avatarList = _pmIsChallenge ? RUN_AVATARS : AVATARS;
-  document.getElementById('pm-avatar-grid').innerHTML = avatarList.map(a =>
+  document.getElementById('pm-avatar-grid').innerHTML = AVATARS.map(a =>
     `<button type="button" class="avatar-opt${a===_selAvatar?' selected':''}" data-av="${a}" onclick="pickAvatar('${a}')">${avHTML(a)}</button>`
   ).join('');
-  // 아바타·태그 섹션 타이틀 변경
   const avTitle = document.querySelector('#pm-section-avatar').previousElementSibling?.querySelector('.pm-section-title');
-  if (avTitle) avTitle.innerHTML = _pmIsChallenge ? '챌린지 아바타 선택' : '아바타 선택';
+  if (avTitle) avTitle.innerHTML = '아바타 선택';
   const tagTitle = document.querySelector('#pm-section-tag').previousElementSibling?.querySelector('.pm-section-title');
-  if (tagTitle) tagTitle.innerHTML = _pmIsChallenge
-    ? '🏅 러닝 태그 <span class="pm-sel-count" id="pm-sel-count"></span>'
-    : '나의 태그 <span class="pm-sel-count" id="pm-sel-count"></span>';
+  if (tagTitle) tagTitle.innerHTML = '나의 태그 <span class="pm-sel-count" id="pm-sel-count"></span>';
   // 섹션 기본 펼침
   document.getElementById('pm-section-avatar').classList.remove('collapsed');
   document.getElementById('pm-section-tag').classList.remove('collapsed');
@@ -6074,7 +6091,7 @@ function saveProfile() {
   const nickname = document.getElementById('pm-nickname').value.trim();
   if (!nickname) { haptic('error'); showToast('닉네임을 입력해주세요'); return; }
   S.user.nickname = nickname;
-  S.user.avatar   = _selAvatar;
+  S.user.avatar   = normalizeAvatar(_selAvatar);
   S.user.tags     = [..._selTags];
   save();
   renderHeader();
@@ -6204,7 +6221,7 @@ function resetToLoggedOutState() {
   _feedFilter = 'all';
 
   S.deviceId = null;
-  S.user = { name:'', nickname:'', avatar:'🏃', empId:'', dept:'', points:0, totalPoints:0, streak:0, stickersReceived:0, registrationId:null, tags:[] };
+  S.user = { name:'', nickname:'', avatar:AVATARS[0], empId:'', dept:'', points:0, totalPoints:0, streak:0, stickersReceived:0, registrationId:null, tags:[] };
   _dayNotes = {};
   S.workouts = [];
   S.posts = JSON.parse(JSON.stringify(MOCK_POSTS_SEED));
@@ -6922,7 +6939,7 @@ async function fetchCommunityPosts() {
         commentMap[pid].push({
           id: c.id,
           name: c.userName || '익명',
-          avatar: '🏃',
+          avatar: AVATARS[0],
           lv: 1,
           body: c.body || '',
           time: c.ts ? new Date(Number(c.ts)).toLocaleDateString('ko-KR') : '',
@@ -6948,7 +6965,7 @@ async function fetchCommunityPosts() {
             id: Number(p.id) || p.id,
             userId: 1,
             name: p.userName || '익명',
-            avatar: '🏃',
+            avatar: AVATARS[0],
             lv: 1,
             body: p.body || '',
             exTag: p.exTag || null,
@@ -8627,7 +8644,7 @@ function submitChReg(e) {
   showToast('🎉 챌린지 신청 완료! 신청번호: ' + id);
   renderChallenge();
   setTimeout(() => {
-    showSnackbar('🏃 챌린지 전용 아바타와 태그가 생성되었어요. 프로필을 변경해보세요.', '프로필 설정', () => openProfileModal(false));
+    showSnackbar('프로필에서 챌린지 관련 태그도 함께 선택할 수 있어요.', '프로필 설정', () => openProfileModal(false));
   }, 2600);
 }
 
@@ -8814,7 +8831,7 @@ function loadSheetsUserData(data) {
   S.user = {
     ...S.user,
     name: u.name || '',
-    avatar: u.avatar || '🏃',
+    avatar: normalizeAvatar(u.avatar),
     empId: u.empId || ACTIVE_EMPID,
     dept: u.dept || '',
     points: Number(u.points) || 0,
@@ -8834,7 +8851,7 @@ function loadSheetsUserData(data) {
   }));
   const myPosts = (data.posts || []).map(p => ({
     id: Number(p.id), userId: 0,
-    name: p.userName, avatar: S.user.avatar || '🏃',
+    name: p.userName, avatar: normalizeAvatar(S.user.avatar),
     lv: 1, body: p.body, exTag: p.exTag || null,
     userTags: (p.userTags || '').split(',').filter(Boolean),
     time: '이전', stickers: { cheer:0, love:0, congrats:0, cool:0, together:0 },
