@@ -600,6 +600,7 @@
     .level-title-row { display: flex; flex-direction: row; align-items: center; gap: 8px; }
     .level-name { font-size: 18px; font-weight: 900; color: #0F172A; letter-spacing: -0.35px; }
     .level-num { font-size: 11px; color: var(--primary); font-weight: 800; }
+    .level-msg { font-size: 10px; color: #94A3B8; font-weight: 500; }
     .level-note {
       margin-top: 5px;
       font-size: 10px; font-weight: 600; line-height: 1.35;
@@ -686,7 +687,7 @@
     .level-share-btn:disabled { cursor: default; opacity: 0.7; }
     .level-share-label {
       display: inline-flex; align-items: center;
-      font-size: 12px; font-weight: 800; letter-spacing: -0.1px;
+      font-size: 12px; font-weight: 400; letter-spacing: -0.1px;
     }
     .level-share-arrow { display: none; }
     .level-share-btn svg { flex-shrink: 0; }
@@ -2321,6 +2322,7 @@
             <div class="level-title-row">
               <span class="level-name" id="lv-name">새싹</span>
               <span class="level-num" id="lv-num">Level 1</span>
+              <span class="level-msg" id="lv-msg"></span>
             </div>
           </div>
         </div>
@@ -3123,7 +3125,7 @@ const PROFILE_TAGS = [
 ];
 
 const LEVELS = [
-  { lv:1, name:'새싹',   min:0,    max:199,  color:'#22C55E',
+  { lv:1, name:'새싹',   msg:'첫 발걸음!',    min:0,    max:199,  color:'#22C55E',
     icon:`<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" style="vertical-align:middle">
       <!-- 흙 -->
       <ellipse cx="20" cy="32.5" rx="9" ry="2.5" fill="#92400E" opacity="0.22"/>
@@ -3151,7 +3153,7 @@ const LEVELS = [
         <animate attributeName="r" values="0;3" dur="0.4s" begin="0.8s" fill="freeze" calcMode="spline" keyTimes="0;1" keySplines="0.34,1.4,0.64,1"/>
       </circle>
     </svg>` },
-  { lv:2, name:'햇살',   min:200,  max:499,  color:'#84CC16',
+  { lv:2, name:'햇살',   msg:'잘 하고 있어요!', min:200,  max:499,  color:'#84CC16',
     icon:`<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" width="0.62em" height="0.62em" style="vertical-align:middle">
       <g><animateTransform attributeName="transform" type="rotate" values="0 20 20;360 20 20" dur="10s" repeatCount="indefinite"/>
         <ellipse cx="20" cy="5.5" rx="2.2" ry="5" fill="#FDE68A"/>
@@ -3167,7 +3169,7 @@ const LEVELS = [
       <circle cx="20" cy="20" r="7.5" fill="#FB923C"/>
       <circle cx="20" cy="20" r="5.5" fill="#FDBA74"/>
     </svg>` },
-  { lv:3, name:'활동가', min:500,  max:999,  color:'#EC4899',
+  { lv:3, name:'활동가', msg:'꾸준하네요!',    min:500,  max:999,  color:'#EC4899',
     icon:`<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" width="0.9em" height="0.9em" style="vertical-align:middle">
       <path d="M20 33C20 33 6 24 6 15C6 10.6 9.6 7 14 7C16.5 7 18.7 8.2 20 10C21.3 8.2 23.5 7 26 7C30.4 7 34 10.6 34 15C34 24 20 33 20 33Z" fill="#EC4899">
         <animate attributeName="d" values="M20 33C20 33 6 24 6 15C6 10.6 9.6 7 14 7C16.5 7 18.7 8.2 20 10C21.3 8.2 23.5 7 26 7C30.4 7 34 10.6 34 15C34 24 20 33 20 33Z;M20 31C20 31 6 22.5 6 14C6 9.6 9.6 6 14 6C16.5 6 18.7 7.2 20 9C21.3 7.2 23.5 6 26 6C30.4 6 34 9.6 34 14C34 22.5 20 31 20 31Z;M20 33C20 33 6 24 6 15C6 10.6 9.6 7 14 7C16.5 7 18.7 8.2 20 10C21.3 8.2 23.5 7 26 7C30.4 7 34 10.6 34 15C34 24 20 33 20 33Z" dur="1.6s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.4,0,0.6,1;0.4,0,0.6,1"/>
@@ -3175,7 +3177,7 @@ const LEVELS = [
       <path d="M20 29C20 29 9 21.5 9 15C9 11.7 11.7 9 15 9C17 9 18.8 10 20 11.5C21.2 10 23 9 25 9C28.3 9 31 11.7 31 15C31 21.5 20 29 20 29Z" fill="#F472B6" opacity="0.6"/>
       <path d="M14 12C12.3 12 11 13.3 11 15" stroke="#FBCFE8" stroke-width="1.8" stroke-linecap="round" opacity="0.8"/>
     </svg>` },
-  { lv:4, name:'도전자', min:1000, max:1999, color:'#F97316',
+  { lv:4, name:'도전자', msg:'멈추지 마요!',   min:1000, max:1999, color:'#F97316',
     icon:`<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" style="vertical-align:middle">
       <path d="M20 7C17 12 10 17 10 23C10 29.8 14.5 34 20 34C25.5 34 30 29.8 30 23C30 17 23 12 20 7Z" fill="#F97316"/>
       <path d="M20 14C18 17.5 14 20 14 24.5C14 28.5 16.7 32 20 32C23.3 32 26 28.5 26 24.5C26 20 22 17.5 20 14Z" fill="#FB923C">
@@ -3185,7 +3187,7 @@ const LEVELS = [
         <animateTransform attributeName="transform" type="translate" values="0,0;0,-2;0,1;0,0" dur="1.3s" repeatCount="indefinite"/>
       </path>
     </svg>` },
-  { lv:5, name:'챔피언', min:2000, max:3999, color:'#3B82F6',
+  { lv:5, name:'챔피언', msg:'대단해요!',      min:2000, max:3999, color:'#3B82F6',
     icon:`<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" style="vertical-align:middle">
       <rect x="11" y="32" width="18" height="3.5" rx="1.75" fill="#1D4ED8"/>
       <path d="M17.5 28.5H22.5V32H17.5Z" fill="#2563EB"/>
@@ -3195,7 +3197,7 @@ const LEVELS = [
       <path d="M29.5 12H32.5C34.4 12 36 13.6 36 15.5C36 17.4 34.4 19 32.5 19H29.5" stroke="#2563EB" stroke-width="2.5" fill="none" stroke-linecap="round"/>
       <path d="M20 12L21.5 16.5H26.5L22.5 19.3L24 23.8L20 21L16 23.8L17.5 19.3L13.5 16.5H18.5Z" fill="#FCD34D"/>
     </svg>` },
-  { lv:6, name:'레전드', min:4000, max:Infinity, color:'#F59E0B',
+  { lv:6, name:'레전드', msg:'최고예요!',      min:4000, max:Infinity, color:'#F59E0B',
     icon:`<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" style="vertical-align:middle">
       <path d="M5 27L8 14L14.5 22L20 8L25.5 22L32 14L35 27Z" fill="#F59E0B"/>
       <rect x="5" y="27" width="30" height="5" rx="2.5" fill="#D97706"/>
@@ -3586,6 +3588,7 @@ const ACHIEVEMENTS_DATA = [
   { id:'a6', name:'포인트 왕',     desc:'총 1000 포인트 달성',          goal:1000, key:'points',            img:'images/badge6.png', color:'#FFF3CD' },
   { id:'a7', name:'레전드',        desc:'레벨 6에 도달했어요',          goal:6,    key:'level',             img:'images/badge7.png', color:'#C5CAE9' },
   { id:'a8', name:'커뮤니티 스타', desc:'응원 스티커 50개 받기',        goal:50,   key:'stickersReceived',  img:'images/badge8.png', color:'#FCE4EC' },
+  { id:'a9', name:'공유 스타',     desc:'레벨 카드를 3번 공유했어요',   goal:3,    key:'levelCardShares',   img:'images/badge_run.png', color:'#E0F2FE' },
 ];
 
 const MOCK_USERS = [
@@ -3708,7 +3711,7 @@ const WEEK_DAYS = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
 ════════════════════════════════════════ */
 let S = {
   deviceId: null,
-  user: { name:'', avatar:AVATARS[0], points:0, totalPoints:0, streak:0, stickersReceived:0, registrationId:null, tags:[] },
+  user: { name:'', avatar:AVATARS[0], points:0, totalPoints:0, streak:0, stickersReceived:0, levelCardShares:0, registrationId:null, tags:[] },
   workouts: [],
   posts: JSON.parse(JSON.stringify(MOCK_POSTS_SEED)),
   redeemedRewards: [],
@@ -4138,7 +4141,6 @@ async function shareLevelCard() {
               <span style="font-size:15px;font-weight:900;color:#1E1B4B;letter-spacing:-0.3px">${lv.name}</span>
               <span style="font-size:11px;font-weight:800;color:#4F46E5">Level ${lv.lv}</span>
             </div>
-            <div style="font-size:10px;color:#64748B;margin-top:3px;font-weight:600">오늘의 기록이 다음 레벨로 이어집니다</div>
           </div>
         </div>
         <div style="display:inline-flex;align-items:center;gap:4px;padding:7px 10px;border-radius:999px;background:#EEF2FF;border:1px solid rgba(79,70,229,0.12);color:#4F46E5;white-space:nowrap">
@@ -4148,10 +4150,7 @@ async function shareLevelCard() {
         </div>
       </div>
 
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px;margin-bottom:7px">
-        <span style="font-size:9px;font-weight:700;color:#64748B">현재 진행률</span>
-        <span style="display:inline-flex;align-items:center;justify-content:center;min-width:44px;height:22px;padding:0 9px;border-radius:999px;background:#EEF2FF;color:#4F46E5;font-size:10px;font-weight:800">${pct}%</span>
-      </div>
+      <div style="margin-top:12px;margin-bottom:7px"></div>
       <div style="width:100%;height:12px;background:linear-gradient(180deg,#E6ECF8 0%,#EFF4FB 100%);border-radius:999px;overflow:visible;position:relative;box-shadow:inset 0 1px 2px rgba(15,23,42,0.06)">
         <div style="width:${pct}%;height:100%;background:linear-gradient(90deg,#4F46E5 0%,#3B82F6 56%,#22C1C3 100%);border-radius:999px;box-shadow:0 4px 10px rgba(79,70,229,0.16);position:relative;overflow:hidden">
           <div style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(255,255,255,0) 0%,rgba(255,255,255,0.35) 52%,rgba(255,255,255,0) 100%);opacity:0.55"></div>
@@ -4189,9 +4188,14 @@ async function shareLevelCard() {
     canvas.toBlob(async (blob) => {
       restoreBtn();
       const file = new File([blob], 'hi-health-level.png', { type: 'image/png' });
+      const prevShareEarned = earnedAchs().map(a => a.id);
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         try {
           await navigator.share({ files: [file], title: 'HI Health', text: `${name}님의 운동기록을 함께 응원해주세요 :)\n나도 운동기록하기 👉 https://hi-fertility-health.com` });
+          S.user.levelCardShares = (S.user.levelCardShares || 0) + 1;
+          save();
+          const newBadge = earnedAchs().find(a => !prevShareEarned.includes(a.id));
+          if (newBadge) setTimeout(() => { haptic('success'); showCelebration('badge', newBadge); }, 500);
         } catch(e) {
           if (e.name !== 'AbortError') showToast('공유에 실패했어요');
         }
@@ -4203,6 +4207,10 @@ async function shareLevelCard() {
         document.body.removeChild(a);
         setTimeout(() => URL.revokeObjectURL(url), 1000);
         showToast('이미지로 저장됐어요');
+        S.user.levelCardShares = (S.user.levelCardShares || 0) + 1;
+        save();
+        const newBadge = earnedAchs().find(a => !prevShareEarned.includes(a.id));
+        if (newBadge) setTimeout(() => { haptic('success'); showCelebration('badge', newBadge); }, 500);
       }
     }, 'image/png');
   } catch(e) {
@@ -4373,6 +4381,7 @@ function earnedAchs() {
               : a.key === 'points'        ? (S.user.totalPoints || S.user.points)
               : a.key === 'level'         ? lv
               : a.key === 'stickersReceived' ? S.user.stickersReceived
+              : a.key === 'levelCardShares' ? (S.user.levelCardShares || 0)
               : 0;
     return val >= a.goal;
   });
@@ -4548,6 +4557,7 @@ function renderHome() {
   document.getElementById('lv-icon').innerHTML = lv.icon;
   document.getElementById('lv-name').textContent = lv.name;
   document.getElementById('lv-num').textContent  = 'Level ' + lv.lv;
+  document.getElementById('lv-msg').textContent  = lv.msg || '';
   document.getElementById('streak-num').textContent = S.user.streak;
 
   // Level bar — 진입할 때마다 0→목표치 애니메이션
