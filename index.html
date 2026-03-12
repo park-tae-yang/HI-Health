@@ -221,7 +221,45 @@
     }
     .header-avatar:hover { transform: scale(1.07); }
     .app-header:not(.solid) .header-avatar { border-color: rgba(255,255,255,0.7); background: rgba(255,255,255,0.12); }
-    .av-img { width:100%; height:100%; object-fit:contain; border-radius:50%; display:block; background:#fff; }
+    .header-avatar,
+    .podium-avatar,
+    .lb-avatar,
+    .compose-avatar,
+    .post-av,
+    .cm-av,
+    .cm-compose-av,
+    .ch-reg-icon,
+    .avatar-opt {
+      display:flex; align-items:center; justify-content:center;
+    }
+    .header-avatar,
+    .podium-avatar,
+    .lb-avatar,
+    .compose-avatar,
+    .post-av { --avatar-pad: 0px; }
+    .cm-av,
+    .cm-compose-av,
+    .ch-reg-icon { --avatar-pad: 0px; }
+    .av-wrap {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--avatar-pad, 0px);
+      border-radius: inherit;
+      background: #fff;
+      overflow: hidden;
+    }
+    .av-img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      object-position: center;
+      border-radius: inherit;
+      display: block;
+      background: transparent;
+    }
     .header-cart-btn {
       position: relative; background: none;
       border: 1.5px solid var(--primary); border-radius: 50%;
@@ -850,6 +888,38 @@
       padding: 20px; cursor: pointer;
     }
     .photo-lightbox img { max-width:100%; max-height:80vh; border-radius:12px; }
+    .avatar-preview-overlay {
+      position: fixed; inset: 0; z-index: 650;
+      background: rgba(2, 6, 23, 0.88);
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px;
+    }
+    .avatar-preview-sheet {
+      position: relative;
+      width: min(320px, 100%);
+      display: flex; flex-direction: column; align-items: center;
+      gap: 14px;
+    }
+    .avatar-preview-close {
+      position: absolute; top: -4px; right: 0;
+      width: 34px; height: 34px; border-radius: 50%;
+      border: none; background: rgba(255,255,255,0.18); color: #fff;
+      font-size: 18px; line-height: 1; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    }
+    .avatar-preview-frame {
+      width: min(72vw, 280px); aspect-ratio: 1;
+      border-radius: 50%; overflow: hidden;
+      background: #fff; padding: 18px;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.28);
+    }
+    .avatar-preview-label {
+      font-size: 13px; font-weight: 700; color: #fff;
+      text-align: center;
+    }
+    .avatar-preview-select { min-width: 180px; }
     #photo-input { display:none; }
     #photo-preview-img { display:none; }
     #photo-del-wrap { display:none; }
@@ -1154,27 +1224,82 @@
 
     .hero-name { font-size:18px; font-weight:700; margin-bottom:12px; display:flex; align-items:center; gap:8px; }
     .profile-edit-btn { background:rgba(255,255,255,0.22); border:none; cursor:pointer; font-size:12px; padding:3px 10px; border-radius:20px; color:white; flex-shrink:0; }
-    .profile-modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:200; display:flex; align-items:center; justify-content:center; padding:20px; }
-    .profile-modal { background:var(--card); border-radius:var(--radius); padding:28px 24px; width:100%; max-width:360px; max-height:88vh; overflow-y:auto; }
-    .pm-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:6px; }
-    .pm-close-btn { background:none; border:none; font-size:20px; cursor:pointer; color:var(--text-secondary); padding:0 0 0 8px; line-height:1; flex-shrink:0; }
-    .pm-close-btn:hover { color:var(--text); }
-    .pm-header-right { display:flex; align-items:center; gap:8px; }
-    .pm-logout-btn, .pm-delete-btn {
-      display:block; width:100%; margin-top:10px; font-family:inherit; font-size:13px; cursor:pointer;
-      padding:10px 0; text-align:center; border-radius:12px; border:1.5px solid var(--border);
-      background:#fff; transition:all 0.2s;
+    .profile-modal-overlay {
+      position:fixed; inset:0; z-index:200;
+      display:flex; align-items:center; justify-content:center; padding:18px;
+      background:rgba(15,23,42,0.56);
+      -webkit-backdrop-filter:blur(6px);
+      backdrop-filter:blur(6px);
     }
-    .pm-logout-btn { color:var(--text-secondary); }
-    .pm-logout-btn:hover { color:var(--red); border-color:#FCA5A5; background:#FFF5F5; }
-    .pm-delete-btn { color:var(--red); margin-top:8px; font-weight:700; border-color:#FECACA; background:#FFF5F5; }
-    .pm-delete-btn:hover { color:#B91C1C; border-color:#F87171; background:#FEE2E2; }
-    .pm-delete-btn:disabled { opacity:0.55; cursor:default; }
-    .pm-title { font-size:18px; font-weight:700; text-align:center; flex:1; }
-    .pm-sub { font-size:13px; color:var(--text-secondary); text-align:center; margin-bottom:20px; }
-    /* ── Profile Tags ── */
-    .pm-tags-section { margin:16px 0 20px; }
-    .pm-tags-label { font-size:13px; font-weight:700; margin-bottom:12px; }
+    .profile-modal {
+      width:100%; max-width:380px; max-height:min(88vh,760px);
+      overflow-y:auto; padding:22px 18px 18px;
+      border-radius:24px;
+      background:linear-gradient(180deg, #fff 0%, #fbfcff 100%);
+      box-shadow:0 24px 64px rgba(15,23,42,0.18);
+    }
+    .pm-header { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:14px; }
+    .pm-close-btn {
+      width:34px; height:34px; border:none; border-radius:50%;
+      background:#f8fafc; color:var(--text-secondary);
+      font-size:18px; cursor:pointer; line-height:1; flex-shrink:0;
+      display:flex; align-items:center; justify-content:center;
+      transition:all 0.2s;
+    }
+    .pm-close-btn:hover { color:var(--text); background:#eef2f7; }
+    .pm-title { font-size:18px; font-weight:800; color:#0F172A; letter-spacing:-0.25px; }
+    .pm-sub { font-size:12px; color:#64748B; line-height:1.5; margin-top:4px; }
+    .pm-summary-card {
+      display:flex; align-items:center; gap:14px;
+      margin-bottom:12px; padding:14px;
+      border:1px solid rgba(148,163,184,0.18);
+      border-radius:18px;
+      background:linear-gradient(135deg, #f8fbff 0%, #eef2ff 100%);
+    }
+    .pm-summary-avatar {
+      width:58px; height:58px; flex-shrink:0;
+      border-radius:50%; overflow:hidden;
+      display:flex; align-items:center; justify-content:center;
+      background:#fff; border:2px solid rgba(79,70,229,0.14);
+      box-shadow:0 6px 16px rgba(79,70,229,0.10);
+    }
+    .pm-summary-main { min-width:0; flex:1; }
+    .pm-summary-label {
+      font-size:10px; font-weight:700; color:#6366F1;
+      letter-spacing:0.06em; text-transform:uppercase; margin-bottom:3px;
+    }
+    .pm-summary-name {
+      font-size:16px; font-weight:800; color:#0F172A;
+      line-height:1.2; word-break:break-all;
+    }
+    .pm-summary-meta { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+    .pm-meta-chip {
+      display:inline-flex; align-items:center; gap:6px;
+      padding:6px 10px; border-radius:999px;
+      background:#fff; border:1px solid rgba(148,163,184,0.18);
+      font-size:11px; color:#475569;
+    }
+    .pm-meta-chip strong { font-size:10px; font-weight:700; color:#94A3B8; }
+    .pm-field-card,
+    .pm-panel,
+    .pm-challenge-box {
+      padding:14px;
+      border:1px solid var(--border);
+      border-radius:18px;
+      background:#fff;
+      box-shadow:0 6px 18px rgba(15,23,42,0.04);
+    }
+    .pm-field-card,
+    .pm-panel { margin-bottom:12px; }
+    .pm-field-head,
+    .pm-panel-head {
+      display:flex; align-items:flex-start; justify-content:space-between; gap:10px;
+      margin-bottom:10px;
+    }
+    .pm-field-label,
+    .pm-panel-title { font-size:13px; font-weight:700; color:#0F172A; }
+    .pm-field-help,
+    .pm-panel-sub { font-size:11px; color:#64748B; line-height:1.45; margin-top:3px; }
     .pm-tag-category { margin-bottom:10px; }
     .pm-tag-cat-title { font-size:11px; font-weight:700; color:var(--text-secondary); letter-spacing:0.5px; margin-bottom:5px; }
     .pm-tag-chips { display:flex; flex-wrap:wrap; gap:5px; }
@@ -1184,30 +1309,61 @@
       white-space:nowrap;
     }
     .pm-tag-chip.selected { border-color:var(--purple); background:var(--purple-light); color:var(--purple); font-weight:600; }
-    .pm-sel-count { font-size:11px; color:var(--text-secondary); margin-top:8px; }
-    .pm-challenge-box { margin:0 0 16px; padding:12px 14px; border-radius:12px; background:var(--purple-light); border:1px solid rgba(109,40,217,0.15); }
-    .pm-challenge-badge { display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:700; color:var(--purple); background:#fff; border-radius:20px; padding:3px 10px; margin-bottom:8px; }
-    .pm-challenge-info { font-size:12px; color:var(--text); line-height:1.6; }
-    .pm-challenge-phase { font-size:11px; font-weight:600; color:var(--purple); opacity:0.7; margin-top:4px; }
+    .pm-sel-count {
+      display:inline-flex; align-items:center; justify-content:center;
+      min-width:52px; height:24px; padding:0 9px;
+      border-radius:999px; background:var(--primary-light); color:var(--primary);
+      font-size:11px; font-weight:700; white-space:nowrap;
+    }
+    .pm-sel-count:empty { display:none; }
+    .pm-challenge-box {
+      margin:0 0 12px;
+      background:linear-gradient(135deg, #f8f7ff 0%, #f3f0ff 100%);
+      border-color:rgba(109,40,217,0.16);
+    }
+    .pm-challenge-badge {
+      display:inline-flex; align-items:center; gap:5px;
+      font-size:11px; font-weight:700; color:var(--purple);
+      background:#fff; border-radius:20px; padding:3px 10px; margin-bottom:8px;
+    }
+    .pm-challenge-info { font-size:12px; color:#334155; line-height:1.55; }
+    .pm-challenge-phase { font-size:11px; font-weight:700; color:var(--primary); margin-top:8px; }
     /* Hero card tag display */
     .hero-tags { display:flex; flex-wrap:nowrap; gap:5px; margin-bottom:14px; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
     .hero-tags::-webkit-scrollbar { display:none; }
     .hero-tag { font-size:11px; padding:4px 12px; border-radius:20px; background:rgba(255,255,255,0.92); color:#4F46E5; font-weight:600; flex-shrink:0; white-space:nowrap; letter-spacing:0.02em; box-shadow:0 1px 6px rgba(0,0,0,0.12); }
-    .avatar-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:8px; margin-bottom:20px; }
-    .avatar-opt { width:100%; aspect-ratio:1; border-radius:50%; background:#fff; border:2px solid var(--border); display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all 0.2s; overflow:hidden; padding:3px; }
-    .avatar-opt.selected { border-color:var(--primary); background:#fff; transform:scale(1.1); }
-    .avatar-opt .av-img { width:100%; height:100%; object-fit:contain; }
+    .avatar-grid { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:10px; margin-bottom:10px; }
+    .avatar-opt {
+      width:100%; aspect-ratio:1; padding:0; --avatar-pad:0px;
+      border-radius:50%; overflow:hidden; cursor:pointer;
+      border:1.5px solid #E2E8F0; background:#F8FAFC;
+      transition:border-color 0.2s, box-shadow 0.2s, background 0.2s;
+    }
+    .avatar-opt.selected {
+      border-color:var(--primary); background:#fff; transform:none;
+      box-shadow:0 0 0 3px rgba(79,70,229,0.12);
+    }
+    .pm-avatar-panel { padding:0; border:none; background:transparent; }
+    .pm-avatar-hint { margin:0; font-size:11px; color:#64748B; line-height:1.5; text-align:left; }
     .pm-hidden { display:none !important; }
-    .pm-divider { height:1px; background:var(--border); margin:20px 0; }
-    /* 실명 표시 */
-    .pm-realname-box { background:var(--bg); border-radius:8px; padding:10px 14px; margin-bottom:14px; display:flex; align-items:center; gap:8px; }
-    .pm-realname-label { font-size:11px; font-weight:700; color:var(--text-secondary); }
-    .pm-realname-value { font-size:15px; font-weight:700; }
-    /* 섹션 헤더 (접기/펼치기) */
-    .pm-section-hd { display:flex; align-items:center; justify-content:space-between; margin:16px 0 8px; }
-    .pm-section-title { font-size:13px; font-weight:700; }
-    .pm-section-toggle { background:none; border:1px solid var(--border); border-radius:20px; font-size:11px; padding:3px 10px; cursor:pointer; color:var(--text-secondary); transition:all 0.2s; }
-    .pm-section-toggle:hover { background:var(--border); }
+    .pm-actions { display:flex; flex-direction:column; gap:8px; margin-top:14px; }
+    .pm-logout-btn,
+    .pm-delete-btn {
+      display:block; width:100%; font-family:inherit; font-size:13px; cursor:pointer;
+      transition:all 0.2s;
+    }
+    .pm-logout-btn {
+      padding:12px 14px; text-align:center; border-radius:14px;
+      border:1.5px solid var(--border); background:#fff;
+      color:#475569; font-weight:700;
+    }
+    .pm-logout-btn:hover { color:#0F172A; border-color:#CBD5E1; background:#F8FAFC; }
+    .pm-delete-btn {
+      margin-top:8px; padding:2px 0 0;
+      border:none; background:none; color:#EF4444; font-weight:700;
+    }
+    .pm-delete-btn:hover { color:#B91C1C; }
+    .pm-delete-btn:disabled { opacity:0.55; cursor:default; }
     .pm-section-body { overflow:hidden; transition:all 0.2s; }
     .pm-section-body.collapsed { display:none; }
     .btn-danger { background:#FEE2E2; color:#DC2626; border:none; }
@@ -1358,7 +1514,10 @@
       border-top-color: rgba(139,92,246,0.2); border-bottom: 0;
     }
     .podium-bubble-lv { font-size: 14px; line-height: 1; }
-    .podium-avatar { width:44px; height:44px; border-radius:50%; overflow:hidden; background:var(--bg); margin:0 auto; }
+    .podium-avatar { width:56px; height:56px; border-radius:50%; overflow:hidden; background:var(--bg); margin:0 auto; }
+    .podium-item.podium-first .podium-avatar { width:68px; height:68px; }
+    .podium-item.podium-second .podium-avatar,
+    .podium-item.podium-third .podium-avatar { width:58px; height:58px; }
     .podium-name { font-size: 11px; font-weight: 600; text-align: center; max-width: 70px; }
     .podium-pts { font-size: 10px; color: var(--warning); font-weight: 700; }
     .podium-stand {
@@ -1848,7 +2007,6 @@
     .ch-reg-badge { display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:700; color:#b45309; background:#fff; border-radius:20px; padding:3px 10px; margin-bottom:10px; border:1px solid rgba(245,158,11,0.3); }
     .ch-reg-person { display:flex; align-items:center; gap:8px; margin-bottom:10px; }
     .ch-reg-icon { width:32px; height:32px; border-radius:50%; overflow:hidden; flex-shrink:0; border:1.5px solid #fcd34d; }
-    .ch-reg-icon .av-img { width:100%; height:100%; object-fit:cover; }
     .ch-reg-name { font-size:13px; font-weight:700; color:#78350f; }
     .ch-reg-sub { font-size:11px; color:#b45309; margin-top:1px; }
     .ch-reg-rows { display:grid; grid-template-columns:1fr 1fr; gap:0; border:1px solid rgba(245,158,11,0.15); border-radius:8px; overflow:hidden; background:#fff; margin-bottom:10px; }
@@ -2915,20 +3073,20 @@ const AVATARS = [
   'images/avatars/av2.png',
   'images/avatars/av3.png',
   'images/avatars/av4.png',
-  'images/avatars/av5.png',
   'images/avatars/av6.png',
+  'images/avatars/av5.png',
   'images/avatars/av7.png',
   'images/avatars/av8.png',
   'images/avatars/av9.png',
   'images/avatars/av10.png',
-  'images/avatars/av11.png',
-  'images/avatars/av12.png',
+  'images/avatars/av15.png',
   'images/avatars/av13.png',
   'images/avatars/av14.png',
-  'images/avatars/av15.png',
+  'images/avatars/av12.png',
+  'images/avatars/av11.png',
   'images/avatars/av16.png',
-  'images/avatars/av17.png',
   'images/avatars/av18.png',
+  'images/avatars/av17.png',
   'images/avatars/av19.png',
   'images/avatars/av20.png',
 ];
@@ -2946,7 +3104,7 @@ function normalizeAvatar(src) {
 function avHTML(src) {
   const fallback = AVATARS[0];
   const s = normalizeAvatar(src);
-  return `<img src="${s}" class="av-img" onerror="if(this.dataset.err)return;this.dataset.err=1;this.src='${fallback}'">`;
+  return `<span class="av-wrap"><img src="${s}" class="av-img" onerror="if(this.dataset.err)return;this.dataset.err=1;this.src='${fallback}'"></span>`;
 }
 
 const PROFILE_TAGS = [
@@ -5954,6 +6112,69 @@ function viewPhoto(id) {
   document.body.appendChild(box);
 }
 
+function closeAvatarPreview() {
+  document.getElementById('avatar-preview-overlay')?.remove();
+}
+
+function openAvatarPreview(src, label = '아바타 보기', canSelect = false) {
+  const avatar = normalizeAvatar(src);
+  closeAvatarPreview();
+
+  const box = document.createElement('div');
+  box.id = 'avatar-preview-overlay';
+  box.className = 'avatar-preview-overlay';
+  box.onclick = () => closeAvatarPreview();
+
+  const sheet = document.createElement('div');
+  sheet.className = 'avatar-preview-sheet';
+  sheet.onclick = e => e.stopPropagation();
+
+  const closeBtn = document.createElement('button');
+  closeBtn.type = 'button';
+  closeBtn.className = 'avatar-preview-close';
+  closeBtn.textContent = '✕';
+  closeBtn.onclick = e => {
+    e.stopPropagation();
+    closeAvatarPreview();
+  };
+
+  const frame = document.createElement('div');
+  frame.className = 'avatar-preview-frame';
+  frame.innerHTML = avHTML(avatar);
+
+  sheet.appendChild(closeBtn);
+  sheet.appendChild(frame);
+  if (label) {
+    const caption = document.createElement('div');
+    caption.className = 'avatar-preview-label';
+    caption.textContent = label;
+    sheet.appendChild(caption);
+  }
+  if (canSelect) {
+    const selectBtn = document.createElement('button');
+    selectBtn.type = 'button';
+    selectBtn.className = 'btn btn-primary avatar-preview-select';
+    if (_selAvatar === avatar) {
+      selectBtn.textContent = '선택됨';
+      selectBtn.disabled = true;
+    } else {
+      selectBtn.textContent = '이 아바타 선택';
+      selectBtn.onclick = e => {
+        e.stopPropagation();
+        pickAvatar(avatar);
+        closeAvatarPreview();
+      };
+    }
+    sheet.appendChild(selectBtn);
+  }
+  box.appendChild(sheet);
+  document.body.appendChild(box);
+}
+
+function openAvatarPickerPreview(src) {
+  openAvatarPreview(src, '', true);
+}
+
 let _selAvatar = AVATARS[0];
 let _selTags   = [];
 function activeTags() { return PROFILE_TAGS; }
@@ -5975,6 +6196,17 @@ function getProfileIdentity() {
   return { empId: loginEmpId, name: loginName };
 }
 
+function renderProfileModalSummary() {
+  const previewAvatar = document.getElementById('pm-avatar-preview');
+  if (previewAvatar) previewAvatar.innerHTML = avHTML(_selAvatar);
+  const previewName = document.getElementById('pm-preview-name');
+  if (previewName) {
+    const inputName = String(document.getElementById('pm-nickname')?.value || '').trim();
+    const identity = getProfileIdentity();
+    previewName.textContent = inputName || S.user.nickname || identity.name || '내 프로필';
+  }
+}
+
 function openProfileModal(onboarding = false) {
   const identity = getProfileIdentity();
   if (!S.user.empId && identity.empId) S.user.empId = identity.empId;
@@ -5986,25 +6218,22 @@ function openProfileModal(onboarding = false) {
   const validTags = new Set(activeTags().flatMap(c => c.tags));
   _selTags = (S.user.tags || []).filter(t => validTags.has(t));
   document.getElementById('pm-avatar-grid').innerHTML = AVATARS.map(a =>
-    `<button type="button" class="avatar-opt${a===_selAvatar?' selected':''}" data-av="${a}" onclick="pickAvatar('${a}')">${avHTML(a)}</button>`
+    `<button type="button" class="avatar-opt${a===_selAvatar?' selected':''}" data-av="${a}" title="탭해서 크게 보기" onclick="openAvatarPickerPreview('${a}')">${avHTML(a)}</button>`
   ).join('');
-  const avTitle = document.querySelector('#pm-section-avatar').previousElementSibling?.querySelector('.pm-section-title');
-  if (avTitle) avTitle.innerHTML = '아바타 선택';
-  const tagTitle = document.querySelector('#pm-section-tag').previousElementSibling?.querySelector('.pm-section-title');
-  if (tagTitle) tagTitle.innerHTML = '나의 태그 <span class="pm-sel-count" id="pm-sel-count"></span>';
   // 섹션 기본 펼침
   document.getElementById('pm-section-avatar').classList.remove('collapsed');
   document.getElementById('pm-section-tag').classList.remove('collapsed');
+  renderProfileModalSummary();
   renderPmTags();
 
   if (onboarding) {
-    document.getElementById('pm-title').textContent = '🎉 HI Health에 오신 걸 환영해요!';
-    document.getElementById('pm-sub').textContent   = '닉네임과 아바타를 설정하고 챌린지를 시작해보세요';
+    document.getElementById('pm-title').textContent = 'HI Health 시작하기';
+    document.getElementById('pm-sub').textContent   = '닉네임과 아바타를 설정하고 바로 시작하세요';
     document.getElementById('pm-save-btn').textContent = '시작하기!';
     document.getElementById('pm-close-btn').style.display = 'none';
   } else {
-    document.getElementById('pm-title').textContent = '👤 프로필 설정';
-    document.getElementById('pm-sub').textContent   = '닉네임과 아바타를 설정해주세요';
+    document.getElementById('pm-title').textContent = '프로필 설정';
+    document.getElementById('pm-sub').textContent   = '닉네임, 아바타, 태그를 간단히 정리해보세요';
     document.getElementById('pm-save-btn').textContent = '저장하기';
     document.getElementById('pm-close-btn').style.display = '';
   }
@@ -6016,17 +6245,15 @@ function openProfileModal(onboarding = false) {
     const phase = getChPhase();
     const phaseLabel = { before:'모집 예정', registration:'신청 기간', preparing:'준비 중', pre:'프리 챌린지 진행 중', main:'본 챌린지 진행 중', ended:'챌린지 종료' }[phase] || '';
     if (isReg) {
+      chEl.style.display = '';
       chEl.innerHTML = `<div class="pm-challenge-box">
-        <div class="pm-challenge-badge">🏅 챌린지 참여중</div>
-        <div class="pm-challenge-info">HI Health 운동 챌린지에 참여하고 있어요!<br>꾸준한 운동으로 목표를 달성해보세요 💪</div>
+        <div class="pm-challenge-badge">챌린지 참여중</div>
+        <div class="pm-challenge-info">현재 챌린지에 참여하고 있습니다. 진행 단계만 확인하면 돼요.</div>
         <div class="pm-challenge-phase">현재 단계: ${phaseLabel}</div>
       </div>`;
     } else {
-      chEl.innerHTML = `<div class="pm-challenge-box" style="background:#f8f8f8;border-color:#e5e7eb">
-        <div class="pm-challenge-badge" style="color:#6b7280;background:#fff">🏃 챌린지 미참여</div>
-        <div class="pm-challenge-info" style="color:var(--text-secondary)">챌린지 탭에서 참여 신청을 할 수 있어요.</div>
-        <div class="pm-challenge-phase" style="color:var(--text-secondary)">현재 단계: ${phaseLabel}</div>
-      </div>`;
+      chEl.innerHTML = '';
+      chEl.style.display = 'none';
     }
   }
 
@@ -6082,10 +6309,12 @@ function togglePmTag(ci, ti) {
   renderPmTags();
 }
 function pickAvatar(a) {
-  _selAvatar = a;
+  const nextAvatar = normalizeAvatar(a);
+  _selAvatar = nextAvatar;
   document.querySelectorAll('.avatar-opt').forEach(el =>
-    el.classList.toggle('selected', el.dataset.av === a)
+    el.classList.toggle('selected', el.dataset.av === nextAvatar)
   );
+  renderProfileModalSummary();
 }
 function saveProfile() {
   const nickname = document.getElementById('pm-nickname').value.trim();
@@ -6561,11 +6790,12 @@ function renderLeague() {
     const standNum   = ['2','1','3'];
     const medals     = ['🥈','🥇','🥉'];
     document.getElementById('podium').innerHTML = podOrder.map((u, i) => {
-      if (!u) return `<div class="podium-item"><div class="podium-av-wrap"><div class="podium-avatar"></div></div><div class="podium-stand ${standClass[i]}">${standNum[i]}</div></div>`;
+      const sizeClass = i === 1 ? 'podium-first' : i === 0 ? 'podium-second' : 'podium-third';
+      if (!u) return `<div class="podium-item ${sizeClass}"><div class="podium-av-wrap"><div class="podium-avatar"></div></div><div class="podium-stand ${standClass[i]}">${standNum[i]}</div></div>`;
       const lv = LEVELS[Math.min(u.lv - 1, LEVELS.length - 1)];
       const tags = (u.tags || []).slice(0, 2).map(t => `<span class="profile-tag" style="font-size:9px;padding:1px 5px">${t}</span>`).join('');
       return `
-        <div class="podium-item">
+        <div class="podium-item ${sizeClass}">
           <div class="podium-av-wrap">
             <div class="podium-bubble"><span class="podium-bubble-lv">${lv.icon}</span>${tags ? `<div class="podium-bubble-tags">${tags}</div>` : ''}</div>
             <div class="podium-avatar">${avHTML(u.avatar)}</div>
@@ -6649,13 +6879,14 @@ function renderLeague() {
   const standNum   = ['2','1','3'];
   const medals     = ['🥈','🥇','🥉'];
   document.getElementById('podium').innerHTML = podOrder.map((u,i) => {
-    if (!u) return `<div class="podium-item"><div class="podium-av-wrap"><div class="podium-avatar"></div></div><div class="podium-stand ${standClass[i]}">${standNum[i]}</div></div>`;
+    const sizeClass = i === 1 ? 'podium-first' : i === 0 ? 'podium-second' : 'podium-third';
+    if (!u) return `<div class="podium-item ${sizeClass}"><div class="podium-av-wrap"><div class="podium-avatar"></div></div><div class="podium-stand ${standClass[i]}">${standNum[i]}</div></div>`;
     const lv = LEVELS[Math.min(u.lv - 1, LEVELS.length - 1)];
     const tags = (u.tags || []).slice(0, 2).map(t => `<span class="profile-tag" style="font-size:9px;padding:1px 5px">${t}</span>`).join('');
     const pts = currentTab === 'weekly' ? u.wPts : u.pts;
     const lv2 = LEVELS[Math.min(u.lv - 1, LEVELS.length - 1)];
     return `
-      <div class="podium-item">
+      <div class="podium-item ${sizeClass}">
         <div class="podium-av-wrap">
           <div class="podium-bubble"><span class="podium-bubble-lv">${lv.icon}</span>${tags ? `<div class="podium-bubble-tags">${tags}</div>` : ''}</div>
           <div class="podium-avatar">${avHTML(u.avatar)}</div>
@@ -9005,33 +9236,61 @@ init();
 <div id="profile-modal" class="profile-modal-overlay pm-hidden">
   <div class="profile-modal">
     <div class="pm-header">
-      <div class="pm-title" id="pm-title">👤 프로필 설정</div>
+      <div>
+        <div class="pm-title" id="pm-title">프로필 설정</div>
+        <div class="pm-sub" id="pm-sub">닉네임, 아바타, 태그를 간단히 정리해보세요</div>
+      </div>
       <button type="button" class="pm-close-btn" id="pm-close-btn" onclick="closeProfileModal()">✕</button>
     </div>
-    <div class="pm-sub" id="pm-sub">닉네임과 아바타를 설정해주세요</div>
-    <div class="pm-realname-box">
-      <span class="pm-realname-label">등록번호</span>
-      <span class="pm-realname-value" id="pm-empid">-</span>
-      <span class="pm-realname-label" style="margin-left:14px;">이름</span>
-      <span class="pm-realname-value" id="pm-realname">-</span>
+    <div class="pm-summary-card">
+      <div class="pm-summary-avatar" id="pm-avatar-preview"></div>
+      <div class="pm-summary-main">
+        <div class="pm-summary-label">My Profile</div>
+        <div class="pm-summary-name" id="pm-preview-name">-</div>
+        <div class="pm-summary-meta">
+          <span class="pm-meta-chip"><strong>사번</strong><span id="pm-empid">-</span></span>
+          <span class="pm-meta-chip"><strong>이름</strong><span id="pm-realname">-</span></span>
+        </div>
+      </div>
     </div>
-    <div class="form-label">닉네임 <span style="font-size:11px;color:var(--text-secondary);font-weight:400;">(커뮤니티·리그에 표시)</span></div>
-    <input type="text" class="ch-form-input" id="pm-nickname" placeholder="닉네임을 입력하세요" maxlength="15">
-    <div class="pm-section-hd">
-      <span class="pm-section-title">아바타 선택</span>
+    <div class="pm-field-card">
+      <div class="pm-field-head">
+        <div>
+          <div class="pm-field-label">닉네임</div>
+          <div class="pm-field-help">커뮤니티와 리그에 표시돼요</div>
+        </div>
+      </div>
+      <input type="text" class="ch-form-input" id="pm-nickname" placeholder="닉네임을 입력하세요" maxlength="15" oninput="renderProfileModalSummary()">
     </div>
-    <div class="pm-section-body" id="pm-section-avatar">
-      <div class="avatar-grid" id="pm-avatar-grid"></div>
+    <div class="pm-panel">
+      <div class="pm-panel-head">
+        <div>
+          <div class="pm-panel-title">아바타</div>
+          <div class="pm-panel-sub">탭하면 크게 보고 선택할 수 있어요</div>
+        </div>
+      </div>
+      <div class="pm-section-body pm-avatar-panel" id="pm-section-avatar">
+        <div class="avatar-grid" id="pm-avatar-grid"></div>
+        <div class="pm-avatar-hint">현재 선택한 아바타가 상단 프로필에 바로 반영됩니다.</div>
+      </div>
     </div>
     <div id="pm-challenge-section"></div>
-    <div class="pm-section-hd">
-      <span class="pm-section-title">나의 태그 <span class="pm-sel-count" id="pm-sel-count"></span></span>
+    <div class="pm-panel">
+      <div class="pm-panel-head">
+        <div>
+          <div class="pm-panel-title">나의 태그</div>
+          <div class="pm-panel-sub">지금 상태와 목표를 간단히 보여줄 수 있어요</div>
+        </div>
+        <span class="pm-sel-count" id="pm-sel-count"></span>
+      </div>
+      <div class="pm-section-body" id="pm-section-tag">
+        <div id="pm-tag-list"></div>
+      </div>
     </div>
-    <div class="pm-section-body" id="pm-section-tag">
-      <div id="pm-tag-list"></div>
+    <div class="pm-actions">
+      <button type="button" class="btn btn-primary btn-full" id="pm-save-btn" onclick="saveProfile()">저장하기</button>
+      <button type="button" class="pm-logout-btn" id="pm-logout-btn" onclick="appLogout()">로그아웃</button>
     </div>
-    <button type="button" class="btn btn-primary btn-full" id="pm-save-btn" onclick="saveProfile()">저장하기</button>
-    <button type="button" class="pm-logout-btn" id="pm-logout-btn" onclick="appLogout()">로그아웃</button>
     <button type="button" class="pm-delete-btn" id="pm-delete-data-btn" onclick="requestDeleteMyDeviceAndServerData()">모든 데이터 삭제 초기화</button>
   </div>
 </div>
