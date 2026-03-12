@@ -4041,8 +4041,14 @@ async function shareLevelCard() {
   const imgToPng = (img, w, h) => {
     if (!img) return '';
     const c = document.createElement('canvas');
-    c.width = w; c.height = h || w;
-    c.getContext('2d').drawImage(img, 0, 0, w, h || w);
+    const dw = w, dh = h || w;
+    c.width = dw; c.height = dh;
+    const ctx = c.getContext('2d');
+    const iw = img.naturalWidth, ih = img.naturalHeight;
+    const scale = Math.max(dw / iw, dh / ih);
+    const sw = Math.round(iw * scale), sh = Math.round(ih * scale);
+    const ox = Math.round((dw - sw) / 2), oy = Math.round((dh - sh) / 2);
+    ctx.drawImage(img, ox, oy, sw, sh);
     try { return c.toDataURL('image/png'); } catch(e) { return ''; }
   };
 
@@ -4090,7 +4096,7 @@ async function shareLevelCard() {
 
   card.innerHTML = `
     <!-- ① 히어로 섹션 -->
-    <div style="flex-shrink:0;background:linear-gradient(180deg,rgba(255,255,255,0.12) 0%,rgba(255,255,255,0) 36%),linear-gradient(135deg,#4F46E5 0%,#3B82F6 52%,#22C1C3 100%);padding:12px 18px 12px;border-radius:0 0 24px 24px;position:relative;overflow:hidden;color:#fff">
+    <div style="flex-shrink:0;background:linear-gradient(to bottom,rgba(0,0,0,0.28) 0%,rgba(0,0,0,0) 90px),linear-gradient(135deg,#3730A3 0%,#4F46E5 100%);padding:12px 18px 12px;border-radius:0 0 24px 24px;position:relative;overflow:hidden;color:#fff">
       <!-- 광택 오버레이 -->
       <div style="position:absolute;top:0;left:0;right:0;height:100%;background:linear-gradient(180deg,rgba(255,255,255,0.08) 0%,transparent 52%);pointer-events:none"></div>
       <div style="position:absolute;top:-34px;right:-22px;width:132px;height:132px;border-radius:50%;background:rgba(255,255,255,0.14);filter:blur(14px);pointer-events:none"></div>
@@ -4164,7 +4170,7 @@ async function shareLevelCard() {
     </div>
 
     <!-- ③ 하단 이미지 -->
-    <div style="flex-shrink:0;height:78px;position:relative;overflow:hidden;margin-top:-8px;background:#fff">
+    <div style="flex-shrink:0;height:78px;position:relative;overflow:hidden;margin-top:8px;background:#fff">
       ${bgPngUrl ? `<img src="${bgPngUrl}" style="${bgImgStyle}">` : ''}
       <!-- 상하 + 좌우 그라디언트 (하단 흐림 축소) -->
       <div style="position:absolute;inset:0;background:linear-gradient(to right,rgba(255,255,255,0.7) 0%,rgba(255,255,255,0) 12%,rgba(255,255,255,0) 88%,rgba(255,255,255,0.7) 100%),linear-gradient(to bottom,rgba(255,255,255,1) 0%,rgba(255,255,255,0) 30%,rgba(255,255,255,0) 85%,rgba(255,255,255,0.2) 100%);pointer-events:none;z-index:1"></div>
