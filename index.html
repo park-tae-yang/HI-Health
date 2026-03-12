@@ -265,7 +265,7 @@
     /* ── App Intro Popup ── */
     .app-intro {
       position: fixed; inset: 0; z-index: 500;
-      background: rgba(15,23,42,0.25);
+      background: rgba(15,23,42,0.14);
       backdrop-filter: blur(2px);
       display: flex; align-items: flex-end; justify-content: center;
       padding-bottom: max(env(safe-area-inset-bottom), 16px);
@@ -1419,12 +1419,19 @@
     }
     .profile-modal {
       width:100%; max-width:380px; max-height:min(88vh,760px);
-      overflow-y:auto; padding:22px 18px 18px;
+      overflow-y:auto; padding:0 18px 18px;
       border-radius:24px;
       background:linear-gradient(180deg, #fff 0%, #fbfcff 100%);
       box-shadow:0 24px 64px rgba(15,23,42,0.18);
     }
-    .pm-header { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:14px; }
+    .pm-header {
+      position:sticky; top:0; z-index:4;
+      display:flex; align-items:flex-start; justify-content:space-between; gap:12px;
+      margin-bottom:14px; padding:22px 0 14px;
+      background:linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(251,252,255,0.96) 76%, rgba(251,252,255,0) 100%);
+      -webkit-backdrop-filter:blur(10px);
+      backdrop-filter:blur(10px);
+    }
     .pm-close-btn {
       width:34px; height:34px; border:none; border-radius:50%;
       background:#f8fafc; color:var(--text-secondary);
@@ -4500,7 +4507,6 @@ async function shareLevelCard() {
       restoreBtn();
       const prevShareEarned = earnedAchs().map(a => a.id);
       const file = new File([blob], 'hi-health-level.png', { type: 'image/png' });
-      const prevShareEarned = earnedAchs().map(a => a.id);
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         try {
           await navigator.share({ files: [file], title: 'HI Health', text: `${name}님의 운동기록을 함께 응원해주세요 :)\n나도 운동기록하기 👉 https://hi-fertility-health.com` });
@@ -6557,13 +6563,9 @@ function openProfileModal(onboarding = false) {
   if (onboarding) {
     document.getElementById('pm-title').textContent = 'HI Health 시작하기';
     document.getElementById('pm-sub').textContent   = '닉네임과 아바타를 설정하고 바로 시작하세요';
-    document.getElementById('pm-save-btn').textContent = '시작하기!';
-    document.getElementById('pm-close-btn').style.display = 'none';
   } else {
     document.getElementById('pm-title').textContent = '프로필 설정';
     document.getElementById('pm-sub').textContent   = '닉네임, 아바타, 태그를 간단히 정리해보세요';
-    document.getElementById('pm-save-btn').textContent = '저장하기';
-    document.getElementById('pm-close-btn').style.display = '';
   }
 
   // 챌린지 참여 현황
@@ -6603,7 +6605,7 @@ function togglePmSection(type) {
 }
 function closeProfileModal() {
   const nickname = document.getElementById('pm-nickname')?.value.trim();
-  if (nickname) S.user.nickname = nickname;
+  S.user.nickname = nickname || '';
   S.user.avatar = normalizeAvatar(_selAvatar);
   S.user.tags = [..._selTags];
   save();
@@ -6655,20 +6657,6 @@ function pickAvatar(a) {
   );
   renderProfileModalSummary();
 }
-function saveProfile() {
-  const nickname = document.getElementById('pm-nickname').value.trim();
-  if (!nickname) { haptic('error'); showToast('닉네임을 입력해주세요'); return; }
-  S.user.nickname = nickname;
-  S.user.avatar   = normalizeAvatar(_selAvatar);
-  S.user.tags     = [..._selTags];
-  save();
-  renderHeader();
-  renderHome();
-  document.getElementById('profile-modal').classList.add('pm-hidden');
-  haptic('medium');
-  showToast('프로필이 저장되었습니다');
-}
-
 let _deleteMyDataBusy = false;
 
 function collectDeleteIdentity() {
@@ -9338,27 +9326,167 @@ function flashGuestBanner() {
   banner.addEventListener('animationend', () => banner.classList.remove('flash'), { once: true });
 }
 
-function doGuestLogin() {
-  IS_GUEST = true;
+function guestSampleDate(daysAgo, hour, minute) {
+  const d = new Date();
+  d.setHours(hour, minute, 0, 0);
+  d.setDate(d.getDate() - daysAgo);
+  return d;
+}
+
+function buildGuestSampleState() {
+  const workoutDefs = [
+    { daysAgo: 3, hour: 7,  minute: 15, exId: 'walking',  duration: 40, memo: '출근 전 공원 한 바퀴' },
+    { daysAgo: 2, hour: 19, minute: 10, exId: 'strength', duration: 45, memo: '하체 루틴 위주로 진행' },
+    { daysAgo: 1, hour: 7,  minute: 30, exId: 'yoga',     duration: 35, memo: '아침 스트레칭과 호흡' },
+    { daysAgo: 1, hour: 18, minute: 20, exId: 'running',  duration: 30, memo: '퇴근 후 5km 러닝' },
+    { daysAgo: 0, hour: 6,  minute: 50, exId: 'cycling',  duration: 50, memo: '한강 라이딩으로 시작' },
+    { daysAgo: 0, hour: 19, minute: 20, exId: 'hiking',   duration: 60, memo: '저녁 산책 겸 가벼운 오르막' },
+  ];
+  const workouts = workoutDefs
+    .map((item, idx) => {
+      const ts = guestSampleDate(item.daysAgo, item.hour, item.minute).getTime();
+      return {
+        id: ts + idx,
+        exId: item.exId,
+        customName: null,
+        duration: item.duration,
+        points: calcPts(item.exId, item.duration),
+        memo: item.memo,
+        photo: null,
+        diet: null,
+        mealTypes: null,
+        sleep: null,
+        supp: null,
+        suppList: null,
+        ts,
+      };
+    })
+    .sort((a, b) => a.ts - b.ts);
+
+  const glucoseDefs = [
+    { daysAgo: 0, hour: 18, minute: 10, value: 118, timing: '식후2h' },
+    { daysAgo: 0, hour: 7,  minute: 35, value: 97,  timing: '공복' },
+    { daysAgo: 1, hour: 22, minute: 10, value: 112, timing: '취침전' },
+    { daysAgo: 2, hour: 12, minute: 40, value: 132, timing: '식후' },
+  ];
+  const glucoseRecords = glucoseDefs
+    .map((item, idx) => {
+      const ts = guestSampleDate(item.daysAgo, item.hour, item.minute);
+      return {
+        id: ts.getTime() + idx,
+        value: item.value,
+        timing: item.timing,
+        userTime: null,
+        ts: ts.toISOString(),
+        points: GLUCOSE_POINTS,
+      };
+    })
+    .sort((a, b) => new Date(b.ts) - new Date(a.ts));
+
+  const totalPoints = workouts.reduce((sum, workout) => sum + (workout.points || 0), 0)
+    + glucoseRecords.reduce((sum, record) => sum + (record.points || 0), 0);
+  const todayDate = new Date();
+  const yesterdayDate = guestSampleDate(1, 21, 10);
+  const todayKey = getLocalDateKey(todayDate);
+  const yesterdayKey = getLocalDateKey(yesterdayDate);
+  const todayNoteTs = guestSampleDate(0, 20, 55).getTime();
+  const yesterdayNoteTs = guestSampleDate(1, 22, 20).getTime();
+  const todayNote = [
+    '🚴 자전거 50분, 🥾 등산 60분 완료했어요!',
+    '오늘 혈당은 공복 97 mg/dL, 식후 2h 118 mg/dL로 기록했어요.',
+    '식사는 매 끼니 잘 챙겨먹었어요 (아침, 점심, 저녁).',
+    '잠은 잘 잤어요 (7.5시간).',
+    '영양제 모두 챙겨 먹었어요 (종합비타민, 코큐텐).',
+  ].join('\n');
+  const yesterdayNote = [
+    '🧘 요가 35분, 🏃 달리기 30분 완료했어요!',
+    '취침 전 혈당은 112 mg/dL였어요.',
+    '식사는 보통으로 먹었어요 (점심, 저녁).',
+    '잠은 조금 부족했어요 (6.5시간).',
+    '영양제 일부만 챙겼어요 (종합비타민).',
+  ].join('\n');
+
+  return {
+    user: {
+      name: '게스트',
+      nickname: '둘러보기 게스트',
+      avatar: 'images/avatars/av20.png',
+      empId: '',
+      dept: '',
+      points: totalPoints,
+      totalPoints,
+      streak: 0,
+      stickersReceived: 0,
+      levelCardShares: 0,
+      registrationId: null,
+      tags: ['가볍게 시작중', '루틴 만들기'],
+    },
+    workouts,
+    glucoseRecords,
+    todayLog: {
+      date: todayDate.toDateString(),
+      dietRating: 'good',
+      dietMemo: '단백질과 채소 위주로 가볍게 챙겼어요.',
+      mealTypes: ['아침', '점심', '저녁'],
+      sleepHours: 7.5,
+      sleepCard: 'good',
+      sleepMemo: '어제는 11시 전에 잠들었어요.',
+      suppTaken: 'all',
+      suppList: ['종합비타민', '코큐텐'],
+      myDayNote: todayNote,
+      myDayNoteTs: todayNoteTs,
+    },
+    dayNotes: {
+      [todayKey]: { ts: todayNoteTs, note: todayNote, photo: null },
+      [yesterdayKey]: { ts: yesterdayNoteTs, note: yesterdayNote, photo: null },
+    },
+  };
+}
+
+function applyGuestSampleState() {
+  const sample = buildGuestSampleState();
+  const guestPhotoKey = 'hi_today_photo_' + (ACTIVE_EMPID || 'x');
+  try { localStorage.removeItem(guestPhotoKey); } catch (e) {}
+
   S.deviceId = null;
   S.user = {
     ...S.user,
-    name: '게스트',
-    nickname: '게스트',
-    avatar: 'images/avatars/av20.png',
-    empId: '',
-    dept: '',
-    points: 0,
-    totalPoints: 0,
-    streak: 0,
-    stickersReceived: 0,
-    levelCardShares: 0,
-    registrationId: null,
-    tags: [],
+    ...sample.user,
   };
-  S.workouts = [];
-  S.glucoseRecords = [];
-  S.todayLog = null;
+  S.workouts = sample.workouts;
+  S.posts = JSON.parse(JSON.stringify(MOCK_POSTS_SEED));
+  S.redeemedRewards = [];
+  S.pendingRewards = [];
+  S.rewardHistory = [];
+  S.myReactions = {};
+  S.communityPosts = [];
+  S.adminPosts = [];
+  S.glucoseRecords = sample.glucoseRecords;
+  S.todayLog = sample.todayLog;
+  S.selectedEx = null;
+  S.durationTouched = false;
+  S.duration = 30;
+  _dayNotes = { ...sample.dayNotes };
+  _dnFilterDate = null;
+  _dnView = 'list';
+  _dnCalYear = new Date().getFullYear();
+  _dnCalMonth = new Date().getMonth();
+  _shareOn = true;
+  _shareRewrite = false;
+  _sharePhoto = false;
+  _shareHealth = false;
+  _photoData = null;
+  _glucoseVal = 100;
+  _glucoseValTouched = false;
+  _glucoseTiming = null;
+  _glucoseTime = '';
+  updateStreak();
+  loadTodayLog();
+}
+
+function doGuestLogin() {
+  IS_GUEST = true;
+  applyGuestSampleState();
   document.getElementById('app-login-screen').classList.add('hidden');
   renderHeader();
   navigate('home');
@@ -9784,7 +9912,6 @@ init();
       </div>
     </div>
     <div class="pm-actions">
-      <button type="button" class="btn btn-primary btn-full" id="pm-save-btn" onclick="saveProfile()">저장하기</button>
       <button type="button" class="pm-logout-btn" id="pm-logout-btn" onclick="appLogout()">로그아웃</button>
     </div>
     <button type="button" class="pm-delete-btn" id="pm-delete-data-btn" onclick="requestDeleteMyDeviceAndServerData()">모든 데이터 삭제 초기화</button>
