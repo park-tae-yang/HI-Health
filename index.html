@@ -10260,9 +10260,13 @@ function init() {
   syncLoginFieldOverlays();
   if (IS_RUN_MODE) {
     if (loginEmpInput) { loginEmpInput.placeholder = '사번 (예: A1801)'; loginEmpInput.style.letterSpacing = '0'; }
-    // IS_RUN_MODE: 로그인 유지 체크박스 숨김 (항상 자동 저장)
+    // IS_RUN_MODE: 로그인 유지 체크박스 + 게스트 버튼 숨김
     const keepWrap = document.querySelector('.app-login-keep');
     if (keepWrap) keepWrap.style.display = 'none';
+    const divider = document.querySelector('.app-login-screen .login-divider');
+    if (divider) divider.style.display = 'none';
+    const guestBtn = document.querySelector('.app-login-guest-btn');
+    if (guestBtn) guestBtn.style.display = 'none';
   } else {
     if (loginEmpInput) loginEmpInput.style.letterSpacing = '0';
   }
