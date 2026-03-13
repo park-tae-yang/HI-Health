@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>HI RUN DAY</title>
+  <meta name="description" content="HI RUN DAY — 달린 거리만큼 기부됩니다">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --p: #5b21b6;
+      --p2: #7c3aed;
+      --o: #ea580c;
+      --o2: #f97316;
+      --text: #111827;
+      --sub: #6b7280;
+      --dim: #9ca3af;
+      --line: #f3f4f6;
+      --bg: #fafafa;
+      --white: #ffffff;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { background: #ede9fe; }
+    body {
+      font-family: 'Noto Sans KR', -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      max-width: 480px;
+      margin: 0 auto;
+      min-height: 100vh;
+      overflow-x: hidden;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* ─── HERO ─────────────────────────────────── */
+    .hero {
+      background: #ffffff;
+      border-bottom: 1px solid #f3f4f6;
+      border-radius: 0 0 48px 48px;
+      position: relative;
+      overflow: hidden;
+      padding-top: env(safe-area-inset-top, 0);
+    }
+    .hero::before { display: none; }
+    .hero-inner {
+      position: relative; z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* 마스코트 */
+    .hero-char {
+      width: 175px;
+      margin-top: 64px;
+      animation: bob 3s ease-in-out infinite;
+      filter: none;
+    }
+    @keyframes bob {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(-12px); }
+    }
+
+    /* 텍스트 블록 */
+    .hero-copy {
+      text-align: center;
+      padding: 12px 24px 0;
+    }
+    .hero-label {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: linear-gradient(#fff, #fff) padding-box,
+                  linear-gradient(135deg, #1e3a8a, #3b82f6) border-box;
+      border: 1.5px solid transparent;
+      color: #1e3a8a;
+      font-size: 9px; font-weight: 800;
+      letter-spacing: 1.5px; text-transform: uppercase;
+      border-radius: 40px; padding: 3px 10px 3px 4px;
+      margin-bottom: 14px;
+    }
+    .hero-label img {
+      width: 22px; height: 22px; object-fit: contain;
+    }
+    .hero-title {
+      font-size: 46px; font-weight: 900;
+      letter-spacing: -2.5px; line-height: 1;
+      white-space: nowrap;
+      color: #1e1047; margin-bottom: 14px;
+    }
+    .hero-title .t-run { color: #1e1047; }
+    .hero-desc {
+      font-size: 14px; color: var(--sub);
+      line-height: 1.8; margin-bottom: 24px;
+    }
+    .hero-desc strong { color: var(--text); font-weight: 700; }
+
+    /* 날짜 칩 행 */
+    .hero-chips {
+      display: flex; gap: 6px; justify-content: center; flex-wrap: wrap;
+    }
+    .chip {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 40px; padding: 6px 14px;
+      font-size: 12px; font-weight: 600;
+      color: var(--sub);
+    }
+    .chip-dot {
+      display: inline-block; width: 6px; height: 6px;
+      border-radius: 50%; margin-right: 6px; vertical-align: middle;
+    }
+
+    /* 스크롤 힌트 */
+    .hero-scroll {
+      margin-top: 28px; padding-bottom: 22px;
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+    }
+    .scroll-bar {
+      width: 1px; height: 32px;
+      background: linear-gradient(180deg, #c4b5fd, transparent);
+    }
+    .scroll-text {
+      font-size: 9px; font-weight: 700; letter-spacing: 2px;
+      color: #c4b5fd; text-transform: uppercase;
+    }
+
+    /* ─── WHY SECTION ────────────────────────── */
+    .why-section {
+      padding: 32px 16px 8px;
+    }
+    .why-kicker { display: none; }
+    .why-title {
+      font-size: 20px; font-weight: 700;
+      letter-spacing: -0.5px; line-height: 1.2;
+      color: var(--text); margin-bottom: 20px;
+    }
+    .why-cards {
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .why-card {
+      background: var(--white);
+      border-radius: 16px;
+      padding: 20px;
+      display: flex; gap: 16px; align-items: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04);
+    }
+    .why-img {
+      width: 64px; height: 64px;
+      border-radius: 14px; flex-shrink: 0;
+      object-fit: contain;
+    }
+    .why-img.warmup, .why-img.record, .why-img.donate { background: none; }
+    .why-body {}
+    .why-card-title { font-size: 16px; font-weight: 800; color: var(--text); margin-bottom: 4px; }
+    .why-card-desc  { font-size: 13px; color: var(--sub); line-height: 1.65; }
+
+    /* ─── SCHEDULE ───────────────────────────── */
+    .section {
+      padding: 32px 16px 0;
+    }
+    .section-kicker { display: none; }
+    .section-title {
+      font-size: 20px; font-weight: 700;
+      letter-spacing: -0.5px; color: var(--text); margin-bottom: 20px;
+    }
+
+    .sch-list { display: flex; flex-direction: column; }
+    .sch-item {
+      display: flex; gap: 16px;
+      position: relative;
+    }
+    /* vertical connector */
+    .sch-item:not(:last-child) .sch-line-wrap::after {
+      content: '';
+      position: absolute;
+      left: 15px; top: 36px; bottom: -8px;
+      width: 2px;
+      background: #f3f4f6;
+    }
+    .sch-line-wrap {
+      display: flex; flex-direction: column; align-items: center;
+      position: relative; flex-shrink: 0; width: 32px;
+    }
+    .sch-dot {
+      width: 32px; height: 32px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      font-size: 13px; font-weight: 800; color: #fff;
+      background: #1e1047;
+    }
+
+    .sch-body { flex: 1; padding-bottom: 24px; }
+    .sch-date-row { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+    .sch-phase { font-size: 10px; font-weight: 700; color: var(--dim); white-space: nowrap; }
+    .sch-date { font-size: 15px; font-weight: 800; color: var(--text); letter-spacing: -0.3px; }
+    .sch-desc { font-size: 13px; color: var(--sub); line-height: 1.65; }
+    .sch-tag {
+      display: inline-block; margin-top: 6px;
+      font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px;
+      background: #ffffff; border: 1px solid #e5e7eb; color: var(--sub);
+    }
+
+
+    /* ─── EVENT PROGRAM ─────────────────────── */
+    .prog-wrap { padding: 32px 16px 0; }
+    .prog-card {
+      background: #fff; border-radius: 14px;
+      border: 1px solid #f0f0f4;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      padding: 20px;
+    }
+    .prog-list { display: flex; flex-direction: column; }
+    .prog-step {
+      display: flex; align-items: flex-start; gap: 12px;
+      padding: 12px 0; border-bottom: 1px solid #f3f4f6;
+    }
+    .prog-step:last-child { border-bottom: none; padding-bottom: 0; }
+    .prog-num {
+      width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
+      background: #1e1047; color: #fff;
+      font-size: 11px; font-weight: 800;
+      display: flex; align-items: center; justify-content: center;
+      margin-top: 1px;
+    }
+    .prog-body { flex: 1; }
+    .prog-row { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 2px; }
+    .prog-title { font-size: 14px; font-weight: 700; color: #1e1047; }
+    .prog-time { font-size: 11px; font-weight: 700; color: #6366f1; white-space: nowrap; }
+    .prog-desc { font-size: 12px; color: var(--sub); line-height: 1.55; }
+
+    /* ─── PEOPLE / LIVE ─────────────────────── */
+    .people-wrap { padding: 32px 16px 0; }
+    .people-card {
+      background: #fff; border-radius: 20px;
+      border: 1px solid #f0f0f4;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+      overflow: hidden;
+    }
+    .people-head {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 18px 20px 14px;
+      border-bottom: 1px solid #f3f4f6;
+    }
+    .people-title-row { display: flex; align-items: center; gap: 8px; }
+    .live-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: #1e1047;
+      box-shadow: 0 0 0 0 rgba(30,16,71,0.4);
+      animation: livepulse 1.8s ease-out infinite;
+    }
+    @keyframes livepulse {
+      0%   { box-shadow: 0 0 0 0 rgba(30,16,71,0.4); }
+      70%  { box-shadow: 0 0 0 7px rgba(30,16,71,0); }
+      100% { box-shadow: 0 0 0 0 rgba(30,16,71,0); }
+    }
+    .live-label { font-size: 10px; font-weight: 800; color: #1e1047; letter-spacing: 1px; text-transform: uppercase; }
+    .people-count-badge {
+      font-size: 11px; font-weight: 700; color: var(--sub);
+      background: #f3f4f6; border-radius: 20px; padding: 3px 10px;
+    }
+    .people-count-badge span { color: #1e1047; font-weight: 900; }
+
+    .av-stack {
+      display: flex; align-items: center;
+      padding: 14px 20px 20px;
+    }
+    .av {
+      width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
+      background: #ede9fe; border: 2.5px solid #fff;
+      overflow: hidden; display: flex; align-items: center; justify-content: center;
+      margin-left: -10px; box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    }
+    .av:first-child { margin-left: 0; }
+    .av img { width: 50px; height: 50px; object-fit: contain; margin-top: 4px; }
+    .av-more-circle {
+      width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
+      background: #1e1047; border: 2.5px solid #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 800; color: #fff;
+      margin-left: -10px; box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+    }
+
+    .av-stack-wrap { padding: 14px 20px 20px; }
+
+    /* ─── FORM ──────────────────────────────── */
+    .form-wrap { padding: 28px 16px 48px; }
+    .form-header { margin-bottom: 16px; }
+    .form-header-kicker {
+      font-size: 11px; font-weight: 700; color: var(--o);
+      letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px;
+    }
+    .form-header-title {
+      font-size: 22px; font-weight: 900;
+      letter-spacing: -0.8px; color: #1e1047; margin-bottom: 6px;
+    }
+    .form-header-sub { font-size: 13px; color: var(--sub); line-height: 1.6; }
+
+    .fcard {
+      background: var(--white); border-radius: 14px;
+      padding: 16px; margin-bottom: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 2px 8px rgba(0,0,0,0.03);
+    }
+    .fcard-label {
+      font-size: 13px; font-weight: 800; letter-spacing: -0.3px;
+      color: #1e1047; margin-bottom: 12px;
+    }
+    .fg { margin-bottom: 10px; }
+    .fg:last-child { margin-bottom: 0; }
+    .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+    .lbl {
+      font-size: 11px; font-weight: 600; color: var(--sub);
+      display: block; margin-bottom: 5px;
+    }
+    .req { color: var(--o); }
+    .fi, .fs {
+      width: 100%; padding: 10px 12px;
+      background: #f9fafb; border: 1.5px solid #e5e7eb;
+      border-radius: 9px; color: var(--text);
+      font-family: inherit; font-size: 14px; outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .fs {
+      -webkit-appearance: none; appearance: none;
+      padding-right: 32px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%239CA3AF' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 12px center;
+      background-color: #f9fafb;
+    }
+    .fi::placeholder { color: #d1d5db; }
+    .fi:focus, .fs:focus {
+      border-color: var(--p2); box-shadow: 0 0 0 3px rgba(124,58,237,0.08);
+    }
+    .fs option { background: #fff; color: var(--text); }
+    .hint { font-size: 11px; color: var(--dim); margin-bottom: 6px; }
+
+    /* radio */
+    .rg { display: flex; gap: 7px; }
+    .rl {
+      flex: 1; padding: 10px 8px; cursor: pointer;
+      background: #f9fafb; border: 1.5px solid #e5e7eb;
+      border-radius: 9px; font-size: 13px; font-weight: 600;
+      color: var(--sub); text-align: center;
+      transition: all 0.15s;
+    }
+    .rl input { display: none; }
+    .rl:has(input:checked) {
+      border-color: var(--p2); color: var(--p);
+      background: #f5f3ff;
+    }
+
+    /* fam detail */
+    .fam-box {
+      display: none; margin-top: 10px;
+      background: #f9fafb; border-radius: 10px; padding: 14px;
+    }
+    .fam-box.show { display: block; }
+    .fam-box-label { font-size: 10px; font-weight: 700; color: var(--dim); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px; }
+
+    /* shoe */
+    .rank-row { display: flex; gap: 6px; margin-bottom: 10px; }
+    .rank-chip {
+      flex: 1; text-align: center; padding: 7px 4px;
+      background: #f9fafb; border: 1.5px dashed #e5e7eb;
+      border-radius: 8px;
+    }
+    .rank-chip.on { border-style: solid; border-color: #c4b5fd; background: #f5f3ff; }
+    .rank-chip .rn { font-size: 9px; font-weight: 700; color: var(--dim); margin-bottom: 2px; }
+    .rank-chip .rv { font-size: 10px; font-weight: 600; color: var(--sub); }
+    .rank-chip.on .rv { color: var(--p); }
+
+    .shoe-grid { display: flex; flex-direction: column; gap: 8px; }
+    .scard {
+      display: flex; gap: 12px; align-items: center;
+      background: #f9fafb; border: 1.5px solid #e5e7eb;
+      border-radius: 12px; padding: 10px 12px; transition: border-color 0.15s;
+    }
+    .scard.on { border-color: #c4b5fd; background: #f5f3ff; }
+    .simg { width: 68px; height: 46px; object-fit: contain; border-radius: 8px; flex-shrink: 0; }
+    .sinfo { flex: 1; min-width: 0; }
+    .snm { font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+    .stag {
+      display: inline-block; font-size: 9px; font-weight: 700;
+      padding: 1px 7px; border-radius: 20px;
+    }
+    .stag.f { background: #fce7f3; color: #9d174d; }
+    .stag.m { background: #e0e7ff; color: #3730a3; }
+    .srbcol { display: flex; flex-direction: column; gap: 3px; }
+    .srb {
+      padding: 3px 8px; font-size: 10px; font-weight: 700;
+      background: #fff; border: 1.5px solid #e5e7eb;
+      border-radius: 6px; color: var(--dim);
+      cursor: pointer; font-family: inherit; transition: all 0.12s;
+    }
+    .srb.on { background: var(--p2); border-color: var(--p2); color: #fff; }
+    .snote {
+      width: 100%; margin-top: 10px; padding: 10px 12px;
+      background: #f9fafb; border: 1.5px solid #e5e7eb;
+      border-radius: 10px; color: var(--text);
+      font-family: inherit; font-size: 14px; outline: none; resize: none;
+      transition: border-color 0.2s;
+    }
+    .snote:focus { border-color: var(--p2); }
+    .snote::placeholder { color: #d1d5db; }
+
+    .hdivider { height: 1px; background: #f3f4f6; margin: 10px 0; }
+
+    /* consent */
+    .consent {
+      background: var(--white); border-radius: 12px; padding: 14px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      margin-bottom: 12px;
+    }
+    .consent p { font-size: 11px; color: var(--dim); line-height: 1.75; margin-bottom: 8px; }
+    .consent label {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 13px; font-weight: 600; color: var(--sub); cursor: pointer;
+    }
+    .consent input[type=checkbox] { width: 17px; height: 17px; accent-color: var(--p2); }
+
+    /* submit */
+    .btn-submit {
+      width: 100%; padding: 17px;
+      background: linear-gradient(135deg, #4338ca, #6d28d9);
+      color: #fff; border: none; border-radius: 14px;
+      font-family: inherit; font-size: 17px; font-weight: 800;
+      cursor: pointer; letter-spacing: -0.3px;
+      box-shadow: 0 4px 20px rgba(79,70,229,0.35);
+      transition: transform 0.18s, box-shadow 0.18s;
+    }
+    .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(79,70,229,0.45); }
+    .btn-submit:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    /* ─── SUCCESS ────────────────────────────── */
+    .success { display: none; padding: 48px 24px 80px; text-align: center; }
+    .success.show { display: block; }
+    .success-img {
+      width: 160px; margin: 0 auto 24px;
+      animation: bob 3s ease-in-out infinite;
+      filter: drop-shadow(0 8px 24px rgba(91,33,182,0.25));
+    }
+    .success-h { font-size: 28px; font-weight: 900; color: var(--p); margin-bottom: 8px; }
+    .success-p { font-size: 14px; color: var(--sub); line-height: 1.75; margin-bottom: 20px; }
+    .success-box {
+      background: #f5f3ff; border: 1.5px solid #c4b5fd;
+      border-radius: 14px; padding: 16px; margin-bottom: 28px;
+    }
+    .success-box-l { font-size: 10px; font-weight: 700; color: var(--p2); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 4px; }
+    .success-box-n { font-size: 26px; font-weight: 900; color: var(--text); letter-spacing: 1px; }
+
+    /* ─── CTA BUTTON ─────────────────────────── */
+    .btn-app {
+      display: flex; align-items: center; gap: 12px;
+      width: 100%; padding: 16px 20px;
+      background: linear-gradient(135deg, #4338ca, #6d28d9);
+      color: #fff; border: none; border-radius: 14px;
+      font-family: inherit; text-decoration: none; cursor: pointer;
+      box-shadow: 0 4px 20px rgba(79,70,229,0.35);
+      transition: transform 0.18s, box-shadow 0.18s;
+    }
+    .btn-app:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(79,70,229,0.45); }
+    .btn-app-icon {
+      width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .btn-app-icon img { width: 32px; height: 32px; object-fit: contain; }
+    .btn-app-body { flex: 1; text-align: left; }
+    .btn-app-main { font-size: 15px; font-weight: 700; }
+    .btn-app-sub  { font-size: 11px; opacity: 0.6; margin-top: 1px; }
+    .btn-app-arr  { font-size: 22px; opacity: 0.4; }
+
+    .hide { display: none !important; }
+
+    /* ─── TOAST ──────────────────────────────── */
+    .toasts {
+      position: fixed; bottom: calc(24px + env(safe-area-inset-bottom));
+      left: 50%; transform: translateX(-50%);
+      z-index: 9999; pointer-events: none;
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+    }
+    .toast {
+      background: rgba(17,24,39,0.92);
+      -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+      color: #fff; border-radius: 40px; padding: 10px 20px;
+      font-size: 13px; font-weight: 600; white-space: nowrap;
+      animation: tin 0.22s ease;
+    }
+    .toast.out { animation: tout 0.25s ease forwards; }
+    @keyframes tin  { from { opacity:0; transform:translateY(8px) } to { opacity:1; transform:translateY(0) } }
+    @keyframes tout { to   { opacity:0; transform:translateY(4px) } }
+  </style>
+</head>
+<body>
+
+<!-- ─── HERO ───────────────────────────────── -->
+<div class="hero">
+  <div class="hero-inner">
+    <img src="images/run_day_patch.png" alt="HI RUN DAY 마스코트" class="hero-char">
+    <div class="hero-copy">
+      <div class="hero-label">
+        <img src="images/avatars/av14.png" alt="HI 8주년">
+        <span>Happy 8th Anniversary</span>
+      </div>
+      <div class="hero-title">HI <span class="t-run">RUN</span> DAY</div>
+      <p class="hero-desc">
+        달리고, 기록하고, <strong>함께 기부해요</strong><br>
+        HI 8주년을 맞이하는 특별한 챌린지
+      </p>
+      <div class="hero-chips">
+        <div class="chip"><span class="chip-dot" style="background:#f97316"></span>3/22 워밍업</div>
+        <div class="chip"><span class="chip-dot" style="background:#6366f1"></span>4/5 집중기간</div>
+        <div class="chip"><span class="chip-dot" style="background:#a855f7"></span>4/15 행사 당일</div>
+      </div>
+    </div>
+    <div class="hero-scroll">
+      <div class="scroll-bar"></div>
+      <div class="scroll-text">scroll</div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ─── WHY ─────────────────────────────────── -->
+<div class="why-section">
+  <div class="why-kicker">Why Join</div>
+  <div class="why-title">참여해야 할 이유 3가지</div>
+  <div class="why-cards">
+    <div class="why-card">
+      <img src="images/run_day_patch.png" alt="건강 루틴" class="why-img warmup">
+      <div class="why-body">
+        <div class="why-card-title">건강한 루틴 만들기</div>
+        <div class="why-card-desc">워밍업부터 주 2회 운동 인증, 집중기간엔 혈당 기록까지 — 내 몸의 변화를 직접 확인하세요.</div>
+      </div>
+    </div>
+    <div class="why-card">
+      <img src="images/avatars/av3.png" alt="참여 혜택" class="why-img record">
+      <div class="why-body">
+        <div class="why-card-title">다양한 참여 혜택</div>
+        <div class="why-card-desc">러닝화 지급 · 사인북 · 한강 크루즈 탑승 · 함께달리기까지, 참여할수록 더 풍성해집니다.</div>
+      </div>
+    </div>
+    <div class="why-card">
+      <img src="images/badge_run.png" alt="기부" class="why-img donate">
+      <div class="why-body">
+        <div class="why-card-title">달린 거리만큼 기부</div>
+        <div class="why-card-desc">행사 당일 직원들이 달린 거리가 전액 기부로 이어집니다.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── SCHEDULE ──────────────────────────── -->
+<div class="section">
+  <div class="section-kicker">Schedule</div>
+  <div class="section-title">챌린지 기간</div>
+  <div class="sch-list">
+
+    <div class="sch-item">
+      <div class="sch-line-wrap">
+        <div class="sch-dot warmup">1</div>
+      </div>
+      <div class="sch-body">
+        <div class="sch-date-row">
+          <div class="sch-phase">워밍업</div>
+          <div class="sch-date">Mar 22 – Apr 4</div>
+        </div>
+        <div class="sch-desc">운동으로 루틴을 만들고 몸을 깨우는 기간입니다.</div>
+        <span class="sch-tag">운동 인증 주 2회</span>
+      </div>
+    </div>
+
+    <div class="sch-item">
+      <div class="sch-line-wrap">
+        <div class="sch-dot main">2</div>
+      </div>
+      <div class="sch-body">
+        <div class="sch-date-row">
+          <div class="sch-phase">집중기간</div>
+          <div class="sch-date">Apr 5 – Apr 14</div>
+        </div>
+        <div class="sch-desc">운동 + 혈당 기록을 함께 진행하는 핵심 기간입니다.</div>
+        <span class="sch-tag">운동 + 혈당 주 3회 이상</span>
+      </div>
+    </div>
+
+    <div class="sch-item">
+      <div class="sch-line-wrap">
+        <div class="sch-dot event">3</div>
+      </div>
+      <div class="sch-body">
+        <div class="sch-date-row">
+          <div class="sch-phase">행사 당일</div>
+          <div class="sch-date">Apr 15</div>
+        </div>
+        <div class="sch-desc">HI 개원 8주년 기념 · 함께달리기 여의도→선유도<br>달린 거리만큼 기부가 진행됩니다.</div>
+        <span class="sch-tag">크루즈 탑승 포함</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ─── EVENT PROGRAM ──────────────────────── -->
+<div class="prog-wrap">
+  <div class="section-kicker">Apr 15</div>
+  <div class="section-title">행사 당일 프로그램</div>
+  <div class="prog-card">
+    <div class="prog-list">
+      <div class="prog-step">
+        <div class="prog-num">1</div>
+        <div class="prog-body">
+          <div class="prog-row">
+            <div class="prog-title">8주년 개원기념식</div>
+            <div class="prog-time">am 10:00</div>
+          </div>
+          <div class="prog-desc">HI여성의원의 소중한 8년을 함께 기념합니다</div>
+        </div>
+      </div>
+      <div class="prog-step">
+        <div class="prog-num">2</div>
+        <div class="prog-body">
+          <div class="prog-row">
+            <div class="prog-title">특별 강연</div>
+            <div class="prog-time">am 10:30</div>
+          </div>
+          <div class="prog-desc">마라토너 권은주 선수 초청 강연 · 사인북 증정</div>
+        </div>
+      </div>
+      <div class="prog-step">
+        <div class="prog-num">3</div>
+        <div class="prog-body">
+          <div class="prog-row">
+            <div class="prog-title">호텔 식사</div>
+            <div class="prog-time">am 11:30</div>
+          </div>
+          <div class="prog-desc">참가자 전원과 함께하는 기념 만찬</div>
+        </div>
+      </div>
+      <div class="prog-step">
+        <div class="prog-num">4</div>
+        <div class="prog-body">
+          <div class="prog-row">
+            <div class="prog-title">크루즈 탑승 · 김포 → 여의도</div>
+            <div class="prog-time">pm 1:00</div>
+          </div>
+          <div class="prog-desc">한강 크루즈로 이동 (약 90분) · 선택 참여</div>
+        </div>
+      </div>
+      <div class="prog-step">
+        <div class="prog-num">5</div>
+        <div class="prog-body">
+          <div class="prog-row">
+            <div class="prog-title">함께 달리기</div>
+            <div class="prog-time">pm 2:30</div>
+          </div>
+          <div class="prog-desc">여의도 출발 → 선유도공원 · 자율 참여</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── PEOPLE ────────────────────────────── -->
+<div class="people-wrap">
+  <div class="section-kicker">Community</div>
+  <div class="section-title">같이 달려요</div>
+  <div class="people-card">
+    <div class="people-head">
+      <div class="people-title-row">
+        <div class="live-dot"></div>
+        <div class="live-label">실시간</div>
+      </div>
+      <div class="people-count-badge" id="people-count-badge"><span id="people-count">-</span>명 신청</div>
+    </div>
+    <div class="av-stack" id="av-stack">
+      <!-- filled by JS -->
+    </div>
+  </div>
+</div>
+
+<!-- ─── FORM ──────────────────────────────── -->
+<div class="form-wrap">
+
+  <!-- 완료 화면 -->
+  <div class="success" id="success-screen">
+    <img src="images/run_day_patch.png" alt="완료" class="success-img">
+    <div class="success-h">신청 완료!</div>
+    <p class="success-p">챌린지에 신청해주셨습니다.<br>신청번호를 꼭 기억해두세요.</p>
+    <div class="success-box">
+      <div class="success-box-l">신청번호</div>
+      <div class="success-box-n" id="success-id">HC-000000</div>
+    </div>
+    <a href="index.html" class="btn-app" style="text-decoration:none;margin-bottom:0">
+      <div class="btn-app-icon"><img src="images/avatars/av1.png" alt=""></div>
+      <div class="btn-app-body">
+        <div class="btn-app-main">운동 기록 시작하기</div>
+        <div class="btn-app-sub">챌린지 인증 · 혈당 기록 · 리그 참여</div>
+      </div>
+      <div class="btn-app-arr">›</div>
+    </a>
+  </div>
+
+  <!-- 신청 폼 -->
+  <div id="form-screen">
+    <div class="form-header">
+      <div class="form-header-title">챌린지 신청하기</div>
+      <div class="form-header-sub">신청 후 운동화가 지급됩니다. 행사 전까지 언제든 신청 가능해요.</div>
+    </div>
+
+    <div class="fcard">
+      <div class="fcard-label">기본 정보</div>
+      <div class="fg row2">
+        <div>
+          <label class="lbl" for="f-name">이름 <span class="req">*</span></label>
+          <input type="text" class="fi" id="f-name" placeholder="홍길동" autocomplete="name">
+        </div>
+        <div>
+          <label class="lbl" for="f-empid">사번 <span class="req">*</span></label>
+          <input type="text" class="fi" id="f-empid" placeholder="A1801" autocomplete="off" style="text-transform:uppercase">
+        </div>
+      </div>
+      <div class="fg row2">
+        <div>
+          <label class="lbl" for="f-dept">부서 <span class="req">*</span></label>
+          <select class="fs" id="f-dept" title="부서">
+            <option value="">선택</option>
+            <option>의료진</option><option>외래</option><option>상담실</option>
+            <option>주사실</option><option>검사실</option><option>수술실</option>
+            <option>연구소</option><option>커뮤니케이션팀</option><option>원무팀</option>
+            <option>경영지원부</option>
+          </select>
+        </div>
+        <div>
+          <label class="lbl" for="f-phone">연락처 <span class="req">*</span></label>
+          <input type="tel" class="fi" id="f-phone" placeholder="010-0000-0000" autocomplete="tel">
+        </div>
+      </div>
+    </div>
+
+    <div class="fcard">
+      <div class="fcard-label">운동화 신청</div>
+      <div class="fg">
+        <label class="lbl" for="f-shoe">발 사이즈 <span class="req">*</span></label>
+        <select class="fs" id="f-shoe" title="발 사이즈" onchange="updateChips()">
+          <option value="">사이즈(mm) 선택</option>
+          <option>215</option><option>220</option><option>225</option><option>230</option>
+          <option>235</option><option>240</option><option>245</option><option>250</option>
+          <option>255</option><option>260</option><option>265</option><option>270</option>
+          <option>275</option><option>280</option><option>285</option><option>290</option>
+          <option>295</option><option>300</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label class="lbl">희망 모델 <span class="req">*</span> <span style="font-weight:400;color:#d1d5db">순서대로 선택</span></label>
+        <div class="rank-row">
+          <div class="rank-chip" id="chip0"><div class="rn">1순위</div><div class="rv">미선택</div></div>
+          <div class="rank-chip" id="chip1"><div class="rn">2순위</div><div class="rv">미선택</div></div>
+          <div class="rank-chip" id="chip2"><div class="rn">3순위</div><div class="rv">미선택</div></div>
+        </div>
+        <div class="shoe-grid" id="shoe-grid"></div>
+        <label class="lbl" for="f-shoe-note" style="margin-top:12px">요청사항 <span style="font-weight:400;color:#d1d5db">선택</span></label>
+        <textarea class="snote" id="f-shoe-note" rows="2" placeholder="발볼, 착화감, 재고 문의 등 자유롭게 적어주세요"></textarea>
+      </div>
+    </div>
+
+    <div class="fcard">
+      <div class="fcard-label">가족 참여</div>
+      <div class="fg">
+        <label class="lbl">가족 함께 참여 <span class="req">*</span></label>
+        <p class="hint">챌린지만 참여 가능 · 러닝화 가족 1인 지급</p>
+        <div class="rg">
+          <label class="rl"><input type="radio" name="fam" value="no"  onchange="toggleFam(this)">본인만</label>
+          <label class="rl"><input type="radio" name="fam" value="yes" onchange="toggleFam(this)">가족함께</label>
+        </div>
+      </div>
+      <div class="fam-box" id="fam-detail">
+        <div class="fam-box-label">가족 정보 (러닝화 지급용)</div>
+        <div class="fg row3">
+          <div>
+            <label class="lbl" for="f-fam-g">성별</label>
+            <select class="fs" id="f-fam-g" title="가족 성별">
+              <option value="">선택</option><option value="남">남</option><option value="여">여</option>
+            </select>
+          </div>
+          <div>
+            <label class="lbl" for="f-fam-a">나이</label>
+            <select class="fs" id="f-fam-a" title="가족 나이">
+              <option value="">선택</option>
+              <option>영유아</option><option>10대</option><option>20대</option>
+              <option>30대</option><option>40대</option><option>50대</option><option>60대+</option>
+            </select>
+          </div>
+          <div>
+            <label class="lbl" for="f-fam-s">신발(mm)</label>
+            <select class="fs" id="f-fam-s" title="가족 신발 사이즈">
+              <option value="">선택</option>
+              <option>120</option><option>130</option><option>140</option><option>150</option>
+              <option>160</option><option>170</option><option>180</option><option>190</option>
+              <option>200</option><option>210</option><option>220</option><option>230</option>
+              <option>240</option><option>250</option><option>260</option><option>270</option><option>280</option>
+            </select>
+          </div>
+        </div>
+        <div class="fg" style="margin-bottom:0">
+          <label class="lbl" for="f-fam-n">기타 메모</label>
+          <input type="text" class="fi" id="f-fam-n" placeholder="직접 입력">
+        </div>
+      </div>
+    </div>
+
+    <div class="fcard">
+      <div class="fcard-label">행사 참여</div>
+      <div class="fg">
+        <label class="lbl">한강 크루즈 <span class="req">*</span></label>
+        <p class="hint">김포→여의도 · 약 90분 · 직원만 탑승 가능</p>
+        <div class="rg">
+          <label class="rl"><input type="radio" name="cruise" value="yes">탑승 희망</label>
+          <label class="rl"><input type="radio" name="cruise" value="no">탑승 안 함</label>
+        </div>
+      </div>
+      <div class="hdivider"></div>
+      <div class="fg">
+        <label class="lbl">행사 당일 참여 <span class="req">*</span></label>
+        <p class="hint">함께달리기 · 여의도→선유도 · 직원만 참여 가능</p>
+        <div class="rg">
+          <label class="rl"><input type="radio" name="event" value="yes">참여</label>
+          <label class="rl"><input type="radio" name="event" value="no">불참</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="consent">
+      <p>수집된 개인정보는 챌린지 운영 및 러닝화 지급 목적으로만 활용되며, 챌린지 종료 후 즉시 파기됩니다.</p>
+      <label>
+        <input type="checkbox" id="f-consent">
+        개인정보 수집·이용에 동의합니다 <span style="color:var(--o)">*</span>
+      </label>
+    </div>
+
+    <button type="button" class="btn-submit" id="btn-submit" onclick="submitReg()">신청 완료하기</button>
+  </div>
+
+</div>
+
+<div class="toasts" id="toasts"></div>
+
+<script>
+  const MODELS = [
+    { id:'nike1', label:'Nike Vomero Plus (화이트)', img:'images/nike1.png', g:'f' },
+    { id:'nike2', label:'Nike Vomero Plus (베이지)', img:'images/nike2.png', g:'f' },
+    { id:'nike3', label:'Nike Vomero Plus (그레이)', img:'images/nike3.png', g:'m' },
+    { id:'nb1',   label:'NB 860 V15 (화이트)',       img:'images/nb1.png',  g:'f' },
+    { id:'nb2',   label:'NB 860 V15 (그레이)',        img:'images/nb2.png',  g:'m' },
+    { id:'nb3',   label:'NB 1080 V15',               img:'images/nb3.png',  g:'f' },
+  ];
+  let P = ['','',''];
+
+  function renderShoes() {
+    document.getElementById('shoe-grid').innerHTML = MODELS.map(m => {
+      const sel = P.includes(m.id);
+      const btns = [0,1,2].map(i =>
+        `<button type="button" class="srb${P[i]===m.id?' on':''}" onclick="pick(${i},'${m.id}')">${i+1}순위</button>`
+      ).join('');
+      return `<div class="scard${sel?' on':''}" id="sc-${m.id}">
+        <img class="simg" src="${m.img}" alt="${m.label}" loading="lazy">
+        <div class="sinfo">
+          <div class="snm">${m.label}</div>
+          <span class="stag ${m.g}">${m.g==='f'?'여성':'남성'}</span>
+        </div>
+        <div class="srbcol">${btns}</div>
+      </div>`;
+    }).join('');
+  }
+
+  function pick(rank, id) {
+    if (P[rank] === id) { P[rank] = ''; }
+    else { P = P.map((v,i) => v===id && i!==rank ? '' : v); P[rank] = id; }
+    renderShoes(); updateChips();
+  }
+
+  function shortLabel(id) {
+    const m = MODELS.find(x => x.id === id);
+    if (!m) return '미선택';
+    return m.label.replace('Nike Vomero Plus','Vomero').replace(' V15','').replace(' (','(');
+  }
+
+  function updateChips() {
+    P.forEach((id, i) => {
+      const c = document.getElementById('chip' + i);
+      const v = c.querySelector('.rv');
+      if (id) { c.classList.add('on'); v.textContent = shortLabel(id); }
+      else    { c.classList.remove('on'); v.textContent = '미선택'; }
+    });
+  }
+
+  function toggleFam(r) {
+    document.getElementById('fam-detail').classList.toggle('show', r.value === 'yes');
+  }
+
+  function toast(msg) {
+    const w = document.getElementById('toasts');
+    const el = document.createElement('div');
+    el.className = 'toast'; el.textContent = msg; w.appendChild(el);
+    setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 280); }, 2400);
+  }
+
+  const CH_KEY = 'hi_health_registrations_v2';
+  const SB_URL = 'https://nbnmvvobehjitophkqmu.supabase.co';
+  const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ibm12dm9iZWhqaXRvcGhrcW11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3Nzk4NzQsImV4cCI6MjA4ODM1NTg3NH0.iZS4JvhHUqv4ZMPxm9STit6xqVp2JA5H55M8Wmd1yjY';
+
+  function hasDup(empId) {
+    return JSON.parse(localStorage.getItem(CH_KEY) || '[]')
+      .some(r => String(r.empId).toUpperCase() === empId.toUpperCase());
+  }
+
+  async function submitReg() {
+    const name   = (document.getElementById('f-name').value || '').trim();
+    const empId  = (document.getElementById('f-empid').value || '').trim().toUpperCase();
+    const dept   = document.getElementById('f-dept').value;
+    const phone  = (document.getElementById('f-phone').value || '').trim();
+    const shoe   = document.getElementById('f-shoe').value;
+    const famVal = document.querySelector('input[name="fam"]:checked')?.value || '';
+    const cruise = document.querySelector('input[name="cruise"]:checked')?.value || '';
+    const eventV = document.querySelector('input[name="event"]:checked')?.value || '';
+    const ok     = document.getElementById('f-consent').checked;
+    const famG   = document.getElementById('f-fam-g')?.value || '';
+    const famA   = document.getElementById('f-fam-a')?.value || '';
+    const famS   = document.getElementById('f-fam-s')?.value || '';
+    const famN   = (document.getElementById('f-fam-n')?.value || '').trim();
+    const shoeN  = (document.getElementById('f-shoe-note')?.value || '').trim();
+
+    if (!name)   return toast('이름을 입력해주세요');
+    if (!empId)  return toast('사번을 입력해주세요');
+    if (!dept)   return toast('부서를 선택해주세요');
+    if (!phone)  return toast('연락처를 입력해주세요');
+    if (!shoe)   return toast('신발 사이즈를 선택해주세요');
+    if (!P.filter(Boolean).length) return toast('희망 운동화 1순위를 선택해주세요');
+    if (!famVal) return toast('가족 참여 여부를 선택해주세요');
+    if (!cruise) return toast('크루즈 탑승 여부를 선택해주세요');
+    if (!eventV) return toast('행사 참여 여부를 선택해주세요');
+    if (!ok)     return toast('개인정보 동의가 필요합니다');
+    if (hasDup(empId)) return toast('이미 신청하신 사번입니다');
+
+    const btn = document.getElementById('btn-submit');
+    btn.disabled = true; btn.textContent = '처리 중...';
+
+    const fam = famVal === 'yes';
+    const id  = 'HC-' + String(Date.now()).slice(-6);
+    const now = new Date().toISOString();
+    const parts = [];
+    const pref = P.filter(Boolean).join('|');
+    if (pref)  parts.push('희망모델: ' + pref);
+    if (shoeN) parts.push('운동화요청: ' + shoeN);
+    parts.push('가족참여: ' + (fam ? '가족함께 참여' : '본인만'));
+    if (fam) {
+      if (famG) parts.push('가족성별: ' + famG);
+      if (famA) parts.push('가족나이: ' + famA);
+      if (famS) parts.push('가족신발: ' + famS + 'mm');
+      if (famN) parts.push('가족메모: ' + famN);
+    }
+    parts.push('크루즈: ' + (cruise === 'yes' ? '탑승 희망' : '탑승 안 함'));
+    parts.push('행사: ' + (eventV === 'yes' ? '참여' : '불참'));
+
+    const reg = {
+      id, name, empId, dept, phone, email: '', shoeSize: shoe,
+      shoePrefs: [...P], shoeRequestNote: shoeN,
+      familyParticipation: fam, familyCount: fam ? 1 : 0,
+      familyShoeSize: fam ? famS : '', familyGender: fam ? famG : '',
+      familyAge: fam ? famA : '', familyMemo: fam ? famN : '',
+      cruiseParticipation: cruise === 'yes', eventParticipation: eventV === 'yes',
+      note: parts.join('\n'), status: 'pending', adminNote: '', registeredAt: now,
+    };
+
+    const regs = JSON.parse(localStorage.getItem(CH_KEY) || '[]');
+    regs.push(reg);
+    localStorage.setItem(CH_KEY, JSON.stringify(regs));
+
+    try {
+      await fetch(SB_URL + '/rest/v1/registrations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY,
+          'Prefer': 'resolution=merge-duplicates',
+        },
+        body: JSON.stringify({
+          id: reg.id, deviceId: '', empId: reg.empId, name: reg.name,
+          dept: reg.dept, phone: reg.phone, shoeSize: reg.shoeSize,
+          familyParticipation: reg.familyParticipation, familyCount: reg.familyCount,
+          status: reg.status, note: reg.note, registeredAt: reg.registeredAt,
+        }),
+      });
+    } catch(e) { console.warn('[Supabase]', e); }
+
+    document.getElementById('success-id').textContent = id;
+    document.getElementById('form-screen').classList.add('hide');
+    document.getElementById('success-screen').classList.add('show');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  renderShoes();
+
+  /* ── 실시간 신청자 현황 ─────────────────── */
+  const AV_COUNT = 20;
+
+  function avIdx(seed) {
+    let h = 0;
+    for (let i = 0; i < seed.length; i++) h = (Math.imul(31, h) + seed.charCodeAt(i)) | 0;
+    return (Math.abs(h) % AV_COUNT) + 1;
+  }
+
+  function renderPeople(list) {
+    const total = list.length;
+    document.getElementById('people-count').textContent = total;
+
+    const stack = document.getElementById('av-stack');
+    const recent = list.slice(0, 8);
+    let stackHTML = recent.map(r => {
+      const idx = avIdx(r.empId || r.name || r.id || '');
+      return `<div class="av"><img src="images/avatars/av${idx}.png" alt=""></div>`;
+    }).join('');
+    if (total > 8) {
+      stackHTML += `<div class="av-more-circle">+${total - 8}</div>`;
+    }
+    stack.innerHTML = stackHTML;
+  }
+
+  async function loadPeople() {
+    // 로컬 데이터 먼저 렌더
+    const local = JSON.parse(localStorage.getItem(CH_KEY) || '[]')
+      .sort((a, b) => new Date(b.registeredAt) - new Date(a.registeredAt));
+    if (local.length) renderPeople(local);
+
+    // Supabase에서 실시간 데이터 fetch
+    try {
+      const res = await fetch(
+        SB_URL + '/rest/v1/registrations?select=id,name,dept,empId,registeredAt&order=registeredAt.desc&limit=50',
+        { headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY } }
+      );
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.length) renderPeople(data);
+      }
+    } catch(e) { /* 오프라인 시 로컬 데이터 유지 */ }
+  }
+
+  loadPeople();
+  setInterval(loadPeople, 60000); // 1분마다 갱신
+
+  (function checkExisting() {
+    const regs = JSON.parse(localStorage.getItem(CH_KEY) || '[]');
+    if (!regs.length) return;
+    document.getElementById('success-id').textContent = regs[regs.length - 1].id;
+    document.getElementById('form-screen').classList.add('hide');
+    document.getElementById('success-screen').classList.add('show');
+  })();
+</script>
+</body>
+</html>
