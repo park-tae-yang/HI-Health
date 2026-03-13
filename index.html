@@ -3610,7 +3610,7 @@ function haptic(type) {
 /* ════════════════════════════════════════
    CONSTANTS
 ════════════════════════════════════════ */
-const IS_RUN_MODE = location.hash.includes('runday');
+const IS_RUN_MODE = location.hash.includes('runday') || location.search.includes('runday');
 let IS_GUEST = false;
 
 const AVATARS = [
