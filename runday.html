@@ -856,9 +856,9 @@
       <div class="fg">
         <label class="lbl">희망 모델 <span style="font-weight:400;color:#d1d5db">순서대로 선택</span></label>
         <div class="rank-row">
-          <div class="rank-chip" id="chip0"><div class="rn">1순위</div><div class="rv">미선택</div></div>
-          <div class="rank-chip" id="chip1"><div class="rn">2순위</div><div class="rv">미선택</div></div>
-          <div class="rank-chip" id="chip2"><div class="rn">3순위</div><div class="rv">미선택</div></div>
+          <div class="rank-chip" id="chip0"><div class="rn">1</div><div class="rv">미선택</div></div>
+          <div class="rank-chip" id="chip1"><div class="rn">2</div><div class="rv">미선택</div></div>
+          <div class="rank-chip" id="chip2"><div class="rn">3</div><div class="rv">미선택</div></div>
         </div>
         <div class="shoe-grid" id="shoe-grid"></div>
         <label class="lbl" for="f-shoe-note" style="margin-top:12px">요청사항 <span style="font-weight:400;color:#d1d5db">선택</span></label>
@@ -971,13 +971,15 @@
     document.getElementById('shoe-grid').innerHTML = MODELS.map(m => {
       const sel = P.includes(m.id);
       const btns = [0,1,2].map(i =>
-        `<button type="button" class="srb${P[i]===m.id?' on':''}" onclick="pick(${i},'${m.id}')">${i+1}순위</button>`
+        `<button type="button" class="srb${P[i]===m.id?' on':''}" onclick="pick(${i},'${m.id}')">${i+1}</button>`
       ).join('');
       return `<div class="scard${sel?' on':''}" id="sc-${m.id}">
-        <img class="simg" src="${m.img}" alt="${m.label}" loading="lazy" onclick="openImgPreview('${m.img}','${m.label}','${m.g==='f'?'여성':'남성'}')">
+        <div style="position:relative">
+          <img class="simg" src="${m.img}" alt="${m.label}" loading="lazy" onclick="openImgPreview('${m.img}','${m.label}','${m.g==='f'?'여성':'남성'}')">
+          <span class="stag ${m.g}" style="position:absolute;top:4px;right:4px;">${m.g==='f'?'여성':'남성'}</span>
+        </div>
         <div class="sinfo">
           <div class="snm">${m.label}</div>
-          <span class="stag ${m.g}">${m.g==='f'?'여성':'남성'}</span>
         </div>
         <div class="srbcol">${btns}</div>
       </div>`;
