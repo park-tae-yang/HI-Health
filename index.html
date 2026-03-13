@@ -5075,7 +5075,7 @@ function navigate(page) {
     if (hdrPts)  hdrPts.style.display  = isChallenge ? 'none' : '';
     if (hdrCart) hdrCart.style.display = isChallenge ? 'none' : '';
     const hdrProfileLabel = hdr.querySelector('#header-profile-label');
-    if (hdrProfileLabel) hdrProfileLabel.style.display = isChallenge ? '' : 'none';
+    if (hdrProfileLabel) hdrProfileLabel.style.display = isChallenge ? 'inline' : 'none';
     const hdrRight = hdr.querySelector('.header-right');
     if (hdrRight) hdrRight.style.marginLeft = isChallenge ? 'auto' : '';
     const guestBanner = hdr.querySelector('#guest-banner');
