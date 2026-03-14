@@ -312,10 +312,12 @@
       line-height:1.15;
       white-space:nowrap;
       cursor:pointer;
+      touch-action:manipulation;
       box-shadow:0 5px 14px rgba(14,165,233,0.18);
       transition:filter 0.15s ease;
       animation:routeChipFloat 1.9s ease-in-out infinite, routeChipGlow 1.9s ease-in-out infinite;
       position:relative;
+      z-index:1;
       flex-shrink:0;
     }
     .route-focus-chip:hover {
@@ -2107,6 +2109,13 @@
     }
   }
   checkExisting();
+
+  // 코스 상세 버튼 - JS 직접 바인딩 (onclick 속성 보완)
+  const courseBtn = document.getElementById('route-focus-toggle');
+  if (courseBtn) {
+    courseBtn.addEventListener('click', function(e) { e.stopPropagation(); openCourseDetail(); });
+    courseBtn.addEventListener('touchend', function(e) { e.preventDefault(); e.stopPropagation(); openCourseDetail(); }, { passive: false });
+  }
 </script>
 </body>
 </html>
