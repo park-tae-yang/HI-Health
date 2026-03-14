@@ -2400,21 +2400,33 @@
     .ch-dup-warn { display:none; padding:10px 13px; background:var(--warning-light); border-radius:var(--radius-sm); font-size:12px; color:#92400E; margin-bottom:12px; }
     .ch-dup-warn.show { display:block; }
     .ch-shoe-pref-wrap { display:block; margin:14px 0 12px; padding:14px; border:1px solid rgba(79,70,229,0.14); border-radius:14px; background:linear-gradient(180deg,#faf8ff 0%,#fff 100%); }
-    .ch-shoe-pref-head { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:10px; }
+    .ch-shoe-pref-head { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:12px; }
     .ch-shoe-pref-title { font-size:13px; font-weight:700; color:var(--text); }
     .ch-shoe-pref-note { font-size:11px; color:var(--text-secondary); line-height:1.55; }
     .ch-shoe-pref-size { width:118px; flex-shrink:0; }
     .ch-shoe-pref-size .form-label { margin-bottom:4px; font-size:11px; }
     .ch-shoe-pref-size .ch-form-select { background:#fff; padding:7px 30px 7px 10px; font-size:12px; }
+    .ch-shoe-flow { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin-bottom:12px; }
+    .ch-shoe-step { padding:10px 12px; border-radius:12px; border:1px solid rgba(79,70,229,0.12); background:rgba(255,255,255,0.84); }
+    .ch-shoe-step.active { border-color:rgba(79,70,229,0.28); background:#fff; box-shadow:0 8px 18px rgba(79,70,229,0.08); }
+    .ch-shoe-step-num { display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border-radius:999px; background:#ede9fe; color:var(--primary); font-size:11px; font-weight:800; margin-bottom:8px; }
+    .ch-shoe-step-title { font-size:12px; font-weight:700; color:var(--text); margin-bottom:4px; }
+    .ch-shoe-step-desc { font-size:11px; color:var(--text-secondary); line-height:1.45; }
     .ch-shoe-pref-ranks { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:10px; }
-    .ch-shoe-pref-rank { border:1px dashed var(--border); border-radius:12px; padding:8px 10px; background:#fff; min-height:54px; }
+    .ch-shoe-pref-rank { position:relative; border:1px dashed var(--border); border-radius:12px; padding:8px 34px 8px 10px; background:#fff; min-height:54px; }
     .ch-shoe-pref-rank.filled { border-style:solid; border-color:rgba(79,70,229,0.25); background:#f7f4ff; }
     .ch-shoe-pref-rank-label { font-size:10px; font-weight:700; color:var(--primary); margin-bottom:4px; }
     .ch-shoe-pref-rank-value { font-size:12px; font-weight:600; color:var(--text); line-height:1.4; }
     .ch-shoe-pref-rank-value.placeholder { font-weight:400; color:var(--text-secondary); }
+    .ch-shoe-rank-clear { position:absolute; top:8px; right:8px; width:20px; height:20px; border:none; border-radius:999px; background:#fff; color:var(--text-secondary); font-size:13px; line-height:1; cursor:pointer; box-shadow:0 1px 4px rgba(15,23,42,0.12); display:flex; align-items:center; justify-content:center; }
+    .ch-shoe-rank-clear:hover { color:#b91c1c; }
+    .ch-shoe-rank-hint { margin:-2px 0 10px; font-size:11px; color:var(--text-secondary); }
     .ch-shoe-pref-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; }
-    .ch-shoe-model-card { border:1px solid rgba(79,70,229,0.12); border-radius:14px; overflow:hidden; background:#fff; box-shadow:0 4px 14px rgba(15,23,42,0.04); }
+    .ch-shoe-model-card { border:1px solid rgba(79,70,229,0.12); border-radius:14px; overflow:hidden; background:#fff; box-shadow:0 4px 14px rgba(15,23,42,0.04); cursor:pointer; transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease, opacity .18s ease; }
+    .ch-shoe-model-card:hover { transform:translateY(-2px); box-shadow:0 10px 24px rgba(79,70,229,0.10); }
     .ch-shoe-model-card.selected { border-color:rgba(79,70,229,0.35); box-shadow:0 8px 18px rgba(79,70,229,0.12); }
+    .ch-shoe-model-card.disabled { opacity:0.6; cursor:not-allowed; }
+    .ch-shoe-model-card.disabled:hover { transform:none; box-shadow:0 4px 14px rgba(15,23,42,0.04); }
     .ch-shoe-model-photo { position:relative; aspect-ratio:5/4; background:#f8fafc; display:flex; align-items:center; justify-content:center; overflow:hidden; }
     .ch-shoe-model-photo img { width:100%; height:100%; object-fit:cover; display:block; transform-origin:center; cursor:zoom-in; }
     .ch-shoe-gender-tag { position:absolute; top:8px; right:8px; z-index:1; display:inline-flex; align-items:center; justify-content:center; padding:2px 6px; border-radius:6px; border:1px solid transparent; font-size:8px; font-weight:800; letter-spacing:.1px; line-height:1.4; box-shadow:0 3px 8px rgba(15,23,42,.08); }
@@ -2423,9 +2435,11 @@
     .ch-shoe-gender-tag[data-gender="남여공용"] { background:#ddd6fe; color:#6d28d9; border-color:#c4b5fd; }
     .ch-shoe-model-body { padding:10px; }
     .ch-shoe-model-name { font-size:12px; font-weight:700; color:var(--text); margin-bottom:8px; }
+    .ch-shoe-model-tip { font-size:11px; color:var(--text-secondary); line-height:1.45; margin-bottom:8px; }
     .ch-shoe-model-actions { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; }
     .ch-shoe-rank-btn { border:1px solid var(--border); background:#fff; color:var(--text-secondary); border-radius:10px; padding:7px 0; font-size:11px; font-weight:700; cursor:pointer; transition:all 0.18s; }
     .ch-shoe-rank-btn.active { border-color:var(--primary); background:var(--primary-light); color:var(--primary); }
+    .ch-shoe-rank-btn:disabled { opacity:0.45; cursor:not-allowed; }
     .ch-shoe-note-card { display:flex; flex-direction:column; justify-content:space-between; grid-column:1/-1; padding:12px; border:1px dashed rgba(79,70,229,0.22); border-radius:14px; background:#fcfbff; min-height:100%; }
     .ch-shoe-note-label { font-size:12px; font-weight:700; color:var(--text); margin-bottom:6px; }
     .ch-shoe-note-desc { font-size:11px; color:var(--text-secondary); line-height:1.5; margin-bottom:10px; }
@@ -2433,6 +2447,7 @@
     .ch-shoe-note-input:focus { border-color:var(--primary); box-shadow:0 0 0 3px rgba(79,70,229,0.08); }
     @media (max-width:420px) {
       .ch-shoe-pref-head { flex-direction:column; }
+      .ch-shoe-flow { grid-template-columns:1fr; }
       .ch-shoe-pref-size { width:100%; }
       .ch-shoe-pref-ranks { grid-template-columns:1fr; }
       .ch-shoe-pref-grid { grid-template-columns:1fr; }
@@ -2706,7 +2721,6 @@
     <div class="login-input-container">
       <div class="login-input-overlay" id="login-name-overlay">
         <span class="login-hint-main">이름 입력</span>
-        <span class="login-hint-sub">(예: 김하이)</span>
       </div>
       <input type="text" class="app-login-input app-login-input-name login-placeholder-val" id="login-name-input"
         value=""
@@ -8779,6 +8793,8 @@ function renderChShoePrefSection() {
   const wrap = document.getElementById('ch-shoe-pref-section');
   const shoeSize = String(document.getElementById('ch-shoe')?.value || '').trim();
   if (!wrap) return;
+  const filledRanks = _chShoePrefs.filter(Boolean).length;
+  const nextRank = _chShoePrefs.findIndex(v => !v);
   const sizeOptions = ['<option value="">사이즈(mm)</option>']
     .concat(CH_SHOE_SIZES.map(size => `<option value="${size}"${shoeSize === size ? ' selected' : ''}>${size}</option>`))
     .join('');
@@ -8786,18 +8802,58 @@ function renderChShoePrefSection() {
     <div class="ch-shoe-pref-rank${id ? ' filled' : ''}">
       <div class="ch-shoe-pref-rank-label">${idx + 1}순위</div>
       <div class="ch-shoe-pref-rank-value${id ? '' : ' placeholder'}">${getChShoeDisplayLabel(id) || '선택 전'}</div>
+      ${id ? `<button type="button" class="ch-shoe-rank-clear" onclick="clearChShoePref(${idx}, event)" aria-label="${idx + 1}순위 삭제">×</button>` : ''}
+    </div>
+  `).join('');
+  const rankHint = !shoeSize
+    ? '먼저 사이즈를 선택하면 러닝화 모델을 고를 수 있어요.'
+    : filledRanks === 0
+      ? '카드를 눌러 1순위를 먼저 담아주세요.'
+      : filledRanks < 3
+        ? `다음 선택은 ${nextRank + 1}순위에 자동으로 담겨요. 필요하면 아래 버튼으로 순위를 바꿀 수 있어요.`
+        : '세 가지 선택이 모두 완료됐어요. 순위를 바꾸거나 삭제할 수 있어요.';
+  const flowCards = [
+    {
+      title: '사이즈 선택',
+      desc: shoeSize ? `${shoeSize}mm 선택 완료` : '본인 러닝화 사이즈를 먼저 골라주세요.',
+      active: !shoeSize
+    },
+    {
+      title: '모델 선택',
+      desc: filledRanks ? `${filledRanks}개 선택됨` : '원하는 모델 카드를 눌러 순서대로 담아주세요.',
+      active: !!shoeSize && filledRanks < 1
+    },
+    {
+      title: '요청사항 입력',
+      desc: (_chShoeRequestNote || '').trim() ? '추가 요청이 입력되어 있어요.' : '발볼, 착화감 등 필요한 경우만 적어주세요.',
+      active: !!shoeSize && filledRanks >= 1
+    }
+  ].map((step, idx) => `
+    <div class="ch-shoe-step${step.active ? ' active' : ''}">
+      <div class="ch-shoe-step-num">${idx + 1}</div>
+      <div class="ch-shoe-step-title">${step.title}</div>
+      <div class="ch-shoe-step-desc">${step.desc}</div>
     </div>
   `).join('');
   const cards = CH_SHOE_MODELS.map(model => {
     const selected = _chShoePrefs.includes(model.id);
+    const disableAutoPick = !shoeSize || (!selected && filledRanks >= 3);
+    const autoPickHint = !shoeSize
+      ? '사이즈를 먼저 선택해주세요'
+      : selected
+        ? '선택 완료, 다시 누르면 해제'
+        : filledRanks >= 3
+          ? '3개 선택 완료'
+          : `${nextRank + 1}순위로 빠르게 선택`;
     return `
-      <div class="ch-shoe-model-card${selected ? ' selected' : ''}">
-        <div class="ch-shoe-model-photo"><span class="ch-shoe-gender-tag" data-gender="${model.genderLabel || '남여공용'}">${model.genderLabel || '남여공용'}</span><img src="${model.image}" alt="${model.label}" onclick="openShoeLightbox('${model.image}','${model.label}')" style="object-position:${model.position || 'center center'};transform:scale(${model.zoom || 1.08})"></div>
+      <div class="ch-shoe-model-card${selected ? ' selected' : ''}${disableAutoPick ? ' disabled' : ''}" onclick="quickPickChShoePref('${model.id}')">
+        <div class="ch-shoe-model-photo"><span class="ch-shoe-gender-tag" data-gender="${model.genderLabel || '남여공용'}">${model.genderLabel || '남여공용'}</span><img src="${model.image}" alt="${model.label}" onclick="event.stopPropagation();openShoeLightbox('${model.image}','${model.label}')" style="object-position:${model.position || 'center center'};transform:scale(${model.zoom || 1.08})"></div>
         <div class="ch-shoe-model-body">
           <div class="ch-shoe-model-name">${getChShoeDisplayLabel(model)}</div>
+          <div class="ch-shoe-model-tip">${autoPickHint}</div>
           <div class="ch-shoe-model-actions">
             ${[0,1,2].map(rank => `
-              <button type="button" class="ch-shoe-rank-btn${_chShoePrefs[rank] === model.id ? ' active' : ''}" onclick="pickChShoePref(${rank},'${model.id}')">${rank + 1}순위</button>
+              <button type="button" class="ch-shoe-rank-btn${_chShoePrefs[rank] === model.id ? ' active' : ''}" onclick="pickChShoePref(${rank},'${model.id}', event)"${!shoeSize ? ' disabled' : ''}>${rank + 1}순위</button>
             `).join('')}
           </div>
         </div>
@@ -8824,18 +8880,55 @@ function renderChShoePrefSection() {
         <select class="ch-form-select" id="ch-shoe" onchange="renderChShoePrefSection();updateChSubmitState()">${sizeOptions}</select>
       </div>
     </div>
+    <div class="ch-shoe-flow">${flowCards}</div>
     <div class="ch-shoe-pref-ranks">${rankSummary}</div>
+    <div class="ch-shoe-rank-hint">${rankHint}</div>
     <div class="ch-shoe-pref-grid">${cards}</div>
   `;
 }
 
-function pickChShoePref(rank, modelId) {
+function pickChShoePref(rank, modelId, ev) {
+  ev?.stopPropagation?.();
+  const shoeSize = String(document.getElementById('ch-shoe')?.value || '').trim();
+  if (!shoeSize) return;
   const model = normChShoeModelId(modelId);
   const idx = Number(rank);
   if (!model || idx < 0 || idx > 2) return;
   const sameRank = _chShoePrefs[idx] === model;
   _chShoePrefs = _chShoePrefs.map(v => v === model ? '' : v);
   _chShoePrefs[idx] = sameRank ? '' : model;
+  renderChShoePrefSection();
+  updateChSubmitState();
+}
+
+function quickPickChShoePref(modelId) {
+  const shoeSize = String(document.getElementById('ch-shoe')?.value || '').trim();
+  if (!shoeSize) {
+    showToast('⚠️ 신발 사이즈를 먼저 선택해주세요');
+    return;
+  }
+  const model = normChShoeModelId(modelId);
+  if (!model) return;
+  const existingIdx = _chShoePrefs.indexOf(model);
+  if (existingIdx >= 0) {
+    _chShoePrefs[existingIdx] = '';
+  } else {
+    const targetIdx = _chShoePrefs.findIndex(v => !v);
+    if (targetIdx < 0) {
+      showToast('⚠️ 이미 3개를 선택했어요. 순위를 바꾸거나 삭제해주세요');
+      return;
+    }
+    _chShoePrefs[targetIdx] = model;
+  }
+  renderChShoePrefSection();
+  updateChSubmitState();
+}
+
+function clearChShoePref(rank, ev) {
+  ev?.stopPropagation?.();
+  const idx = Number(rank);
+  if (idx < 0 || idx > 2) return;
+  _chShoePrefs[idx] = '';
   renderChShoePrefSection();
   updateChSubmitState();
 }
@@ -9723,8 +9816,8 @@ function configureLoginFields() {
   if (IS_RUN_MODE) {
     if (loginSub) loginSub.textContent = '사번과 이름을 입력해 시작하세요';
     if (prefix) prefix.textContent = '';
-    if (empMain) empMain.textContent = '사번 입력';
-    if (empSub) empSub.textContent = '(예: A1801)';
+    if (empMain) empMain.textContent = '사번 또는 생년월일 입력';
+    if (empSub) empSub.textContent = '';
     if (errEl) errEl.textContent = '사번을 입력해주세요';
   } else {
     if (loginSub) loginSub.textContent = '등록번호와 이름을 입력해 시작하세요';
