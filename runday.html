@@ -1768,6 +1768,8 @@
     renderSuccessScreen(reg);
     document.getElementById('form-screen').classList.add('hide');
     document.getElementById('success-screen').classList.add('show');
+    const btn = document.getElementById('btn-submit');
+    if (btn) { btn.disabled = false; btn.textContent = '신청하기'; }
   }
 
   /* ── 이미지 크게 보기 ──────────────────────── */
@@ -2056,6 +2058,10 @@
 
     // 동의 체크
     document.getElementById('f-consent').checked = true;
+
+    // 제출 버튼 초기화
+    const btn = document.getElementById('btn-submit');
+    if (btn) { btn.disabled = false; btn.textContent = '신청하기'; }
 
     // 화면 전환
     document.getElementById('success-screen').classList.remove('show');
