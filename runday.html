@@ -224,7 +224,7 @@
     .sch-body { flex: 1; padding-bottom: 24px; }
     .sch-date-row { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
     .sch-phase { font-size: 10px; font-weight: 700; color: var(--dim); white-space: nowrap; }
-    .sch-date { font-size: 15px; font-weight: 800; color: var(--text); letter-spacing: -0.3px; }
+    .sch-date { font-size: 13px; font-weight: 800; color: var(--text); letter-spacing: -0.3px; }
     .sch-desc { font-size: 13px; color: var(--sub); line-height: 1.65; }
     .sch-tags {
       display: flex;
@@ -588,11 +588,18 @@
     .succ-val { font-size: 13px; font-weight: 700; color: var(--text); text-align: left; line-height: 1.5; word-break:break-word; }
     .succ-actions { display: flex; flex-direction: column; gap: 10px; margin-top: 0; }
     .succ-note { font-size: 11px; color: var(--sub); text-align: center; line-height: 1.5; }
+    .succ-btn-row { display: flex; gap: 8px; }
+    .btn-edit-reg {
+      flex: 1; padding: 14px;
+      background: var(--p); border: none;
+      border-radius: 14px; font-family: inherit; font-size: 14px; font-weight: 700;
+      color: #fff; cursor: pointer;
+    }
     .btn-cancel-reg {
-      width: 100%; padding: 14px;
+      flex: 1; padding: 14px;
       background: transparent; border: 1.5px solid #e5e7eb;
       border-radius: 14px; font-family: inherit; font-size: 14px; font-weight: 700;
-      color: var(--sub); cursor: pointer;
+      color: #ef4444; cursor: pointer;
     }
     @media (max-width: 420px) {
       .succ-summary { gap: 8px 10px; }
@@ -764,7 +771,7 @@
         <div class="sch-body">
           <div class="sch-date-row">
             <div class="sch-phase">워밍업</div>
-            <div class="sch-date">Mar 22 – Apr 4</div>
+            <div class="sch-date">3월 22일 – 4월 4일</div>
           </div>
           <div class="sch-desc">운동으로 루틴을 만들고 몸을 깨우는 기간입니다.</div>
           <div class="sch-tags">
@@ -781,7 +788,7 @@
         <div class="sch-body">
           <div class="sch-date-row">
             <div class="sch-phase">집중기간</div>
-            <div class="sch-date">Apr 5 – Apr 14</div>
+            <div class="sch-date">4월 5일 – 4월 14일</div>
           </div>
           <div class="sch-desc">운동 + 혈당 기록을 함께 진행하는 핵심 기간입니다.</div>
           <div class="sch-tags">
@@ -798,12 +805,11 @@
         <div class="sch-body">
           <div class="sch-date-row">
             <div class="sch-phase">행사 당일</div>
-            <div class="sch-date">Apr 15</div>
+            <div class="sch-date">4월 15일</div>
           </div>
-          <div class="sch-desc">HI 개원 8주년 기념 · 함께달리기 여의도→선유도<br>달린 거리만큼 기부가 진행됩니다.</div>
+          <div class="sch-desc">HI 개원 8주년 기념 · 함께달리기 여의도→선유도 약 4.7km<br>달린 거리만큼 기부가 진행됩니다.</div>
           <div class="sch-tags">
             <span class="sch-tag">크루즈 탑승 포함</span>
-            <span class="sch-tag">직원만 참여</span>
             <span class="sch-tag">함께 달려요</span>
           </div>
         </div>
@@ -1015,7 +1021,7 @@
     </div>
 
     <div class="fcard">
-      <div class="fcard-label">RUN DAY 행사 참여 <span style="font-size:11px;font-weight:600;color:#6b7280">직원만 참여</span></div>
+      <div class="fcard-label">RUN DAY 행사 참여</div>
       <div class="fg">
         <label class="lbl">한강 크루즈 <span class="req">*</span></label>
         <p class="hint">김포→여의도 약 90분, 기상 악화시 취소될 수 있습니다. 탑승 안할경우 버스로 여의도까지 이동합니다.</p>
@@ -1295,7 +1301,7 @@
   }
 
   const CH_KEY = 'hi_health_registrations_v2';
-  const DONATION_PER_PERSON = 36000;
+  const DONATION_PER_PERSON = 47000;
   const SB_URL = 'https://nbnmvvobehjitophkqmu.supabase.co';
   const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ibm12dm9iZWhqaXRvcGhrcW11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3Nzk4NzQsImV4cCI6MjA4ODM1NTg3NH0.iZS4JvhHUqv4ZMPxm9STit6xqVp2JA5H55M8Wmd1yjY';
 
@@ -1354,6 +1360,7 @@
 
     const reg = {
       id, name, empId, dept, phone, email: '', shoeSize: shoe, tshirtSize: tshirt,
+      avatar: getMyAvatarSrc(),
       shoePrefs: pref ? [pref] : [], shoeRequestNote: shoeN,
       cgmParticipation: cgmVal === 'yes',
       familyParticipation: fam, familyCount: fam ? members.length : 0,
@@ -1472,8 +1479,25 @@
   setTimeout(syncInitialIdentity, 500);
 
   window.addEventListener('message', (e) => {
-    if (e.data?.type === 'LOGIN') {
+    if (e.data?.type === 'LOGIN' || e.data?.type === 'AVATAR_CHANGE') {
       prefillFromLogin(e.data.name, e.data.empId, e.data.avatar);
+      // localStorage의 내 reg 아바타도 즉시 업데이트
+      const newAvatar = normalizeLiveAvatar(e.data.avatar);
+      if (newAvatar && e.data.empId) {
+        const regs = JSON.parse(localStorage.getItem(CH_KEY) || '[]');
+        const updated = regs.map(r =>
+          String(r.empId || '').toUpperCase() === String(e.data.empId || '').toUpperCase()
+            ? { ...r, avatar: newAvatar }
+            : r
+        );
+        localStorage.setItem(CH_KEY, JSON.stringify(updated));
+        // latestPeopleList도 동기화
+        latestPeopleList = latestPeopleList.map(r =>
+          String(r.empId || '').toUpperCase() === String(e.data.empId || '').toUpperCase()
+            ? { ...r, avatar: newAvatar }
+            : r
+        );
+      }
       if (latestPeopleList.length) renderPeople(latestPeopleList);
     }
     if (e.data?.type === 'SCROLL_TOP') {
@@ -1522,13 +1546,13 @@
     document.getElementById('people-donation').innerHTML = `예상 기부금 <strong>${(total * DONATION_PER_PERSON).toLocaleString('ko-KR')}원</strong>`;
 
     const stack = document.getElementById('av-stack');
-    const recent = active.slice(0, 8);
+    const recent = active.slice(0, 8).reverse();
     const myEmpId = getCurrentEmpId();
     const myAvatar = getMyAvatarSrc();
     let stackHTML = recent.map(r => {
       const rowEmpId = String(r.empId || '').trim().toUpperCase();
       const isMe = !!(myEmpId && rowEmpId && myEmpId === rowEmpId);
-      const avatarSrc = isMe && myAvatar ? myAvatar : `images/avatars/av${avIdx(r.empId || r.name || r.id || '')}.png`;
+      const avatarSrc = isMe && myAvatar ? myAvatar : (normalizeLiveAvatar(r.avatar) || `images/avatars/av${avIdx(r.empId || r.name || r.id || '')}.png`);
       const isNew = !!(r.registeredAt && (Date.now() - new Date(r.registeredAt).getTime()) <= NEW_PEOPLE_WINDOW_MS);
       return `<div class="av${isMe ? ' me' : ''}">${isNew ? '<span class="av-new">NEW</span>' : ''}<img src="${avatarSrc}" alt="${isMe ? '내 아바타' : ''}" onerror="if(this.dataset.err)return;this.dataset.err=1;this.src='${LIVE_AVATAR_FALLBACK}'"></div>`;
     }).join('');
@@ -1586,7 +1610,10 @@
       <div class="succ-card">
         <div class="succ-head">
           <div>
-            <div class="succ-name">${reg.name}</div>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div class="succ-name">${reg.name}</div>
+              <span style="font-size:10px;padding:3px 9px;border-radius:20px;background:#6d28d9;color:#fff;font-weight:700;letter-spacing:0.02em;flex-shrink:0;">🏅 챌린지 참여중</span>
+            </div>
             <div class="succ-meta">${reg.empId} · ${reg.dept || '부서 미입력'}</div>
           </div>
           <div class="succ-badge">신청 완료</div>
@@ -1595,7 +1622,10 @@
           ${rows.map(([label, value]) => `<div class="succ-item"><div class="succ-label">${label}</div><div class="succ-val">${value}</div></div>`).join('')}
         </div>
         <div class="succ-actions">
-          <button type="button" class="btn-cancel-reg" onclick="cancelReg('${reg.id}')">수정 및 취소</button>
+          <div class="succ-btn-row">
+            <button type="button" class="btn-edit-reg" onclick="editReg('${reg.id}')">수정</button>
+            <button type="button" class="btn-cancel-reg" onclick="cancelReg('${reg.id}')">취소</button>
+          </div>
           <div class="succ-note">수정 및 취소는 3월 21일까지 가능합니다.</div>
         </div>
       </div>
@@ -1611,8 +1641,57 @@
       </div>`;
   }
 
+  function editReg(regId) {
+    const regs = JSON.parse(localStorage.getItem(CH_KEY) || '[]');
+    const reg = regs.find(r => r.id === regId);
+    if (!reg) return;
+
+    // 기존 항목 제거 (재제출 시 중복 체크 통과를 위해)
+    localStorage.setItem(CH_KEY, JSON.stringify(regs.filter(r => r.id !== regId)));
+
+    // 기본 정보 채우기
+    document.getElementById('f-dept').value = reg.dept || '';
+    document.getElementById('f-phone').value = reg.phone || '';
+    document.getElementById('f-shoe').value = reg.shoeSize || '';
+    document.getElementById('f-tshirt').value = reg.tshirtSize || '';
+    if (document.getElementById('f-shoe-note')) document.getElementById('f-shoe-note').value = reg.shoeRequestNote || '';
+
+    // 브랜드 선택 복원
+    selectedBrand = (reg.shoePrefs && reg.shoePrefs[0]) || '';
+    renderNikeCard();
+    renderNbCard();
+
+    // 라디오 버튼 복원
+    const cgmVal = reg.cgmParticipation ? 'yes' : 'no';
+    const famVal = reg.familyParticipation ? 'yes' : 'no';
+    const cruiseVal = reg.cruiseParticipation ? 'yes' : 'no';
+    const eventVal = reg.eventParticipation ? 'yes' : 'no';
+    document.querySelectorAll('input[name="cgm"]').forEach(r => { r.checked = r.value === cgmVal; });
+    document.querySelectorAll('input[name="fam"]').forEach(r => { r.checked = r.value === famVal; });
+    document.querySelectorAll('input[name="cruise"]').forEach(r => { r.checked = r.value === cruiseVal; });
+    document.querySelectorAll('input[name="event"]').forEach(r => { r.checked = r.value === eventVal; });
+
+    // 가족 정보 복원
+    if (reg.familyParticipation) {
+      familyMembers = normalizeFamilyMembers(reg.familyMembers && reg.familyMembers.length ? reg.familyMembers : [createEmptyFamilyMember()]);
+      document.getElementById('fam-detail').classList.add('show');
+      renderFamilyMembers();
+    } else {
+      familyMembers = [];
+      document.getElementById('fam-detail').classList.remove('show');
+    }
+
+    // 동의 체크
+    document.getElementById('f-consent').checked = true;
+
+    // 화면 전환
+    document.getElementById('success-screen').classList.remove('show');
+    document.getElementById('form-screen').classList.remove('hide');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
   function cancelReg(regId) {
-    if (!confirm('신청을 취소하시겠습니까?')) return;
+    if (!confirm('정말 취소하시겠습니까?')) return;
     const regs = JSON.parse(localStorage.getItem(CH_KEY) || '[]').filter(r => r.id !== regId);
     localStorage.setItem(CH_KEY, JSON.stringify(regs));
     try {

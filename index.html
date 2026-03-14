@@ -842,7 +842,7 @@
     }
     .home-logo-wrap { text-align: center; padding: 18px 0 10px; }
     .home-logo-img  { height: 72px; width: auto; display: inline-block; }
-    .hero-greeting { font-size: 13px; opacity: 0.85; margin-bottom: 3px; }
+    .hero-greeting { font-size: 14px; opacity: 0.85; margin-bottom: 3px; }
     .hero-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; }
     .hero-stat {
       background: rgba(255,255,255,0.15); border-radius: 10px;
@@ -1677,7 +1677,7 @@
       box-shadow:0 0 0 3px rgba(79,70,229,0.12);
     }
     .pm-avatar-panel { padding:0; border:none; background:transparent; }
-    .pm-avatar-hint { margin:0; font-size:11px; color:#64748B; line-height:1.5; text-align:left; }
+    .pm-avatar-hint { margin:0; font-size:11px; color:#64748B; line-height:1.5; text-align:center; }
     .pm-hidden { display:none !important; }
     .pm-actions { display:flex; flex-direction:column; gap:8px; margin-top:14px; }
     .pm-logout-btn,
@@ -1685,6 +1685,13 @@
       display:block; width:100%; font-family:inherit; font-size:13px; cursor:pointer;
       transition:all 0.2s;
     }
+    .pm-save-btn {
+      display:block; width:100%; font-family:inherit; font-size:14px; cursor:pointer;
+      padding:13px 14px; text-align:center; border-radius:14px;
+      border:none; background:var(--purple); color:#fff; font-weight:700;
+      transition:all 0.2s;
+    }
+    .pm-save-btn:hover { opacity:0.88; }
     .pm-logout-btn {
       padding:12px 14px; text-align:center; border-radius:14px;
       border:1.5px solid var(--border); background:#fff;
@@ -1692,8 +1699,8 @@
     }
     .pm-logout-btn:hover { color:#0F172A; border-color:#CBD5E1; background:#F8FAFC; }
     .pm-delete-btn {
-      margin-top:8px; padding:2px 0 0;
-      border:none; background:none; color:#EF4444; font-weight:700;
+      margin-top:20px; padding:2px 0 0;
+      border:none; background:none; color:#EF4444; font-weight:400;
     }
     .pm-delete-btn:hover { color:#B91C1C; }
     .pm-delete-btn:disabled { opacity:0.55; cursor:default; }
@@ -3646,28 +3653,20 @@ function avHTML(src) {
 
 const PROFILE_TAGS = [
   {
-    cat: '치료 단계 · 방법',
-    tags: ['준비 중', '배란 유도중', '채취 완료', '배아 배양중', '이식 완료', '착상 기다리는 중', '임신 확인', '동결배아 보관중', '다음 시도 준비중', '잠시 휴식중', '신선 배아 이식', '동결 배아 이식', '호르몬 치료', 'PGT 검사', '면역 치료', '혈액 검사중', '유전자 검사', '자궁 검사중'],
+    cat: '난임치료중',
+    tags: ['배란 유도중', '채취 완료', '배아 배양중', '이식 완료', '임신 확인', '신선 배아 이식', '동결 배아 이식', '동결배아 보관중', '호르몬 치료', '면역 치료', 'PGT 검사', '착상 기다리는 중', '잠시 휴식중', '다음 시도 준비중', '1차 시험관', '2차 시험관', '3차 시험관', '4차 이상', '인공수정 병행', '자연임신 시도중'],
   },
   {
-    cat: '시술 차수',
-    tags: ['1차 시험관', '2차 시험관', '3차 시험관', '4차 이상', '인공수정 병행', '자연임신 시도중'],
+    cat: '건강습관',
+    tags: ['식단 관리', '매일 걷기', '수면 개선', '스트레스 관리', '금주 실천', '금연 중', '엽산 복용', '오메가3 챙기기', '영양 관리', '체중 관리', '스트레칭 매일', '충분한 수분 섭취'],
   },
   {
-    cat: '건강 습관',
-    tags: ['식단 관리', '스트레스 관리', '매일 걷기', '수면 개선', '금주 실천', '금연 중', '엽산 복용', '오메가3 챙기기', '영양 관리', '체중 관리', '스트레칭 매일', '충분한 수분 섭취'],
+    cat: '나의다짐',
+    tags: ['포기 안 해요', '희망 잃지 않아요', '함께 이겨내요', '남편과 함께', '간절히 기원중', '긍정 마인드', '아기 기다려요', '내 몸 믿어요', '나를 응원해요', '좋은 소식 기대해요'],
   },
   {
-    cat: '나의 다짐',
-    tags: ['포기 안 해요', '희망 잃지 않아요', '함께 이겨내요', '남편과 함께', '간절히 기원중', '긍정 마인드', '아기 기다려요', '내 몸 믿어요', '나를 응원해요', '좋은 소식 기대해요', '완주할 거야', '함께 달려요', '즐겁게 달리기', '포기 안 해', '최선을 다해', '건강하게 달리자', 'HI RUN DAY 화이팅'],
-  },
-  {
-    cat: '러닝 목표',
-    tags: ['5km 완주', '10km 완주', '코스 완주', '걷기 참여', '가족과 함께', '개인 기록 도전', '즐겁게 완주'],
-  },
-  {
-    cat: '나의 컨디션',
-    tags: ['훈련 중', '스트레칭 중', '페이스 조절 중', '컨디션 최고', '몸 만드는 중', '준비 완료', '긴장되지만 설레'],
+    cat: '챌린지',
+    tags: ['완주할 거야', '함께 달려요', '즐겁게 달리기', '최선을 다해', '건강하게 달리자', 'HI RUN DAY 화이팅', '5km 완주', '10km 완주', '코스 완주', '걷기 참여', '가족과 함께', '개인 기록 도전', '즐겁게 완주', '훈련 중', '컨디션 최고', '준비 완료', '긴장되지만 설레'],
   },
 ];
 
@@ -5149,36 +5148,27 @@ function renderHome() {
       '좋은 아침이에요! 오늘도 몸을 움직여볼까요? 🌅',
       '상쾌한 아침, 가볍게 스트레칭으로 시작해보세요 🤸',
       '건강한 하루 시작해볼까요? 🌿',
-      '아침 식사는 하셨나요? 균형 잡힌 한 끼가 하루의 에너지예요 🥗',
-      '오늘 아침 5분 명상으로 하루를 차분하게 시작해보세요 🧘',
-      '엽산과 비타민, 오늘 챙겨 드셨나요? 건강한 루틴을 이어가요 💊',
     ];
   } else if (hour >= 12 && hour < 18) {
     greetings = [
-      '편안한 오후 보내고 계신가요? 가볍게 걷기라도 시작해보세요 🚶',
-      '오후의 짧은 산책이 기분을 한층 가볍게 해줄 거예요 🌤️',
       '잠깐 자리에서 일어나 몸을 움직여볼까요? 💫',
       '오늘 오후도 건강하게 보내고 있나요? 🌸',
-      '점심 식사는 드셨나요? 채소를 충분히 챙겨 드세요 🥦',
-      '식후 가벼운 산책 10분이 소화와 혈당 관리에 도움이 돼요 🚶',
-      '잠깐 눈 감고 깊게 호흡해보세요. 마음이 한결 편안해질 거예요 🌬️',
+      '물 한 잔 마셨나요? 🥤',
+      '잠깐 스트레칭 어떠세요? 💪',
     ];
   } else if (hour >= 18 && hour < 22) {
     greetings = [
-      '오늘 하루도 수고하셨어요! 저녁 운동으로 마무리해볼까요? 🌙',
       '저녁 시간, 가벼운 요가나 스트레칭 어떠세요? 🧘',
       '하루의 피로를 운동으로 날려버려요 ✨',
-      '저녁 식사는 가볍게, 채소와 단백질 위주로 드시면 좋아요 🥗',
-      '저녁 명상 10분이 스트레스 해소와 숙면에 도움이 돼요 🌙',
-      '오늘 하루 식단은 어떠셨나요? 내일도 균형 있게 챙겨봐요 🌿',
+      '오늘 하루도 수고하셨어요! 🌙',
+      '저녁도 건강하게 마무리해요 🌿',
     ];
   } else {
     greetings = [
-      '충분한 숙면은 좋은 세포를 만드는 데 도움이 돼요 🌙',
       '오늘도 잘 하셨어요! 푹 쉬고 내일도 함께해요 💤',
       '편안한 밤 되세요. 수면도 건강의 일부예요 🌟',
       '잠들기 전 가벼운 스트레칭이 숙면에 도움이 돼요 🌙',
-      '취침 전 따뜻한 물 한 잔, 몸과 마음을 편안하게 해줄 거예요 🫖',
+      '오늘 하루도 고생하셨어요 💙',
     ];
   }
   document.getElementById('hero-greeting').textContent = greetings[Math.floor(Math.random() * greetings.length)];
@@ -6989,22 +6979,9 @@ function openProfileModal(onboarding = false) {
 
   // 챌린지 참여 현황
   const chEl = document.getElementById('pm-challenge-section');
-  if (chEl) {
-    const isReg = hasActiveChallengeRegistration();
-    const phase = getChPhase();
-    const phaseLabel = { before:'모집 예정', registration:'신청 기간', preparing:'준비 중', pre:'프리 챌린지 진행 중', main:'본 챌린지 진행 중', ended:'챌린지 종료' }[phase] || '';
-    if (isReg) {
-      chEl.style.display = '';
-      chEl.innerHTML = `<div class="pm-challenge-box">
-        <div class="pm-challenge-badge">챌린지 참여중</div>
-        <div class="pm-challenge-info">현재 챌린지에 참여하고 있습니다. 진행 단계만 확인하면 돼요.</div>
-        <div class="pm-challenge-phase">현재 단계: ${phaseLabel}</div>
-      </div>`;
-    } else {
-      chEl.innerHTML = '';
-      chEl.style.display = 'none';
-    }
-  }
+  if (chEl) { chEl.innerHTML = ''; chEl.style.display = 'none'; }
+  const pmChallengeTag = document.getElementById('pm-challenge-tag');
+  if (pmChallengeTag) pmChallengeTag.style.display = hasActiveChallengeRegistration() ? '' : 'none';
 
   const pmOverlay = document.getElementById('profile-modal');
   pmOverlay.classList.remove('pm-hidden');
@@ -7022,7 +6999,7 @@ function togglePmSection(type) {
   const collapsed = body.classList.toggle('collapsed');
   btn.textContent = collapsed ? '열기' : '닫기';
 }
-function closeProfileModal() {
+function saveProfileModal() {
   const nickname = document.getElementById('pm-nickname')?.value.trim();
   S.user.nickname = nickname || '';
   S.user.avatar = normalizeAvatar(_selAvatar);
@@ -7030,6 +7007,11 @@ function closeProfileModal() {
   save();
   renderHeader();
   renderHome();
+  const btn = document.getElementById('pm-save-btn');
+  if (btn) { btn.textContent = '저장됐어요 ✓'; setTimeout(() => { btn.textContent = '저장하기'; }, 1500); }
+}
+function closeProfileModal() {
+  saveProfileModal();
   document.getElementById('profile-modal').classList.add('pm-hidden');
 }
 function renderPmTags() {
@@ -7229,6 +7211,8 @@ function resetToLoggedOutState() {
   if (pmAvGrid) pmAvGrid.innerHTML = '';
   const pmChSection = document.getElementById('pm-challenge-section');
   if (pmChSection) pmChSection.innerHTML = '';
+  const pmChTag = document.getElementById('pm-challenge-tag');
+  if (pmChTag) pmChTag.style.display = 'none';
 
   document.getElementById('profile-modal').classList.add('pm-hidden');
   document.getElementById('app-login-screen').classList.remove('hidden');
@@ -10440,7 +10424,7 @@ init();
     <div class="pm-summary-card">
       <div class="pm-summary-avatar" id="pm-avatar-preview"></div>
       <div class="pm-summary-main">
-        <div class="pm-summary-label">My Profile</div>
+        <div class="pm-summary-label" style="display:flex;align-items:center;gap:7px;">My Profile<span id="pm-challenge-tag" style="display:none;font-size:10px;padding:3px 9px;border-radius:20px;background:var(--purple);color:#fff;font-weight:700;letter-spacing:0.02em;flex-shrink:0;">🏅 챌린지 참여중</span></div>
         <div class="pm-summary-name" id="pm-preview-name">-</div>
         <div class="pm-summary-meta">
           <span class="pm-meta-chip"><strong>등록번호</strong><span id="pm-empid">-</span></span>
@@ -10480,9 +10464,11 @@ init();
       </div>
       <div class="pm-section-body" id="pm-section-tag">
         <div id="pm-tag-list"></div>
+        <div style="font-size:11px;color:#9ca3af;margin-top:10px;text-align:center;">선택한 태그가 홈화면에 바로 보여집니다</div>
       </div>
     </div>
     <div class="pm-actions">
+      <button type="button" class="pm-save-btn" id="pm-save-btn" onclick="saveProfileModal()">저장하기</button>
       <button type="button" class="pm-logout-btn" id="pm-logout-btn" onclick="appLogout()">로그아웃</button>
     </div>
     <button type="button" class="pm-delete-btn" id="pm-delete-data-btn" onclick="requestDeleteMyDeviceAndServerData()">모든 데이터 삭제 초기화</button>
