@@ -1723,6 +1723,8 @@
     .install-step-icon { display:inline-block; background:#F1F5F9; border-radius:6px; padding:2px 7px; font-size:13px; margin:0 2px; vertical-align:middle; }
     .install-btn { width:100%; padding:13px; border-radius:12px; border:none; background:var(--accent); color:#fff; font-size:15px; font-weight:700; cursor:pointer; }
     .install-skip { text-align:center; margin-top:10px; font-size:12px; color:var(--text-secondary); cursor:pointer; text-decoration:underline; }
+    .install-kakao-notice { background:#FEF9C3; border-radius:10px; padding:12px 14px; margin-bottom:14px; font-size:13px; line-height:1.6; color:#78350F; }
+    .install-kakao-notice strong { font-weight:700; }
     /* ── Confirm Modal ── */
     .confirm-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:300; display:flex; align-items:center; justify-content:center; padding:24px; }
     .confirm-modal { background:var(--card); border-radius:var(--radius); padding:28px 24px 20px; width:100%; max-width:320px; text-align:center; }
@@ -10773,6 +10775,14 @@ init();
       <div class="install-title">📲 홈 화면에 추가하기</div>
       <button class="install-close" onclick="closeInstallGuide()">✕</button>
     </div>
+    <div id="install-kakao-ios" class="install-kakao-notice" style="display:none">
+      ⚠️ 카카오톡 브라우저에서는 홈화면 추가가 되지 않아요.<br>
+      화면 하단 <strong>···</strong> → <strong>'Safari로 열기'</strong> 후 아래 절차를 따라주세요.
+    </div>
+    <div id="install-kakao-android" class="install-kakao-notice" style="display:none">
+      ⚠️ 카카오톡 브라우저에서는 홈화면 추가가 되지 않아요.<br>
+      화면 우측 상단 <strong>⋮</strong> → <strong>'기본 브라우저로 열기'</strong> 후 아래 절차를 따라주세요.
+    </div>
     <div id="install-steps-ios" class="install-steps" style="display:none">
       <div class="install-step">
         <div class="install-step-num">1</div>
@@ -10825,9 +10835,14 @@ init();
     const isStandalone = window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
     if (isStandalone) return;
     if (localStorage.getItem('hi_install_dismissed')) return;
-    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
-    const isAndroid = /android/i.test(navigator.userAgent);
+    const ua = navigator.userAgent;
+    const isIOS = /iphone|ipad|ipod/i.test(ua);
+    const isAndroid = /android/i.test(ua);
     if (!isIOS && !isAndroid) return;
+    const isKakao = /KAKAOTALK/i.test(ua);
+    if (isKakao) {
+      document.getElementById(isIOS ? 'install-kakao-ios' : 'install-kakao-android').style.display = '';
+    }
     document.getElementById(isIOS ? 'install-steps-ios' : 'install-steps-android').style.display = '';
     document.getElementById('install-overlay').classList.remove('pm-hidden');
   }
