@@ -417,7 +417,40 @@
     .rank-chip .rv { font-size: 10px; font-weight: 600; color: var(--sub); }
     .rank-chip.on .rv { color: var(--p); }
 
-    .shoe-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+    /* shoe brand 2-column grid */
+    .shoe-brand-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 4px; }
+
+    /* nike combined card */
+    .nk-card {
+      background: #f9fafb; border: 1.5px solid #e5e7eb;
+      border-radius: 12px; padding: 8px; margin-bottom: 8px;
+      transition: border-color 0.15s;
+    }
+    .nk-card.on { border-color: #c4b5fd; background: #f5f3ff; }
+    .nk-title { font-size: 12px; font-weight: 800; color: var(--text); margin-bottom: 10px; letter-spacing: -0.3px; }
+    .nk-slide-wrap { position: relative; display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+    .nk-slide-viewport { position: relative; flex: 1; border-radius: 8px; overflow: hidden; background: #fff; aspect-ratio: 16/9; cursor: zoom-in; }
+    .nk-slide-img { width: 100%; height: 100%; object-fit: cover; transition: opacity 0.2s; display: block; }
+    .nk-slide-btn {
+      flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%;
+      background: #fff; border: 1.5px solid #e5e7eb;
+      font-size: 16px; line-height: 1; color: var(--sub);
+      cursor: pointer; font-family: inherit;
+      display: flex; align-items: center; justify-content: center;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .nk-slide-btn:hover { border-color: var(--p2); color: var(--p2); }
+    .nk-dots { display: flex; justify-content: center; gap: 5px; margin-bottom: 10px; }
+    .nk-dot { width: 6px; height: 6px; border-radius: 50%; background: #e5e7eb; cursor: pointer; transition: background 0.15s, transform 0.15s; }
+    .nk-dot.active { background: var(--p2); transform: scale(1.3); }
+    .nk-divider { height: 1px; background: #f3f4f6; margin: 8px 0; }
+    .nk-rows { display: flex; flex-direction: column; gap: 1px; }
+    .nk-row { display: flex; align-items: center; gap: 5px; padding: 3px 4px; border-radius: 6px; transition: background 0.12s; cursor: pointer; }
+    .nk-row.on { background: #ede9fe; }
+    .nk-cdot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; border: 1.5px solid rgba(0,0,0,0.1); }
+    .nk-nm { flex: 1; font-size: 9px; font-weight: 700; color: var(--sub); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .nk-row.on .nk-nm { color: var(--p); }
+
     .scard {
       display: flex; flex-direction: column; gap: 8px;
       background: #f9fafb; border: 1.5px solid #e5e7eb;
@@ -433,11 +466,11 @@
     }
     .stag.f { background: #fce7f3; color: #9d174d; }
     .stag.m { background: #e0e7ff; color: #3730a3; }
-    .srbcol { display: flex; gap: 3px; }
+    .srbcol { display: flex; gap: 2px; }
     .srb {
-      flex: 1; padding: 4px 2px; font-size: 10px; font-weight: 700;
+      flex: 1; padding: 2px 2px; font-size: 9px; font-weight: 700;
       background: #fff; border: 1.5px solid #e5e7eb;
-      border-radius: 6px; color: var(--dim); text-align: center;
+      border-radius: 4px; color: var(--dim); text-align: center;
       cursor: pointer; font-family: inherit; transition: all 0.12s;
     }
     .srb.on { background: var(--p2); border-color: var(--p2); color: #fff; }
@@ -451,9 +484,6 @@
     .snote:focus { border-color: var(--p2); }
     .snote::placeholder { color: #d1d5db; }
 
-    @media (max-width: 390px) {
-      .shoe-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    }
 
     .hdivider { height: 1px; background: #f3f4f6; margin: 10px 0; }
 
@@ -484,21 +514,28 @@
     .btn-submit:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
 
     /* ─── SUCCESS ────────────────────────────── */
-    .success { display: none; padding: 48px 24px 80px; text-align: center; }
+    .success { display: none; padding: 24px 24px 80px; }
     .success.show { display: block; }
-    .success-img {
-      width: 160px; margin: 0 auto 24px;
-      animation: bob 3s ease-in-out infinite;
-      filter: drop-shadow(0 8px 24px rgba(91,33,182,0.25));
-    }
-    .success-h { font-size: 28px; font-weight: 900; color: var(--p); margin-bottom: 8px; }
-    .success-p { font-size: 14px; color: var(--sub); line-height: 1.75; margin-bottom: 20px; }
-    .success-box {
+    .succ-title { font-size: 22px; font-weight: 900; color: var(--p); margin-bottom: 4px; }
+    .succ-sub { font-size: 13px; color: var(--sub); margin-bottom: 20px; }
+    .succ-card {
       background: #f5f3ff; border: 1.5px solid #c4b5fd;
-      border-radius: 14px; padding: 16px; margin-bottom: 28px;
+      border-radius: 14px; padding: 4px 16px; margin-bottom: 20px;
     }
-    .success-box-l { font-size: 10px; font-weight: 700; color: var(--p2); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 4px; }
-    .success-box-n { font-size: 26px; font-weight: 900; color: var(--text); letter-spacing: 1px; }
+    .succ-row {
+      display: flex; justify-content: space-between; align-items: baseline;
+      padding: 10px 0; border-bottom: 1px solid #ede9fe;
+    }
+    .succ-row:last-child { border-bottom: none; }
+    .succ-label { font-size: 11px; font-weight: 700; color: var(--dim); }
+    .succ-val { font-size: 13px; font-weight: 700; color: var(--text); text-align: right; line-height: 1.5; }
+    .succ-actions { display: flex; flex-direction: column; gap: 10px; margin-top: 0; }
+    .btn-cancel-reg {
+      width: 100%; padding: 14px;
+      background: transparent; border: 1.5px solid #e5e7eb;
+      border-radius: 14px; font-family: inherit; font-size: 14px; font-weight: 700;
+      color: var(--sub); cursor: pointer;
+    }
 
     /* ─── CTA BUTTON ─────────────────────────── */
     .btn-app {
@@ -558,6 +595,17 @@
       font-size: 20px; cursor: pointer; line-height: 1;
       display: flex; align-items: center; justify-content: center;
     }
+    .img-preview-nav {
+      position: absolute; top: 50%; transform: translateY(-50%);
+      width: 40px; height: 40px; border-radius: 50%;
+      background: rgba(255,255,255,0.15); border: none; color: #fff;
+      font-size: 24px; cursor: pointer; line-height: 1;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.15s;
+    }
+    .img-preview-nav:hover { background: rgba(255,255,255,0.28); }
+    .img-preview-nav.prev { left: 12px; }
+    .img-preview-nav.next { right: 12px; }
 
     /* ─── TOAST ──────────────────────────────── */
     .toasts {
@@ -785,21 +833,7 @@
 
   <!-- 완료 화면 -->
   <div class="success" id="success-screen">
-    <img src="images/run_day_patch.png" alt="완료" class="success-img">
-    <div class="success-h">신청 완료!</div>
-    <p class="success-p">챌린지에 신청해주셨습니다.<br>신청번호를 꼭 기억해두세요.</p>
-    <div class="success-box">
-      <div class="success-box-l">신청번호</div>
-      <div class="success-box-n" id="success-id">HC-000000</div>
-    </div>
-    <a href="index.html" class="btn-app" style="text-decoration:none;margin-bottom:0">
-      <div class="btn-app-icon"><img src="images/avatars/av1.png" alt=""></div>
-      <div class="btn-app-body">
-        <div class="btn-app-main">운동 기록 시작하기</div>
-        <div class="btn-app-sub">챌린지 인증 · 혈당 기록 · 리그 참여</div>
-      </div>
-      <div class="btn-app-arr">›</div>
-    </a>
+    <div id="success-content"></div>
   </div>
 
   <!-- 신청 폼 -->
@@ -838,14 +872,11 @@
     </div>
 
     <div class="fcard">
-      <div class="fcard-label">운동화 신청</div>
-      <div style="font-size:11px;color:#6b7280;line-height:1.6;background:#f9fafb;border-radius:8px;padding:10px 12px;margin-bottom:12px;">
-        🔔 운동화는 커스텀 제작으로 수령 후 교환 및 반품이 어렵습니다. 신청 순서에 따라 재고 수량을 파악하여 지급되므로 원하는 제품 수령이 어려울 수 있습니다.
-      </div>
+      <div class="fcard-label">러닝화, 티셔츠 신청</div>
       <div class="fg row2">
         <div>
-          <label class="lbl" for="f-shoe">발 사이즈</label>
-          <select class="fs" id="f-shoe" title="발 사이즈" onchange="updateChips()">
+          <label class="lbl" for="f-shoe">운동화 사이즈</label>
+          <select class="fs" id="f-shoe" title="운동화 사이즈" onchange="">
             <option value="">사이즈(mm) 선택</option>
             <option>215</option><option>220</option><option>225</option><option>230</option>
             <option>235</option><option>240</option><option>245</option><option>250</option>
@@ -863,14 +894,18 @@
           </select>
         </div>
       </div>
+      <div style="font-size:11px;color:#6b7280;line-height:1.6;background:#f9fafb;border-radius:8px;padding:10px 12px;margin-bottom:12px;">
+        🔔 러닝화와 티셔츠는 커스텀 패치 부착으로 수령 후 교환 및 반품이 어려워 사이즈를 신중하게 작성해주시기 바랍니다.
+      </div>
       <div class="fg">
-        <label class="lbl">희망 모델 <span style="font-weight:400;color:#d1d5db">순서대로 선택</span></label>
-        <div class="rank-row">
-          <div class="rank-chip" id="chip0"><div class="rn">1순위</div><div class="rv">미선택</div></div>
-          <div class="rank-chip" id="chip1"><div class="rn">2순위</div><div class="rv">미선택</div></div>
-          <div class="rank-chip" id="chip2"><div class="rn">3순위</div><div class="rv">미선택</div></div>
+        <label class="lbl">희망 모델 <span style="font-weight:400;color:#d1d5db">탭하여 선택</span></label>
+        <div style="font-size:11px;color:#6b7280;line-height:1.6;background:#f9fafb;border-radius:8px;padding:10px 12px;margin-bottom:8px;">
+          📦 신청 순서에 따라 재고 수량을 파악하여 지급되므로 원하는 제품 수령이 어려울 수 있습니다.
         </div>
-        <div class="shoe-grid" id="shoe-grid"></div>
+        <div class="shoe-brand-grid">
+          <div id="nike-combo-card"></div>
+          <div id="nb-combo-card"></div>
+        </div>
         <label class="lbl" for="f-shoe-note" style="margin-top:12px">요청사항 <span style="font-weight:400;color:#d1d5db">선택</span></label>
         <textarea class="snote" id="f-shoe-note" rows="2" placeholder="발볼, 착화감, 재고 문의 등 자유롭게 적어주세요"></textarea>
       </div>
@@ -879,7 +914,7 @@
     <div class="fcard">
       <div class="fcard-label">가족 참여</div>
       <div style="font-size:11px;color:#6b7280;line-height:1.6;background:#f9fafb;border-radius:8px;padding:10px 12px;margin-bottom:12px;">
-        👨‍👩‍👧 가족과 함께 참여하면 <strong style="color:#5b21b6">스페셜 인증</strong>을 받을 수 있어요! 행사 당일 가족과 함께 완주 시 별도 기념 인증을 드립니다.
+        👨‍👩‍👧 가족과 함께 참여하면 <strong style="color:#5b21b6">스페셜 인증</strong>을 받을 수 있어요!
       </div>
       <div class="fg">
         <label class="lbl">가족 함께 참여 <span class="req">*</span></label>
@@ -964,60 +999,145 @@
 <!-- ─── IMAGE PREVIEW ───────────────────────── -->
 <div class="img-preview-overlay hidden" id="img-preview" onclick="closeImgPreview()">
   <button class="img-preview-close" onclick="closeImgPreview()">✕</button>
+  <button class="img-preview-nav prev" onclick="event.stopPropagation();previewNav(-1)">‹</button>
   <img class="img-preview-img" id="img-preview-img" src="" alt="">
   <div class="img-preview-label" id="img-preview-label"></div>
   <div class="img-preview-sub" id="img-preview-sub">탭하면 닫힙니다</div>
+  <button class="img-preview-nav next" onclick="event.stopPropagation();previewNav(1)">›</button>
 </div>
 
 <script>
-  const MODELS = [
-    { id:'nike1', label:'Nike Vomero Plus (화이트)', img:'images/nike1.png', g:'f' },
-    { id:'nike2', label:'Nike Vomero Plus (베이지)', img:'images/nike2.png', g:'f' },
-    { id:'nike3', label:'Nike Vomero Plus (그레이)', img:'images/nike3.png', g:'m' },
-    { id:'nb1',   label:'NB 860 V15 (화이트)',       img:'images/nb1.png',  g:'f' },
-    { id:'nb2',   label:'NB 860 V15 (그레이)',        img:'images/nb2.png',  g:'m' },
-    { id:'nb3',   label:'NB 1080 V15',               img:'images/nb3.png',  g:'f' },
+  const NIKE_MODELS = [
+    { id:'nike1', label:'Nike Vomero Plus (화이트)', img:'images/nike1.png', g:'f', cdot:'#f0ede8' },
+    { id:'nike2', label:'Nike Vomero Plus (베이지)', img:'images/nike2.png', g:'f', cdot:'#c9a97a' },
+    { id:'nike3', label:'Nike Vomero Plus (그레이)', img:'images/nike3.png', g:'m', cdot:'#9ca3af' },
   ];
-  let P = ['','',''];
+  const NB_MODELS = [
+    { id:'nb1', label:'NB 860 V15 (화이트)', img:'images/nb1.png', g:'f', cdot:'#f0ede8' },
+    { id:'nb2', label:'NB 860 V15 (그레이)', img:'images/nb2.png', g:'m', cdot:'#9ca3af' },
+    { id:'nb3', label:'NB 1080 V15 (베이지)', img:'images/nb3.png', g:'f', cdot:'#c9a97a' },
+  ];
+  const MODELS = [...NIKE_MODELS, ...NB_MODELS];
+  let selectedModels = new Set();
+  let nikeIdx = 0;
+  let nbIdx = 0;
 
-  function renderShoes() {
-    document.getElementById('shoe-grid').innerHTML = MODELS.map(m => {
-      const sel = P.includes(m.id);
-      const btns = [0,1,2].map(i =>
-        `<button type="button" class="srb${P[i]===m.id?' on':''}" onclick="pick(${i},'${m.id}')">${i+1}</button>`
-      ).join('');
-      return `<div class="scard${sel?' on':''}" id="sc-${m.id}">
-        <div style="position:relative">
-          <img class="simg" src="${m.img}" alt="${m.label}" loading="lazy" onclick="openImgPreview('${m.img}','${m.label}','${m.g==='f'?'여성':'남성'}')">
-          <span class="stag ${m.g}" style="position:absolute;top:4px;right:4px;">${m.g==='f'?'여성':'남성'}</span>
-        </div>
-        <div class="sinfo">
-          <div class="snm">${m.label}</div>
-        </div>
-        <div class="srbcol">${btns}</div>
-      </div>`;
-    }).join('');
+  function toggleModel(id, brand, idx) {
+    if (selectedModels.has(id)) { selectedModels.delete(id); }
+    else { selectedModels.add(id); }
+    if (brand === 'nike') nikeGoTo(idx);
+    else nbGoTo(idx);
   }
 
-  function pick(rank, id) {
-    if (P[rank] === id) { P[rank] = ''; }
-    else { P = P.map((v,i) => v===id && i!==rank ? '' : v); P[rank] = id; }
-    renderShoes(); updateChips();
+  function renderNikeCard() {
+    const nikeAnyOn = NIKE_MODELS.some(m => selectedModels.has(m.id));
+    const rows = NIKE_MODELS.map((m, i) => {
+      const on = selectedModels.has(m.id);
+      return `<div class="nk-row${on?' on':''}" id="sc-${m.id}" onclick="toggleModel('${m.id}','nike',${i})">
+        <div class="nk-cdot" style="background:${m.cdot}"></div>
+        <span class="nk-nm">${m.label.replace('Nike ','')}</span>
+        <span style="font-size:9px;color:var(--dim);flex-shrink:0">${m.g==='f'?'여성':'남성'}</span>
+        <span style="font-size:10px;color:${on?'var(--p2)':'transparent'};flex-shrink:0;margin-left:2px">✓</span>
+      </div>`;
+    }).join('');
+    const cur = NIKE_MODELS[nikeIdx];
+    const dots = NIKE_MODELS.map((_, i) =>
+      `<span class="nk-dot${i===nikeIdx?' active':''}" onclick="nikeGoTo(${i})"></span>`
+    ).join('');
+    document.getElementById('nike-combo-card').innerHTML = `
+      <div class="nk-card${nikeAnyOn?' on':''}">
+        <div class="nk-title">Nike</div>
+        <div class="nk-slide-wrap">
+          <div class="nk-slide-viewport" onclick="openImgPreview(${nikeIdx})">
+            <img class="nk-slide-img" id="nk-slide-img" src="${cur.img}" alt="${cur.label}">
+            <span class="stag ${cur.g}" style="position:absolute;top:5px;right:5px;">${cur.g==='f'?'여성':'남성'}</span>
+          </div>
+        </div>
+        <div class="nk-dots">${dots}</div>
+        <div class="nk-divider"></div>
+        <div class="nk-rows">${rows}</div>
+      </div>`;
+  }
+
+  function nikeSlide(dir) {
+    nikeIdx = (nikeIdx + dir + NIKE_MODELS.length) % NIKE_MODELS.length;
+    nikeGoTo(nikeIdx);
+  }
+
+  function nikeGoTo(i) {
+    nikeIdx = i;
+    const img = document.getElementById('nk-slide-img');
+    if (img) {
+      img.style.opacity = '0';
+      setTimeout(() => {
+        renderNikeCard();
+        const newImg = document.getElementById('nk-slide-img');
+        if (newImg) { newImg.style.opacity = '0'; requestAnimationFrame(() => { newImg.style.opacity = '1'; }); }
+      }, 160);
+    } else {
+      renderNikeCard();
+    }
+  }
+
+  function renderNbCard() {
+    const nbAnyOn = NB_MODELS.some(m => selectedModels.has(m.id));
+    const rows = NB_MODELS.map((m, i) => {
+      const on = selectedModels.has(m.id);
+      return `<div class="nk-row${on?' on':''}" id="sc-${m.id}" onclick="toggleModel('${m.id}','nb',${i})">
+        <div class="nk-cdot" style="background:${m.cdot}"></div>
+        <span class="nk-nm">${m.label.replace('NB ','')}</span>
+        <span style="font-size:9px;color:var(--dim);flex-shrink:0">${m.g==='f'?'여성':'남성'}</span>
+        <span style="font-size:10px;color:${on?'var(--p2)':'transparent'};flex-shrink:0;margin-left:2px">✓</span>
+      </div>`;
+    }).join('');
+    const cur = NB_MODELS[nbIdx];
+    const dots = NB_MODELS.map((_, i) =>
+      `<span class="nk-dot${i===nbIdx?' active':''}" onclick="nbGoTo(${i})"></span>`
+    ).join('');
+    document.getElementById('nb-combo-card').innerHTML = `
+      <div class="nk-card${nbAnyOn?' on':''}">
+        <div class="nk-title">New Balance</div>
+        <div class="nk-slide-wrap">
+          <div class="nk-slide-viewport" onclick="openImgPreview(${NIKE_MODELS.length + nbIdx})">
+            <img class="nk-slide-img" id="nb-slide-img" src="${cur.img}" alt="${cur.label}">
+            <span class="stag ${cur.g}" style="position:absolute;top:5px;right:5px;">${cur.g==='f'?'여성':'남성'}</span>
+          </div>
+        </div>
+        <div class="nk-dots">${dots}</div>
+        <div class="nk-divider"></div>
+        <div class="nk-rows">${rows}</div>
+      </div>`;
+  }
+
+  function nbGoTo(i) {
+    nbIdx = i;
+    const img = document.getElementById('nb-slide-img');
+    if (img) {
+      img.style.opacity = '0';
+      setTimeout(() => {
+        renderNbCard();
+        const newImg = document.getElementById('nb-slide-img');
+        if (newImg) { newImg.style.opacity = '0'; requestAnimationFrame(() => { newImg.style.opacity = '1'; }); }
+      }, 160);
+    } else {
+      renderNbCard();
+    }
+  }
+
+  function nbSlide(dir) {
+    nbIdx = (nbIdx + dir + NB_MODELS.length) % NB_MODELS.length;
+    nbGoTo(nbIdx);
+  }
+
+  function renderShoes() {
+    renderNikeCard();
+    renderNbCard();
   }
 
   function shortLabel(id) {
     const m = MODELS.find(x => x.id === id);
-    if (!m) return '미선택';
+    if (!m) return '';
     return m.label.replace('Nike Vomero Plus','Vomero').replace(' V15','').replace(' (','(');
-  }
-
-  function updateChips() {
-    P.forEach((id, i) => {
-      const c = document.getElementById('chip' + i);
-      const v = c.querySelector('.rv');
-      if (id) { c.classList.add('on'); v.textContent = shortLabel(id); }
-      else    { c.classList.remove('on'); v.textContent = '미선택'; }
-    });
   }
 
   function toggleFam(r) {
@@ -1042,6 +1162,7 @@
   }
 
   async function submitReg() {
+    try { if (window.parent?.IS_GUEST) return toast('둘러보기 모드에서는 신청할 수 없어요. 로그인 후 이용해주세요.'); } catch(e) {}
     const name   = (document.getElementById('f-name').value || '').trim();
     const empId  = (document.getElementById('f-empid').value || '').trim().toUpperCase();
     const dept   = document.getElementById('f-dept').value;
@@ -1071,10 +1192,10 @@
     const id  = 'HC-' + String(Date.now()).slice(-6);
     const now = new Date().toISOString();
     const parts = [];
-    const pref = P.filter(Boolean).join('|');
+    const pref = [...selectedModels].join('|');
     if (tshirt) parts.push('티셔츠: ' + tshirt);
     if (pref)  parts.push('희망모델: ' + pref);
-    if (shoeN) parts.push('운동화요청: ' + shoeN);
+    if (shoeN) parts.push('러닝화요청: ' + shoeN);
     parts.push('가족참여: ' + (fam ? '가족함께 참여' : '본인만'));
     if (fam) {
       if (famG) parts.push('가족성별: ' + famG);
@@ -1087,7 +1208,7 @@
 
     const reg = {
       id, name, empId, dept, phone, email: '', shoeSize: shoe, tshirtSize: tshirt,
-      shoePrefs: [...P], shoeRequestNote: shoeN,
+      shoePrefs: [...selectedModels], shoeRequestNote: shoeN,
       familyParticipation: fam, familyCount: fam ? 1 : 0,
       familyShoeSize: fam ? famS : '', familyGender: fam ? famG : '',
       familyAge: fam ? famA : '', familyMemo: fam ? famN : '',
@@ -1116,21 +1237,34 @@
       });
     } catch(e) { console.warn('[Supabase]', e); }
 
-    document.getElementById('success-id').textContent = id;
+    renderSuccessScreen(reg);
     document.getElementById('form-screen').classList.add('hide');
     document.getElementById('success-screen').classList.add('show');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   /* ── 이미지 크게 보기 ──────────────────────── */
-  function openImgPreview(src, label, sub) {
-    const overlay = document.getElementById('img-preview');
-    document.getElementById('img-preview-img').src = src;
-    document.getElementById('img-preview-label').textContent = label;
-    document.getElementById('img-preview-sub').textContent = sub + ' · 탭하면 닫힙니다';
-    overlay.classList.remove('hidden');
+  let previewIdx = 0;
+
+  function setPreviewContent(idx) {
+    const m = MODELS[idx];
+    document.getElementById('img-preview-img').src = m.img;
+    document.getElementById('img-preview-label').textContent = m.label;
+    document.getElementById('img-preview-sub').textContent = (m.g === 'f' ? '여성' : '남성') + ' · 탭하면 닫힙니다';
+  }
+
+  function openImgPreview(idx) {
+    previewIdx = idx;
+    setPreviewContent(previewIdx);
+    document.getElementById('img-preview').classList.remove('hidden');
     document.body.style.overflow = 'hidden';
   }
+
+  function previewNav(dir) {
+    previewIdx = (previewIdx + dir + MODELS.length) % MODELS.length;
+    setPreviewContent(previewIdx);
+  }
+
   function closeImgPreview() {
     document.getElementById('img-preview').classList.add('hidden');
     document.body.style.overflow = '';
@@ -1138,6 +1272,23 @@
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeImgPreview(); });
 
   renderShoes();
+
+  /* ── 부모 로그인 정보 자동 입력 ─────────────────── */
+  function prefillFromLogin(name, empId) {
+    const nameEl = document.getElementById('f-name');
+    const empIdEl = document.getElementById('f-empid');
+    if (nameEl && !nameEl.value && name) nameEl.value = name;
+    if (empIdEl && !empIdEl.value && empId) empIdEl.value = empId.toUpperCase();
+  }
+
+  try {
+    const u = window.parent?.S?.user;
+    if (u) prefillFromLogin(u.name, u.empId);
+  } catch(e) {}
+
+  window.addEventListener('message', (e) => {
+    if (e.data?.type === 'LOGIN') prefillFromLogin(e.data.name, e.data.empId);
+  });
 
   /* ── 실시간 신청자 현황 ─────────────────── */
   const AV_COUNT = 20;
@@ -1187,10 +1338,57 @@
   loadPeople();
   setInterval(loadPeople, 60000); // 1분마다 갱신
 
+  function renderSuccessScreen(reg) {
+    const prefs = (reg.shoePrefs || [])
+      .filter(Boolean).map(id => shortLabel(id));
+    document.getElementById('success-content').innerHTML = `
+      <div class="succ-title">신청 완료!</div>
+      <p class="succ-sub">HI RUN DAY 챌린지 신청이 완료됐습니다.</p>
+      <div class="succ-card">
+        <div class="succ-row"><span class="succ-label">이름</span><span class="succ-val">${reg.name}</span></div>
+        <div class="succ-row"><span class="succ-label">사번</span><span class="succ-val">${reg.empId}</span></div>
+        <div class="succ-row"><span class="succ-label">부서</span><span class="succ-val">${reg.dept || '-'}</span></div>
+        <div class="succ-row"><span class="succ-label">연락처</span><span class="succ-val">${reg.phone || '-'}</span></div>
+        <div class="succ-row"><span class="succ-label">운동화 사이즈</span><span class="succ-val">${reg.shoeSize ? reg.shoeSize + 'mm' : '-'}</span></div>
+        <div class="succ-row"><span class="succ-label">티셔츠</span><span class="succ-val">${reg.tshirtSize || '-'}</span></div>
+        ${prefs.length ? `<div class="succ-row"><span class="succ-label">희망 모델</span><span class="succ-val">${prefs.join('<br>')}</span></div>` : ''}
+        <div class="succ-row"><span class="succ-label">가족 참여</span><span class="succ-val">${reg.familyParticipation ? '가족 함께' : '본인만'}</span></div>
+        <div class="succ-row"><span class="succ-label">크루즈 탑승</span><span class="succ-val">${reg.cruiseParticipation ? '탑승 희망' : '탑승 안 함'}</span></div>
+        <div class="succ-row"><span class="succ-label">행사 참여</span><span class="succ-val">${reg.eventParticipation ? '참여' : '불참'}</span></div>
+      </div>
+      <div class="succ-actions">
+        <button type="button" class="btn-app" onclick="if(window.parent&&window.parent.navigate){window.parent.navigate('exercise')}else{window.parent.location.href='index.html'}">
+          <div class="btn-app-icon"><img src="images/avatars/av1.png" alt=""></div>
+          <div class="btn-app-body">
+            <div class="btn-app-main">운동 기록 시작하기</div>
+            <div class="btn-app-sub">챌린지 인증 · 혈당 기록 · 리그 참여</div>
+          </div>
+          <div class="btn-app-arr">›</div>
+        </button>
+        <button type="button" class="btn-cancel-reg" onclick="cancelReg('${reg.id}')">신청 취소</button>
+      </div>`;
+  }
+
+  function cancelReg(regId) {
+    if (!confirm('신청을 취소하시겠습니까?')) return;
+    const regs = JSON.parse(localStorage.getItem(CH_KEY) || '[]').filter(r => r.id !== regId);
+    localStorage.setItem(CH_KEY, JSON.stringify(regs));
+    try {
+      fetch(SB_URL + '/rest/v1/registrations?id=eq.' + regId, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY },
+        body: JSON.stringify({ status: 'cancelled' }),
+      });
+    } catch(e) {}
+    document.getElementById('success-screen').classList.remove('show');
+    document.getElementById('form-screen').classList.remove('hide');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
   (function checkExisting() {
-    const regs = JSON.parse(localStorage.getItem(CH_KEY) || '[]');
+    const regs = JSON.parse(localStorage.getItem(CH_KEY) || '[]').filter(r => r.status !== 'cancelled');
     if (!regs.length) return;
-    document.getElementById('success-id').textContent = regs[regs.length - 1].id;
+    renderSuccessScreen(regs[regs.length - 1]);
     document.getElementById('form-screen').classList.add('hide');
     document.getElementById('success-screen').classList.add('show');
   })();

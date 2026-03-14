@@ -10104,6 +10104,7 @@ async function doAppLogin() {
 
   document.getElementById('app-login-screen').classList.add('hidden');
   document.getElementById('guest-banner')?.style.setProperty('display', 'none');
+  document.getElementById('runday-iframe')?.contentWindow?.postMessage({ type: 'LOGIN', name: S.user.name, empId: S.user.empId || ACTIVE_EMPID }, '*');
   loadCart();
   setTimeout(() => showIntroIfNeeded(), 400);
 
