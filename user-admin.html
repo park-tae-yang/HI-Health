@@ -732,6 +732,28 @@ function withMm(v) {
   return /mm$/i.test(raw) ? raw : `${raw}mm`;
 }
 
+function getRegFamilyMembers(r) {
+  if (Array.isArray(r?.familyMembers)) {
+    return r.familyMembers.map(m => ({
+      gender: String(m?.gender || '').trim(),
+      tshirtSize: String(m?.tshirtSize || '').trim(),
+      memo: String(m?.memo || '').trim(),
+    }));
+  }
+  const encoded = getRegNoteLine(r, '가족목록');
+  if (!encoded) return [];
+  try {
+    const parsed = JSON.parse(decodeURIComponent(encoded));
+    return Array.isArray(parsed) ? parsed.map(m => ({
+      gender: String(m?.gender || '').trim(),
+      tshirtSize: String(m?.tshirtSize || '').trim(),
+      memo: String(m?.memo || '').trim(),
+    })) : [];
+  } catch (e) {
+    return [];
+  }
+}
+
 function getRegFamilyParticipation(r) {
   const direct = parseRegBool(r?.familyParticipation);
   if (direct !== null) return direct;
@@ -742,6 +764,8 @@ function getRegFamilyParticipation(r) {
 }
 
 function getRegFamilyGenderText(r) {
+  const members = getRegFamilyMembers(r);
+  if (members.length) return members.map((m, idx) => `가족 ${idx + 1} ${m.gender || '-'}`).join(' / ');
   return String(r?.familyGender || getRegNoteLine(r, '가족성별') || '').trim();
 }
 
@@ -750,10 +774,14 @@ function getRegFamilyAgeText(r) {
 }
 
 function getRegFamilyShoeText(r) {
+  const members = getRegFamilyMembers(r);
+  if (members.length) return members.map((m, idx) => `가족 ${idx + 1} ${m.tshirtSize || '-'}`).join(' / ');
   return withMm(r?.familyShoeSize || getRegNoteLine(r, '가족신발') || '');
 }
 
 function getRegFamilyMemoText(r) {
+  const members = getRegFamilyMembers(r).filter(m => m.memo);
+  if (members.length) return members.map((m, idx) => `가족 ${idx + 1} ${m.memo}`).join(' / ');
   return String(r?.familyMemo || getRegNoteLine(r, '가족메모') || '').trim();
 }
 
@@ -777,6 +805,10 @@ function getRegEventParticipation(r) {
 
 function getRegFamilySummaryText(r) {
   if (!getRegFamilyParticipation(r)) return '본인만';
+  const members = getRegFamilyMembers(r);
+  if (members.length) {
+    return `가족 ${members.length}인 · ` + members.map((m, idx) => `가족 ${idx + 1} ${[m.gender, m.tshirtSize].filter(Boolean).join(' / ') || '입력 없음'}`).join(' / ');
+  }
   const bits = [getRegFamilyGenderText(r), getRegFamilyAgeText(r), getRegFamilyShoeText(r)].filter(Boolean);
   return bits.length ? `가족 1인 · ${bits.join(' / ')}` : '가족 1인';
 }
@@ -1892,9 +1924,7 @@ function showChDetail(id) {
   const shoePrefText = getRegShoePrefText(r);
   const shoeRequestText = getRegShoeRequestText(r);
   const familyParticipation = getRegFamilyParticipation(r);
-  const familyGender = getRegFamilyGenderText(r);
-  const familyAge = getRegFamilyAgeText(r);
-  const familyShoe = getRegFamilyShoeText(r);
+  const familySummary = getRegFamilySummaryText(r);
   const familyMemo = getRegFamilyMemoText(r);
   const cruiseParticipation = getRegCruiseParticipation(r);
   const eventParticipation = getRegEventParticipation(r);
@@ -1908,9 +1938,7 @@ function showChDetail(id) {
     ['희망브랜드', shoePrefText || '-'],
     ['운동화요청', shoeRequestText || '-'],
     ['가족참여', familyParticipation ? '가족함께 참여' : '본인만'],
-    ['가족성별', familyGender || '-'],
-    ['가족나이', familyAge || '-'],
-    ['가족신발', familyShoe || '-'],
+    ['가족정보', familySummary || '-'],
     ['가족메모', familyMemo || '-'],
     ['크루즈', cruiseParticipation ? '탑승 희망' : '탑승 안 함'],
     ['행사', eventParticipation ? '참여' : '불참'],
@@ -1960,10 +1988,10 @@ async function updateChStatus(id, status) {
 }
 
 function exportChallengeCsv() {
-  const rows = [['신청번호','이름','등록번호','부서','연락처','본인신발','희망브랜드','운동화요청','가족참여','가족성별','가족나이','가족신발','가족메모','크루즈','행사','상태','신청일']];
+  const rows = [['신청번호','이름','등록번호','부서','연락처','본인신발','희망브랜드','운동화요청','가족참여','가족정보','가족메모','크루즈','행사','상태','신청일']];
   GD.registrations.forEach(r => rows.push([
     r.id, r.name, r.empId, r.dept, r.phone, withMm(r.shoeSize), getRegShoePrefText(r), getRegShoeRequestText(r),
-    getRegFamilyParticipation(r) ? 'Y':'N', getRegFamilyGenderText(r), getRegFamilyAgeText(r), getRegFamilyShoeText(r), getRegFamilyMemoText(r),
+    getRegFamilyParticipation(r) ? 'Y':'N', getRegFamilySummaryText(r), getRegFamilyMemoText(r),
     getRegCruiseParticipation(r) ? 'Y':'N', getRegEventParticipation(r) ? 'Y' : 'N', r.status,
     r.registeredAt ? new Date(r.registeredAt).toLocaleDateString('ko-KR') : '',
   ]));

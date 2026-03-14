@@ -265,6 +265,31 @@
     .prog-title { font-size: 14px; font-weight: 700; color: #1e1047; }
     .prog-time { font-size: 11px; font-weight: 700; color: #6366f1; white-space: nowrap; }
     .prog-desc { font-size: 12px; color: var(--sub); line-height: 1.55; }
+    .prog-guest-card {
+      margin-top: 14px; padding: 14px;
+      background: linear-gradient(135deg, #f8f7ff 0%, #eef4ff 100%);
+      border: 1px solid #dbe4ff;
+      border-radius: 16px;
+    }
+    .prog-guest-layout { display:flex; align-items:flex-start; gap:14px; }
+    .prog-guest-media {
+      width:96px; height:120px; object-fit:cover; object-position:center top;
+      border-radius:12px; display:block; flex-shrink:0;
+      box-shadow:0 10px 24px rgba(30,16,71,0.10);
+    }
+    .prog-guest-copy { flex:1; min-width:0; }
+    .prog-guest-head { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:8px; }
+    .prog-guest-kicker {
+      display:inline-flex; align-items:center; justify-content:center;
+      padding:4px 10px; border-radius:999px;
+      background:#fff; color:#4f46e5; font-size:10px; font-weight:800;
+    }
+    .prog-guest-title { font-size:15px; font-weight:800; color:#1e1047; }
+    .prog-guest-desc { font-size:12px; color:var(--sub); line-height:1.65; }
+    @media (max-width: 420px) {
+      .prog-guest-layout { align-items:center; }
+      .prog-guest-media { width:88px; height:108px; }
+    }
 
     /* ─── PEOPLE / LIVE ─────────────────────── */
     .people-wrap { padding: 32px 16px 0; }
@@ -321,13 +346,24 @@
       padding: 14px 20px 20px;
     }
     .av {
+      position: relative;
       width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
       background: #ede9fe; border: 2.5px solid #fff;
-      overflow: hidden; display: flex; align-items: center; justify-content: center;
+      overflow: visible; display: flex; align-items: center; justify-content: center;
       margin-left: -10px; box-shadow: 0 1px 4px rgba(0,0,0,0.1);
     }
     .av:first-child { margin-left: 0; }
-    .av img { width: 50px; height: 50px; object-fit: contain; margin-top: 4px; }
+    .av img { width: 50px; height: 50px; object-fit: contain; margin-top: 4px; border-radius: 50%; }
+    .av.me { box-shadow: 0 0 0 3px rgba(99,102,241,0.18), 0 4px 12px rgba(79,70,229,0.16); background:#eef2ff; }
+    .av-new {
+      position:absolute; top:-4px; right:-6px; z-index:2;
+      display:inline-flex; align-items:center; justify-content:center;
+      min-width:18px; height:12px; padding:0 4px;
+      border-radius:999px; background:#ef4444; color:#fff;
+      font-size:7px; font-weight:900; letter-spacing:0.15px;
+      border:1.5px solid #fff;
+      box-shadow:0 2px 8px rgba(239,68,68,0.28);
+    }
     .av-more-circle {
       width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
       background: #1e1047; border: 2.5px solid #fff;
@@ -404,6 +440,21 @@
     }
     .fam-box.show { display: block; }
     .fam-box-label { font-size: 10px; font-weight: 700; color: var(--dim); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px; }
+    .fam-member-list { display:flex; flex-direction:column; gap:10px; }
+    .fam-member-card { background:#fff; border:1.5px solid #e5e7eb; border-radius:12px; padding:10px; }
+    .fam-member-head { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px; }
+    .fam-member-title { font-size:12px; font-weight:800; color:var(--text); }
+    .fam-member-remove {
+      border:none; background:#fef2f2; color:#dc2626; border-radius:999px;
+      padding:5px 10px; font-size:11px; font-weight:700; cursor:pointer; font-family:inherit;
+    }
+    .fam-member-remove:disabled { opacity:0.45; cursor:not-allowed; }
+    .fam-add-btn {
+      width:100%; margin-top:10px; border:1.5px dashed #c4b5fd; background:#f5f3ff; color:#6d28d9;
+      border-radius:12px; padding:10px 12px; font-size:12px; font-weight:800; cursor:pointer; font-family:inherit;
+    }
+    .fam-add-btn:hover { background:#ede9fe; }
+    .fam-add-btn:disabled { opacity:0.45; cursor:not-allowed; background:#f5f3ff; }
 
     /* shoe */
     .rank-row { display: flex; gap: 6px; margin-bottom: 10px; }
@@ -427,7 +478,7 @@
       transition: border-color 0.15s;
     }
     .nk-card.on { border-color: #c4b5fd; background: #f5f3ff; }
-    .nk-title { font-size: 12px; font-weight: 800; color: var(--text); margin-bottom: 10px; letter-spacing: -0.3px; }
+    .nk-title { font-size: 14px; font-weight: 800; color: var(--text); margin-bottom: 10px; letter-spacing: -0.3px; }
     .nk-slide-wrap { position: relative; display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
     .nk-slide-viewport { position: relative; flex: 1; border-radius: 8px; overflow: hidden; background: #fff; aspect-ratio: 16/9; cursor: zoom-in; }
     .nk-slide-img { width: 100%; height: 100%; object-fit: cover; transition: opacity 0.2s; display: block; }
@@ -448,7 +499,7 @@
     .nk-row { display: flex; align-items: center; gap: 5px; padding: 3px 4px; border-radius: 6px; transition: background 0.12s; cursor: pointer; }
     .nk-row.on { background: #ede9fe; }
     .nk-cdot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; border: 1.5px solid rgba(0,0,0,0.1); }
-    .nk-nm { flex: 1; font-size: 9px; font-weight: 700; color: var(--sub); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .nk-nm { flex: 1; font-size: 12px; font-weight: 700; color: var(--sub); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .nk-row.on .nk-nm { color: var(--p); }
 
     .scard {
@@ -517,24 +568,36 @@
     .success { display: none; padding: 24px 24px 80px; }
     .success.show { display: block; }
     .succ-title { font-size: 22px; font-weight: 900; color: var(--p); margin-bottom: 4px; }
-    .succ-sub { font-size: 13px; color: var(--sub); margin-bottom: 20px; }
+    .succ-sub { font-size: 13px; color: var(--sub); margin-bottom: 14px; }
     .succ-card {
-      background: #f5f3ff; border: 1.5px solid #c4b5fd;
-      border-radius: 14px; padding: 4px 16px; margin-bottom: 20px;
+      background: linear-gradient(135deg, #f8f7ff 0%, #eef4ff 100%);
+      border: 1.5px solid #d7d2fe;
+      border-radius: 16px; padding: 16px; margin-bottom: 18px;
     }
-    .succ-row {
-      display: flex; justify-content: space-between; align-items: baseline;
-      padding: 10px 0; border-bottom: 1px solid #ede9fe;
+    .succ-head { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; margin-bottom:12px; }
+    .succ-name { font-size:18px; font-weight:900; color:#1e1047; line-height:1.2; }
+    .succ-meta { font-size:12px; color:var(--sub); margin-top:4px; }
+    .succ-badge {
+      flex-shrink:0; display:inline-flex; align-items:center; justify-content:center;
+      padding:5px 10px; border-radius:999px; background:#fff; color:#4f46e5;
+      font-size:11px; font-weight:800;
     }
-    .succ-row:last-child { border-bottom: none; }
-    .succ-label { font-size: 11px; font-weight: 700; color: var(--dim); }
-    .succ-val { font-size: 13px; font-weight: 700; color: var(--text); text-align: right; line-height: 1.5; }
+    .succ-summary { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px 12px; margin-bottom:14px; }
+    .succ-item { min-width:0; }
+    .succ-label { font-size: 11px; font-weight: 700; color: var(--dim); margin-bottom:3px; }
+    .succ-val { font-size: 13px; font-weight: 700; color: var(--text); text-align: left; line-height: 1.5; word-break:break-word; }
     .succ-actions { display: flex; flex-direction: column; gap: 10px; margin-top: 0; }
+    .succ-note { font-size: 11px; color: var(--sub); text-align: center; line-height: 1.5; }
     .btn-cancel-reg {
       width: 100%; padding: 14px;
       background: transparent; border: 1.5px solid #e5e7eb;
       border-radius: 14px; font-family: inherit; font-size: 14px; font-weight: 700;
       color: var(--sub); cursor: pointer;
+    }
+    @media (max-width: 420px) {
+      .succ-summary { gap: 8px 10px; }
+      .succ-label { font-size: 10px; }
+      .succ-val { font-size: 12px; }
     }
 
     /* ─── CTA BUTTON ─────────────────────────── */
@@ -597,15 +660,17 @@
     }
     .img-preview-nav {
       position: absolute; top: 50%; transform: translateY(-50%);
-      width: 40px; height: 40px; border-radius: 50%;
-      background: rgba(255,255,255,0.15); border: none; color: #fff;
-      font-size: 24px; cursor: pointer; line-height: 1;
+      width: 52px; height: 52px; border-radius: 50%;
+      background: rgba(15,23,42,0.72); border: 1px solid rgba(255,255,255,0.32); color: #fff;
+      font-size: 34px; font-weight: 700; cursor: pointer; line-height: 1;
       display: flex; align-items: center; justify-content: center;
-      transition: background 0.15s;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.28);
+      text-shadow: 0 2px 10px rgba(0,0,0,0.45);
+      transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
     }
-    .img-preview-nav:hover { background: rgba(255,255,255,0.28); }
-    .img-preview-nav.prev { left: 12px; }
-    .img-preview-nav.next { right: 12px; }
+    .img-preview-nav:hover { background: rgba(30,41,59,0.92); box-shadow: 0 14px 30px rgba(0,0,0,0.34); }
+    .img-preview-nav.prev { left: 16px; }
+    .img-preview-nav.next { right: 16px; }
 
     /* ─── TOAST ──────────────────────────────── */
     .toasts {
@@ -752,7 +817,7 @@
 <!-- ─── EVENT PROGRAM ──────────────────────── -->
 <div class="prog-wrap">
   <div class="section-kicker">Apr 15</div>
-  <div class="section-title">행사 당일 프로그램</div>
+  <div class="section-title">RUN DAY 행사 당일 프로그램</div>
   <div class="prog-card">
     <div class="prog-list">
       <div class="prog-step">
@@ -769,7 +834,7 @@
         <div class="prog-num">2</div>
         <div class="prog-body">
           <div class="prog-row">
-            <div class="prog-title">특별 강연</div>
+            <div class="prog-title">특별 강연 <span style="font-size:11px;font-weight:600;color:#6366f1">인생에 달리기가 필요한 순간</span></div>
             <div class="prog-time">am 10:30</div>
           </div>
           <div class="prog-desc">마라토너 권은주 선수 초청 강연 · 사인북 증정</div>
@@ -803,6 +868,18 @@
             <div class="prog-time">pm 2:30</div>
           </div>
           <div class="prog-desc">여의도 출발 → 선유도공원 · 자율 참여</div>
+        </div>
+      </div>
+    </div>
+    <div class="prog-guest-card">
+      <div class="prog-guest-layout">
+        <img src="images/Eun-joo.png" alt="권은주 선수" class="prog-guest-media">
+        <div class="prog-guest-copy">
+          <div class="prog-guest-head">
+            <div class="prog-guest-title">권은주 선수</div>
+            <div class="prog-guest-kicker">SPECIAL GUEST</div>
+          </div>
+          <div class="prog-guest-desc">1997년 춘천국제마라톤과 1999년 도쿄국제여자마라톤 우승을 기록한 대한민국 대표 마라토너입니다. RUN DAY 현장에서는 함께 달리기 프로그램과 스페셜 강연을 함께합니다.</div>
         </div>
       </div>
     </div>
@@ -846,11 +923,11 @@
       <div class="fg row2">
         <div>
           <label class="lbl" for="f-name">이름</label>
-          <input type="text" class="fi" id="f-name" placeholder="홍길동" autocomplete="name">
+          <input type="text" class="fi" id="f-name" placeholder="홍길동" autocomplete="name" readonly tabindex="-1" style="background:#f3f4f6;color:#6b7280">
         </div>
         <div>
           <label class="lbl" for="f-empid">사번</label>
-          <input type="text" class="fi" id="f-empid" placeholder="A1801" autocomplete="off" style="text-transform:uppercase">
+          <input type="text" class="fi" id="f-empid" placeholder="A1801" autocomplete="off" readonly tabindex="-1" style="text-transform:uppercase;background:#f3f4f6;color:#6b7280">
         </div>
       </div>
       <div class="fg row2">
@@ -872,7 +949,7 @@
     </div>
 
     <div class="fcard">
-      <div class="fcard-label">러닝화, 티셔츠 신청</div>
+      <div class="fcard-label">러닝화, 티셔츠, 혈당체크기기 신청</div>
       <div class="fg row2">
         <div>
           <label class="lbl" for="f-shoe">운동화 사이즈</label>
@@ -898,72 +975,50 @@
         🔔 러닝화와 티셔츠는 커스텀 패치 부착으로 수령 후 교환 및 반품이 어려워 사이즈를 신중하게 작성해주시기 바랍니다.
       </div>
       <div class="fg">
-        <label class="lbl">희망 모델 <span style="font-weight:400;color:#d1d5db">탭하여 선택</span></label>
-        <div style="font-size:11px;color:#6b7280;line-height:1.6;background:#f9fafb;border-radius:8px;padding:10px 12px;margin-bottom:8px;">
-          📦 신청 순서에 따라 재고 수량을 파악하여 지급되므로 원하는 제품 수령이 어려울 수 있습니다.
-        </div>
+        <label class="lbl">희망 브랜드 <span style="font-weight:400;color:#d1d5db">탭하여 선택</span></label>
         <div class="shoe-brand-grid">
           <div id="nike-combo-card"></div>
           <div id="nb-combo-card"></div>
         </div>
+        <div style="font-size:11px;color:#6b7280;line-height:1.6;background:#f9fafb;border-radius:8px;padding:10px 12px;margin:8px 0 0;">
+          📦 Nike 또는 New Balance 중 하나를 선택해주세요. 실제 지급 모델은 재고와 사이즈 상황에 따라 안내됩니다.
+        </div>
         <label class="lbl" for="f-shoe-note" style="margin-top:12px">요청사항 <span style="font-weight:400;color:#d1d5db">선택</span></label>
-        <textarea class="snote" id="f-shoe-note" rows="2" placeholder="발볼, 착화감, 재고 문의 등 자유롭게 적어주세요"></textarea>
+        <textarea class="snote" id="f-shoe-note" rows="2" placeholder="원하는 색상, 발볼, 착화감, 재고문의 등 자유롭게 적어주세요"></textarea>
+      </div>
+      <div class="fg" style="margin-top:12px">
+        <label class="lbl">혈당체크기기 신청 여부 <span class="req">*</span></label>
+        <p class="hint">덱스콤7 · 집중기간 10일간 착용</p>
+        <div class="rg">
+          <label class="rl"><input type="radio" name="cgm" value="yes">신청</label>
+          <label class="rl"><input type="radio" name="cgm" value="no">미신청</label>
+        </div>
       </div>
     </div>
 
     <div class="fcard">
-      <div class="fcard-label">가족 참여</div>
-      <div style="font-size:11px;color:#6b7280;line-height:1.6;background:#f9fafb;border-radius:8px;padding:10px 12px;margin-bottom:12px;">
-        👨‍👩‍👧 가족과 함께 참여하면 <strong style="color:#5b21b6">스페셜 인증</strong>을 받을 수 있어요!
-      </div>
+      <div class="fcard-label">가족 함께 참여</div>
       <div class="fg">
-        <label class="lbl">가족 함께 참여 <span class="req">*</span></label>
-        <p class="hint">챌린지만 참여 가능 · 러닝화 가족 1인 지급</p>
         <div class="rg">
           <label class="rl"><input type="radio" name="fam" value="no"  onchange="toggleFam(this)">본인만</label>
           <label class="rl"><input type="radio" name="fam" value="yes" onchange="toggleFam(this)">가족함께</label>
         </div>
+        <div style="font-size:11px;color:#6b7280;line-height:1.6;background:#f9fafb;border-radius:8px;padding:10px 12px;margin-top:10px;">
+          👨‍👩‍👧 가족과 함께 참여하고 인증하면 <strong style="color:#5b21b6">추가 포인트</strong>를 지급합니다. 함께하는 가족에게는 <strong style="color:#5b21b6">티셔츠</strong>를 선물로 드립니다.
+        </div>
       </div>
       <div class="fam-box" id="fam-detail">
-        <div class="fam-box-label">가족 정보 (러닝화 지급용)</div>
-        <div class="fg row3">
-          <div>
-            <label class="lbl" for="f-fam-g">성별</label>
-            <select class="fs" id="f-fam-g" title="가족 성별">
-              <option value="">선택</option><option value="남">남</option><option value="여">여</option>
-            </select>
-          </div>
-          <div>
-            <label class="lbl" for="f-fam-a">나이</label>
-            <select class="fs" id="f-fam-a" title="가족 나이">
-              <option value="">선택</option>
-              <option>영유아</option><option>10대</option><option>20대</option>
-              <option>30대</option><option>40대</option><option>50대</option><option>60대+</option>
-            </select>
-          </div>
-          <div>
-            <label class="lbl" for="f-fam-s">신발(mm)</label>
-            <select class="fs" id="f-fam-s" title="가족 신발 사이즈">
-              <option value="">선택</option>
-              <option>120</option><option>130</option><option>140</option><option>150</option>
-              <option>160</option><option>170</option><option>180</option><option>190</option>
-              <option>200</option><option>210</option><option>220</option><option>230</option>
-              <option>240</option><option>250</option><option>260</option><option>270</option><option>280</option>
-            </select>
-          </div>
-        </div>
-        <div class="fg" style="margin-bottom:0">
-          <label class="lbl" for="f-fam-n">기타 메모</label>
-          <input type="text" class="fi" id="f-fam-n" placeholder="직접 입력">
-        </div>
+        <div class="fam-box-label">가족 정보 (티셔츠 선물용)</div>
+        <div class="fam-member-list" id="fam-member-list"></div>
+        <button type="button" class="fam-add-btn" onclick="addFamilyMember()">+ 가족 추가</button>
       </div>
     </div>
 
     <div class="fcard">
-      <div class="fcard-label">행사 참여</div>
+      <div class="fcard-label">RUN DAY 행사 참여 <span style="font-size:11px;font-weight:600;color:#6b7280">직원만 참여</span></div>
       <div class="fg">
         <label class="lbl">한강 크루즈 <span class="req">*</span></label>
-        <p class="hint">김포→여의도 · 약 90분 · 직원만 탑승 가능</p>
+        <p class="hint">김포→여의도 약 90분, 기상 악화시 취소될 수 있습니다. 탑승 안할경우 버스로 여의도까지 이동합니다.</p>
         <div class="rg">
           <label class="rl"><input type="radio" name="cruise" value="yes">탑승 희망</label>
           <label class="rl"><input type="radio" name="cruise" value="no">탑승 안 함</label>
@@ -971,8 +1026,8 @@
       </div>
       <div class="hdivider"></div>
       <div class="fg">
-        <label class="lbl">행사 당일 참여 <span class="req">*</span></label>
-        <p class="hint">함께달리기 · 여의도→선유도 · 직원만 참여 가능</p>
+        <label class="lbl">함께 달리기 <span class="req">*</span></label>
+        <p class="hint">여의도→선유도공원 약 90분, 권은주 선수와 전문 코치가 함께합니다.</p>
         <div class="rg">
           <label class="rl"><input type="radio" name="event" value="yes">참여</label>
           <label class="rl"><input type="radio" name="event" value="no">불참</label>
@@ -1018,44 +1073,126 @@
     { id:'nb3', label:'NB 1080 V15 (베이지)', img:'images/nb3.png', g:'f', cdot:'#c9a97a' },
   ];
   const MODELS = [...NIKE_MODELS, ...NB_MODELS];
-  let selectedModels = new Set();
+  const MAX_FAMILY_MEMBERS = 3;
+  let selectedBrand = '';
   let nikeIdx = 0;
   let nbIdx = 0;
+  let familyMembers = [];
 
-  function toggleModel(id, brand, idx) {
-    if (selectedModels.has(id)) { selectedModels.delete(id); }
-    else { selectedModels.add(id); }
+  function createEmptyFamilyMember() {
+    return { gender:'', tshirtSize:'', memo:'' };
+  }
+
+  function escAttr(v) {
+    return String(v || '')
+      .replace(/&/g, '&amp;')
+      .replace(/"/g, '&quot;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+  }
+
+  function normalizeFamilyMembers(rows) {
+    if (!Array.isArray(rows)) return [];
+    return rows.map(row => ({
+      gender: String(row?.gender || '').trim(),
+      tshirtSize: String(row?.tshirtSize || '').trim(),
+      memo: String(row?.memo || '').trim(),
+    }));
+  }
+
+  function renderFamilyMembers() {
+    const list = document.getElementById('fam-member-list');
+    const addBtn = document.querySelector('.fam-add-btn');
+    if (!list) return;
+    list.innerHTML = familyMembers.map((member, idx) => `
+      <div class="fam-member-card">
+        <div class="fam-member-head">
+          <div class="fam-member-title">가족 ${idx + 1}</div>
+          <button type="button" class="fam-member-remove" onclick="removeFamilyMember(${idx})">삭제</button>
+        </div>
+        <div class="fg row2">
+          <div>
+            <label class="lbl">성별</label>
+            <select class="fs" onchange="updateFamilyMember(${idx}, 'gender', this.value)">
+              <option value="">선택</option>
+              <option value="남"${member.gender === '남' ? ' selected' : ''}>남</option>
+              <option value="여"${member.gender === '여' ? ' selected' : ''}>여</option>
+            </select>
+          </div>
+          <div>
+            <label class="lbl">티셔츠 사이즈</label>
+            <select class="fs" onchange="updateFamilyMember(${idx}, 'tshirtSize', this.value)">
+              <option value="">선택</option>
+              <option${member.tshirtSize === 'XS' ? ' selected' : ''}>XS</option><option${member.tshirtSize === 'S' ? ' selected' : ''}>S</option><option${member.tshirtSize === 'M' ? ' selected' : ''}>M</option><option${member.tshirtSize === 'L' ? ' selected' : ''}>L</option>
+              <option${member.tshirtSize === 'XL' ? ' selected' : ''}>XL</option><option${member.tshirtSize === '2XL' ? ' selected' : ''}>2XL</option><option${member.tshirtSize === '3XL' ? ' selected' : ''}>3XL</option>
+            </select>
+          </div>
+        </div>
+        <div class="fg" style="margin-bottom:0">
+          <label class="lbl">기타 메모</label>
+          <input type="text" class="fi" value="${escAttr(member.memo)}" placeholder="직접 입력" oninput="updateFamilyMember(${idx}, 'memo', this.value)">
+        </div>
+      </div>
+    `).join('');
+    if (addBtn) addBtn.disabled = familyMembers.length >= MAX_FAMILY_MEMBERS;
+  }
+
+  function addFamilyMember() {
+    if (familyMembers.length >= MAX_FAMILY_MEMBERS) {
+      toast('가족은 최대 3명까지만 추가할 수 있어요');
+      return;
+    }
+    familyMembers.push(createEmptyFamilyMember());
+    renderFamilyMembers();
+  }
+
+  function removeFamilyMember(idx) {
+    if (familyMembers.length <= 1) {
+      const noRadio = document.querySelector('input[name="fam"][value="no"]');
+      if (noRadio) noRadio.checked = true;
+      familyMembers = [];
+      toggleFam({ value: 'no' });
+      return;
+    }
+    familyMembers.splice(idx, 1);
+    renderFamilyMembers();
+  }
+
+  function updateFamilyMember(idx, key, value) {
+    if (!familyMembers[idx]) return;
+    familyMembers[idx][key] = String(value || '').trim();
+  }
+
+  function toggleBrand(brand, idx) {
+    selectedBrand = selectedBrand === brand ? '' : brand;
     if (brand === 'nike') nikeGoTo(idx);
     else nbGoTo(idx);
   }
 
   function renderNikeCard() {
-    const nikeAnyOn = NIKE_MODELS.some(m => selectedModels.has(m.id));
-    const rows = NIKE_MODELS.map((m, i) => {
-      const on = selectedModels.has(m.id);
-      return `<div class="nk-row${on?' on':''}" id="sc-${m.id}" onclick="toggleModel('${m.id}','nike',${i})">
-        <div class="nk-cdot" style="background:${m.cdot}"></div>
-        <span class="nk-nm">${m.label.replace('Nike ','')}</span>
-        <span style="font-size:9px;color:var(--dim);flex-shrink:0">${m.g==='f'?'여성':'남성'}</span>
-        <span style="font-size:10px;color:${on?'var(--p2)':'transparent'};flex-shrink:0;margin-left:2px">✓</span>
-      </div>`;
-    }).join('');
+    const nikeAnyOn = selectedBrand === 'nike';
     const cur = NIKE_MODELS[nikeIdx];
     const dots = NIKE_MODELS.map((_, i) =>
-      `<span class="nk-dot${i===nikeIdx?' active':''}" onclick="nikeGoTo(${i})"></span>`
+      `<span class="nk-dot${i===nikeIdx?' active':''}" onclick="event.stopPropagation();nikeGoTo(${i})"></span>`
     ).join('');
     document.getElementById('nike-combo-card').innerHTML = `
-      <div class="nk-card${nikeAnyOn?' on':''}">
+      <div class="nk-card${nikeAnyOn?' on':''}" onclick="toggleBrand('nike',${nikeIdx})">
         <div class="nk-title">Nike</div>
         <div class="nk-slide-wrap">
-          <div class="nk-slide-viewport" onclick="openImgPreview(${nikeIdx})">
+          <div class="nk-slide-viewport" onclick="event.stopPropagation();openImgPreview(${nikeIdx})">
             <img class="nk-slide-img" id="nk-slide-img" src="${cur.img}" alt="${cur.label}">
             <span class="stag ${cur.g}" style="position:absolute;top:5px;right:5px;">${cur.g==='f'?'여성':'남성'}</span>
           </div>
         </div>
         <div class="nk-dots">${dots}</div>
         <div class="nk-divider"></div>
-        <div class="nk-rows">${rows}</div>
+        <div class="nk-rows">
+          <div class="nk-row${nikeAnyOn?' on':''}">
+            <div class="nk-cdot" style="background:${cur.cdot}"></div>
+            <span class="nk-nm">나이키 러닝화 선택</span>
+            <span style="font-size:10px;color:${nikeAnyOn?'var(--p2)':'transparent'};flex-shrink:0;margin-left:2px">✓</span>
+          </div>
+        </div>
       </div>`;
   }
 
@@ -1080,32 +1217,29 @@
   }
 
   function renderNbCard() {
-    const nbAnyOn = NB_MODELS.some(m => selectedModels.has(m.id));
-    const rows = NB_MODELS.map((m, i) => {
-      const on = selectedModels.has(m.id);
-      return `<div class="nk-row${on?' on':''}" id="sc-${m.id}" onclick="toggleModel('${m.id}','nb',${i})">
-        <div class="nk-cdot" style="background:${m.cdot}"></div>
-        <span class="nk-nm">${m.label.replace('NB ','')}</span>
-        <span style="font-size:9px;color:var(--dim);flex-shrink:0">${m.g==='f'?'여성':'남성'}</span>
-        <span style="font-size:10px;color:${on?'var(--p2)':'transparent'};flex-shrink:0;margin-left:2px">✓</span>
-      </div>`;
-    }).join('');
+    const nbAnyOn = selectedBrand === 'nb';
     const cur = NB_MODELS[nbIdx];
     const dots = NB_MODELS.map((_, i) =>
-      `<span class="nk-dot${i===nbIdx?' active':''}" onclick="nbGoTo(${i})"></span>`
+      `<span class="nk-dot${i===nbIdx?' active':''}" onclick="event.stopPropagation();nbGoTo(${i})"></span>`
     ).join('');
     document.getElementById('nb-combo-card').innerHTML = `
-      <div class="nk-card${nbAnyOn?' on':''}">
+      <div class="nk-card${nbAnyOn?' on':''}" onclick="toggleBrand('nb',${nbIdx})">
         <div class="nk-title">New Balance</div>
         <div class="nk-slide-wrap">
-          <div class="nk-slide-viewport" onclick="openImgPreview(${NIKE_MODELS.length + nbIdx})">
+          <div class="nk-slide-viewport" onclick="event.stopPropagation();openImgPreview(${NIKE_MODELS.length + nbIdx})">
             <img class="nk-slide-img" id="nb-slide-img" src="${cur.img}" alt="${cur.label}">
             <span class="stag ${cur.g}" style="position:absolute;top:5px;right:5px;">${cur.g==='f'?'여성':'남성'}</span>
           </div>
         </div>
         <div class="nk-dots">${dots}</div>
         <div class="nk-divider"></div>
-        <div class="nk-rows">${rows}</div>
+        <div class="nk-rows">
+          <div class="nk-row${nbAnyOn?' on':''}">
+            <div class="nk-cdot" style="background:${cur.cdot}"></div>
+            <span class="nk-nm">뉴발란스 러닝화 선택</span>
+            <span style="font-size:10px;color:${nbAnyOn?'var(--p2)':'transparent'};flex-shrink:0;margin-left:2px">✓</span>
+          </div>
+        </div>
       </div>`;
   }
 
@@ -1135,13 +1269,22 @@
   }
 
   function shortLabel(id) {
+    if (id === 'nike') return 'Nike';
+    if (id === 'nb') return 'New Balance';
     const m = MODELS.find(x => x.id === id);
     if (!m) return '';
     return m.label.replace('Nike Vomero Plus','Vomero').replace(' V15','').replace(' (','(');
   }
 
   function toggleFam(r) {
-    document.getElementById('fam-detail').classList.toggle('show', r.value === 'yes');
+    const on = r.value === 'yes';
+    document.getElementById('fam-detail').classList.toggle('show', on);
+    if (on) {
+      if (!familyMembers.length) familyMembers = [createEmptyFamilyMember()];
+    } else {
+      familyMembers = [];
+    }
+    renderFamilyMembers();
   }
 
   function toast(msg) {
@@ -1171,14 +1314,13 @@
     const famVal = document.querySelector('input[name="fam"]:checked')?.value || '';
     const cruise = document.querySelector('input[name="cruise"]:checked')?.value || '';
     const eventV = document.querySelector('input[name="event"]:checked')?.value || '';
+    const cgmVal = document.querySelector('input[name="cgm"]:checked')?.value || '';
     const ok     = document.getElementById('f-consent').checked;
-    const famG   = document.getElementById('f-fam-g')?.value || '';
-    const famA   = document.getElementById('f-fam-a')?.value || '';
-    const famS   = document.getElementById('f-fam-s')?.value || '';
-    const famN   = (document.getElementById('f-fam-n')?.value || '').trim();
     const shoeN  = (document.getElementById('f-shoe-note')?.value || '').trim();
     const tshirt = document.getElementById('f-tshirt').value;
 
+    if (!selectedBrand) return toast('희망 브랜드를 선택해주세요');
+    if (!cgmVal) return toast('혈당체크기기 신청 여부를 선택해주세요');
     if (!famVal) return toast('가족 참여 여부를 선택해주세요');
     if (!cruise) return toast('크루즈 탑승 여부를 선택해주세요');
     if (!eventV) return toast('행사 참여 여부를 선택해주세요');
@@ -1192,26 +1334,32 @@
     const id  = 'HC-' + String(Date.now()).slice(-6);
     const now = new Date().toISOString();
     const parts = [];
-    const pref = [...selectedModels].join('|');
+    const members = fam ? normalizeFamilyMembers(familyMembers.length ? familyMembers : [createEmptyFamilyMember()]) : [];
+    const firstMember = members[0] || createEmptyFamilyMember();
+    const pref = selectedBrand;
     if (tshirt) parts.push('티셔츠: ' + tshirt);
-    if (pref)  parts.push('희망모델: ' + pref);
+    if (pref)  parts.push('희망브랜드: ' + pref);
+    parts.push('혈당체크기기: ' + (cgmVal === 'yes' ? '신청' : '미신청'));
     if (shoeN) parts.push('러닝화요청: ' + shoeN);
     parts.push('가족참여: ' + (fam ? '가족함께 참여' : '본인만'));
     if (fam) {
-      if (famG) parts.push('가족성별: ' + famG);
-      if (famA) parts.push('가족나이: ' + famA);
-      if (famS) parts.push('가족신발: ' + famS + 'mm');
-      if (famN) parts.push('가족메모: ' + famN);
+      parts.push('가족수: ' + members.length + '명');
+      if (firstMember.gender) parts.push('가족성별: ' + firstMember.gender);
+      if (firstMember.tshirtSize) parts.push('가족티셔츠: ' + firstMember.tshirtSize);
+      if (firstMember.memo) parts.push('가족메모: ' + firstMember.memo);
+      parts.push('가족목록: ' + encodeURIComponent(JSON.stringify(members)));
     }
     parts.push('크루즈: ' + (cruise === 'yes' ? '탑승 희망' : '탑승 안 함'));
     parts.push('행사: ' + (eventV === 'yes' ? '참여' : '불참'));
 
     const reg = {
       id, name, empId, dept, phone, email: '', shoeSize: shoe, tshirtSize: tshirt,
-      shoePrefs: [...selectedModels], shoeRequestNote: shoeN,
-      familyParticipation: fam, familyCount: fam ? 1 : 0,
-      familyShoeSize: fam ? famS : '', familyGender: fam ? famG : '',
-      familyAge: fam ? famA : '', familyMemo: fam ? famN : '',
+      shoePrefs: pref ? [pref] : [], shoeRequestNote: shoeN,
+      cgmParticipation: cgmVal === 'yes',
+      familyParticipation: fam, familyCount: fam ? members.length : 0,
+      familyMembers: members,
+      familyShoeSize: '', familyTshirtSize: fam ? firstMember.tshirtSize : '', familyGender: fam ? firstMember.gender : '',
+      familyAge: '', familyMemo: fam ? firstMember.memo : '',
       cruiseParticipation: cruise === 'yes', eventParticipation: eventV === 'yes',
       note: parts.join('\n'), status: 'pending', adminNote: '', registeredAt: now,
     };
@@ -1237,10 +1385,10 @@
       });
     } catch(e) { console.warn('[Supabase]', e); }
 
+    loadPeople();
     renderSuccessScreen(reg);
     document.getElementById('form-screen').classList.add('hide');
     document.getElementById('success-screen').classList.add('show');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   /* ── 이미지 크게 보기 ──────────────────────── */
@@ -1274,24 +1422,71 @@
   renderShoes();
 
   /* ── 부모 로그인 정보 자동 입력 ─────────────────── */
-  function prefillFromLogin(name, empId) {
-    const nameEl = document.getElementById('f-name');
-    const empIdEl = document.getElementById('f-empid');
-    if (nameEl && !nameEl.value && name) nameEl.value = name;
-    if (empIdEl && !empIdEl.value && empId) empIdEl.value = empId.toUpperCase();
+  const LIVE_AVATAR_FALLBACK = 'images/avatars/av1.png';
+  const LIVE_AVATAR_SET = new Set(Array.from({ length: 20 }, (_, i) => `images/avatars/av${i + 1}.png`));
+  let currentLoginAvatar = '';
+  let latestPeopleList = [];
+
+  function normalizeLiveAvatar(src) {
+    const raw = String(src || '').trim();
+    if (!raw) return '';
+    if (LIVE_AVATAR_SET.has(raw)) return raw;
+    const runMatch = raw.match(/images\/avatars\/run(\d+)\.png$/i);
+    if (runMatch) {
+      const mapped = `images/avatars/av${Math.max(1, Math.min(20, Number(runMatch[1]) || 1))}.png`;
+      return LIVE_AVATAR_SET.has(mapped) ? mapped : LIVE_AVATAR_FALLBACK;
+    }
+    return raw.includes('images/avatars/') ? LIVE_AVATAR_FALLBACK : '';
   }
 
-  try {
-    const u = window.parent?.S?.user;
-    if (u) prefillFromLogin(u.name, u.empId);
-  } catch(e) {}
+  function prefillFromLogin(name, empId, avatar) {
+    const nameEl = document.getElementById('f-name');
+    const empIdEl = document.getElementById('f-empid');
+    if (nameEl && name) nameEl.value = name;
+    if (empIdEl && empId) empIdEl.value = empId.toUpperCase();
+    const nextAvatar = normalizeLiveAvatar(avatar);
+    if (nextAvatar) currentLoginAvatar = nextAvatar;
+  }
+
+  function syncInitialIdentity() {
+    let name = '';
+    let empId = '';
+    let avatar = '';
+    try {
+      const u = window.parent?.S?.user;
+      name = String(u?.name || '').trim();
+      empId = String(u?.empId || window.parent?.ACTIVE_EMPID || '').trim();
+      avatar = String(u?.avatar || '').trim();
+    } catch (e) {}
+    if (!name) {
+      try { name = String(sessionStorage.getItem('hi_keep_login_name') || localStorage.getItem('hi_keep_login_name') || '').trim(); } catch (e) {}
+    }
+    if (!empId) {
+      try { empId = String(sessionStorage.getItem('hi_session_empid') || localStorage.getItem('hi_keep_login_id') || '').trim(); } catch (e) {}
+    }
+    prefillFromLogin(name, empId, avatar);
+  }
+
+  syncInitialIdentity();
+  setTimeout(syncInitialIdentity, 100);
+  setTimeout(syncInitialIdentity, 500);
 
   window.addEventListener('message', (e) => {
-    if (e.data?.type === 'LOGIN') prefillFromLogin(e.data.name, e.data.empId);
+    if (e.data?.type === 'LOGIN') {
+      prefillFromLogin(e.data.name, e.data.empId, e.data.avatar);
+      if (latestPeopleList.length) renderPeople(latestPeopleList);
+    }
+    if (e.data?.type === 'SCROLL_TOP') {
+      closeImgPreview();
+      window.scrollTo({ top: 0, behavior: 'auto' });
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    }
   });
 
   /* ── 실시간 신청자 현황 ─────────────────── */
   const AV_COUNT = 20;
+  const NEW_PEOPLE_WINDOW_MS = 1000 * 60 * 10;
 
   function avIdx(seed) {
     let h = 0;
@@ -1299,16 +1494,43 @@
     return (Math.abs(h) % AV_COUNT) + 1;
   }
 
+  function getCurrentEmpId() {
+    const fieldEmpId = String(document.getElementById('f-empid')?.value || '').trim().toUpperCase();
+    if (fieldEmpId) return fieldEmpId;
+    try {
+      return String(window.parent?.S?.user?.empId || window.parent?.ACTIVE_EMPID || '').trim().toUpperCase();
+    } catch (e) {}
+    try {
+      return String(sessionStorage.getItem('hi_session_empid') || localStorage.getItem('hi_keep_login_id') || '').trim().toUpperCase();
+    } catch (e) {}
+    return '';
+  }
+
+  function getMyAvatarSrc() {
+    try {
+      const parentAvatar = normalizeLiveAvatar(window.parent?.S?.user?.avatar || '');
+      if (parentAvatar) return parentAvatar;
+    } catch (e) {}
+    return currentLoginAvatar || LIVE_AVATAR_FALLBACK;
+  }
+
   function renderPeople(list) {
-    const total = list.length;
+    latestPeopleList = Array.isArray(list) ? list.slice() : [];
+    const active = (Array.isArray(list) ? list : []).filter(r => String(r?.status || '').toLowerCase() !== 'cancelled');
+    const total = active.length;
     document.getElementById('people-count').textContent = total;
     document.getElementById('people-donation').innerHTML = `예상 기부금 <strong>${(total * DONATION_PER_PERSON).toLocaleString('ko-KR')}원</strong>`;
 
     const stack = document.getElementById('av-stack');
-    const recent = list.slice(0, 8);
+    const recent = active.slice(0, 8);
+    const myEmpId = getCurrentEmpId();
+    const myAvatar = getMyAvatarSrc();
     let stackHTML = recent.map(r => {
-      const idx = avIdx(r.empId || r.name || r.id || '');
-      return `<div class="av"><img src="images/avatars/av${idx}.png" alt=""></div>`;
+      const rowEmpId = String(r.empId || '').trim().toUpperCase();
+      const isMe = !!(myEmpId && rowEmpId && myEmpId === rowEmpId);
+      const avatarSrc = isMe && myAvatar ? myAvatar : `images/avatars/av${avIdx(r.empId || r.name || r.id || '')}.png`;
+      const isNew = !!(r.registeredAt && (Date.now() - new Date(r.registeredAt).getTime()) <= NEW_PEOPLE_WINDOW_MS);
+      return `<div class="av${isMe ? ' me' : ''}">${isNew ? '<span class="av-new">NEW</span>' : ''}<img src="${avatarSrc}" alt="${isMe ? '내 아바타' : ''}" onerror="if(this.dataset.err)return;this.dataset.err=1;this.src='${LIVE_AVATAR_FALLBACK}'"></div>`;
     }).join('');
     if (total > 8) {
       stackHTML += `<div class="av-more-circle">+${total - 8}</div>`;
@@ -1330,7 +1552,14 @@
       );
       if (res.ok) {
         const data = await res.json();
-        if (data && data.length) renderPeople(data);
+        if (data && data.length) {
+          const merged = [...local];
+          data.forEach(row => {
+            if (!merged.some(localRow => String(localRow.id) === String(row.id))) merged.push(row);
+          });
+          merged.sort((a, b) => new Date(b.registeredAt) - new Date(a.registeredAt));
+          renderPeople(merged);
+        }
       }
     } catch(e) { /* 오프라인 시 로컬 데이터 유지 */ }
   }
@@ -1341,20 +1570,34 @@
   function renderSuccessScreen(reg) {
     const prefs = (reg.shoePrefs || [])
       .filter(Boolean).map(id => shortLabel(id));
+    const familyRows = normalizeFamilyMembers(reg.familyMembers || []).filter(m => m.gender || m.tshirtSize || m.memo);
+    const shoeSummary = [reg.shoeSize ? reg.shoeSize + 'mm' : '', prefs[0] || ''].filter(Boolean).join(' · ') || '-';
+    const rows = [
+      ['운동화', shoeSummary],
+      ['티셔츠', reg.tshirtSize || '-'],
+      ['혈당체크기기', reg.cgmParticipation ? '신청' : '미신청'],
+      ['가족 참여', reg.familyParticipation ? `가족 ${reg.familyCount || familyRows.length || 1}명` : '본인만'],
+      ['크루즈탑승', reg.cruiseParticipation ? '탑승 희망' : '탑승 안 함'],
+      ['함께 달리기', reg.eventParticipation ? '참여' : '불참'],
+    ];
     document.getElementById('success-content').innerHTML = `
       <div class="succ-title">신청 완료!</div>
       <p class="succ-sub">HI RUN DAY 챌린지 신청이 완료됐습니다.</p>
       <div class="succ-card">
-        <div class="succ-row"><span class="succ-label">이름</span><span class="succ-val">${reg.name}</span></div>
-        <div class="succ-row"><span class="succ-label">사번</span><span class="succ-val">${reg.empId}</span></div>
-        <div class="succ-row"><span class="succ-label">부서</span><span class="succ-val">${reg.dept || '-'}</span></div>
-        <div class="succ-row"><span class="succ-label">연락처</span><span class="succ-val">${reg.phone || '-'}</span></div>
-        <div class="succ-row"><span class="succ-label">운동화 사이즈</span><span class="succ-val">${reg.shoeSize ? reg.shoeSize + 'mm' : '-'}</span></div>
-        <div class="succ-row"><span class="succ-label">티셔츠</span><span class="succ-val">${reg.tshirtSize || '-'}</span></div>
-        ${prefs.length ? `<div class="succ-row"><span class="succ-label">희망 모델</span><span class="succ-val">${prefs.join('<br>')}</span></div>` : ''}
-        <div class="succ-row"><span class="succ-label">가족 참여</span><span class="succ-val">${reg.familyParticipation ? '가족 함께' : '본인만'}</span></div>
-        <div class="succ-row"><span class="succ-label">크루즈 탑승</span><span class="succ-val">${reg.cruiseParticipation ? '탑승 희망' : '탑승 안 함'}</span></div>
-        <div class="succ-row"><span class="succ-label">행사 참여</span><span class="succ-val">${reg.eventParticipation ? '참여' : '불참'}</span></div>
+        <div class="succ-head">
+          <div>
+            <div class="succ-name">${reg.name}</div>
+            <div class="succ-meta">${reg.empId} · ${reg.dept || '부서 미입력'}</div>
+          </div>
+          <div class="succ-badge">신청 완료</div>
+        </div>
+        <div class="succ-summary">
+          ${rows.map(([label, value]) => `<div class="succ-item"><div class="succ-label">${label}</div><div class="succ-val">${value}</div></div>`).join('')}
+        </div>
+        <div class="succ-actions">
+          <button type="button" class="btn-cancel-reg" onclick="cancelReg('${reg.id}')">수정 및 취소</button>
+          <div class="succ-note">수정 및 취소는 3월 21일까지 가능합니다.</div>
+        </div>
       </div>
       <div class="succ-actions">
         <button type="button" class="btn-app" onclick="if(window.parent&&window.parent.navigate){window.parent.navigate('exercise')}else{window.parent.location.href='index.html'}">
@@ -1365,7 +1608,6 @@
           </div>
           <div class="btn-app-arr">›</div>
         </button>
-        <button type="button" class="btn-cancel-reg" onclick="cancelReg('${reg.id}')">신청 취소</button>
       </div>`;
   }
 
@@ -1380,6 +1622,7 @@
         body: JSON.stringify({ status: 'cancelled' }),
       });
     } catch(e) {}
+    loadPeople();
     document.getElementById('success-screen').classList.remove('show');
     document.getElementById('form-screen').classList.remove('hide');
     window.scrollTo({ top: 0, behavior: 'smooth' });

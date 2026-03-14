@@ -638,7 +638,7 @@
     }
     .nav-top-chip {
       position: absolute;
-      top: -2px;
+      top: -5px;
       left: 50%;
       transform: translateX(-50%);
       display: inline-flex;
@@ -661,10 +661,10 @@
       content: '';
       position: absolute;
       left: 50%;
-      bottom: -4px;
+      bottom: -3px;
       transform: translateX(-50%);
-      width: 8px;
-      height: 4px;
+      width: 6px;
+      height: 3px;
       background: #2563EB;
       clip-path: polygon(50% 100%, 0 0, 100% 0);
     }
@@ -687,14 +687,14 @@
         height: calc(100% - env(safe-area-inset-bottom) - 8px);
       }
       .nav-top-chip {
-        top: -1px;
+        top: -3px;
         padding: 3px 7px 4px;
         font-size: 7px;
       }
       .nav-top-chip::after {
-        bottom: -3px;
-        width: 7px;
-        height: 3px;
+        bottom: -2px;
+        width: 5px;
+        height: 2px;
       }
     }
     .nav-icon-img { width: 30px; height: 30px; object-fit: contain; display: block; }
@@ -5103,7 +5103,16 @@ function navigate(page) {
   if (page === 'exercise')  renderExercise();
   if (page === 'community') { setCommunityTab('feed'); renderCommunity(); fetchAdminPosts(); fetchCommunityPosts(); markCommunityAsSeen(); }
   if (page === 'rewards')   { setRewardsTab('rewards'); renderRewards(); }
-  if (page === 'challenge') renderChallenge();
+  if (page === 'challenge') {
+    renderChallenge();
+    document.getElementById('runday-iframe')?.contentWindow?.postMessage({ type: 'SCROLL_TOP' }, '*');
+    document.getElementById('runday-iframe')?.contentWindow?.postMessage({
+      type: 'LOGIN',
+      name: S.user.name,
+      empId: S.user.empId || ACTIVE_EMPID,
+      avatar: normalizeAvatar(S.user.avatar),
+    }, '*');
+  }
   window.scrollTo({top:0, behavior:'smooth'});
 }
 
@@ -8773,7 +8782,45 @@ function buildChShoePrefNote(reg) {
   return prefs.length ? `희망브랜드: ${prefs.join('|')}` : '';
 }
 
+function getChFamilyMembers(reg) {
+  if (Array.isArray(reg?.familyMembers)) {
+    return reg.familyMembers.map(m => ({
+      gender: String(m?.gender || '').trim(),
+      tshirtSize: String(m?.tshirtSize || '').trim(),
+      memo: String(m?.memo || '').trim(),
+    }));
+  }
+  const note = String(reg?.note || '').trim();
+  const match = note.match(/가족목록:\s*(.+)$/m);
+  if (!match) return [];
+  try {
+    const parsed = JSON.parse(decodeURIComponent(String(match[1] || '').trim()));
+    return Array.isArray(parsed) ? parsed.map(m => ({
+      gender: String(m?.gender || '').trim(),
+      tshirtSize: String(m?.tshirtSize || '').trim(),
+      memo: String(m?.memo || '').trim(),
+    })) : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function getChFamilySummary(reg) {
+  const members = getChFamilyMembers(reg);
+  if (members.length) {
+    return `가족 ${members.length}인 · ` + members.map((m, idx) => `가족 ${idx + 1} ${[m.gender, m.tshirtSize].filter(Boolean).join(' / ') || '입력 없음'}`).join(' / ');
+  }
+  if (!reg?.familyParticipation) return '본인만';
+  const familyGender = String(reg?.familyGender || '').trim();
+  const familyAge = String(reg?.familyAge || '').trim();
+  const familyShoeRaw = String(reg?.familyShoeSize || '').trim();
+  const familyShoe = familyShoeRaw ? (/mm$/i.test(familyShoeRaw) ? familyShoeRaw : `${familyShoeRaw}mm`) : '';
+  return [familyGender, familyAge, familyShoe].filter(Boolean).join(' ') || '가족 1인';
+}
+
 function getChFamilyMemo(reg) {
+  const members = getChFamilyMembers(reg).filter(m => m.memo);
+  if (members.length) return members.map((m, idx) => `가족 ${idx + 1} ${m.memo}`).join(' / ');
   const direct = String(reg?.familyMemo || '').trim();
   if (direct) return direct;
   const note = String(reg?.note || '').trim();
@@ -9229,6 +9276,7 @@ function renderChallenge() {
   const shoePrefSummary = formatChShoePrefs(myReg);
   const shoeRequestNote = getChShoeRequestNote(myReg);
   const familyMemo = getChFamilyMemo(myReg);
+  const familySummary = getChFamilySummary(myReg);
 
   if (myReg && myReg.status !== 'cancelled') {
     const statusLbl = { pending:'검토 중', confirmed:'선정 완료', cancelled:'미선정' }[myReg.status] || myReg.status;
@@ -9247,7 +9295,7 @@ function renderChallenge() {
         </div>
         <div class="ch-reg-rows">
           <div class="ch-reg-row"><span class="ch-reg-label">신발 사이즈</span><span class="ch-reg-value">${myReg.shoeSize}mm</span></div>
-          <div class="ch-reg-row"><span class="ch-reg-label">가족 참여</span><span class="ch-reg-value">${myReg.familyParticipation ? '함께 · ' + [myReg.familyGender, myReg.familyAge, myReg.familyShoeSize ? myReg.familyShoeSize + 'mm' : ''].filter(Boolean).join(' ') || '가족 1인' : '본인만'}</span></div>
+          <div class="ch-reg-row"><span class="ch-reg-label">가족 참여</span><span class="ch-reg-value">${myReg.familyParticipation ? familySummary : '본인만'}</span></div>
           ${shoeRequestNote ? `<div class="ch-reg-row ch-reg-row-full"><span class="ch-reg-label">운동화 요청</span><span class="ch-reg-value">${escHtmlComm(shoeRequestNote)}</span></div>` : ''}
           ${myReg.familyParticipation && familyMemo ? `<div class="ch-reg-row ch-reg-row-full"><span class="ch-reg-label">가족 메모</span><span class="ch-reg-value">${escHtmlComm(familyMemo)}</span></div>` : ''}
           <div class="ch-reg-row"><span class="ch-reg-label">크루즈 탑승</span><span class="ch-reg-value">${myReg.cruiseParticipation === false ? '탑승 안 함' : '탑승 희망'}</span></div>
@@ -9315,53 +9363,6 @@ function renderChallenge() {
           </div>
           <div id="ch-shoe-pref-section" class="ch-shoe-pref-wrap"></div>
           <div class="ch-form-group">
-            <label class="form-label">가족 참여 여부 <span style="font-size:11px;font-weight:400;color:var(--text-secondary)">(챌린지만 참여 가능, 러닝화 지급-가족1인)</span> <span style="color:var(--accent)">*</span></label>
-            <div class="ch-radio-group">
-              <label class="ch-radio-label"><input type="radio" name="ch-fam" value="no" onchange="toggleChFam(this)"> 본인만 신청</label>
-              <label class="ch-radio-label"><input type="radio" name="ch-fam" value="yes" onchange="toggleChFam(this)"> 가족함께 참여</label>
-            </div>
-            <div id="ch-fam-detail" style="display:none;background:var(--bg-secondary,#f8fafc);border-radius:10px;padding:12px;margin-top:4px">
-              <div style="font-size:11px;font-weight:600;color:var(--text-secondary);margin-bottom:8px">가족 정보 (러닝화 지급용)</div>
-              <div class="ch-row3">
-                <div class="ch-form-group" style="margin-bottom:0">
-                  <label class="form-label">성별</label>
-                  <select class="ch-form-select" id="ch-fam-gender" onchange="updateChSubmitState()">
-                    <option value="">선택</option>
-                    <option value="남">남</option>
-                    <option value="여">여</option>
-                  </select>
-                </div>
-                <div class="ch-form-group" style="margin-bottom:0">
-                  <label class="form-label">나이</label>
-                  <select class="ch-form-select" id="ch-fam-age" onchange="updateChSubmitState()">
-                    <option value="">선택</option>
-                    <option>영유아</option><option>10대</option><option>20대</option><option>30대</option>
-                    <option>40대</option><option>50대</option><option>60대 이상</option>
-                  </select>
-                </div>
-                <div class="ch-form-group" style="margin-bottom:0">
-                  <label class="form-label">신발 사이즈</label>
-                  <select class="ch-form-select" id="ch-fam-shoe" onchange="updateChSubmitState()">
-                    <option value="">사이즈(mm)</option>
-                    <option>120</option><option>125</option><option>130</option><option>135</option><option>140</option>
-                    <option>145</option><option>150</option><option>155</option><option>160</option><option>165</option>
-                    <option>170</option><option>175</option><option>180</option><option>185</option><option>190</option>
-                    <option>195</option><option>200</option><option>205</option><option>210</option><option>215</option>
-                    <option>220</option><option>225</option><option>230</option><option>235</option>
-                    <option>240</option><option>245</option><option>250</option><option>255</option>
-                    <option>260</option><option>265</option><option>270</option><option>275</option>
-                    <option>280</option><option>285</option><option>290</option>
-                  </select>
-                </div>
-              </div>
-              <div class="ch-form-group" style="margin-top:8px;margin-bottom:0">
-                <label class="form-label">기타 메모</label>
-                <input type="text" class="ch-form-input" id="ch-fam-note" placeholder="직접 입력" oninput="updateChSubmitState()">
-              </div>
-            </div>
-            <input type="hidden" id="ch-fam-cnt" value="1">
-          </div>
-          <div class="ch-form-group">
             <label class="form-label">한강 크루즈 탑승 <span style="font-size:11px;font-weight:400;color:var(--text-secondary)">(김포→여의도, 약 90분 · 직원만 참여 가능)</span> <span style="color:var(--accent)">*</span></label>
             <div class="ch-radio-group">
               <label class="ch-radio-label"><input type="radio" name="ch-cruise" value="yes" onchange="updateChSubmitState()"> 탑승 희망</label>
@@ -9369,7 +9370,7 @@ function renderChallenge() {
             </div>
           </div>
           <div class="ch-form-group">
-            <label class="form-label">HI RUN DAY 행사 참여 <span style="font-size:11px;font-weight:400;color:var(--text-secondary)">(함께달리기 · 여의도→선유도 · 직원만 참여 가능)</span> <span style="color:var(--accent)">*</span></label>
+            <label class="form-label">RUN DAY 행사 참여 <span style="font-size:11px;font-weight:400;color:var(--text-secondary)">(직원만 참여)</span> <span style="color:var(--accent)">*</span></label>
             <div class="ch-radio-group">
               <label class="ch-radio-label"><input type="radio" name="ch-event" value="yes" onchange="updateChSubmitState()"> 참여</label>
               <label class="ch-radio-label"><input type="radio" name="ch-event" value="no" onchange="updateChSubmitState()"> 불참</label>
@@ -9661,41 +9662,19 @@ function updateChSubmitState() {
   const dept = String(document.getElementById('ch-dept')?.value || '').trim();
   const phone = String(document.getElementById('ch-phone')?.value || '').trim();
   const shoe = String(document.getElementById('ch-shoe')?.value || '').trim();
-  const famChoice = document.querySelector('input[name="ch-fam"]:checked')?.value || '';
   const cruiseChoice = document.querySelector('input[name="ch-cruise"]:checked')?.value || '';
   const eventChoice = document.querySelector('input[name="ch-event"]:checked')?.value || '';
   const consent = !!document.getElementById('ch-consent')?.checked;
-  const famGender = String(document.getElementById('ch-fam-gender')?.value || '').trim();
-  const famAge = String(document.getElementById('ch-fam-age')?.value || '').trim();
-  const famShoe = String(document.getElementById('ch-fam-shoe')?.value || '').trim();
-  const familyInfoReady = true;
   const shoePrefsReady = !!String(_chShoePrefs[0] || '').trim();
   const dup = hasDuplicateChallengeReg(empId);
-  const ready = !!(name && empId && phone && shoe && famChoice && cruiseChoice && eventChoice && consent && familyInfoReady && shoePrefsReady && !dup);
+  const ready = !!(name && empId && phone && shoe && cruiseChoice && eventChoice && consent && shoePrefsReady && !dup);
 
   if (warnEl) warnEl.classList.toggle('show', !!empId && dup);
   if (submitBtn) {
     submitBtn.disabled = !ready;
     submitBtn.classList.toggle('btn-inactive', !ready);
   }
-  return { ready, dup, famChoice, cruiseChoice, eventChoice, familyInfoReady, shoePrefsReady };
-}
-
-function toggleChFam(el) {
-  const detail = document.getElementById('ch-fam-detail');
-  const isFamily = el.value === 'yes';
-  if (detail) detail.style.display = isFamily ? 'block' : 'none';
-  if (!isFamily) {
-    const famGender = document.getElementById('ch-fam-gender');
-    const famAge = document.getElementById('ch-fam-age');
-    const famShoe = document.getElementById('ch-fam-shoe');
-    const famNote = document.getElementById('ch-fam-note');
-    if (famGender) famGender.value = '';
-    if (famAge) famAge.value = '';
-    if (famShoe) famShoe.value = '';
-    if (famNote) famNote.value = '';
-  }
-  updateChSubmitState();
+  return { ready, dup, cruiseChoice, eventChoice, shoePrefsReady };
 }
 
 function submitChReg(e) {
@@ -9705,21 +9684,15 @@ function submitChReg(e) {
   const dept  = document.getElementById('ch-dept').value;
   const phone = (document.getElementById('ch-phone').value || '').trim();
   const shoe  = document.getElementById('ch-shoe').value;
-  const famVal = document.querySelector('input[name="ch-fam"]:checked')?.value || '';
   const cruiseVal = document.querySelector('input[name="ch-cruise"]:checked')?.value || '';
   const eventVal = document.querySelector('input[name="ch-event"]:checked')?.value || '';
   const ok    = document.getElementById('ch-consent').checked;
-  const famGender = document.getElementById('ch-fam-gender')?.value || '';
-  const famAge = document.getElementById('ch-fam-age')?.value || '';
-  const famShoe = document.getElementById('ch-fam-shoe')?.value || '';
-  const famNote = (document.getElementById('ch-fam-note')?.value || '').trim();
 
   if (!name)  { showToast('⚠️ 이름을 입력해주세요'); return; }
   if (!empId) { showToast('⚠️ 사번을 입력해주세요'); return; }
   if (!phone) { showToast('⚠️ 연락처를 입력해주세요'); return; }
   if (!shoe)  { showToast('⚠️ 신발 사이즈를 선택해주세요'); return; }
   if (!_chShoePrefs[0]) { showToast('⚠️ 희망 러닝화 브랜드를 선택해주세요'); return; }
-  if (!famVal) { showToast('⚠️ 가족 참여 여부를 선택해주세요'); return; }
   if (!cruiseVal) { showToast('⚠️ 크루즈 탑승 여부를 선택해주세요'); return; }
   if (!eventVal) { showToast('⚠️ 행사 참여 여부를 선택해주세요'); return; }
   if (!ok) { showToast('⚠️ 개인정보 동의가 필요합니다'); return; }
@@ -9727,17 +9700,15 @@ function submitChReg(e) {
   const regs = JSON.parse(localStorage.getItem(CH_REG_KEY) || '[]');
   if (hasDuplicateChallengeReg(empId)) { showToast('⚠️ 이미 신청하신 사번입니다'); return; }
 
-  const famChecked = famVal === 'yes';
-  const familyMemo = famChecked ? famNote : '';
   const shoeRequestNote = String(_chShoeRequestNote || '').trim();
   const regNote = buildChRegistrationNote({
     shoePrefs: _chShoePrefs,
     shoeRequestNote,
-    familyParticipation: famChecked,
-    familyGender: famChecked ? famGender : '',
-    familyAge: famChecked ? famAge : '',
-    familyShoeSize: famChecked ? famShoe : '',
-    familyMemo,
+    familyParticipation: false,
+    familyGender: '',
+    familyAge: '',
+    familyShoeSize: '',
+    familyMemo: '',
     cruiseParticipation: cruiseVal === 'yes',
     eventParticipation: eventVal === 'yes',
   });
@@ -9746,12 +9717,12 @@ function submitChReg(e) {
     id, name, empId, dept, phone, email:'', shoeSize: shoe,
     shoePrefs: [..._chShoePrefs],
     shoeRequestNote,
-    familyParticipation: famChecked,
-    familyCount: famChecked ? 1 : 0,
-    familyShoeSize: famChecked ? famShoe : '',
-    familyGender: famChecked ? famGender : '',
-    familyAge: famChecked ? famAge : '',
-    familyMemo,
+    familyParticipation: false,
+    familyCount: 0,
+    familyShoeSize: '',
+    familyGender: '',
+    familyAge: '',
+    familyMemo: '',
     cruiseParticipation: cruiseVal === 'yes',
     eventParticipation: eventVal === 'yes',
     note: regNote, status:'pending', adminNote:'',
@@ -10187,7 +10158,12 @@ async function doAppLogin() {
 
   document.getElementById('app-login-screen').classList.add('hidden');
   document.getElementById('guest-banner')?.style.setProperty('display', 'none');
-  document.getElementById('runday-iframe')?.contentWindow?.postMessage({ type: 'LOGIN', name: S.user.name, empId: S.user.empId || ACTIVE_EMPID }, '*');
+  document.getElementById('runday-iframe')?.contentWindow?.postMessage({
+    type: 'LOGIN',
+    name: S.user.name,
+    empId: S.user.empId || ACTIVE_EMPID,
+    avatar: normalizeAvatar(S.user.avatar),
+  }, '*');
   loadCart();
   setTimeout(() => showIntroIfNeeded(), 400);
 
@@ -10205,6 +10181,7 @@ async function doAppLogin() {
         save();
         renderHeader();
         renderHome();
+        renderChallenge();
         return; // Supabase에 없으면 신규 사용자
       }
       // 기존 deviceId로 데이터 조회
@@ -10243,6 +10220,13 @@ async function doAppLogin() {
       save();
       renderHeader();
       renderHome();
+      renderChallenge();
+      document.getElementById('runday-iframe')?.contentWindow?.postMessage({
+        type: 'LOGIN',
+        name: S.user.name,
+        empId: S.user.empId || ACTIVE_EMPID,
+        avatar: normalizeAvatar(S.user.avatar),
+      }, '*');
     });
   }
 
@@ -10392,6 +10376,7 @@ function init() {
           save();
           renderHeader();
           renderHome();
+          renderChallenge();
           return;
         }
         const did = u.deviceId;
@@ -10426,6 +10411,13 @@ function init() {
         save();
         renderHeader();
         renderHome();
+        renderChallenge();
+        document.getElementById('runday-iframe')?.contentWindow?.postMessage({
+          type: 'LOGIN',
+          name: S.user.name,
+          empId: S.user.empId || savedEmpId,
+          avatar: normalizeAvatar(S.user.avatar),
+        }, '*');
       });
     }
   }
