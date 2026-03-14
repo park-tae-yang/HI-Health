@@ -2542,6 +2542,203 @@
       color:#64748b;
       line-height:1.45;
     }
+    .ch-route-card {
+      margin-top:14px;
+      padding:16px;
+      border-radius:18px;
+      background:linear-gradient(140deg,#ffffff 0%,#f8fbff 56%,#eff6ff 100%);
+      border:1px solid rgba(14,165,233,0.16);
+      box-shadow:0 12px 28px rgba(14,165,233,0.10);
+    }
+    .ch-route-head {
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+    }
+    .ch-route-kicker {
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:4px 10px;
+      border-radius:999px;
+      background:#e0f2fe;
+      color:#0369a1;
+      font-size:10px;
+      font-weight:800;
+      letter-spacing:.4px;
+      margin-bottom:10px;
+    }
+    .ch-route-title {
+      font-size:18px;
+      font-weight:800;
+      color:#0f172a;
+      line-height:1.3;
+      letter-spacing:-0.3px;
+    }
+    .ch-route-sub {
+      margin-top:6px;
+      font-size:12px;
+      line-height:1.55;
+      color:#475569;
+    }
+    .ch-route-toggle {
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:6px;
+      padding:10px 12px;
+      border:none;
+      border-radius:12px;
+      background:#0f172a;
+      color:#fff;
+      font-family:inherit;
+      font-size:12px;
+      font-weight:700;
+      cursor:pointer;
+      white-space:nowrap;
+      box-shadow:0 10px 20px rgba(15,23,42,0.16);
+    }
+    .ch-route-toggle svg {
+      transition:transform 0.2s ease;
+    }
+    .ch-route-toggle[aria-expanded="true"] svg {
+      transform:rotate(180deg);
+    }
+    .ch-route-badges {
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-top:12px;
+    }
+    .ch-route-badge {
+      display:inline-flex;
+      align-items:center;
+      gap:5px;
+      padding:6px 10px;
+      border-radius:999px;
+      background:rgba(255,255,255,0.9);
+      border:1px solid rgba(148,163,184,0.18);
+      font-size:11px;
+      font-weight:700;
+      color:#334155;
+    }
+    .ch-route-stats {
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:8px;
+      margin-top:14px;
+    }
+    .ch-route-stat {
+      padding:12px;
+      border-radius:14px;
+      background:rgba(255,255,255,0.88);
+      border:1px solid rgba(148,163,184,0.18);
+    }
+    .ch-route-stat-label {
+      font-size:10px;
+      font-weight:800;
+      color:#64748b;
+      text-transform:uppercase;
+      letter-spacing:.4px;
+      margin-bottom:4px;
+    }
+    .ch-route-stat-value {
+      font-size:14px;
+      font-weight:800;
+      color:#0f172a;
+      line-height:1.35;
+      letter-spacing:-0.2px;
+    }
+    .ch-route-detail {
+      display:none;
+      margin-top:14px;
+      padding-top:14px;
+      border-top:1px solid rgba(148,163,184,0.18);
+    }
+    .ch-route-detail.show {
+      display:block;
+      animation:fadeIn 0.2s ease;
+    }
+    .ch-route-map {
+      padding:12px;
+      border-radius:16px;
+      background:linear-gradient(180deg,#eff6ff 0%,#f8fbff 100%);
+      border:1px solid rgba(125,211,252,0.45);
+    }
+    .ch-route-meta {
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-top:10px;
+    }
+    .ch-route-meta-chip {
+      display:inline-flex;
+      align-items:center;
+      gap:5px;
+      padding:5px 10px;
+      border-radius:999px;
+      background:#fff;
+      border:1px solid rgba(148,163,184,0.16);
+      font-size:11px;
+      font-weight:700;
+      color:#334155;
+    }
+    .ch-route-points {
+      margin-top:12px;
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:10px;
+    }
+    .ch-route-point {
+      padding:12px;
+      border-radius:14px;
+      background:#fff;
+      border:1px solid rgba(148,163,184,0.18);
+      box-shadow:0 6px 16px rgba(15,23,42,0.04);
+    }
+    .ch-route-point-dist {
+      font-size:10px;
+      font-weight:800;
+      color:#0284c7;
+      margin-bottom:4px;
+      letter-spacing:.4px;
+    }
+    .ch-route-point-title {
+      font-size:13px;
+      font-weight:800;
+      color:#0f172a;
+      margin-bottom:4px;
+      letter-spacing:-0.2px;
+    }
+    .ch-route-point-desc {
+      font-size:11px;
+      line-height:1.55;
+      color:#475569;
+    }
+    .ch-route-note {
+      margin-top:12px;
+      padding:12px 14px;
+      border-radius:14px;
+      background:rgba(15,23,42,0.04);
+      font-size:11px;
+      line-height:1.65;
+      color:#475569;
+    }
+    @media (max-width:420px) {
+      .ch-route-head {
+        flex-direction:column;
+      }
+      .ch-route-toggle {
+        width:100%;
+      }
+      .ch-route-stats {
+        grid-template-columns:repeat(2,minmax(0,1fr));
+      }
+      .ch-route-points {
+        grid-template-columns:1fr;
+      }
+    }
 
     /* ── Speaker card ── */
     .ch-speaker { display:flex; align-items:center; gap:14px; padding:14px; background:var(--bg); border-radius:var(--radius-sm); border:1.5px solid var(--border); margin-top:14px; }
@@ -2706,7 +2903,7 @@
   <div class="app-login-hero" id="login-run-hero" style="display:none">
     <div class="app-login-run">HI RUN DAY!</div>
     <div class="app-login-date">2026년 4월 15일 (수) &nbsp;<span style="opacity:0.7;font-weight:500">PM 2:30</span></div>
-    <div class="app-login-route">여의도 → 선유도공원, 함께 달려요~!</div>
+    <div class="app-login-route">여의도 유람선터미널 → 선유도공원 입구, 함께 달려요~!</div>
   </div>
   <div class="app-login-card">
     <img src="images/avatars/av2.png" alt="HI Health" class="app-login-logo">
@@ -8693,6 +8890,7 @@ const CH_SHOE_BRANDS = [
 const CH_SHOE_SIZES = ['215','220','225','230','235','240','245','250','255','260','265','270','275','280','285','290','295','300'];
 let _chShoePrefs = [''];
 let _chShoeRequestNote = '';
+let _chRouteExpanded = false;
 
 function normChShoeModelId(v) {
   const id = String(v || '').trim().toLowerCase();
@@ -9545,84 +9743,133 @@ function renderChallenge() {
                 <div class="ch-program-title">함께 달리기</div>
                 <div style="font-size:11px;font-weight:700;color:var(--primary);white-space:nowrap">pm 2:30</div>
               </div>
-              <div class="ch-program-desc">여의도 출발 → 선유도공원 · 자율 참여 <span style="font-size:10px;color:var(--text-secondary)">(상황에 따라 변경될 수 있음)</span></div>
+              <div class="ch-program-desc">여의도 유람선터미널 출발 → 선유도공원 입구 · 자율 참여 <span style="font-size:10px;color:var(--text-secondary)">(상황에 따라 변경될 수 있음)</span></div>
             </div>
           </div>
         </div>
       </div>
-      <div class="card" style="padding:14px;display:none">
-        <div class="card-header" style="margin-bottom:10px">
-          <span class="card-title">당일 이동 경로</span>
+      <div class="ch-route-card">
+        <div class="ch-route-head">
+          <div>
+            <div class="ch-route-kicker">RUN COURSE DETAIL</div>
+            <div class="ch-route-title">여의도 유람선터미널에서 선유도공원 입구까지 달려요</div>
+            <div class="ch-route-sub">한강변 기준 약 4.7km 코스입니다. 평지 위주라 초보 러너도 부담이 적고, 단체 운영에서는 사진 촬영과 보행 구간을 포함해 여유 있게 이동합니다.</div>
+          </div>
+          <button type="button" class="ch-route-toggle" id="ch-route-toggle" onclick="toggleChRouteDetail()" aria-expanded="${_chRouteExpanded ? 'true' : 'false'}">
+            <span id="ch-route-toggle-label">${_chRouteExpanded ? '접기' : '자세히 보기'}</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
         </div>
-        <svg viewBox='0 0 340 200' xmlns='http://www.w3.org/2000/svg' style='width:100%;display:block;border-radius:8px'>
-          <defs>
-            <marker id='ma-pur' markerWidth='7' markerHeight='7' refX='5' refY='3.5' orient='auto'><path d='M0,0 L0,7 L6,3.5 Z' fill='#8B5CF6'/></marker>
-            <marker id='ma-blu' markerWidth='7' markerHeight='7' refX='5' refY='3.5' orient='auto'><path d='M0,0 L0,7 L6,3.5 Z' fill='#2563EB'/></marker>
-            <marker id='ma-org' markerWidth='7' markerHeight='7' refX='5' refY='3.5' orient='auto'><path d='M0,0 L0,7 L6,3.5 Z' fill='#F97316'/></marker>
-          </defs>
-          <rect width='340' height='200' fill='#EEF6FF' rx='8'/>
-          <path d='M0,0 L340,0 L340,90 Q280,85 220,91 Q160,97 100,93 Q60,91 0,98 Z' fill='#D1FAD1'/>
-          <path d='M0,148 Q60,144 130,146 Q200,149 280,145 Q315,143 340,140 L340,200 L0,200 Z' fill='#D1FAD1'/>
-          <path d='M0,98 Q60,105 130,109 Q200,113 280,109 Q315,107 340,103 L340,140 Q315,143 280,145 Q200,149 130,146 Q60,144 0,148 Z' fill='#BAE6FD'/>
-          <path d='M10,116 Q80,112 160,115 Q240,118 325,114' stroke='white' stroke-width='1.5' fill='none' opacity='0.5' stroke-linecap='round'/>
-          <path d='M10,128 Q80,124 160,127 Q240,130 325,126' stroke='white' stroke-width='1' fill='none' opacity='0.35' stroke-linecap='round'/>
-          <path d='M58,0 Q61,28 65,58 Q69,82 74,103' stroke='#60A5FA' stroke-width='13' fill='none' stroke-linecap='round'/>
-          <path d='M58,0 Q61,28 65,58 Q69,82 74,103' stroke='#BAE6FD' stroke-width='5' fill='none' stroke-linecap='round'/>
-          <text transform='translate(38,68) rotate(-78)' font-size='7.5' fill='#1D4ED8' font-family='sans-serif' font-weight='600' opacity='0.85'>아라뱃길</text>
-          <ellipse cx='28' cy='46' rx='26' ry='38' fill='#BBF7D0' opacity='0.55'/>
-          <ellipse cx='186' cy='123' rx='20' ry='11' fill='#86EFAC'/>
-          <ellipse cx='268' cy='119' rx='30' ry='14' fill='#86EFAC'/>
-          <text x='186' y='126' text-anchor='middle' font-size='7' fill='#166534' font-family='sans-serif' font-weight='700'>선유도</text>
-          <text x='268' y='122' text-anchor='middle' font-size='8' fill='#166534' font-family='sans-serif' font-weight='700'>여의도</text>
-          <text x='128' y='139' text-anchor='middle' font-size='9' fill='#1E40AF' font-family='sans-serif' opacity='0.5'>한  강</text>
-          <path d='M132,146 Q95,126 55,80' stroke='#8B5CF6' stroke-width='2.5' fill='none' stroke-dasharray='5,4' stroke-linecap='round' marker-end='url(#ma-pur)'/>
-          <path d='M74,116 Q120,122 165,124 Q200,125 230,122' stroke='#2563EB' stroke-width='3' fill='none' stroke-linecap='round' marker-end='url(#ma-blu)'/>
-          <path d='M237,122 Q218,123 206,123' stroke='#F97316' stroke-width='2.5' fill='none' stroke-dasharray='4,3' stroke-linecap='round' marker-end='url(#ma-org)'/>
-          <rect x='28' y='56' width='24' height='18' rx='2.5' fill='#7C3AED'/>
-          <rect x='31' y='59' width='4' height='4' rx='0.5' fill='white' opacity='0.9'/>
-          <rect x='38' y='59' width='4' height='4' rx='0.5' fill='white' opacity='0.9'/>
-          <rect x='45' y='59' width='4' height='4' rx='0.5' fill='white' opacity='0.9'/>
-          <rect x='31' y='65' width='4' height='4' rx='0.5' fill='white' opacity='0.9'/>
-          <rect x='38' y='65' width='8' height='5' rx='0.5' fill='white' opacity='0.9'/>
-          <rect x='48' y='65' width='4' height='4' rx='0.5' fill='white' opacity='0.9'/>
-          <rect x='0' y='38' width='82' height='15' rx='5' fill='#7C3AED'/>
-          <text x='41' y='49' text-anchor='middle' font-size='8.5' fill='white' font-family='sans-serif' font-weight='700'>마리나베이 호텔</text>
-          <circle cx='74' cy='113' r='8' fill='#1D4ED8'/>
-          <circle cx='74' cy='113' r='5' fill='white'/>
-          <circle cx='74' cy='113' r='2' fill='#1D4ED8'/>
-          <rect x='25' y='95' width='55' height='14' rx='5' fill='#1D4ED8'/>
-          <text x='52' y='105' text-anchor='middle' font-size='8' fill='white' font-family='sans-serif' font-weight='600'>크루즈 출발</text>
-          <circle cx='132' cy='151' r='9' fill='#8B5CF6'/>
-          <circle cx='132' cy='151' r='5' fill='white'/>
-          <circle cx='132' cy='151' r='2' fill='#8B5CF6'/>
-          <rect x='98' y='163' width='68' height='23' rx='5' fill='#7C3AED'/>
-          <text x='132' y='173' text-anchor='middle' font-size='8.5' fill='white' font-family='sans-serif' font-weight='700'>양천향교역</text>
-          <text x='132' y='182' text-anchor='middle' font-size='7' fill='#DDD6FE' font-family='sans-serif'>회사 출발점</text>
-          <circle cx='235' cy='116' r='8' fill='#0284C7'/>
-          <circle cx='235' cy='116' r='5' fill='white'/>
-          <circle cx='235' cy='116' r='2' fill='#0284C7'/>
-          <rect x='204' y='99' width='62' height='14' rx='5' fill='#0284C7'/>
-          <text x='235' y='109' text-anchor='middle' font-size='8' fill='white' font-family='sans-serif' font-weight='700'>여의도 도착</text>
-          <circle cx='203' cy='123' r='7' fill='#F97316'/>
-          <circle cx='203' cy='123' r='4' fill='white'/>
-          <circle cx='203' cy='123' r='2' fill='#F97316'/>
-          <rect x='165' y='137' width='72' height='14' rx='5' fill='#EA580C'/>
-          <text x='201' y='147' text-anchor='middle' font-size='8' fill='white' font-family='sans-serif' font-weight='700'>선유도공원 🌿</text>
-        </svg>
-        <div style='display:flex;gap:14px;margin-top:10px;flex-wrap:wrap;justify-content:center'>
-          <span style='display:flex;align-items:center;gap:5px;font-size:11px;color:#6B7280'>
-            <svg width='20' height='8'><line x1='0' y1='4' x2='20' y2='4' stroke='#8B5CF6' stroke-width='2' stroke-dasharray='5,3'/></svg>차량 이동
-          </span>
-          <span style='display:flex;align-items:center;gap:5px;font-size:11px;color:#6B7280'>
-            <svg width='20' height='8'><line x1='0' y1='4' x2='20' y2='4' stroke='#2563EB' stroke-width='2.5'/></svg>크루즈 (90분)
-          </span>
-          <span style='display:flex;align-items:center;gap:5px;font-size:11px;color:#6B7280'>
-            <svg width='20' height='8'><line x1='0' y1='4' x2='20' y2='4' stroke='#F97316' stroke-width='2' stroke-dasharray='4,3'/></svg>러닝 코스
-          </span>
+        <div class="ch-route-badges">
+          <span class="ch-route-badge">출발 · 여의도 유람선터미널</span>
+          <span class="ch-route-badge">도착 · 선유도공원 입구</span>
+          <span class="ch-route-badge">평지 위주</span>
+          <span class="ch-route-badge">한강변 포장로</span>
+        </div>
+        <div class="ch-route-stats">
+          <div class="ch-route-stat">
+            <div class="ch-route-stat-label">Distance</div>
+            <div class="ch-route-stat-value">약 4.7km</div>
+          </div>
+          <div class="ch-route-stat">
+            <div class="ch-route-stat-label">Running</div>
+            <div class="ch-route-stat-value">30-40분</div>
+          </div>
+          <div class="ch-route-stat">
+            <div class="ch-route-stat-label">Event Pace</div>
+            <div class="ch-route-stat-value">45-60분</div>
+          </div>
+          <div class="ch-route-stat">
+            <div class="ch-route-stat-label">Finish</div>
+            <div class="ch-route-stat-value">공원 입구 집결</div>
+          </div>
+        </div>
+        <div class="ch-route-detail${_chRouteExpanded ? ' show' : ''}" id="ch-route-detail">
+          <div class="ch-route-map">
+            <svg viewBox="0 0 360 214" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;border-radius:14px">
+              <defs>
+                <linearGradient id="ch-route-sky" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stop-color="#f8fbff"></stop>
+                  <stop offset="100%" stop-color="#eff6ff"></stop>
+                </linearGradient>
+                <linearGradient id="ch-route-river" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#7dd3fc"></stop>
+                  <stop offset="100%" stop-color="#38bdf8"></stop>
+                </linearGradient>
+                <marker id="ch-route-arrow" markerWidth="10" markerHeight="10" refX="7" refY="5" orient="auto">
+                  <path d="M0,0 L0,10 L8,5 Z" fill="#f97316"></path>
+                </marker>
+              </defs>
+              <rect width="360" height="214" rx="18" fill="url(#ch-route-sky)"></rect>
+              <path d="M0 146C46 136 99 132 145 134C188 137 230 145 274 142C312 139 335 131 360 119V214H0Z" fill="#d9f99d" opacity="0.7"></path>
+              <path d="M0 123C44 112 90 108 140 111C194 114 232 126 285 121C321 118 340 109 360 98V149C339 159 318 164 285 166C234 169 194 157 140 154C91 151 43 156 0 165Z" fill="url(#ch-route-river)"></path>
+              <path d="M0 130C44 119 90 116 140 118C194 121 232 132 285 127C321 124 340 115 360 104" fill="none" stroke="rgba(255,255,255,0.55)" stroke-width="2" stroke-linecap="round"></path>
+              <path d="M312 78C284 91 260 95 233 96C200 98 173 91 139 89C112 88 88 90 58 96" fill="none" stroke="#f97316" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="10 8" marker-end="url(#ch-route-arrow)"></path>
+              <path d="M312 78C284 91 260 95 233 96C200 98 173 91 139 89C112 88 88 90 58 96" fill="none" stroke="rgba(255,255,255,0.48)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="10 8"></path>
+              <circle cx="58" cy="96" r="8" fill="#16a34a"></circle>
+              <circle cx="58" cy="96" r="3.2" fill="#ffffff"></circle>
+              <circle cx="143" cy="90" r="6.5" fill="#0284c7"></circle>
+              <circle cx="143" cy="90" r="2.8" fill="#ffffff"></circle>
+              <circle cx="232" cy="96" r="6.5" fill="#0284c7"></circle>
+              <circle cx="232" cy="96" r="2.8" fill="#ffffff"></circle>
+              <circle cx="312" cy="78" r="8" fill="#0f172a"></circle>
+              <circle cx="312" cy="78" r="3.2" fill="#ffffff"></circle>
+              <rect x="18" y="48" width="92" height="28" rx="10" fill="#166534"></rect>
+              <text x="64" y="65" text-anchor="middle" font-size="11" fill="#ffffff" font-family="sans-serif" font-weight="700">선유도공원 입구 도착</text>
+              <rect x="110" y="55" width="78" height="24" rx="9" fill="#0284c7"></rect>
+              <text x="149" y="70" text-anchor="middle" font-size="10.5" fill="#ffffff" font-family="sans-serif" font-weight="700">양화대교 남단</text>
+              <rect x="194" y="58" width="80" height="24" rx="9" fill="#0284c7"></rect>
+              <text x="234" y="73" text-anchor="middle" font-size="10.5" fill="#ffffff" font-family="sans-serif" font-weight="700">여의도 한강공원</text>
+              <rect x="252" y="24" width="92" height="32" rx="11" fill="#0f172a"></rect>
+              <text x="298" y="43" text-anchor="middle" font-size="11" fill="#ffffff" font-family="sans-serif" font-weight="700">유람선터미널 출발</text>
+              <text x="180" y="183" text-anchor="middle" font-size="13" fill="#0369a1" font-family="sans-serif" font-weight="700" opacity="0.8">Han River Run Course</text>
+            </svg>
+            <div class="ch-route-meta">
+              <span class="ch-route-meta-chip">집결 pm 2:20</span>
+              <span class="ch-route-meta-chip">출발 pm 2:30</span>
+              <span class="ch-route-meta-chip">급수/포토 포인트 1회</span>
+              <span class="ch-route-meta-chip">단체 페이스 기준 운영</span>
+            </div>
+          </div>
+          <div class="ch-route-points">
+            <div class="ch-route-point">
+              <div class="ch-route-point-dist">0.0KM</div>
+              <div class="ch-route-point-title">여의도 유람선터미널 출발</div>
+              <div class="ch-route-point-desc">터미널 앞 집결 후 가벼운 스트레칭과 안내를 마치고 한강변 주로로 진입합니다.</div>
+            </div>
+            <div class="ch-route-point">
+              <div class="ch-route-point-dist">1.4KM</div>
+              <div class="ch-route-point-title">여의도한강공원 중간 포인트</div>
+              <div class="ch-route-point-desc">강변이 넓어지는 구간이라 페이스를 정리하기 좋고, 단체 운영 시 포토타임을 잡기 좋습니다.</div>
+            </div>
+            <div class="ch-route-point">
+              <div class="ch-route-point-dist">3.3KM</div>
+              <div class="ch-route-point-title">양화대교 남단 구간</div>
+              <div class="ch-route-point-desc">보행자와 자전거가 겹치는 구간이 있어 2열 이하로 간격을 맞춰 이동합니다.</div>
+            </div>
+            <div class="ch-route-point">
+              <div class="ch-route-point-dist">4.7KM</div>
+              <div class="ch-route-point-title">선유도공원 입구 도착</div>
+              <div class="ch-route-point-desc">도착 후 재정비와 마무리 스트레칭을 진행하기 편한 최종 집결 지점입니다.</div>
+            </div>
+          </div>
+          <div class="ch-route-note">실제 운영 시간은 단체 출발, 포토타임, 보행 혼합 여부에 따라 달라질 수 있습니다. 노면은 대부분 평탄하지만 바람이 강할 수 있어 가벼운 겉옷을 챙기면 좋아요.</div>
         </div>
       </div>
     `;
   }
+}
+
+function toggleChRouteDetail(force) {
+  _chRouteExpanded = typeof force === 'boolean' ? force : !_chRouteExpanded;
+  const detail = document.getElementById('ch-route-detail');
+  const btn = document.getElementById('ch-route-toggle');
+  const label = document.getElementById('ch-route-toggle-label');
+  if (detail) detail.classList.toggle('show', _chRouteExpanded);
+  if (btn) btn.setAttribute('aria-expanded', _chRouteExpanded ? 'true' : 'false');
+  if (label) label.textContent = _chRouteExpanded ? '접기' : '자세히 보기';
 }
 
 function checkChDup() {
