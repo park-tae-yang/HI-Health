@@ -34,20 +34,68 @@
 
     /* ─── HERO ─────────────────────────────────── */
     .hero {
-      background: #fdfcf0;
-      border-bottom: 1px solid #f3f4f6;
-      border-radius: 0 0 48px 48px;
+      background: transparent;
+      border-bottom: none;
+      border-radius: 0;
       position: relative;
-      overflow: hidden;
+      overflow: visible;
       padding-top: env(safe-area-inset-top, 0);
     }
     .hero::before { display: none; }
+    .hero-topbar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 3;
+      display: flex;
+      justify-content: flex-end;
+      padding: 0 20px 14px;
+      padding-top: max(env(safe-area-inset-top), 20px);
+      pointer-events: none;
+    }
+    .hero-profile-trigger {
+      pointer-events: auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: none;
+      background: none;
+      padding: 0;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .hero-profile-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.75);
+    }
+    .hero-profile-avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.7);
+      background: rgba(255,255,255,0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .hero-profile-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
     .hero-inner {
       position: relative; z-index: 1;
       display: flex;
       flex-direction: column;
       align-items: center;
     }
+    body.standalone-runday .hero-inner { padding-top: 24px; }
+    body.embedded-runday .hero-topbar { display: none; }
 
     /* 마스코트 */
     .hero-char {
@@ -609,7 +657,7 @@
     .form-header { display: none; }
 
     .fcard {
-      background: var(--white); border-radius: 14px;
+      background: #fdfcf0; border-radius: 14px;
       padding: 16px; margin-bottom: 8px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 2px 8px rgba(0,0,0,0.03);
     }
@@ -942,6 +990,12 @@
 
 <!-- ─── HERO ───────────────────────────────── -->
 <div class="hero">
+  <div class="hero-topbar">
+    <button type="button" class="hero-profile-trigger" onclick="openRundayProfile()" title="프로필 설정">
+      <span class="hero-profile-label">프로필변경</span>
+      <span class="hero-profile-avatar" id="hero-profile-avatar"></span>
+    </button>
+  </div>
   <div class="hero-inner">
     <img src="images/run_day_rola.png?v=2" alt="HI RUN DAY 마스코트" class="hero-char">
     <div class="hero-copy">
@@ -953,7 +1007,7 @@
       <div class="hero-chips">
         <div class="chip"><span class="chip-dot" style="background:#f97316"></span>3/22 워밍업</div>
         <div class="chip"><span class="chip-dot" style="background:#6366f1"></span>4/5 집중기간</div>
-        <div class="chip"><span class="chip-dot" style="background:#a855f7"></span>4/15 행사 당일</div>
+        <div class="chip"><span class="chip-dot" style="background:#a855f7"></span>4/15 RUN DAY</div>
       </div>
     </div>
     <div class="hero-scroll">
@@ -987,7 +1041,7 @@
       <img src="images/avatars/av16.png" alt="기부" class="why-img donate">
       <div class="why-body">
         <div class="why-card-title">달린 거리만큼 기부</div>
-        <div class="why-card-desc">행사 당일 직원들이 달린 거리가 전액 기부로 이어집니다.</div>
+        <div class="why-card-desc">RUN DAY에 직원들이 달린 거리가 전액 기부로 이어집니다.</div>
       </div>
     </div>
   </div>
@@ -1040,7 +1094,7 @@
         </div>
         <div class="sch-body">
           <div class="sch-date-row">
-            <div class="sch-phase">행사 당일</div>
+            <div class="sch-phase">RUN DAY</div>
             <div class="sch-date">4월 15일</div>
           </div>
           <div class="sch-desc">HI 개원 8주년 기념 · 함께달리기 여의도→선유도공원 약 4.7km · 달린만큼 기부가 진행됩니다.</div>
@@ -1059,7 +1113,7 @@
 <!-- ─── EVENT PROGRAM ──────────────────────── -->
 <div class="prog-wrap">
   <div class="section-kicker">Apr 15</div>
-  <div class="section-title">RUN DAY 행사 당일 프로그램</div>
+  <div class="section-title">RUN DAY 프로그램</div>
   <div class="prog-card">
     <div class="prog-list">
       <div class="prog-step">
@@ -1156,11 +1210,11 @@
         </div>
         <div class="route-focus-stat">
           <div class="route-focus-stat-label">Running</div>
-          <div class="route-focus-stat-value">50-60분</div>
+          <div class="route-focus-stat-value">40-60분</div>
         </div>
         <div class="route-focus-stat">
-          <div class="route-focus-stat-label">Face</div>
-          <div class="route-focus-stat-value">80분</div>
+          <div class="route-focus-stat-label">FACE</div>
+          <div class="route-focus-stat-value">8분이상</div>
         </div>
         <div class="route-focus-stat">
           <div class="route-focus-stat-label">Finish</div>
@@ -1178,9 +1232,6 @@
               <stop offset="0%" stop-color="#9edcff"></stop>
               <stop offset="100%" stop-color="#54bdf5"></stop>
             </linearGradient>
-            <marker id="route-focus-arrow" markerWidth="9" markerHeight="9" refX="7.5" refY="4.5" orient="auto">
-              <path d="M1 1L7.5 4.5L1 8C2.4 6.8 3.1 5.8 3.1 4.5C3.1 3.2 2.4 2.2 1 1Z" fill="#7c3aed"></path>
-            </marker>
             <filter id="route-focus-shadow" x="-20%" y="-20%" width="140%" height="140%">
               <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#0f172a" flood-opacity="0.08"></feDropShadow>
             </filter>
@@ -1189,32 +1240,53 @@
           <circle cx="320" cy="188" r="54" fill="#dbeafe" opacity="0.78"></circle>
           <circle cx="40" cy="26" r="50" fill="#dcfce7" opacity="0.72"></circle>
           <path d="M0 0H360V82C333 89 308 93 275 92C230 91 193 81 145 79C96 76 48 81 0 94Z" fill="#d9f99d" opacity="0.42"></path>
-          <path d="M0 112C49 101 95 97 144 100C198 103 244 115 293 111C322 109 343 103 360 96V150C343 156 322 160 292 162C243 165 197 154 144 150C94 147 48 150 0 159Z" fill="url(#route-focus-river)"></path>
-          <path d="M0 120C49 109 95 106 144 109C198 112 244 123 293 119C322 117 343 110 360 103" fill="none" stroke="rgba(255,255,255,0.68)" stroke-width="2.2" stroke-linecap="round"></path>
-          <path d="M0 146C47 136 91 132 139 134C188 137 235 147 286 143C317 141 339 134 360 124V214H0Z" fill="#d9f99d" opacity="0.45"></path>
-          <path d="M304 160C276 154 248 149 217 149C182 149 150 154 120 156C96 158 76 160 58 158" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"></path>
-          <path d="M304 160C276 154 248 149 217 149C182 149 150 154 120 156C96 158 76 160 58 158" fill="none" stroke="#a78bfa" stroke-width="7.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.38"></path>
-          <path d="M304 160C276 154 248 149 217 149C182 149 150 154 120 156C96 158 76 160 58 158" fill="none" stroke="#7c3aed" stroke-width="4.8" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#route-focus-arrow)"></path>
+          <path d="M0 96C49 85 95 81 144 84C198 87 244 99 293 95C322 93 343 87 360 80V134C343 140 322 144 292 146C243 149 197 138 144 134C94 131 48 134 0 143Z" fill="url(#route-focus-river)"></path>
+          <path d="M0 104C49 93 95 90 144 93C198 96 244 107 293 103C322 101 343 94 360 87" fill="none" stroke="rgba(255,255,255,0.68)" stroke-width="2.2" stroke-linecap="round"></path>
+          <path d="M0 130C47 120 91 116 139 118C188 121 235 131 286 127C317 125 339 118 360 108V214H0Z" fill="#d9f99d" opacity="0.45"></path>
+          <path d="M298 144C270 138 242 133 211 133C176 133 144 138 114 140C90 142 70 144 52 142" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"></path>
+          <path d="M298 144C270 138 242 133 211 133C176 133 144 138 114 140C90 142 70 144 52 142" fill="none" stroke="#a78bfa" stroke-width="7.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.38"></path>
+          <path d="M298 144C270 138 242 133 211 133C176 133 144 138 114 140C90 142 70 144 52 142" fill="none" stroke="#7c3aed" stroke-width="4.8" stroke-linecap="round" stroke-linejoin="round"></path>
+          <path d="M57.2 142L65.4 137.6L62.7 142L65.4 146.4Z" fill="#7c3aed" stroke="rgba(255,255,255,0.82)" stroke-width="0.6" stroke-linejoin="round"></path>
           <path d="M178 92V137" stroke="#1d4ed8" stroke-width="2" stroke-linecap="round" opacity="0.28"></path>
           <text x="178" y="87" text-anchor="middle" font-size="10" fill="#1d4ed8" font-family="sans-serif" font-weight="700" opacity="0.75">양화대교</text>
-          <circle cx="304" cy="160" r="8.5" fill="#0f172a"></circle>
-          <circle cx="304" cy="160" r="3.4" fill="#ffffff"></circle>
-          <circle cx="58" cy="158" r="8.5" fill="#16a34a"></circle>
-          <circle cx="58" cy="158" r="3.4" fill="#ffffff"></circle>
-          <circle cx="220" cy="149" r="5.5" fill="#ffffff" stroke="#38bdf8" stroke-width="2.4"></circle>
-          <circle cx="220" cy="149" r="2.1" fill="#60a5fa"></circle>
-          <circle cx="162" cy="153" r="5.5" fill="#ffffff" stroke="#38bdf8" stroke-width="2.4"></circle>
-          <circle cx="162" cy="153" r="2.1" fill="#60a5fa"></circle>
+          <path d="M298 144L298 138.5" stroke="#0f172a" stroke-opacity="0.2" stroke-width="1.8" stroke-linecap="round"></path>
+          <path d="M52 142L52 136.5" stroke="#16a34a" stroke-opacity="0.24" stroke-width="1.8" stroke-linecap="round"></path>
+          <circle cx="298" cy="144" r="15" fill="#0f172a" opacity="0.08"></circle>
+          <circle cx="52" cy="142" r="15" fill="#22c55e" opacity="0.14"></circle>
+          <circle cx="298" cy="144" r="4.8" fill="#ffffff" stroke="#0f172a" stroke-width="2.1"></circle>
+          <circle cx="52" cy="142" r="4.8" fill="#ffffff" stroke="#16a34a" stroke-width="2.1"></circle>
+          <g transform="translate(298 125)" filter="url(#route-focus-shadow)">
+            <g transform="scale(1.15)">
+              <circle r="10.5" fill="#ffffff" stroke="#0f172a" stroke-opacity="0.18" stroke-width="1.2"></circle>
+              <path d="M-4.1 1.9H4.1L2.9 -1.1H-2.9Z" fill="#ffffff" stroke="#0284c7" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"></path>
+              <path d="M-2.4 -3.1V-4.3H2.4V-3.1" fill="none" stroke="#0284c7" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"></path>
+              <path d="M-4 3.6C-3 4.2-2 4.2-1 3.6C0 4.2 1 4.2 2 3.6C3 4.2 3.8 4.1 4.5 3.6" fill="none" stroke="#0284c7" stroke-width="1.05" stroke-linecap="round"></path>
+            </g>
+          </g>
+          <g transform="translate(52 123)" filter="url(#route-focus-shadow)">
+            <g transform="scale(1.15)">
+              <circle r="10.5" fill="#ffffff" stroke="#16a34a" stroke-opacity="0.24" stroke-width="1.2"></circle>
+              <circle cx="0" cy="-2.6" r="3" fill="#22c55e"></circle>
+              <circle cx="-3.1" cy="-0.2" r="2.1" fill="#4ade80"></circle>
+              <circle cx="3" cy="0" r="1.9" fill="#16a34a"></circle>
+              <path d="M0 0.8V4.7" stroke="#8b5a2b" stroke-width="1.4" stroke-linecap="round"></path>
+              <path d="M-3.7 5.2H3.7" stroke="#16a34a" stroke-width="1.1" stroke-linecap="round"></path>
+            </g>
+          </g>
+          <circle cx="214" cy="133" r="5.5" fill="#ffffff" stroke="#38bdf8" stroke-width="2.4"></circle>
+          <circle cx="214" cy="133" r="2.1" fill="#60a5fa"></circle>
+          <circle cx="156" cy="137" r="5.5" fill="#ffffff" stroke="#38bdf8" stroke-width="2.4"></circle>
+          <circle cx="156" cy="137" r="2.1" fill="#60a5fa"></circle>
           <text x="180" y="176" text-anchor="middle" font-size="11.5" fill="#075985" font-family="sans-serif" font-weight="800" opacity="0.82">한강변 4.7km</text>
           <g filter="url(#route-focus-shadow)">
-            <rect x="210" y="168" width="126" height="34" rx="14" fill="rgba(255,255,255,0.96)"></rect>
-            <text x="223" y="182" font-size="9" fill="#64748b" font-family="sans-serif" font-weight="800">START</text>
-            <text x="223" y="194" font-size="12" fill="#0f172a" font-family="sans-serif" font-weight="800">여의도 유람선터미널</text>
+            <rect x="228" y="166" width="116" height="38" rx="16" fill="rgba(255,255,255,0.97)"></rect>
+            <text x="286" y="181" text-anchor="middle" font-size="9" fill="#64748b" font-family="sans-serif" font-weight="800">START</text>
+            <text x="286" y="194" text-anchor="middle" font-size="11.5" fill="#0f172a" font-family="sans-serif" font-weight="800">유람선터미널</text>
           </g>
           <g filter="url(#route-focus-shadow)">
-            <rect x="20" y="168" width="116" height="34" rx="14" fill="rgba(255,255,255,0.96)"></rect>
-            <text x="33" y="182" font-size="9" fill="#16a34a" font-family="sans-serif" font-weight="800">FINISH</text>
-            <text x="33" y="194" font-size="12" fill="#0f172a" font-family="sans-serif" font-weight="800">선유도공원 입구</text>
+            <rect x="10" y="166" width="108" height="38" rx="16" fill="rgba(255,255,255,0.97)"></rect>
+            <text x="64" y="181" text-anchor="middle" font-size="9" fill="#16a34a" font-family="sans-serif" font-weight="800">FINISH</text>
+            <text x="64" y="194" text-anchor="middle" font-size="11.5" fill="#0f172a" font-family="sans-serif" font-weight="800">선유도 입구</text>
           </g>
         </svg>
       </div>
@@ -1308,7 +1380,7 @@
     </div>
 
     <div class="fcard">
-      <div class="fcard-label">러닝화, 티셔츠, 혈당체크기기 신청</div>
+      <div class="fcard-label">기념품 신청</div>
       <div class="fg row2">
         <div>
           <label class="lbl" for="f-shoe">신발 사이즈</label>
@@ -1421,6 +1493,12 @@
 </div>
 
 <script>
+  const IS_EMBEDDED_RUN_DAY = (() => {
+    try { return window.parent && window.parent !== window; } catch (e) { return false; }
+  })();
+  document.body.classList.toggle('embedded-runday', IS_EMBEDDED_RUN_DAY);
+  document.body.classList.toggle('standalone-runday', !IS_EMBEDDED_RUN_DAY);
+
   const NIKE_MODELS = [
     { id:'nike1', label:'Nike Vomero Plus (화이트)', img:'images/nike1.png', g:'f', cdot:'#f0ede8' },
     { id:'nike2', label:'Nike Vomero Plus (베이지)', img:'images/nike2.png', g:'f', cdot:'#c9a97a' },
@@ -1438,28 +1516,53 @@
   let nbIdx = 0;
   let familyMembers = [];
 
+  let courseDetailMode = 'inline';
+
+  function showInlineCourseDetail() {
+    const overlay = document.getElementById('route-detail-modal');
+    if (!overlay) return false;
+    overlay.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    courseDetailMode = 'inline';
+    return true;
+  }
+
+  function hideInlineCourseDetail() {
+    const overlay = document.getElementById('route-detail-modal');
+    if (!overlay) return false;
+    overlay.classList.add('hidden');
+    document.body.style.overflow = '';
+    return true;
+  }
+
   function openCourseDetail() {
-    toast('▶ 코스 상세 로딩중');
     const src = document.getElementById('route-detail-modal');
-    if (!src) { toast('모달 없음'); return; }
-    const sheet = src.querySelector('.route-modal-sheet');
-    if (!sheet) { toast('시트 없음'); return; }
+    const sheet = src?.querySelector('.route-modal-sheet');
+    if (!sheet) {
+      showInlineCourseDetail();
+      return;
+    }
+
     const html = sheet.outerHTML;
     try {
-      if (typeof window.parent.openRunCourseDetail === 'function') {
+      if (window.parent && window.parent !== window && typeof window.parent.openRunCourseDetail === 'function') {
         window.parent.openRunCourseDetail(html);
-        toast('parent 함수 호출 성공');
+        courseDetailMode = 'parent';
         return;
-      } else {
-        toast('parent 함수 없음, postMessage 시도');
       }
-    } catch(e) { toast('오류: ' + e.message); }
-    window.parent.postMessage({ type: 'SHOW_COURSE_DETAIL', html }, '*');
+    } catch (e) {}
+
+    showInlineCourseDetail();
   }
 
   function closeCourseDetail() {
-    try { window.parent.closeRunCourseDetail(); } catch(e) {}
-    window.parent.postMessage({ type: 'CLOSE_COURSE_DETAIL' }, '*');
+    hideInlineCourseDetail();
+    if (courseDetailMode !== 'parent') return;
+    try {
+      if (window.parent && window.parent !== window && typeof window.parent.closeRunCourseDetail === 'function') {
+        window.parent.closeRunCourseDetail();
+      }
+    } catch (e) {}
   }
 
   document.addEventListener('keydown', (event) => {
@@ -1714,8 +1817,11 @@
     if (!ok)     return toast('개인정보 동의가 필요합니다');
     if (hasDup(empId)) return toast('이미 신청하신 사번입니다');
 
-    const btn = document.getElementById('btn-submit');
-    btn.disabled = true; btn.textContent = '처리 중...';
+    const submitBtn = document.getElementById('btn-submit');
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = '처리 중...';
+    }
 
     const fam = famVal === 'yes';
     const id  = 'HC-' + String(Date.now()).slice(-6);
@@ -1777,8 +1883,10 @@
     renderSuccessScreen(reg);
     document.getElementById('form-screen').classList.add('hide');
     document.getElementById('success-screen').classList.add('show');
-    const btn = document.getElementById('btn-submit');
-    if (btn) { btn.disabled = false; btn.textContent = '신청하기'; }
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = '신청하기';
+    }
   }
 
   /* ── 이미지 크게 보기 ──────────────────────── */
@@ -1817,6 +1925,23 @@
   let currentLoginAvatar = '';
   let latestPeopleList = [];
 
+  function renderRundayProfileHeader() {
+    const avatarEl = document.getElementById('hero-profile-avatar');
+    if (!avatarEl) return;
+    const avatarSrc = currentLoginAvatar || LIVE_AVATAR_FALLBACK;
+    avatarEl.innerHTML = `<img src="${avatarSrc}" alt="프로필 아바타" onerror="if(this.dataset.err)return;this.dataset.err=1;this.src='${LIVE_AVATAR_FALLBACK}'">`;
+  }
+
+  function openRundayProfile() {
+    try {
+      if (window.parent && window.parent !== window && typeof window.parent.openProfileModal === 'function') {
+        window.parent.openProfileModal();
+        return;
+      }
+    } catch (e) {}
+    toast('앱에서 프로필 설정을 열 수 있어요.');
+  }
+
   function normalizeLiveAvatar(src) {
     const raw = String(src || '').trim();
     if (!raw) return '';
@@ -1836,6 +1961,7 @@
     if (empIdEl && empId) empIdEl.value = empId.toUpperCase();
     const nextAvatar = normalizeLiveAvatar(avatar);
     if (nextAvatar) currentLoginAvatar = nextAvatar;
+    renderRundayProfileHeader();
   }
 
   function syncInitialIdentity() {
@@ -1889,6 +2015,9 @@
       window.scrollTo({ top: 0, behavior: 'auto' });
       document.documentElement.scrollTop = 0;
       document.body.scrollTop = 0;
+    }
+    if (e.data?.type === 'PAGE_VISIBILITY') {
+      setRundayPageActive(e.data.active !== false);
     }
   });
 
@@ -1972,8 +2101,34 @@
     } catch(e) { /* 오프라인 시 로컬 데이터 유지 */ }
   }
 
-  loadPeople();
-  setInterval(loadPeople, 60000); // 1분마다 갱신
+  let peoplePollTimer = null;
+  let rundayPageActive = true;
+
+  function startPeoplePolling() {
+    if (peoplePollTimer) return;
+    peoplePollTimer = setInterval(() => {
+      if (!rundayPageActive) return;
+      loadPeople();
+    }, 60000);
+  }
+
+  function stopPeoplePolling() {
+    if (!peoplePollTimer) return;
+    clearInterval(peoplePollTimer);
+    peoplePollTimer = null;
+  }
+
+  function setRundayPageActive(active) {
+    rundayPageActive = active !== false;
+    if (rundayPageActive) {
+      loadPeople();
+      startPeoplePolling();
+      return;
+    }
+    stopPeoplePolling();
+  }
+
+  setRundayPageActive(true);
 
   function renderSuccessScreen(reg) {
     const prefs = (reg.shoePrefs || [])

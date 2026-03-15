@@ -1,4 +1,4 @@
-const CACHE = 'hi-health-v355';
+const CACHE = 'hi-health-v365';
 const STATIC_ASSETS = [
   './manifest.webmanifest',
   './icons/icon.svg',
@@ -15,14 +15,12 @@ self.addEventListener('install', e => {
   );
 });
 
-// 활성화: 이전 캐시 정리 후 모든 탭 자동 새로고침
+// 활성화: 이전 캐시 정리 후 즉시 제어권만 가져오기
 self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys().then(keys =>
       Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
     ).then(() => self.clients.claim())
-      .then(() => self.clients.matchAll({ type: 'window' }))
-      .then(clients => clients.forEach(client => client.navigate(client.url)))
   );
 });
 

@@ -366,6 +366,7 @@
       -webkit-backdrop-filter: none;
       backdrop-filter: none;
     }
+    .app-header.challenge-mode::before { display: none; }
     .header-logo { display: flex; align-items: center; min-height: 38px; }
     .logo-img       { height: 40px; width: auto; display: block; }
     .logo-img-white { height: 28px; width: auto; display: none; }
@@ -3785,7 +3786,7 @@
 
   <!-- ████  CHALLENGE  ████ -->
   <section id="page-challenge" class="page">
-    <iframe id="runday-iframe" src="runday.html?v=20260315-2" title="HI RUN DAY"></iframe>
+    <iframe id="runday-iframe" data-src="runday.html?v=20260315-11" title="HI RUN DAY" loading="lazy"></iframe>
   </section>
 
 </main>
@@ -5261,6 +5262,78 @@ function myWeekPts() {
    NAVIGATION
 ════════════════════════════════════════ */
 const _isTouch = () => window.matchMedia('(hover: none)').matches;
+const RUNDAY_IFRAME_SRC = 'runday.html?v=20260315-11';
+let _rundayIframeReady = false;
+let _rundayIframeLoadStarted = false;
+const _rundayIframeQueue = [];
+
+function getRundayIframe() {
+  return document.getElementById('runday-iframe');
+}
+
+function queueRundayMessage(payload) {
+  if (!payload) return;
+  const dedupeTypes = { LOGIN:1, AVATAR_CHANGE:1, PAGE_VISIBILITY:1, SCROLL_TOP:1 };
+  if (payload.type && dedupeTypes[payload.type]) {
+    const idx = _rundayIframeQueue.findIndex(msg => msg?.type === payload.type);
+    if (idx >= 0) {
+      _rundayIframeQueue[idx] = payload;
+      return;
+    }
+  }
+  _rundayIframeQueue.push(payload);
+}
+
+function flushRundayMessageQueue() {
+  const frame = getRundayIframe();
+  if (!frame || !_rundayIframeReady || !frame.contentWindow) return;
+  while (_rundayIframeQueue.length) {
+    frame.contentWindow.postMessage(_rundayIframeQueue.shift(), '*');
+  }
+}
+
+function bindRundayIframe(frame) {
+  if (!frame || frame.dataset.bound === '1') return;
+  frame.dataset.bound = '1';
+  frame.addEventListener('load', () => {
+    if (frame.dataset.loadStarted !== '1') return;
+    _rundayIframeReady = true;
+    frame.dataset.ready = '1';
+    flushRundayMessageQueue();
+  });
+}
+
+function ensureRundayIframeLoaded() {
+  const frame = getRundayIframe();
+  if (!frame) return null;
+  bindRundayIframe(frame);
+  if (frame.dataset.ready === '1') {
+    _rundayIframeReady = true;
+    return frame;
+  }
+  if (frame.dataset.loadStarted !== '1') {
+    frame.dataset.loadStarted = '1';
+    _rundayIframeLoadStarted = true;
+    frame.src = frame.dataset.src || RUNDAY_IFRAME_SRC;
+  } else {
+    _rundayIframeLoadStarted = true;
+  }
+  return frame;
+}
+
+function postToRunday(payload, options = {}) {
+  const { ensureLoaded = false } = options;
+  const frame = getRundayIframe();
+  if (!frame) return;
+  bindRundayIframe(frame);
+  if (ensureLoaded) ensureRundayIframeLoaded();
+  if (_rundayIframeReady && frame.contentWindow) {
+    frame.contentWindow.postMessage(payload, '*');
+    return;
+  }
+  queueRundayMessage(payload);
+}
+
 function quickNav(btn, fn) {
   document.querySelectorAll('.quick-btn.clicked').forEach(b => {
     if (b !== btn) {
@@ -5320,10 +5393,12 @@ function navigate(page) {
     const guestBanner = hdr.querySelector('#guest-banner');
     if (guestBanner) {
       if (isChallenge) {
+        guestBanner.style.display = 'none';
         guestBanner.style.position = 'absolute';
         guestBanner.style.left = '50%';
         guestBanner.style.transform = 'translateX(-50%)';
       } else {
+        guestBanner.style.display = IS_GUEST ? 'flex' : 'none';
         guestBanner.style.position = '';
         guestBanner.style.left = '';
         guestBanner.style.transform = '';
@@ -5350,15 +5425,20 @@ function navigate(page) {
   if (page === 'exercise')  renderExercise();
   if (page === 'community') { setCommunityTab('feed'); renderCommunity(); fetchAdminPosts(); fetchCommunityPosts(); markCommunityAsSeen(); }
   if (page === 'rewards')   { setRewardsTab('rewards'); renderRewards(); }
+  if (!isChallenge && _rundayIframeLoadStarted) {
+    postToRunday({ type: 'PAGE_VISIBILITY', active: false });
+  }
   if (page === 'challenge') {
     renderChallenge();
-    document.getElementById('runday-iframe')?.contentWindow?.postMessage({ type: 'SCROLL_TOP' }, '*');
-    document.getElementById('runday-iframe')?.contentWindow?.postMessage({
+    ensureRundayIframeLoaded();
+    postToRunday({ type: 'PAGE_VISIBILITY', active: true }, { ensureLoaded: true });
+    postToRunday({ type: 'SCROLL_TOP' }, { ensureLoaded: true });
+    postToRunday({
       type: 'LOGIN',
       name: S.user.name,
       empId: S.user.empId || ACTIVE_EMPID,
       avatar: normalizeAvatar(S.user.avatar),
-    }, '*');
+    }, { ensureLoaded: true });
   }
   window.scrollTo({top:0, behavior:'smooth'});
 }
@@ -5370,7 +5450,8 @@ function renderHeader() {
   document.getElementById('hpts-val').textContent = S.user.points;
   document.getElementById('header-avatar').innerHTML = avHTML(S.user.avatar);
   const guestBanner = document.getElementById('guest-banner');
-  if (guestBanner) guestBanner.style.display = IS_GUEST ? 'flex' : 'none';
+  const isChallengePage = document.getElementById('page-challenge')?.classList.contains('active');
+  if (guestBanner) guestBanner.style.display = (IS_GUEST && !isChallengePage) ? 'flex' : 'none';
   // 챌린지 탭: 'before' 또는 'ended' 단계엔 숨김
   const phase = getChPhase();
   const challengeNavBtn = document.querySelector('.nav-btn[data-page="challenge"]');
@@ -7255,6 +7336,12 @@ function saveProfileModal() {
   save();
   renderHeader();
   renderHome();
+  postToRunday({
+    type: 'AVATAR_CHANGE',
+    name: S.user.name,
+    empId: S.user.empId || ACTIVE_EMPID,
+    avatar: normalizeAvatar(S.user.avatar),
+  });
   const btn = document.getElementById('pm-save-btn');
   if (btn) { btn.textContent = '저장됐어요 ✓'; setTimeout(() => { btn.textContent = '저장하기'; }, 1500); }
 }
@@ -9826,11 +9913,11 @@ function renderChallenge() {
           </div>
           <div class="ch-route-stat">
             <div class="ch-route-stat-label">Running</div>
-            <div class="ch-route-stat-value">30-40분</div>
+            <div class="ch-route-stat-value">40-60분</div>
           </div>
           <div class="ch-route-stat">
-            <div class="ch-route-stat-label">Event Pace</div>
-            <div class="ch-route-stat-value">45-60분</div>
+            <div class="ch-route-stat-label">FACE</div>
+            <div class="ch-route-stat-value">8분이상</div>
           </div>
           <div class="ch-route-stat">
             <div class="ch-route-stat-label">Finish</div>
@@ -9849,54 +9936,49 @@ function renderChallenge() {
                   <stop offset="0%" stop-color="#7dd3fc"></stop>
                   <stop offset="100%" stop-color="#38bdf8"></stop>
                 </linearGradient>
-                <linearGradient id="ch-route-arrow-fill" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stop-color="#8b5cf6"></stop>
-                  <stop offset="100%" stop-color="#22c55e"></stop>
-                </linearGradient>
-                <marker id="ch-route-arrow" markerWidth="8" markerHeight="6" refX="1" refY="3" orient="auto">
-                  <path d="M1 3L5 1V2.2H7V3.8H5V5Z" fill="url(#ch-route-arrow-fill)" stroke="rgba(255,255,255,0.9)" stroke-width="0.45" stroke-linejoin="round"></path>
-                </marker>
               </defs>
               <rect width="360" height="214" rx="18" fill="url(#ch-route-sky)"></rect>
-              <path d="M0 146C46 136 99 132 145 134C188 137 230 145 274 142C312 139 335 131 360 119V214H0Z" fill="#d9f99d" opacity="0.7"></path>
-              <path d="M0 123C44 112 90 108 140 111C194 114 232 126 285 121C321 118 340 109 360 98V149C339 159 318 164 285 166C234 169 194 157 140 154C91 151 43 156 0 165Z" fill="url(#ch-route-river)"></path>
-              <path d="M0 130C44 119 90 116 140 118C194 121 232 132 285 127C321 124 340 115 360 104" fill="none" stroke="rgba(255,255,255,0.55)" stroke-width="2" stroke-linecap="round"></path>
-              <path d="M312 78C284 91 260 95 233 96C200 98 173 91 139 89C112 88 88 90 58 96" fill="none" stroke="#f97316" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="10 8" marker-end="url(#ch-route-arrow)"></path>
-              <path d="M312 78C284 91 260 95 233 96C200 98 173 91 139 89C112 88 88 90 58 96" fill="none" stroke="rgba(255,255,255,0.48)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="10 8"></path>
-              <path d="M312 78L309 58" stroke="#0f172a" stroke-opacity="0.12" stroke-width="2" stroke-linecap="round"></path>
-              <path d="M58 96L61 76" stroke="#16a34a" stroke-opacity="0.18" stroke-width="2" stroke-linecap="round"></path>
-              <g transform="translate(292 28)">
-                <circle cx="17" cy="17" r="16" fill="#ffffff"></circle>
-                <circle cx="17" cy="17" r="13" fill="#e0f2fe" stroke="#7dd3fc" stroke-width="1.2"></circle>
-                <path d="M10.2 18.8H23.8L21.7 13.8H12.3Z" fill="#ffffff" stroke="#0284c7" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
-                <path d="M12.5 12.2V10.3H21.5V12.2" fill="none" stroke="#0284c7" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
-                <path d="M10.4 21.3C12.1 22.4 13.8 22.4 15.5 21.3C17.2 22.4 18.9 22.4 20.6 21.3C22.3 22.4 23.8 22.3 25 21.3" fill="none" stroke="#0284c7" stroke-width="1.5" stroke-linecap="round"></path>
+              <path d="M0 130C46 120 99 116 145 118C188 121 230 129 274 126C312 123 335 115 360 103V214H0Z" fill="#d9f99d" opacity="0.7"></path>
+              <path d="M0 107C44 96 90 92 140 95C194 98 232 110 285 105C321 102 340 93 360 82V133C339 143 318 148 285 150C234 153 194 141 140 138C91 135 43 140 0 149Z" fill="url(#ch-route-river)"></path>
+              <path d="M0 104C44 93 90 90 140 92C194 95 232 106 285 101C321 98 340 89 360 78" fill="none" stroke="rgba(255,255,255,0.55)" stroke-width="2" stroke-linecap="round"></path>
+              <path d="M306 62C278 75 254 79 227 80C194 82 167 75 133 73C106 72 82 74 52 80" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="10.5" stroke-linecap="round" stroke-linejoin="round"></path>
+              <path d="M306 62C278 75 254 79 227 80C194 82 167 75 133 73C106 72 82 74 52 80" fill="none" stroke="#a78bfa" stroke-width="7.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.36"></path>
+              <path d="M306 62C278 75 254 79 227 80C194 82 167 75 133 73C106 72 82 74 52 80" fill="none" stroke="#7c3aed" stroke-width="4.6" stroke-linecap="round" stroke-linejoin="round"></path>
+              <path d="M57.2 80L65.4 75.6L62.7 80L65.4 84.4Z" fill="#7c3aed" stroke="rgba(255,255,255,0.82)" stroke-width="0.6" stroke-linejoin="round"></path>
+              <path d="M306 62L306 56.5" stroke="#0f172a" stroke-opacity="0.2" stroke-width="1.8" stroke-linecap="round"></path>
+              <path d="M52 80L52 74.5" stroke="#16a34a" stroke-opacity="0.24" stroke-width="1.8" stroke-linecap="round"></path>
+              <circle cx="52" cy="80" r="4.6" fill="#ffffff" stroke="#16a34a" stroke-width="2.1"></circle>
+              <circle cx="133" cy="74" r="6.5" fill="#0284c7"></circle>
+              <circle cx="133" cy="74" r="2.8" fill="#ffffff"></circle>
+              <circle cx="226" cy="80" r="6.5" fill="#0284c7"></circle>
+              <circle cx="226" cy="80" r="2.8" fill="#ffffff"></circle>
+              <circle cx="306" cy="62" r="4.6" fill="#ffffff" stroke="#0f172a" stroke-width="2.1"></circle>
+              <g transform="translate(52 63)">
+                <g transform="scale(1.15)">
+                  <circle r="10.5" fill="#ffffff" stroke="#16a34a" stroke-opacity="0.24" stroke-width="1.2"></circle>
+                  <circle cx="0" cy="-2.6" r="3" fill="#22c55e"></circle>
+                  <circle cx="-3.1" cy="-0.2" r="2.1" fill="#4ade80"></circle>
+                  <circle cx="3" cy="0" r="1.9" fill="#16a34a"></circle>
+                  <path d="M0 0.8V4.7" stroke="#8b5a2b" stroke-width="1.4" stroke-linecap="round"></path>
+                  <path d="M-3.7 5.2H3.7" stroke="#16a34a" stroke-width="1.1" stroke-linecap="round"></path>
+                </g>
               </g>
-              <g transform="translate(42 50)">
-                <circle cx="17" cy="17" r="16" fill="#ffffff"></circle>
-                <circle cx="17" cy="17" r="13" fill="#dcfce7" stroke="#86efac" stroke-width="1.2"></circle>
-                <circle cx="17" cy="12" r="4.8" fill="#22c55e"></circle>
-                <circle cx="12.1" cy="15.4" r="3.4" fill="#4ade80"></circle>
-                <circle cx="21.8" cy="15.6" r="3.1" fill="#16a34a"></circle>
-                <path d="M17 16.2V22.3" stroke="#8b5a2b" stroke-width="1.9" stroke-linecap="round"></path>
-                <path d="M11.2 22.8H22.8" stroke="#16a34a" stroke-width="1.5" stroke-linecap="round"></path>
+              <g transform="translate(306 45)">
+                <g transform="scale(1.15)">
+                  <circle r="10.5" fill="#ffffff" stroke="#0f172a" stroke-opacity="0.18" stroke-width="1.2"></circle>
+                  <path d="M-4.1 1.9H4.1L2.9 -1.1H-2.9Z" fill="#ffffff" stroke="#0284c7" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"></path>
+                  <path d="M-2.4 -3.1V-4.3H2.4V-3.1" fill="none" stroke="#0284c7" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"></path>
+                  <path d="M-4 3.6C-3 4.2-2 4.2-1 3.6C0 4.2 1 4.2 2 3.6C3 4.2 3.8 4.1 4.5 3.6" fill="none" stroke="#0284c7" stroke-width="1.05" stroke-linecap="round"></path>
+                </g>
               </g>
-              <circle cx="58" cy="96" r="8" fill="#16a34a"></circle>
-              <circle cx="58" cy="96" r="3.2" fill="#ffffff"></circle>
-              <circle cx="143" cy="90" r="6.5" fill="#0284c7"></circle>
-              <circle cx="143" cy="90" r="2.8" fill="#ffffff"></circle>
-              <circle cx="232" cy="96" r="6.5" fill="#0284c7"></circle>
-              <circle cx="232" cy="96" r="2.8" fill="#ffffff"></circle>
-              <circle cx="312" cy="78" r="8" fill="#0f172a"></circle>
-              <circle cx="312" cy="78" r="3.2" fill="#ffffff"></circle>
-              <rect x="18" y="48" width="92" height="28" rx="10" fill="#166534"></rect>
-              <text x="64" y="65" text-anchor="middle" font-size="11" fill="#ffffff" font-family="sans-serif" font-weight="700">선유도공원 입구 도착</text>
+              <rect x="20" y="36" width="84" height="28" rx="10" fill="#166534"></rect>
+              <text x="62" y="53" text-anchor="middle" font-size="10.5" fill="#ffffff" font-family="sans-serif" font-weight="700">선유도 입구</text>
               <rect x="110" y="55" width="78" height="24" rx="9" fill="#0284c7"></rect>
               <text x="149" y="70" text-anchor="middle" font-size="10.5" fill="#ffffff" font-family="sans-serif" font-weight="700">양화대교 남단</text>
               <rect x="194" y="58" width="80" height="24" rx="9" fill="#0284c7"></rect>
               <text x="234" y="73" text-anchor="middle" font-size="10.5" fill="#ffffff" font-family="sans-serif" font-weight="700">여의도 한강공원</text>
-              <rect x="252" y="24" width="92" height="32" rx="11" fill="#0f172a"></rect>
-              <text x="298" y="43" text-anchor="middle" font-size="11" fill="#ffffff" font-family="sans-serif" font-weight="700">유람선터미널 출발</text>
+              <rect x="266" y="12" width="84" height="32" rx="11" fill="#0f172a"></rect>
+              <text x="308" y="31" text-anchor="middle" font-size="10.5" fill="#ffffff" font-family="sans-serif" font-weight="700">유람선터미널</text>
               <text x="180" y="183" text-anchor="middle" font-size="13" fill="#0369a1" font-family="sans-serif" font-weight="700" opacity="0.8">Han River Run Course</text>
             </svg>
             <div class="ch-route-meta">
@@ -10463,12 +10545,12 @@ async function doAppLogin() {
   document.getElementById('app-login-screen').classList.add('hidden');
   document.getElementById('guest-banner')?.style.setProperty('display', 'none');
   window.dispatchEvent(new Event('hi:loggedin'));
-  document.getElementById('runday-iframe')?.contentWindow?.postMessage({
+  postToRunday({
     type: 'LOGIN',
     name: S.user.name,
     empId: S.user.empId || ACTIVE_EMPID,
     avatar: normalizeAvatar(S.user.avatar),
-  }, '*');
+  });
   loadCart();
   setTimeout(() => showIntroIfNeeded(), 400);
 
@@ -10526,12 +10608,12 @@ async function doAppLogin() {
       renderHeader();
       renderHome();
       renderChallenge();
-      document.getElementById('runday-iframe')?.contentWindow?.postMessage({
+      postToRunday({
         type: 'LOGIN',
         name: S.user.name,
         empId: S.user.empId || ACTIVE_EMPID,
         avatar: normalizeAvatar(S.user.avatar),
-      }, '*');
+      });
     });
   }
 
@@ -10717,12 +10799,12 @@ function init() {
         renderHeader();
         renderHome();
         renderChallenge();
-        document.getElementById('runday-iframe')?.contentWindow?.postMessage({
+        postToRunday({
           type: 'LOGIN',
           name: S.user.name,
           empId: S.user.empId || savedEmpId,
           avatar: normalizeAvatar(S.user.avatar),
-        }, '*');
+        });
       });
     }
   }
@@ -10935,7 +11017,7 @@ init();
 
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js?v=20260315-2')
+      navigator.serviceWorker.register('./sw.js?v=20260315-11')
         .catch(err => console.warn('SW 등록 실패:', err));
     });
   }
