@@ -1243,7 +1243,7 @@
           <g clip-path="url(#route-focus-photo-clip)">
           <g transform="translate(4,-10) scale(1.22)">
           <g transform="rotate(1.6 180 107)">
-          <image href="images/avatars/IMG_2162_clean.png?v=20260315-63" x="0" y="-48" width="360" height="358.6"></image>
+          <image href="images/avatars/IMG_2162_clean.png?v=20260315-66" x="0" y="-48" width="360" height="358.6"></image>
           <rect width="360" height="214" rx="18" fill="url(#route-focus-bg)" opacity="0.14"></rect>
           <g transform="translate(0,-10)">
           <g transform="translate(252 143)" filter="url(#route-focus-shadow)">
@@ -1340,12 +1340,12 @@
       <div class="fcard-label">기본 정보</div>
       <div class="fg row2">
         <div>
-          <label class="lbl" for="f-name">이름</label>
-          <input type="text" class="fi" id="f-name" placeholder="홍길동" autocomplete="name" readonly tabindex="-1" style="background:#f3f4f6;color:#6b7280">
-        </div>
-        <div>
           <label class="lbl" for="f-empid">사번</label>
           <input type="text" class="fi" id="f-empid" placeholder="A1801" autocomplete="off" readonly tabindex="-1" style="text-transform:uppercase;background:#f3f4f6;color:#6b7280">
+        </div>
+        <div>
+          <label class="lbl" for="f-name">이름</label>
+          <input type="text" class="fi" id="f-name" placeholder="홍길동" autocomplete="name" readonly tabindex="-1" style="background:#f3f4f6;color:#6b7280">
         </div>
       </div>
       <div class="fg row2">
@@ -1370,8 +1370,16 @@
       <div class="fcard-label">기념품 신청</div>
       <div class="fg row2">
         <div>
-          <label class="lbl" for="f-shoe">신발 사이즈</label>
-          <select class="fs" id="f-shoe" title="신발 사이즈" onchange="">
+          <label class="lbl" for="f-tshirt">티셔츠 사이즈 <span class="req">*</span></label>
+          <select class="fs" id="f-tshirt" title="티셔츠 사이즈" required>
+            <option value="">사이즈 선택</option>
+            <option>XS</option><option>S</option><option>M</option><option>L</option>
+            <option>XL</option><option>2XL</option><option>3XL</option>
+          </select>
+        </div>
+        <div>
+          <label class="lbl" for="f-shoe">신발 사이즈 <span class="req">*</span></label>
+          <select class="fs" id="f-shoe" title="신발 사이즈" onchange="" required>
             <option value="">사이즈(mm) 선택</option>
             <option>215</option><option>220</option><option>225</option><option>230</option>
             <option>235</option><option>240</option><option>245</option><option>250</option>
@@ -1380,17 +1388,9 @@
             <option>295</option><option>300</option>
           </select>
         </div>
-        <div>
-          <label class="lbl" for="f-tshirt">티셔츠 사이즈</label>
-          <select class="fs" id="f-tshirt" title="티셔츠 사이즈">
-            <option value="">사이즈 선택</option>
-            <option>XS</option><option>S</option><option>M</option><option>L</option>
-            <option>XL</option><option>2XL</option><option>3XL</option>
-          </select>
-        </div>
       </div>
       <div style="font-size:11px;color:#6b7280;line-height:1.6;background:#f9fafb;border-radius:8px;padding:10px 12px;margin-bottom:12px;">
-        🔔 러닝화와 티셔츠는 커스텀 패치 부착으로 수령 후 교환 및 반품이 어려워 사이즈를 신중하게 작성해주시기 바랍니다.
+        🔔 티셔츠와 러닝화는 커스텀 패치 부착으로 수령 후 교환 및 반품이 어려워 사이즈를 신중하게 작성해주시기 바랍니다.
       </div>
       <div class="fg">
         <label class="lbl">희망 브랜드 <span style="font-weight:400;color:#d1d5db">탭하여 선택</span></label>
@@ -1406,7 +1406,7 @@
       </div>
       <div class="fg" style="margin-top:12px">
         <label class="lbl">혈당체크기기 신청 여부 <span class="req">*</span></label>
-        <p class="hint">덱스콤7 · 페이스업 10일간 착용</p>
+        <p class="hint">페이스업 기간 10일간 착용</p>
         <div class="rg">
           <label class="rl"><input type="radio" name="cgm" value="yes">신청</label>
           <label class="rl"><input type="radio" name="cgm" value="no">미신청</label>
@@ -1422,7 +1422,7 @@
           <label class="rl"><input type="radio" name="fam" value="yes" onchange="toggleFam(this)">가족함께</label>
         </div>
         <div style="font-size:11px;color:#6b7280;line-height:1.6;background:#f9fafb;border-radius:8px;padding:10px 12px;margin-top:10px;">
-          👨‍👩‍👧 가족과 함께 참여하고 인증하면 <strong style="color:#5b21b6">추가 포인트</strong>를 지급합니다. 함께하는 가족에게는 <strong style="color:#5b21b6">티셔츠</strong>를 선물로 드립니다.
+          ✨ 가족과 함께 참여하고 인증하면 <strong style="color:#5b21b6">추가 포인트</strong>를 지급합니다. 함께하는 가족에게는 <strong style="color:#5b21b6">티셔츠</strong>를 선물로 드립니다.
         </div>
       </div>
       <div class="fam-box" id="fam-detail">
@@ -1433,10 +1433,10 @@
     </div>
 
     <div class="fcard">
-      <div class="fcard-label">RUN DAY 행사 참여</div>
+      <div class="fcard-label">RUN DAY 행사 참여 <span style="font-size:11px;font-weight:600;color:#6b7280">(직원만 참여 가능)</span></div>
       <div class="fg">
         <label class="lbl">한강 크루즈 <span class="req">*</span></label>
-        <p class="hint">김포→여의도 약 90분, 기상 악화시 취소될 수 있습니다. 탑승 안할경우 버스로 여의도까지 이동합니다.</p>
+        <p class="hint">김포→여의도 약 90분, 기상 악화시 취소될 수 있습니다. 탑승 안할 경우 단체버스로 여의도까지 이동합니다.</p>
         <div class="rg">
           <label class="rl"><input type="radio" name="cruise" value="yes">탑승 희망</label>
           <label class="rl"><input type="radio" name="cruise" value="no">탑승 안 함</label>
@@ -1772,7 +1772,7 @@
   }
 
   const CH_KEY = 'hi_health_registrations_v2';
-  const DONATION_PER_PERSON = 47000;
+  const DONATION_PER_PERSON = 41000;
   const SB_URL = 'https://nbnmvvobehjitophkqmu.supabase.co';
   const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ibm12dm9iZWhqaXRvcGhrcW11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3Nzk4NzQsImV4cCI6MjA4ODM1NTg3NH0.iZS4JvhHUqv4ZMPxm9STit6xqVp2JA5H55M8Wmd1yjY';
 
@@ -1796,6 +1796,8 @@
     const shoeN  = (document.getElementById('f-shoe-note')?.value || '').trim();
     const tshirt = document.getElementById('f-tshirt').value;
 
+    if (!tshirt) return toast('티셔츠 사이즈를 선택해주세요');
+    if (!shoe) return toast('신발 사이즈를 선택해주세요');
     if (!selectedBrand) return toast('희망 브랜드를 선택해주세요');
     if (!cgmVal) return toast('혈당체크기기 신청 여부를 선택해주세요');
     if (!famVal) return toast('가족 참여 여부를 선택해주세요');

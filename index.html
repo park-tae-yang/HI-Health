@@ -3879,7 +3879,7 @@
 
   <!-- ████  CHALLENGE  ████ -->
   <section id="page-challenge" class="page">
-    <iframe id="runday-iframe" data-src="runday.html?v=20260315-64" title="HI RUN DAY" loading="lazy"></iframe>
+    <iframe id="runday-iframe" data-src="runday.html?v=20260315-68" title="HI RUN DAY" loading="lazy"></iframe>
   </section>
 
 </main>
@@ -5355,7 +5355,7 @@ function myWeekPts() {
    NAVIGATION
 ════════════════════════════════════════ */
 const _isTouch = () => window.matchMedia('(hover: none)').matches;
-const RUNDAY_IFRAME_SRC = 'runday.html?v=20260315-64';
+const RUNDAY_IFRAME_SRC = 'runday.html?v=20260315-68';
 let _rundayIframeReady = false;
 let _rundayIframeLoadStarted = false;
 const _rundayIframeQueue = [];
@@ -10044,7 +10044,7 @@ function renderChallenge() {
               <g clip-path="url(#ch-route-photo-clip)">
               <g transform="translate(4,-10) scale(1.22)">
               <g transform="rotate(1.6 180 107)">
-              <image href="images/avatars/IMG_2162_clean.png?v=20260315-63" x="0" y="-48" width="360" height="358.6"></image>
+              <image href="images/avatars/IMG_2162_clean.png?v=20260315-66" x="0" y="-48" width="360" height="358.6"></image>
               <rect width="360" height="214" rx="18" fill="url(#ch-route-sky)" opacity="0.14"></rect>
               <g transform="translate(0,-10)">
               <g transform="translate(48 52)">
@@ -11353,7 +11353,7 @@ init();
 
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js?v=20260315-64')
+      navigator.serviceWorker.register('./sw.js?v=20260315-68')
         .catch(err => console.warn('SW 등록 실패:', err));
     });
   }
