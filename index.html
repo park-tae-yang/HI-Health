@@ -4019,7 +4019,7 @@
 
   <!-- ████  CHALLENGE  ████ -->
   <section id="page-challenge" class="page">
-    <iframe id="runday-iframe" data-src="runday.html?v=20260315-69" title="HI RUN DAY" loading="lazy"></iframe>
+    <iframe id="runday-iframe" data-src="runday.html?v=20260315-70" title="HI RUN DAY" loading="lazy"></iframe>
   </section>
 
 </main>
@@ -5530,7 +5530,7 @@ function myWeekPts() {
    NAVIGATION
 ════════════════════════════════════════ */
 const _isTouch = () => window.matchMedia('(hover: none)').matches;
-const RUNDAY_IFRAME_SRC = 'runday.html?v=20260315-69';
+const RUNDAY_IFRAME_SRC = 'runday.html?v=20260315-70';
 let _rundayIframeReady = false;
 let _rundayIframeLoadStarted = false;
 const _rundayIframeQueue = [];
@@ -9950,6 +9950,39 @@ function cancelRegistration(regId) {
   showToast('신청이 취소됐습니다');
 }
 
+function applyRundayRegistrationSync(payload = {}) {
+  const reg = payload?.registration || null;
+  const regId = normChallengeId(payload?.registrationId || reg?.id);
+  if (reg?.empId && !S.user.empId) S.user.empId = reg.empId;
+  if (reg?.name && !S.user.name) S.user.name = reg.name;
+  if (reg?.dept && !S.user.dept) S.user.dept = reg.dept;
+  const currentEmpId = normChallengeEmpId(S.user.empId || ACTIVE_EMPID);
+  let regs = getStoredChallengeRegs();
+
+  if (reg && regId) {
+    const idx = regs.findIndex(row => normChallengeId(row?.id) === regId);
+    if (idx >= 0) regs[idx] = { ...regs[idx], ...reg };
+    else regs.push(reg);
+    setStoredChallengeRegs(regs);
+  }
+
+  if (payload?.cancelled && regId) {
+    regs = regs.filter(row => normChallengeId(row?.id) !== regId);
+    setStoredChallengeRegs(regs);
+  }
+
+  const activeReg = getMyReg();
+  S.user.registrationId = activeReg ? activeReg.id : null;
+  if (reg && normChallengeEmpId(reg.empId) === currentEmpId) {
+    if (reg.name) S.user.name = reg.name;
+    if (reg.empId) S.user.empId = reg.empId;
+    if (reg.dept) S.user.dept = reg.dept;
+  }
+  save();
+  renderHeader();
+  if (document.getElementById('page-home')?.classList.contains('active')) renderHome();
+}
+
 function scrollToExerciseForm() {
   navigate('exercise');
   setTimeout(() => {
@@ -11476,7 +11509,7 @@ init();
     <button class="rt-discard-btn" onclick="closeRunTracker()">저장하지 않고 닫기</button>
   </div>
   <div class="rt-btns" id="rt-btns">
-    <button class="rt-btn-main rt-btn-start" id="rt-btn-main" onclick="toggleRunTracker()">▶</button>
+    <button class="rt-btn-main rt-btn-start" id="rt-btn-main" onclick="toggleRunTracker()"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg></button>
   </div>
 </div>
 
@@ -11526,7 +11559,7 @@ init();
     document.getElementById('rt-summary').classList.remove('show');
     document.getElementById('rt-btns').style.display = '';
     document.getElementById('rt-btn-main').className = 'rt-btn-main rt-btn-start';
-    document.getElementById('rt-btn-main').textContent = '▶';
+    document.getElementById('rt-btn-main').innerHTML = '<svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>';
     document.getElementById('rt-status').className = 'rt-status';
     document.getElementById('rt-status').textContent = '대기 중';
     document.getElementById('rt-gps').textContent = 'GPS 준비 중...';
@@ -11565,7 +11598,7 @@ init();
     _rt.state = 'running';
     _rtToast('달리기를 시작합니다 🏃');
     document.getElementById('rt-btn-main').className = 'rt-btn-main rt-btn-pause';
-    document.getElementById('rt-btn-main').textContent = '⏸';
+    document.getElementById('rt-btn-main').innerHTML = '<svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><rect x="5" y="3" width="4" height="18" rx="1"/><rect x="15" y="3" width="4" height="18" rx="1"/></svg>';
     document.getElementById('rt-status').className = 'rt-status running';
     document.getElementById('rt-status').textContent = '측정 중';
     // Show stop button
@@ -11574,7 +11607,7 @@ init();
       stopBtn = document.createElement('button');
       stopBtn.id = 'rt-stop-btn';
       stopBtn.className = 'rt-btn-main rt-btn-stop';
-      stopBtn.textContent = '⏹';
+      stopBtn.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>';
       stopBtn.onclick = () => _rtStop(true);
       document.getElementById('rt-btns').prepend(stopBtn);
     }
@@ -11600,7 +11633,7 @@ init();
     if (_rt.watchId !== null) { navigator.geolocation.clearWatch(_rt.watchId); _rt.watchId = null; }
     _rt.lastPos = null;
     document.getElementById('rt-btn-main').className = 'rt-btn-main rt-btn-start';
-    document.getElementById('rt-btn-main').textContent = '▶';
+    document.getElementById('rt-btn-main').innerHTML = '<svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>';
     document.getElementById('rt-status').className = 'rt-status paused';
     document.getElementById('rt-status').textContent = '일시정지';
   }
@@ -11715,9 +11748,15 @@ init();
     const exMemo = document.getElementById('ex-memo');
     if (exMemo) exMemo.value = `러닝 ${distKm.toFixed(2)}km · ${fmtTime(_rt.elapsed)} · 페이스 ${fmtPace(distKm, _rt.elapsed)}`;
     closeRunTracker();
-    // 스크롤을 운동기록 탭으로
     document.getElementById('rec-tab-exercise')?.click();
-    toast('달리기 기록이 입력됐어요! 운동 기록하기를 눌러 저장하세요 🏃');
+    setTimeout(() => {
+      const memo = document.getElementById('ex-memo');
+      if (memo) {
+        memo.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        memo.focus();
+      }
+    }, 300);
+    showToast('달리기 기록이 입력됐어요! 운동 기록하기를 눌러 저장하세요 🏃');
   }
   // ── Dexcom G7 Integration ──
   const DEXCOM_FN = 'https://nbnmvvobehjitophkqmu.supabase.co/functions/v1/dexcom-proxy';
@@ -11816,6 +11855,7 @@ init();
   window.addEventListener('message', (e) => {
     if (e.data?.type === 'SHOW_COURSE_DETAIL') openRunCourseDetail(e.data.html);
     if (e.data?.type === 'CLOSE_COURSE_DETAIL') closeRunCourseDetail();
+    if (e.data?.type === 'RUNDAY_REGISTRATION_SYNC') applyRundayRegistrationSync(e.data);
     if (e.data?.type === 'RUNDAY_IMAGE_PREVIEW_OPEN') {
       const hdr = document.querySelector('.app-header');
       if (hdr) hdr.classList.add('runday-preview-open');

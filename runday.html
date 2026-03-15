@@ -1872,6 +1872,7 @@
     const regs = JSON.parse(localStorage.getItem(CH_KEY) || '[]');
     regs.push(reg);
     localStorage.setItem(CH_KEY, JSON.stringify(regs));
+    notifyParentRegistrationChange({ registration: reg });
 
     try {
       await fetch(SB_URL + '/rest/v1/registrations', {
@@ -1990,6 +1991,14 @@
     renderRundayProfileHeader();
   }
 
+  function notifyParentRegistrationChange(payload = {}) {
+    try {
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage({ type: 'RUNDAY_REGISTRATION_SYNC', ...payload }, '*');
+      }
+    } catch (e) {}
+  }
+
   function syncInitialIdentity() {
     let name = '';
     let empId = '';
@@ -2044,6 +2053,10 @@
     }
     if (e.data?.type === 'PAGE_VISIBILITY') {
       setRundayPageActive(e.data.active !== false);
+      if (e.data.active !== false) {
+        syncInitialIdentity();
+        checkExisting();
+      }
     }
   });
 
@@ -2263,6 +2276,7 @@
     if (!confirm('정말 취소하시겠습니까?')) return;
     const regs = JSON.parse(localStorage.getItem(CH_KEY) || '[]').filter(r => r.id !== regId);
     localStorage.setItem(CH_KEY, JSON.stringify(regs));
+    notifyParentRegistrationChange({ registrationId: regId, cancelled: true, empId: getCurrentEmpId() });
     try {
       fetch(SB_URL + '/rest/v1/registrations?id=eq.' + regId, {
         method: 'PATCH',
