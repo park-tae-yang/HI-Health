@@ -368,24 +368,25 @@
     }
     .app-header.challenge-mode::before { display: none; }
     .app-header.challenge-mode .header-profile-label {
-      color: rgba(30,16,71,0.68);
+      color: rgba(30,16,71,0.82);
     }
     .app-header.challenge-mode .header-profile-trigger {
-      padding: 0;
-      border-radius: 0;
-      background: transparent;
-      border: none;
+      gap: 8px;
+      padding: 5px 6px 5px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.72);
+      border: 1px solid rgba(255,255,255,0.74);
       box-shadow: none;
-      -webkit-backdrop-filter: none;
-      backdrop-filter: none;
+      -webkit-backdrop-filter: blur(12px);
+      backdrop-filter: blur(12px);
     }
     .app-header.challenge-mode .header-avatar {
-      border-color: transparent;
-      background: transparent;
+      border-color: rgba(30,16,71,0.1);
+      background: rgba(255,255,255,0.9);
       box-shadow: none;
     }
     .app-header.challenge-mode .header-avatar .av-wrap {
-      background: transparent;
+      background: #fff;
     }
     .header-logo { display: flex; align-items: center; min-height: 38px; }
     .logo-img       { height: 40px; width: auto; display: block; }
@@ -1781,6 +1782,40 @@
     .install-skip { text-align:center; margin-top:10px; font-size:12px; color:var(--text-secondary); cursor:pointer; text-decoration:underline; }
     .install-kakao-notice { background:#FEF9C3; border-radius:10px; padding:12px 14px; margin-bottom:14px; font-size:13px; line-height:1.6; color:#78350F; }
     .install-kakao-notice strong { font-weight:700; }
+    /* ── Run Tracker ── */
+    .btn-run-tracker { background:#f0fdf4; color:#166534; border:1.5px solid #bbf7d0; font-weight:700; margin-bottom:8px; }
+    .btn-run-tracker:active { background:#dcfce7; }
+    #run-tracker-overlay { position:fixed; inset:0; z-index:8000; background:#0f172a; display:none; flex-direction:column; align-items:center; justify-content:space-between; padding:max(env(safe-area-inset-top),44px) 0 max(env(safe-area-inset-bottom),24px); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; }
+    #run-tracker-overlay.show { display:flex; }
+    .rt-header { width:100%; display:flex; align-items:center; justify-content:space-between; padding:0 20px; }
+    .rt-close { background:rgba(255,255,255,0.1); border:none; color:#fff; width:36px; height:36px; border-radius:50%; font-size:18px; cursor:pointer; }
+    .rt-title { color:rgba(255,255,255,0.6); font-size:13px; font-weight:600; letter-spacing:0.5px; }
+    .rt-status { font-size:11px; font-weight:700; padding:4px 10px; border-radius:999px; background:rgba(255,255,255,0.08); color:rgba(255,255,255,0.5); }
+    .rt-status.running { background:rgba(74,222,128,0.2); color:#4ade80; }
+    .rt-status.paused { background:rgba(251,191,36,0.2); color:#fbbf24; }
+    .rt-main { display:flex; flex-direction:column; align-items:center; gap:4px; }
+    .rt-dist { font-size:88px; font-weight:800; color:#fff; letter-spacing:-4px; line-height:1; }
+    .rt-dist-unit { font-size:22px; font-weight:600; color:rgba(255,255,255,0.45); letter-spacing:0; }
+    .rt-stats { display:flex; gap:32px; margin-top:16px; }
+    .rt-stat { text-align:center; }
+    .rt-stat-val { font-size:28px; font-weight:700; color:#fff; letter-spacing:-0.5px; }
+    .rt-stat-label { font-size:11px; color:rgba(255,255,255,0.4); font-weight:600; margin-top:2px; }
+    .rt-gps { font-size:11px; color:rgba(255,255,255,0.35); margin-top:12px; }
+    .rt-btns { display:flex; align-items:center; gap:20px; }
+    .rt-btn-main { width:80px; height:80px; border-radius:50%; border:none; font-size:28px; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 24px rgba(0,0,0,0.4); transition:transform 0.15s; }
+    .rt-btn-main:active { transform:scale(0.93); }
+    .rt-btn-start { background:#4ade80; }
+    .rt-btn-pause { background:#fbbf24; }
+    .rt-btn-stop { width:56px; height:56px; background:rgba(239,68,68,0.85); }
+    .rt-summary { display:none; flex-direction:column; align-items:center; gap:0; width:100%; padding:0 24px; }
+    .rt-summary.show { display:flex; }
+    .rt-summary-title { font-size:18px; font-weight:800; color:#fff; margin-bottom:20px; }
+    .rt-summary-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; width:100%; margin-bottom:24px; }
+    .rt-summary-card { background:rgba(255,255,255,0.08); border-radius:16px; padding:16px 8px; text-align:center; }
+    .rt-summary-val { font-size:22px; font-weight:800; color:#fff; letter-spacing:-0.5px; }
+    .rt-summary-label { font-size:10px; color:rgba(255,255,255,0.45); font-weight:600; margin-top:4px; }
+    .rt-save-btn { width:100%; padding:16px; border-radius:16px; border:none; background:#4ade80; color:#052e16; font-size:16px; font-weight:800; cursor:pointer; margin-bottom:12px; }
+    .rt-discard-btn { background:none; border:none; color:rgba(255,255,255,0.35); font-size:13px; cursor:pointer; }
     /* ── Confirm Modal ── */
     .confirm-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:300; display:flex; align-items:center; justify-content:center; padding:24px; }
     .confirm-modal { background:var(--card); border-radius:var(--radius); padding:28px 24px 20px; width:100%; max-width:320px; text-align:center; }
@@ -3257,6 +3292,7 @@
         <div class="exercise-memo-inline">
           <textarea class="form-textarea" id="ex-memo" rows="1" maxlength="40" placeholder="운동 메모를 남겨보세요(예: 퇴근 후 5km 러닝)" oninput="updateMemoPlaceholder(); updateSharePreview()"></textarea>
         </div>
+        <button class="btn btn-full btn-run-tracker" id="btn-run-tracker" onclick="openRunTracker()">🏃 달리기 측정하기</button>
         <button class="btn btn-primary btn-full btn-record btn-inactive" id="log-exercise-btn" onclick="logExercise()">운동 기록하기</button>
         <div id="log-exercise-hint" style="display:none;text-align:center;font-size:12px;color:var(--primary);margin-top:6px;animation:fadeIn 0.15s ease"></div>
         <div id="daily-limit-info" class="daily-limit-info daily-limit-info--center" style="margin-top:6px;margin-bottom:16px"></div>
@@ -3809,7 +3845,7 @@
 
   <!-- ████  CHALLENGE  ████ -->
   <section id="page-challenge" class="page">
-    <iframe id="runday-iframe" data-src="runday.html?v=20260315-11" title="HI RUN DAY" loading="lazy"></iframe>
+    <iframe id="runday-iframe" data-src="runday.html?v=20260315-56" title="HI RUN DAY" loading="lazy"></iframe>
   </section>
 
 </main>
@@ -5285,7 +5321,7 @@ function myWeekPts() {
    NAVIGATION
 ════════════════════════════════════════ */
 const _isTouch = () => window.matchMedia('(hover: none)').matches;
-const RUNDAY_IFRAME_SRC = 'runday.html?v=20260315-11';
+const RUNDAY_IFRAME_SRC = 'runday.html?v=20260315-56';
 let _rundayIframeReady = false;
 let _rundayIframeLoadStarted = false;
 const _rundayIframeQueue = [];
@@ -5330,6 +5366,16 @@ function ensureRundayIframeLoaded() {
   const frame = getRundayIframe();
   if (!frame) return null;
   bindRundayIframe(frame);
+  const desiredSrc = frame.dataset.src || RUNDAY_IFRAME_SRC;
+  const currentSrc = frame.getAttribute('src') || '';
+  if (currentSrc && currentSrc !== desiredSrc && !currentSrc.endsWith(desiredSrc)) {
+    frame.dataset.ready = '0';
+    frame.dataset.loadStarted = '1';
+    _rundayIframeReady = false;
+    _rundayIframeLoadStarted = true;
+    frame.src = desiredSrc;
+    return frame;
+  }
   if (frame.dataset.ready === '1') {
     _rundayIframeReady = true;
     return frame;
@@ -5337,7 +5383,7 @@ function ensureRundayIframeLoaded() {
   if (frame.dataset.loadStarted !== '1') {
     frame.dataset.loadStarted = '1';
     _rundayIframeLoadStarted = true;
-    frame.src = frame.dataset.src || RUNDAY_IFRAME_SRC;
+    frame.src = desiredSrc;
   } else {
     _rundayIframeLoadStarted = true;
   }
@@ -9757,13 +9803,13 @@ function renderChallenge() {
     {
       date: '4/5(일) - 4/14(화)',
       title: '페이스업',
-      desc: '운동 + 혈당 기록 주 3회 이상. 운동과 혈당 기록을 함께 진행하는 페이스업 기간입니다.',
+      desc: '운동 + 혈당 기록 주 3회 이상. 운동 + 혈당 기록을 함께 진행하는 집중 훈련 기간입니다.',
       status: now > CH.mainEnd ? 'done' : now >= CH.mainStart ? 'active' : 'future',
     },
     {
       date: '4/15(수)',
       title: 'HI RUN DAY 행사',
-      desc: '챌린지 마무리와 함께 행사에 참여하는 날입니다. 직원들이 달린 거리만큼 기부도 함께 진행됩니다.',
+      desc: 'HI 개원 8주년 기념 · 함께 달리기 여의도→선유도공원',
       status: now > CH.eventDay ? 'done' : now >= eventDayStart ? 'active' : 'future',
     },
   ];
@@ -9906,7 +9952,7 @@ function renderChallenge() {
                 <div class="ch-program-title">함께 달리기</div>
                 <div style="font-size:11px;font-weight:700;color:var(--primary);white-space:nowrap">pm 2:30</div>
               </div>
-              <div class="ch-program-desc">여의도 유람선터미널 출발 → 선유도공원 입구 · 자율 참여 <span style="font-size:10px;color:var(--text-secondary)">(상황에 따라 변경될 수 있음)</span></div>
+              <div class="ch-program-desc">여의도 유람선터미널 출발 → 선유도공원 · 자율 참여 <span style="font-size:10px;color:var(--text-secondary)">(상황에 따라 변경될 수 있음)</span></div>
             </div>
           </div>
         </div>
@@ -9957,28 +10003,20 @@ function renderChallenge() {
                   <stop offset="0%" stop-color="#f8fbff"></stop>
                   <stop offset="100%" stop-color="#eff6ff"></stop>
                 </linearGradient>
-                <linearGradient id="ch-route-river" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stop-color="#7dd3fc"></stop>
-                  <stop offset="100%" stop-color="#38bdf8"></stop>
-                </linearGradient>
+                <clipPath id="ch-route-photo-clip">
+                  <rect width="360" height="214" rx="18"></rect>
+                </clipPath>
               </defs>
-              <rect width="360" height="214" rx="18" fill="url(#ch-route-sky)"></rect>
-              <path d="M0 130C46 120 99 116 145 118C188 121 230 129 274 126C312 123 335 115 360 103V214H0Z" fill="#d9f99d" opacity="0.7"></path>
-              <path d="M0 107C44 96 90 92 140 95C194 98 232 110 285 105C321 102 340 93 360 82V133C339 143 318 148 285 150C234 153 194 141 140 138C91 135 43 140 0 149Z" fill="url(#ch-route-river)"></path>
-              <path d="M0 104C44 93 90 90 140 92C194 95 232 106 285 101C321 98 340 89 360 78" fill="none" stroke="rgba(255,255,255,0.55)" stroke-width="2" stroke-linecap="round"></path>
-              <path d="M306 62C278 75 254 79 227 80C194 82 167 75 133 73C106 72 82 74 52 80" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="10.5" stroke-linecap="round" stroke-linejoin="round"></path>
-              <path d="M306 62C278 75 254 79 227 80C194 82 167 75 133 73C106 72 82 74 52 80" fill="none" stroke="#a78bfa" stroke-width="7.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.36"></path>
-              <path d="M306 62C278 75 254 79 227 80C194 82 167 75 133 73C106 72 82 74 52 80" fill="none" stroke="#7c3aed" stroke-width="4.6" stroke-linecap="round" stroke-linejoin="round"></path>
-              <path d="M57.2 80L65.4 75.6L62.7 80L65.4 84.4Z" fill="#7c3aed" stroke="rgba(255,255,255,0.82)" stroke-width="0.6" stroke-linejoin="round"></path>
-              <path d="M306 62L306 56.5" stroke="#0f172a" stroke-opacity="0.2" stroke-width="1.8" stroke-linecap="round"></path>
-              <path d="M52 80L52 74.5" stroke="#16a34a" stroke-opacity="0.24" stroke-width="1.8" stroke-linecap="round"></path>
-              <circle cx="52" cy="80" r="4.6" fill="#ffffff" stroke="#16a34a" stroke-width="2.1"></circle>
-              <circle cx="133" cy="74" r="6.5" fill="#0284c7"></circle>
-              <circle cx="133" cy="74" r="2.8" fill="#ffffff"></circle>
-              <circle cx="226" cy="80" r="6.5" fill="#0284c7"></circle>
-              <circle cx="226" cy="80" r="2.8" fill="#ffffff"></circle>
-              <circle cx="306" cy="62" r="4.6" fill="#ffffff" stroke="#0f172a" stroke-width="2.1"></circle>
-              <g transform="translate(52 63)">
+              <g clip-path="url(#ch-route-photo-clip)" transform="translate(-6,-10) scale(1.18)">
+              <image href="images/avatars/IMG_2162.jpg" x="0" y="-48" width="360" height="358.6"></image>
+              <rect width="360" height="214" rx="18" fill="url(#ch-route-sky)" opacity="0.14"></rect>
+              <g transform="translate(0,-10)">
+              <g opacity="0.98">
+                <ellipse cx="286" cy="170" rx="22" ry="17" fill="#9fb7eb"></ellipse>
+                <ellipse cx="280" cy="178" rx="15" ry="9" fill="#8dc56e"></ellipse>
+                <path d="M268 178C276 172 288 170 300 174" fill="none" stroke="#f2e8c1" stroke-width="2.6" stroke-linecap="round"></path>
+              </g>
+              <g transform="translate(48 52)">
                 <g transform="scale(1.15)">
                   <circle r="10.5" fill="#ffffff" stroke="#16a34a" stroke-opacity="0.24" stroke-width="1.2"></circle>
                   <circle cx="0" cy="-2.6" r="3" fill="#22c55e"></circle>
@@ -9988,7 +10026,7 @@ function renderChallenge() {
                   <path d="M-3.7 5.2H3.7" stroke="#16a34a" stroke-width="1.1" stroke-linecap="round"></path>
                 </g>
               </g>
-              <g transform="translate(306 45)">
+              <g transform="translate(260 80)">
                 <g transform="scale(1.15)">
                   <circle r="10.5" fill="#ffffff" stroke="#0f172a" stroke-opacity="0.18" stroke-width="1.2"></circle>
                   <path d="M-4.1 1.9H4.1L2.9 -1.1H-2.9Z" fill="#ffffff" stroke="#0284c7" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"></path>
@@ -9996,15 +10034,14 @@ function renderChallenge() {
                   <path d="M-4 3.6C-3 4.2-2 4.2-1 3.6C0 4.2 1 4.2 2 3.6C3 4.2 3.8 4.1 4.5 3.6" fill="none" stroke="#0284c7" stroke-width="1.05" stroke-linecap="round"></path>
                 </g>
               </g>
-              <rect x="20" y="36" width="84" height="28" rx="10" fill="#166534"></rect>
-              <text x="62" y="53" text-anchor="middle" font-size="10.5" fill="#ffffff" font-family="sans-serif" font-weight="700">선유도 입구</text>
-              <rect x="110" y="55" width="78" height="24" rx="9" fill="#0284c7"></rect>
-              <text x="149" y="70" text-anchor="middle" font-size="10.5" fill="#ffffff" font-family="sans-serif" font-weight="700">양화대교 남단</text>
-              <rect x="194" y="58" width="80" height="24" rx="9" fill="#0284c7"></rect>
-              <text x="234" y="73" text-anchor="middle" font-size="10.5" fill="#ffffff" font-family="sans-serif" font-weight="700">여의도 한강공원</text>
-              <rect x="266" y="12" width="84" height="32" rx="11" fill="#0f172a"></rect>
-              <text x="308" y="31" text-anchor="middle" font-size="10.5" fill="#ffffff" font-family="sans-serif" font-weight="700">유람선터미널</text>
-              <text x="180" y="183" text-anchor="middle" font-size="13" fill="#0369a1" font-family="sans-serif" font-weight="700" opacity="0.8">Han River Run Course</text>
+              <rect x="21" y="68" width="54" height="20" rx="10" fill="rgba(22,163,74,0.92)"></rect>
+              <text x="48" y="81" text-anchor="middle" font-size="9.2" fill="#ffffff" font-family="sans-serif" font-weight="800">FINISH</text>
+              <rect x="188" y="78" width="80" height="24" rx="9" fill="#0284c7"></rect>
+              <text x="228" y="93" text-anchor="middle" font-size="10.5" fill="#ffffff" font-family="sans-serif" font-weight="700">여의도 한강공원</text>
+              <rect x="233" y="96" width="54" height="20" rx="10" fill="rgba(2,132,199,0.92)"></rect>
+              <text x="260" y="109" text-anchor="middle" font-size="9.2" fill="#ffffff" font-family="sans-serif" font-weight="800">START</text>
+              </g>
+              </g>
             </svg>
             <div class="ch-route-meta">
               <span class="ch-route-meta-chip">집결 pm 2:20</span>
@@ -10983,6 +11020,35 @@ init();
   </div>
 </div>
 
+<div id="run-tracker-overlay">
+  <div class="rt-header">
+    <button class="rt-close" onclick="closeRunTracker()">✕</button>
+    <div class="rt-title">달리기 측정</div>
+    <div class="rt-status" id="rt-status">대기 중</div>
+  </div>
+  <div class="rt-main" id="rt-main">
+    <div><span class="rt-dist" id="rt-dist">0.00</span><span class="rt-dist-unit"> km</span></div>
+    <div class="rt-stats">
+      <div class="rt-stat"><div class="rt-stat-val" id="rt-time">00:00</div><div class="rt-stat-label">시간</div></div>
+      <div class="rt-stat"><div class="rt-stat-val" id="rt-pace">--'--"</div><div class="rt-stat-label">페이스 /km</div></div>
+    </div>
+    <div class="rt-gps" id="rt-gps">GPS 준비 중...</div>
+  </div>
+  <div class="rt-summary" id="rt-summary">
+    <div class="rt-summary-title">🎉 달리기 완료!</div>
+    <div class="rt-summary-grid">
+      <div class="rt-summary-card"><div class="rt-summary-val" id="rts-dist">0.00</div><div class="rt-summary-label">거리 (km)</div></div>
+      <div class="rt-summary-card"><div class="rt-summary-val" id="rts-time">00:00</div><div class="rt-summary-label">시간</div></div>
+      <div class="rt-summary-card"><div class="rt-summary-val" id="rts-pace">--'--"</div><div class="rt-summary-label">평균 페이스</div></div>
+    </div>
+    <button class="rt-save-btn" onclick="saveRunRecord()">운동 기록에 저장하기</button>
+    <button class="rt-discard-btn" onclick="closeRunTracker()">저장하지 않고 닫기</button>
+  </div>
+  <div class="rt-btns" id="rt-btns">
+    <button class="rt-btn-main rt-btn-start" id="rt-btn-main" onclick="toggleRunTracker()">▶</button>
+  </div>
+</div>
+
 <div id="confirm-overlay" class="confirm-overlay pm-hidden">
   <div class="confirm-modal">
     <div class="confirm-icon" id="confirm-icon"></div>
@@ -10997,6 +11063,136 @@ init();
 
 
 <script>
+  // ── Run Tracker ──
+  let _rt = { state:'idle', watchId:null, timer:null, elapsed:0, dist:0, lastPos:null, positions:[] };
+
+  function haversine(a, b) {
+    const R = 6371000, r = Math.PI/180;
+    const dLat = (b.lat-a.lat)*r, dLon = (b.lon-a.lon)*r;
+    const s = Math.sin(dLat/2)**2 + Math.cos(a.lat*r)*Math.cos(b.lat*r)*Math.sin(dLon/2)**2;
+    return R * 2 * Math.atan2(Math.sqrt(s), Math.sqrt(1-s));
+  }
+  function fmtTime(s) {
+    const h = Math.floor(s/3600), m = Math.floor((s%3600)/60), ss = s%60;
+    return h ? `${h}:${String(m).padStart(2,'0')}:${String(ss).padStart(2,'0')}` : `${String(m).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
+  }
+  function fmtPace(distKm, secs) {
+    if (distKm < 0.05 || secs < 10) return "--'--\"";
+    const secPerKm = secs / distKm;
+    const pm = Math.floor(secPerKm/60), ps = Math.round(secPerKm%60);
+    return `${pm}'${String(ps).padStart(2,'0')}"`;
+  }
+  function rtUpdateUI() {
+    document.getElementById('rt-dist').textContent = (_rt.dist/1000).toFixed(2);
+    document.getElementById('rt-time').textContent = fmtTime(_rt.elapsed);
+    document.getElementById('rt-pace').textContent = fmtPace(_rt.dist/1000, _rt.elapsed);
+  }
+  function openRunTracker() {
+    _rt = { state:'idle', watchId:null, timer:null, elapsed:0, dist:0, lastPos:null, positions:[] };
+    const ov = document.getElementById('run-tracker-overlay');
+    ov.classList.add('show');
+    document.getElementById('rt-main').style.display = '';
+    document.getElementById('rt-summary').classList.remove('show');
+    document.getElementById('rt-btns').style.display = '';
+    document.getElementById('rt-btn-main').className = 'rt-btn-main rt-btn-start';
+    document.getElementById('rt-btn-main').textContent = '▶';
+    document.getElementById('rt-status').className = 'rt-status';
+    document.getElementById('rt-status').textContent = '대기 중';
+    document.getElementById('rt-gps').textContent = 'GPS 준비 중...';
+    rtUpdateUI();
+    if (!navigator.geolocation) {
+      document.getElementById('rt-gps').textContent = 'GPS를 지원하지 않는 기기예요';
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      p => { document.getElementById('rt-gps').textContent = `GPS 연결됨 (정확도 ±${Math.round(p.coords.accuracy)}m)`; },
+      () => { document.getElementById('rt-gps').textContent = 'GPS 권한을 허용해 주세요'; }
+    );
+  }
+  function closeRunTracker() {
+    _rtStop(false);
+    document.getElementById('run-tracker-overlay').classList.remove('show');
+  }
+  function toggleRunTracker() {
+    if (_rt.state === 'idle' || _rt.state === 'paused') _rtStart();
+    else _rtPause();
+  }
+  function _rtStart() {
+    _rt.state = 'running';
+    document.getElementById('rt-btn-main').className = 'rt-btn-main rt-btn-pause';
+    document.getElementById('rt-btn-main').textContent = '⏸';
+    document.getElementById('rt-status').className = 'rt-status running';
+    document.getElementById('rt-status').textContent = '측정 중';
+    // Show stop button
+    let stopBtn = document.getElementById('rt-stop-btn');
+    if (!stopBtn) {
+      stopBtn = document.createElement('button');
+      stopBtn.id = 'rt-stop-btn';
+      stopBtn.className = 'rt-btn-main rt-btn-stop';
+      stopBtn.textContent = '⏹';
+      stopBtn.onclick = () => _rtStop(true);
+      document.getElementById('rt-btns').prepend(stopBtn);
+    }
+    stopBtn.style.display = '';
+    _rt.timer = setInterval(() => { _rt.elapsed++; rtUpdateUI(); }, 1000);
+    _rt.watchId = navigator.geolocation.watchPosition(
+      p => {
+        if (p.coords.accuracy > 40) return;
+        const cur = { lat: p.coords.latitude, lon: p.coords.longitude };
+        if (_rt.lastPos) _rt.dist += haversine(_rt.lastPos, cur);
+        _rt.lastPos = cur;
+        _rt.positions.push(cur);
+        document.getElementById('rt-gps').textContent = `GPS ±${Math.round(p.coords.accuracy)}m`;
+        rtUpdateUI();
+      },
+      () => { document.getElementById('rt-gps').textContent = 'GPS 신호 없음'; },
+      { enableHighAccuracy: true, maximumAge: 2000, timeout: 10000 }
+    );
+  }
+  function _rtPause() {
+    _rt.state = 'paused';
+    clearInterval(_rt.timer); _rt.timer = null;
+    if (_rt.watchId !== null) { navigator.geolocation.clearWatch(_rt.watchId); _rt.watchId = null; }
+    _rt.lastPos = null;
+    document.getElementById('rt-btn-main').className = 'rt-btn-main rt-btn-start';
+    document.getElementById('rt-btn-main').textContent = '▶';
+    document.getElementById('rt-status').className = 'rt-status paused';
+    document.getElementById('rt-status').textContent = '일시정지';
+  }
+  function _rtStop(showSummary) {
+    clearInterval(_rt.timer); _rt.timer = null;
+    if (_rt.watchId !== null) { navigator.geolocation.clearWatch(_rt.watchId); _rt.watchId = null; }
+    _rt.state = 'stopped';
+    const stopBtn = document.getElementById('rt-stop-btn');
+    if (stopBtn) stopBtn.style.display = 'none';
+    if (!showSummary) return;
+    document.getElementById('rt-main').style.display = 'none';
+    document.getElementById('rt-btns').style.display = 'none';
+    document.getElementById('rt-status').className = 'rt-status';
+    document.getElementById('rt-status').textContent = '완료';
+    document.getElementById('rts-dist').textContent = (_rt.dist/1000).toFixed(2);
+    document.getElementById('rts-time').textContent = fmtTime(_rt.elapsed);
+    document.getElementById('rts-pace').textContent = fmtPace(_rt.dist/1000, _rt.elapsed);
+    document.getElementById('rt-summary').classList.add('show');
+  }
+  function saveRunRecord() {
+    const distKm = _rt.dist / 1000;
+    const mins = Math.round(_rt.elapsed / 60);
+    // 운동 타입을 러닝으로 설정하고 시간 채우기
+    const typeEl = document.getElementById('exercise-type');
+    if (typeEl) {
+      const runOpt = [...typeEl.options].find(o => o.text.includes('러닝') || o.text.includes('달리기'));
+      if (runOpt) typeEl.value = runOpt.value;
+    }
+    const durDisplay = document.getElementById('dur-display');
+    if (durDisplay) durDisplay.textContent = mins || 1;
+    const exMemo = document.getElementById('ex-memo');
+    if (exMemo) exMemo.value = `러닝 ${distKm.toFixed(2)}km · ${fmtTime(_rt.elapsed)} · 페이스 ${fmtPace(distKm, _rt.elapsed)}`;
+    closeRunTracker();
+    // 스크롤을 운동기록 탭으로
+    document.getElementById('rec-tab-exercise')?.click();
+    toast('달리기 기록이 입력됐어요! 운동 기록하기를 눌러 저장하세요 🏃');
+  }
   // ── Run Course Detail ──
   function openRunCourseDetail(html) {
     const sheet = document.getElementById('rd-course-sheet');
@@ -11042,7 +11238,7 @@ init();
 
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js?v=20260315-11')
+      navigator.serviceWorker.register('./sw.js?v=20260315-56')
         .catch(err => console.warn('SW 등록 실패:', err));
     });
   }
