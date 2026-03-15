@@ -11748,13 +11748,16 @@ init();
     const exMemo = document.getElementById('ex-memo');
     if (exMemo) exMemo.value = `러닝 ${distKm.toFixed(2)}km · ${fmtTime(_rt.elapsed)} · 페이스 ${fmtPace(distKm, _rt.elapsed)}`;
     closeRunTracker();
-    document.getElementById('rec-tab-exercise')?.click();
+    navigate('exercise');
     setTimeout(() => {
-      const memo = document.getElementById('ex-memo');
-      if (memo) {
-        memo.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        memo.focus();
-      }
+      document.getElementById('rec-tab-exercise')?.click();
+      setTimeout(() => {
+        const memo = document.getElementById('ex-memo');
+        if (memo) {
+          memo.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          memo.focus();
+        }
+      }, 100);
     }, 300);
     showToast('달리기 기록이 입력됐어요! 운동 기록하기를 눌러 저장하세요 🏃');
   }
