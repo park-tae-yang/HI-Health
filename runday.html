@@ -93,6 +93,7 @@
       object-fit: cover;
       display: block;
     }
+    body.preview-open .hero-topbar { display: none; }
     .hero-inner {
       position: relative; z-index: 1;
       display: flex;
@@ -947,6 +948,28 @@
       margin-top: 18px; font-size: 14px; font-weight: 700;
       color: rgba(255,255,255,0.9); text-align: center;
     }
+    .img-preview-gender {
+      margin-top: 16px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 58px;
+      padding: 5px 12px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: -0.1px;
+      border: 1px solid rgba(255,255,255,0.18);
+      box-shadow: 0 10px 24px rgba(0,0,0,0.18);
+    }
+    .img-preview-gender.f {
+      background: rgba(252,231,243,0.96);
+      color: #9d174d;
+    }
+    .img-preview-gender.m {
+      background: rgba(224,231,255,0.96);
+      color: #3730a3;
+    }
     .img-preview-sub {
       margin-top: 4px; font-size: 12px;
       color: rgba(255,255,255,0.45); text-align: center;
@@ -1474,6 +1497,7 @@
   <button class="img-preview-close" onclick="closeImgPreview()">✕</button>
   <button class="img-preview-nav prev" onclick="event.stopPropagation();previewNav(-1)">‹</button>
   <img class="img-preview-img" id="img-preview-img" src="" alt="">
+  <div class="img-preview-gender" id="img-preview-gender"></div>
   <div class="img-preview-label" id="img-preview-label"></div>
   <div class="img-preview-sub" id="img-preview-sub">탭하면 닫힙니다</div>
   <button class="img-preview-nav next" onclick="event.stopPropagation();previewNav(1)">›</button>
@@ -1658,7 +1682,6 @@
         <div class="nk-slide-wrap">
           <div class="nk-slide-viewport" onclick="event.stopPropagation();openImgPreview(${nikeIdx})">
             <img class="nk-slide-img" id="nk-slide-img" src="${cur.img}" alt="${cur.label}">
-            <span class="stag ${cur.g}" style="position:absolute;top:5px;right:5px;">${cur.g==='f'?'여성':'남성'}</span>
           </div>
         </div>
         <div class="nk-dots">${dots}</div>
@@ -1705,7 +1728,6 @@
         <div class="nk-slide-wrap">
           <div class="nk-slide-viewport" onclick="event.stopPropagation();openImgPreview(${NIKE_MODELS.length + nbIdx})">
             <img class="nk-slide-img" id="nb-slide-img" src="${cur.img}" alt="${cur.label}">
-            <span class="stag ${cur.g}" style="position:absolute;top:5px;right:5px;">${cur.g==='f'?'여성':'남성'}</span>
           </div>
         </div>
         <div class="nk-dots">${dots}</div>
@@ -1884,15 +1906,24 @@
   function setPreviewContent(idx) {
     const m = MODELS[idx];
     document.getElementById('img-preview-img').src = m.img;
+    const genderEl = document.getElementById('img-preview-gender');
+    genderEl.textContent = m.g === 'f' ? '여성' : '남성';
+    genderEl.className = `img-preview-gender ${m.g}`;
     document.getElementById('img-preview-label').textContent = m.label;
-    document.getElementById('img-preview-sub').textContent = (m.g === 'f' ? '여성' : '남성') + ' · 탭하면 닫힙니다';
+    document.getElementById('img-preview-sub').textContent = '탭하면 닫힙니다';
   }
 
   function openImgPreview(idx) {
     previewIdx = idx;
     setPreviewContent(previewIdx);
     document.getElementById('img-preview').classList.remove('hidden');
+    document.body.classList.add('preview-open');
     document.body.style.overflow = 'hidden';
+    try {
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage({ type: 'RUNDAY_IMAGE_PREVIEW_OPEN' }, '*');
+      }
+    } catch (e) {}
   }
 
   function previewNav(dir) {
@@ -1902,7 +1933,13 @@
 
   function closeImgPreview() {
     document.getElementById('img-preview').classList.add('hidden');
+    document.body.classList.remove('preview-open');
     document.body.style.overflow = '';
+    try {
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage({ type: 'RUNDAY_IMAGE_PREVIEW_CLOSE' }, '*');
+      }
+    } catch (e) {}
   }
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeImgPreview(); });
 

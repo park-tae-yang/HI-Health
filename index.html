@@ -14,18 +14,18 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="HI Health">
-  <link rel="apple-touch-icon" href="icons/icon-192.png?v=9">
-  <link rel="apple-touch-icon-precomposed" href="icons/icon-192.png?v=9">
+  <link rel="apple-touch-icon" href="icons/icon-192.png?v=10">
+  <link rel="apple-touch-icon-precomposed" href="icons/icon-192.png?v=10">
 
   <!-- SEO / Open Graph -->
   <meta name="description" content="HI 건강 챌린지 — 운동·혈당·커뮤니티">
   <meta property="og:type"        content="website">
   <meta property="og:title"       content="HI Health - 건강 챌린지">
   <meta property="og:description" content="HI 건강 챌린지 — 운동·혈당·커뮤니티">
-  <meta property="og:image"       content="https://hi-fertility-health.com/images/Hi_health_home.png">
+  <meta property="og:image"       content="https://hi-fertility-health.com/images/avatars/hi_health_home_2.png">
   <meta property="og:url"         content="https://hi-fertility-health.com/">
   <meta name="twitter:card"       content="summary_large_image">
-  <meta name="twitter:image"      content="https://hi-fertility-health.com/images/Hi_health_home.png">
+  <meta name="twitter:image"      content="https://hi-fertility-health.com/images/avatars/hi_health_home_2.png">
 
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
   <style>
@@ -359,6 +359,7 @@
       backdrop-filter: blur(12px);
     }
     .app-header.challenge-mode {
+      position: absolute;
       background: transparent;
       border-bottom-left-radius: 28px;
       border-bottom-right-radius: 28px;
@@ -387,6 +388,10 @@
     }
     .app-header.challenge-mode .header-avatar .av-wrap {
       background: #fff;
+    }
+    .app-header.challenge-mode.runday-preview-open .header-profile-trigger {
+      opacity: 0;
+      pointer-events: none;
     }
     .header-logo { display: flex; align-items: center; min-height: 38px; }
     .logo-img       { height: 40px; width: auto; display: block; }
@@ -1783,8 +1788,9 @@
     .install-kakao-notice { background:#FEF9C3; border-radius:10px; padding:12px 14px; margin-bottom:14px; font-size:13px; line-height:1.6; color:#78350F; }
     .install-kakao-notice strong { font-weight:700; }
     /* ── Run Tracker ── */
-    .btn-run-tracker { background:#f0fdf4; color:#166534; border:1.5px solid #bbf7d0; font-weight:700; margin-bottom:8px; }
-    .btn-run-tracker:active { background:#dcfce7; }
+    .btn-run-tracker { background:linear-gradient(135deg,#ede9fe 0%,#ddd6fe 100%); color:#5b21b6; border:1.5px solid #c4b5fd; font-weight:700; margin-top:8px; display:flex; align-items:center; justify-content:center; gap:8px; }
+    .btn-run-tracker:active { background:linear-gradient(135deg,#ddd6fe 0%,#c4b5fd 100%); }
+    .btn-run-tracker img { width:22px; height:22px; object-fit:contain; }
     #run-tracker-overlay { position:fixed; inset:0; z-index:8000; background:#0f172a; display:none; flex-direction:column; align-items:center; justify-content:space-between; padding:max(env(safe-area-inset-top),44px) 0 max(env(safe-area-inset-bottom),24px); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; }
     #run-tracker-overlay.show { display:flex; }
     .rt-header { width:100%; display:flex; align-items:center; justify-content:space-between; padding:0 20px; }
@@ -3292,8 +3298,8 @@
         <div class="exercise-memo-inline">
           <textarea class="form-textarea" id="ex-memo" rows="1" maxlength="40" placeholder="운동 메모를 남겨보세요(예: 퇴근 후 5km 러닝)" oninput="updateMemoPlaceholder(); updateSharePreview()"></textarea>
         </div>
-        <button class="btn btn-full btn-run-tracker" id="btn-run-tracker" onclick="openRunTracker()">🏃 달리기 측정하기</button>
         <button class="btn btn-primary btn-full btn-record btn-inactive" id="log-exercise-btn" onclick="logExercise()">운동 기록하기</button>
+        <button class="btn btn-full btn-run-tracker" id="btn-run-tracker" onclick="openRunTracker()"><img src="icons/HI_icon_4.png" alt="">달리기 측정하기</button>
         <div id="log-exercise-hint" style="display:none;text-align:center;font-size:12px;color:var(--primary);margin-top:6px;animation:fadeIn 0.15s ease"></div>
         <div id="daily-limit-info" class="daily-limit-info daily-limit-info--center" style="margin-top:6px;margin-bottom:16px"></div>
         <hr style="border:none;border-top:1px solid var(--border);margin:28px 0 18px">
@@ -3879,7 +3885,7 @@
 
   <!-- ████  CHALLENGE  ████ -->
   <section id="page-challenge" class="page">
-    <iframe id="runday-iframe" data-src="runday.html?v=20260315-68" title="HI RUN DAY" loading="lazy"></iframe>
+    <iframe id="runday-iframe" data-src="runday.html?v=20260315-69" title="HI RUN DAY" loading="lazy"></iframe>
   </section>
 
 </main>
@@ -5355,7 +5361,7 @@ function myWeekPts() {
    NAVIGATION
 ════════════════════════════════════════ */
 const _isTouch = () => window.matchMedia('(hover: none)').matches;
-const RUNDAY_IFRAME_SRC = 'runday.html?v=20260315-68';
+const RUNDAY_IFRAME_SRC = 'runday.html?v=20260315-69';
 let _rundayIframeReady = false;
 let _rundayIframeLoadStarted = false;
 const _rundayIframeQueue = [];
@@ -11322,6 +11328,14 @@ init();
   window.addEventListener('message', (e) => {
     if (e.data?.type === 'SHOW_COURSE_DETAIL') openRunCourseDetail(e.data.html);
     if (e.data?.type === 'CLOSE_COURSE_DETAIL') closeRunCourseDetail();
+    if (e.data?.type === 'RUNDAY_IMAGE_PREVIEW_OPEN') {
+      const hdr = document.querySelector('.app-header');
+      if (hdr) hdr.classList.add('runday-preview-open');
+    }
+    if (e.data?.type === 'RUNDAY_IMAGE_PREVIEW_CLOSE') {
+      const hdr = document.querySelector('.app-header');
+      if (hdr) hdr.classList.remove('runday-preview-open');
+    }
   });
 
   // ── Install Guide ──
@@ -11353,7 +11367,7 @@ init();
 
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js?v=20260315-68')
+      navigator.serviceWorker.register('./sw.js?v=20260315-70')
         .catch(err => console.warn('SW 등록 실패:', err));
     });
   }
