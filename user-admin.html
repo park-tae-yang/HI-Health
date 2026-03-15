@@ -557,6 +557,21 @@
         </select>
         <button class="cbtn pri" onclick="postAdminNotice()">콘텐츠 게시</button>
       </div>
+      <div class="ap-compose" style="margin-top:14px;border-top:1px dashed #E2E8F0;padding-top:14px">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px">
+          <div style="font-size:14px;font-weight:700">푸시 알림 발송</div>
+          <div id="push-target-hint" style="font-size:11px;color:#64748B">선택 사용자 테스트를 보내려면 이용자를 먼저 선택해주세요.</div>
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:8px">
+          <input class="dp-inp" id="push-title" placeholder="푸시 제목" style="flex:1.2">
+          <input class="dp-inp" id="push-url" placeholder="알림 클릭 이동 URL (기본: ./index.html#community)" style="flex:1">
+        </div>
+        <textarea id="push-body" placeholder="푸시 내용을 입력하세요..."></textarea>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="cbtn pri" onclick="sendPushNotice('all')">전체 발송</button>
+          <button class="cbtn" onclick="sendPushNotice('selected')">선택 사용자 테스트</button>
+        </div>
+      </div>
       <div class="tbl-wrap">
         <div class="tbl-scroll">
           <table>
@@ -648,6 +663,7 @@
 const SUPABASE_URL = 'https://nbnmvvobehjitophkqmu.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ibm12dm9iZWhqaXRvcGhrcW11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3Nzk4NzQsImV4cCI6MjA4ODM1NTg3NH0.iZS4JvhHUqv4ZMPxm9STit6xqVp2JA5H55M8Wmd1yjY';
 const CH_REG_KEY = 'hi_health_registrations_v2';
+const SEND_PUSH_FN = SUPABASE_URL + '/functions/v1/send-push';
 
 const EX_MAP = {
   walking:'걷기', running:'달리기', swimming:'수영', cycling:'자전거',
@@ -1467,6 +1483,7 @@ function selectUser(deviceId, name) {
   selDeviceId = deviceId;
   const u = GD.users.find(x => x.deviceId === deviceId);
   if (!u) return;
+  renderPushTargetHint();
 
   document.getElementById('sel-bar').style.display = '';
   document.getElementById('sel-bar-name').textContent = u.name || name;
@@ -1485,6 +1502,7 @@ function selectUser(deviceId, name) {
 
 function clearSel() {
   selDeviceId = '';
+  renderPushTargetHint();
   document.getElementById('sel-bar').style.display = 'none';
   document.getElementById('u-detail').style.display = 'none';
 }
@@ -2271,6 +2289,65 @@ async function postAdminNotice() {
   GD.adminPosts.unshift(payload);
   renderAdminPosts();
   toast('공지 게시 완료 ✓');
+}
+
+function renderPushTargetHint() {
+  const hintEl = document.getElementById('push-target-hint');
+  if (!hintEl) return;
+  if (!selDeviceId) {
+    hintEl.textContent = '선택 사용자 테스트를 보내려면 이용자를 먼저 선택해주세요.';
+    return;
+  }
+  const user = GD.users.find(x => x.deviceId === selDeviceId);
+  if (!user) {
+    hintEl.textContent = '선택된 사용자 정보를 찾지 못했어요.';
+    return;
+  }
+  hintEl.textContent = `테스트 대상: ${user.name || '이름없음'}${user.empId ? ' · ' + user.empId : ''}`;
+}
+
+async function sendPushNotice(mode = 'all') {
+  const title = document.getElementById('push-title').value.trim();
+  const body = document.getElementById('push-body').value.trim();
+  const url = document.getElementById('push-url').value.trim() || './index.html#community';
+  if (!title) { toast('푸시 제목을 입력해주세요'); return; }
+  if (!body) { toast('푸시 내용을 입력해주세요'); return; }
+
+  const payload = { title, body, url };
+  if (mode === 'selected') {
+    if (!selDeviceId) { toast('이용자를 먼저 선택해주세요'); return; }
+    const user = GD.users.find(x => x.deviceId === selDeviceId);
+    payload.deviceId = selDeviceId;
+    if (user?.empId) payload.empId = String(user.empId).trim().toUpperCase();
+  }
+
+  showLoading(true);
+  try {
+    const res = await fetch(SEND_PUSH_FN, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+      },
+      body: JSON.stringify(payload),
+    });
+    const result = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(result?.error || '푸시 전송에 실패했어요.');
+    const sent = Number(result?.sent || 0);
+    const invalid = Number(result?.invalid || 0);
+    const label = mode === 'selected' ? '선택 사용자 테스트' : '전체 푸시';
+    toast(`${label} 완료 ✓ (${sent}건 발송${invalid ? ` / ${invalid}건 정리` : ''})`);
+    if (mode === 'all') {
+      document.getElementById('push-title').value = '';
+      document.getElementById('push-body').value = '';
+      document.getElementById('push-url').value = '';
+    }
+  } catch (e) {
+    toast('푸시 전송 실패: ' + (e.message || '알 수 없는 오류'));
+  } finally {
+    showLoading(false);
+  }
 }
 
 const CAT_LABEL = { notice:'공지', column:'칼럼', tip:'팁', video:'영상' };

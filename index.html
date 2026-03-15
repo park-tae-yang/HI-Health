@@ -10648,6 +10648,8 @@ function configureLoginFields() {
     if (empMain) empMain.textContent = '등록번호 입력';
     if (empSub) empSub.textContent = '(예: HI-123456)';
     if (errEl) errEl.textContent = '등록번호를 입력해주세요';
+    const empInputEl = document.getElementById('login-empid-input');
+    if (empInputEl) { empInputEl.placeholder = ''; empInputEl.style.letterSpacing = ''; }
   }
 }
 
