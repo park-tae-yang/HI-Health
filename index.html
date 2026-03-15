@@ -1850,7 +1850,7 @@
     /* ── Run Tracker Card ── */
     .btn-run-tracker {
       background: #fdfcf0;
-      border: none; border-radius: 20px; margin: 0 0 16px;
+      border: none; border-radius: 20px; margin: 12px 0 16px;
       display: grid; grid-template-columns: 1fr 1fr;
       align-items: center; cursor: pointer;
       overflow: hidden; position: relative;
@@ -1902,7 +1902,7 @@
     .rt-close { background:rgba(255,255,255,0.1); border:none; color:#fff; width:36px; height:36px; border-radius:50%; font-size:18px; cursor:pointer; }
     .rt-title { color:rgba(255,255,255,0.6); font-size:13px; font-weight:600; letter-spacing:0.5px; }
     .rt-status { font-size:11px; font-weight:700; padding:4px 10px; border-radius:999px; background:rgba(255,255,255,0.08); color:rgba(255,255,255,0.5); }
-    .rt-status.running { background:rgba(74,222,128,0.2); color:#4ade80; }
+    .rt-status.running { background:rgba(21,53,196,0.35); color:#93a8f4; }
     .rt-status.paused { background:rgba(251,191,36,0.2); color:#fbbf24; }
     .rt-main { display:flex; flex-direction:column; align-items:center; gap:4px; }
     .rt-dist { font-size:88px; font-weight:800; color:#fff; letter-spacing:-4px; line-height:1; }
@@ -1913,11 +1913,11 @@
     .rt-stat-label { font-size:11px; color:rgba(255,255,255,0.4); font-weight:600; margin-top:2px; }
     .rt-gps { font-size:11px; color:rgba(255,255,255,0.35); margin-top:12px; }
     .rt-btns { display:flex; align-items:center; gap:20px; }
-    .rt-btn-main { width:80px; height:80px; border-radius:50%; border:none; font-size:28px; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 24px rgba(0,0,0,0.4); transition:transform 0.15s; }
+    .rt-btn-main { width:80px; height:80px; border-radius:50%; border:none; background:#fff; font-size:28px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:transform 0.15s; -webkit-appearance:none; appearance:none; }
     .rt-btn-main:active { transform:scale(0.93); }
-    .rt-btn-start { background:#4ade80; }
-    .rt-btn-pause { background:#fbbf24; }
-    .rt-btn-stop { width:56px; height:56px; background:rgba(239,68,68,0.85); }
+    .rt-btn-start { background:#fff; }
+    .rt-btn-pause { background:#fff; }
+    .rt-btn-stop { width:56px; height:56px; background:#fff; }
     .rt-summary { display:none; flex-direction:column; align-items:center; gap:0; width:100%; padding:0 24px; }
     .rt-summary.show { display:flex; }
     .rt-summary-title { font-size:18px; font-weight:800; color:#fff; margin-bottom:20px; }
@@ -1925,7 +1925,7 @@
     .rt-summary-card { background:rgba(255,255,255,0.08); border-radius:16px; padding:16px 8px; text-align:center; }
     .rt-summary-val { font-size:22px; font-weight:800; color:#fff; letter-spacing:-0.5px; }
     .rt-summary-label { font-size:10px; color:rgba(255,255,255,0.45); font-weight:600; margin-top:4px; }
-    .rt-save-btn { width:100%; padding:16px; border-radius:16px; border:none; background:#4ade80; color:#052e16; font-size:16px; font-weight:800; cursor:pointer; margin-bottom:12px; }
+    .rt-save-btn { width:100%; padding:16px; border-radius:16px; border:none; background:#1535c4; color:#fff; font-size:16px; font-weight:800; cursor:pointer; margin-bottom:12px; }
     .rt-discard-btn { background:none; border:none; color:rgba(255,255,255,0.35); font-size:13px; cursor:pointer; }
     /* ── Confirm Modal ── */
     .confirm-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:300; display:flex; align-items:center; justify-content:center; padding:24px; }
@@ -11507,8 +11507,22 @@ init();
     if (_rt.state === 'idle' || _rt.state === 'paused') _rtStart();
     else _rtPause();
   }
+  function _rtToast(msg) {
+    let el = document.getElementById('rt-toast');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'rt-toast';
+      el.style.cssText = 'position:absolute;bottom:160px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,0.15);backdrop-filter:blur(8px);color:#fff;font-size:14px;font-weight:700;padding:10px 22px;border-radius:30px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity 0.3s;';
+      document.getElementById('run-tracker-overlay').appendChild(el);
+    }
+    el.textContent = msg;
+    el.style.opacity = '1';
+    clearTimeout(el._t);
+    el._t = setTimeout(() => { el.style.opacity = '0'; }, 1800);
+  }
   function _rtStart() {
     _rt.state = 'running';
+    _rtToast('달리기를 시작합니다 🏃');
     document.getElementById('rt-btn-main').className = 'rt-btn-main rt-btn-pause';
     document.getElementById('rt-btn-main').textContent = '⏸';
     document.getElementById('rt-status').className = 'rt-status running';
@@ -11564,6 +11578,87 @@ init();
     document.getElementById('rts-time').textContent = fmtTime(_rt.elapsed);
     document.getElementById('rts-pace').textContent = fmtPace(_rt.dist/1000, _rt.elapsed);
     document.getElementById('rt-summary').classList.add('show');
+    _rtConfetti();
+  }
+  function _rtConfetti() {
+    const ov = document.getElementById('run-tracker-overlay');
+    let canvas = document.getElementById('rt-confetti');
+    if (!canvas) {
+      canvas = document.createElement('canvas');
+      canvas.id = 'rt-confetti';
+      canvas.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:10;';
+      ov.appendChild(canvas);
+    }
+    canvas.width = ov.offsetWidth;
+    canvas.height = ov.offsetHeight;
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    const colors = ['#a78bfa','#f472b6','#fbbf24','#34d399','#60a5fa','#fff','#fb7185','#c4b5fd'];
+    const particles = [];
+
+    function burst(x, y) {
+      const count = 28 + Math.floor(Math.random() * 16);
+      for (let i = 0; i < count; i++) {
+        const angle = (Math.PI * 2 / count) * i + Math.random() * 0.3;
+        const speed = 2.5 + Math.random() * 5;
+        particles.push({
+          x, y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          r: 2 + Math.random() * 3,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          alpha: 1,
+          gravity: 0.08 + Math.random() * 0.04,
+          fade: 0.018 + Math.random() * 0.012,
+          trail: [],
+        });
+      }
+    }
+
+    // 순차 폭발 - 화면 곳곳에서
+    const positions = [
+      [W * 0.5, H * 0.35],
+      [W * 0.2, H * 0.5],
+      [W * 0.8, H * 0.45],
+      [W * 0.35, H * 0.25],
+      [W * 0.65, H * 0.6],
+      [W * 0.5, H * 0.55],
+    ];
+    positions.forEach(([x, y], i) => setTimeout(() => burst(x, y), i * 300));
+
+    function draw() {
+      ctx.clearRect(0, 0, W, H);
+      let alive = false;
+      particles.forEach(p => {
+        p.trail.push({ x: p.x, y: p.y });
+        if (p.trail.length > 5) p.trail.shift();
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += p.gravity;
+        p.vx *= 0.98;
+        p.alpha -= p.fade;
+        if (p.alpha <= 0) return;
+        alive = true;
+        // 꼬리
+        p.trail.forEach((t, ti) => {
+          ctx.beginPath();
+          ctx.arc(t.x, t.y, p.r * 0.5, 0, Math.PI * 2);
+          ctx.fillStyle = p.color;
+          ctx.globalAlpha = p.alpha * (ti / p.trail.length) * 0.4;
+          ctx.fill();
+        });
+        // 본체
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = p.alpha;
+        ctx.fill();
+      });
+      ctx.globalAlpha = 1;
+      if (alive || particles.length === 0) requestAnimationFrame(draw);
+      else ctx.clearRect(0, 0, W, H);
+    }
+    draw();
   }
   function saveRunRecord() {
     const distKm = _rt.dist / 1000;
