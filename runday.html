@@ -34,11 +34,11 @@
 
     /* ─── HERO ─────────────────────────────────── */
     .hero {
-      background: transparent;
-      border-bottom: none;
-      border-radius: 0;
+      background: #fdfcf0;
+      border-bottom: 1px solid #f3f4f6;
+      border-radius: 0 0 48px 48px;
       position: relative;
-      overflow: visible;
+      overflow: hidden;
       padding-top: env(safe-area-inset-top, 0);
     }
     .hero::before { display: none; }
@@ -60,22 +60,27 @@
       align-items: center;
       gap: 6px;
       border: none;
-      background: none;
+      background: transparent;
       padding: 0;
+      border-radius: 0;
+      box-shadow: none;
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
       cursor: pointer;
       font-family: inherit;
     }
     .hero-profile-label {
       font-size: 11px;
       font-weight: 600;
-      color: rgba(255,255,255,0.75);
+      color: rgba(30,16,71,0.72);
     }
     .hero-profile-avatar {
       width: 38px;
       height: 38px;
       border-radius: 50%;
-      border: 2px solid rgba(255,255,255,0.7);
-      background: rgba(255,255,255,0.12);
+      border: 1.5px solid rgba(30,16,71,0.12);
+      background: rgba(255,255,255,0.28);
+      box-shadow: 0 3px 10px rgba(15,23,42,0.06);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -93,8 +98,8 @@
       display: flex;
       flex-direction: column;
       align-items: center;
+      padding-top: 24px;
     }
-    body.standalone-runday .hero-inner { padding-top: 24px; }
     body.embedded-runday .hero-topbar { display: none; }
 
     /* 마스코트 */
@@ -1006,7 +1011,7 @@
       </p>
       <div class="hero-chips">
         <div class="chip"><span class="chip-dot" style="background:#f97316"></span>3/22 워밍업</div>
-        <div class="chip"><span class="chip-dot" style="background:#6366f1"></span>4/5 집중기간</div>
+        <div class="chip"><span class="chip-dot" style="background:#6366f1"></span>4/5 페이스업</div>
         <div class="chip"><span class="chip-dot" style="background:#a855f7"></span>4/15 RUN DAY</div>
       </div>
     </div>
@@ -1077,10 +1082,10 @@
         </div>
         <div class="sch-body">
           <div class="sch-date-row">
-            <div class="sch-phase">집중기간</div>
+            <div class="sch-phase">페이스업</div>
             <div class="sch-date">4월 5일 – 4월 14일</div>
           </div>
-          <div class="sch-desc">운동 + 혈당 기록을 함께 진행하는 달리기 훈련 집중기간입니다.</div>
+          <div class="sch-desc">운동 + 혈당 기록을 함께 진행하는 페이스업 기간입니다.</div>
           <div class="sch-tags">
             <span class="sch-tag">운동 + 혈당 주 3회 이상</span>
             <span class="sch-tag">혈당체크기기(덱스콤7) 제공</span>
@@ -1419,7 +1424,7 @@
       </div>
       <div class="fg" style="margin-top:12px">
         <label class="lbl">혈당체크기기 신청 여부 <span class="req">*</span></label>
-        <p class="hint">덱스콤7 · 집중기간 10일간 착용</p>
+        <p class="hint">덱스콤7 · 페이스업 10일간 착용</p>
         <div class="rg">
           <label class="rl"><input type="radio" name="cgm" value="yes">신청</label>
           <label class="rl"><input type="radio" name="cgm" value="no">미신청</label>

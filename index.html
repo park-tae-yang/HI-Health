@@ -574,10 +574,13 @@
       margin-top: calc(-1 * (var(--header-height) + max(env(safe-area-inset-top), 44px)));
       height: calc(100vh - var(--nav-height) - env(safe-area-inset-bottom));
       overflow: hidden;
+      background: #fdfcf0;
+      animation: none;
     }
     #runday-iframe {
       width: 100%; height: 100%;
       border: none; display: block;
+      background: #fdfcf0;
     }
     @keyframes pageIn {
       from { opacity: 0; transform: translateY(14px); }
@@ -5398,7 +5401,7 @@ function navigate(page) {
     hdr.classList.toggle('challenge-mode', isChallenge);
     hdr.classList.toggle('solid', useSolidHeader);
     hdr.classList.toggle('flow', useFlowHeader);
-    hdr.style.display = isChallenge ? 'none' : '';
+    hdr.style.display = '';
     const hdrLogo = hdr.querySelector('.header-logo');
     const hdrPts  = hdr.querySelector('.header-points');
     const hdrCart = hdr.querySelector('.header-cart-btn');
@@ -5427,8 +5430,10 @@ function navigate(page) {
   }
   if (content) {
     content.classList.remove('no-top-margin');
-    if (useFlowHeader) content.classList.add('no-top-margin');
+    if (useFlowHeader || isChallenge) content.classList.add('no-top-margin');
   }
+  const challengePage = document.getElementById('page-challenge');
+  if (challengePage) challengePage.style.marginTop = isChallenge ? '0' : '';
   const pg = document.getElementById('page-' + page);
   if (pg) pg.classList.add('active');
   const nb = document.querySelector(`.nav-btn[data-page="${page}"]`);
@@ -9398,7 +9403,7 @@ function getChallengePhaseLabel(phase = getChPhase()) {
     registration: '챌린지 안내중',
     preparing: '워밍업 시작 전',
     pre: '워밍업기간 진행 중',
-    main: '집중기간 진행 중',
+    main: '페이스업 진행 중',
     event: 'HI RUN DAY',
     ended: '챌린지 종료',
   }[phase] || '';
@@ -9504,7 +9509,7 @@ function renderChallenge() {
     : phase === 'event'
       ? 'HI RUN DAY'
       : phase === 'main'
-        ? '집중기간 진행 중'
+        ? '페이스업 진행 중'
         : phase === 'pre'
           ? '워밍업기간 진행 중'
           : `워밍업 D-${warmupDday}`;
@@ -9515,7 +9520,7 @@ function renderChallenge() {
       <div class="ch-hero-eyebrow">HI HEALTH CHALLENGE</div>
       <div class="ch-hero-title">HI RUN DAY</div>
       <div class="ch-hero-date">2026년 3월 22일(일) - 4월 15일(수)</div>
-      <div class="ch-hero-route">워밍업기간 · 집중기간 · HI RUN DAY</div>
+      <div class="ch-hero-route">워밍업기간 · 페이스업 · HI RUN DAY</div>
       <div class="ch-hero-badge">${heroBadge}</div>
     </div>
   `;
@@ -9526,10 +9531,10 @@ function renderChallenge() {
       grad: 'linear-gradient(135deg,#8B5CF6,#6D28D9)',
       badge: '오픈 예정',
       title: 'HI RUN DAY 챌린지가 곧 시작됩니다',
-      desc: '워밍업기간에는 운동으로 루틴을 만들고, 집중기간에는 운동과 혈당 기록을 함께 진행합니다. 스페셜 인증 미션도 참여해 주세요.',
+      desc: '워밍업기간에는 운동으로 루틴을 만들고, 페이스업 기간에는 운동과 혈당 기록을 함께 진행합니다. 스페셜 인증 미션도 참여해 주세요.',
       stats: [
         { v: '3/22', l: '워밍업 시작' },
-        { v: '4/5', l: '집중기간 시작' },
+        { v: '4/5', l: '페이스업 시작' },
         { v: '4/15', l: 'RUN DAY' },
       ],
     },
@@ -9537,10 +9542,10 @@ function renderChallenge() {
       grad: 'linear-gradient(135deg,#F59E0B,#D97706)',
       badge: '챌린지 안내',
       title: 'HI RUN DAY 챌린지가 시작됩니다',
-      desc: '워밍업기간에는 운동으로 루틴을 만들고, 집중기간에는 운동과 혈당 기록을 함께 진행합니다. 스페셜 인증 미션도 참여해 주세요.',
+      desc: '워밍업기간에는 운동으로 루틴을 만들고, 페이스업 기간에는 운동과 혈당 기록을 함께 진행합니다. 스페셜 인증 미션도 참여해 주세요.',
       stats: [
         { v: '3/22', l: '워밍업 시작' },
-        { v: '4/5', l: '집중기간 시작' },
+        { v: '4/5', l: '페이스업 시작' },
         { v: '4/15', l: 'RUN DAY' },
       ]
     },
@@ -9563,16 +9568,16 @@ function renderChallenge() {
       stats: [
         { v: chDays(now, CH.preEnd) + '일', l: '워밍업 남은 기간' },
         { v: '주 2회', l: '운동 인증' },
-        { v: `D-${Math.max(0, Math.ceil((CH.mainStart - now) / 86400000))}`, l: '집중기간 시작' },
+        { v: `D-${Math.max(0, Math.ceil((CH.mainStart - now) / 86400000))}`, l: '페이스업 시작' },
       ]
     },
     main: {
       grad: 'linear-gradient(135deg,#EF4444,#DC2626)',
-      badge: '집중기간',
+      badge: '페이스업',
       title: '운동과 혈당 기록을 함께 진행해 주세요',
-      desc: '집중기간에는 운동과 혈당 기록을 함께 남기고, 주 3회 이상 인증합니다. 스페셜 인증도 같이 체크해 주세요.',
+      desc: '페이스업 기간에는 운동과 혈당 기록을 함께 남기고, 주 3회 이상 인증합니다. 스페셜 인증도 같이 체크해 주세요.',
       stats: [
-        { v: chDays(now, CH.mainEnd) + '일', l: '집중기간 남은 기간' },
+        { v: chDays(now, CH.mainEnd) + '일', l: '페이스업 남은 기간' },
         { v: '주 3회+', l: '운동 + 혈당 기록' },
         { v: `D-${eventDday}`, l: 'HI RUN DAY' },
       ]
@@ -9581,10 +9586,10 @@ function renderChallenge() {
       grad: 'linear-gradient(135deg,#F97316,#EA580C)',
       badge: '오늘! HI RUN DAY',
       title: '오늘은 HI RUN DAY입니다',
-      desc: '워밍업과 집중기간 인증을 마치고, 스페셜 인증까지 확인해 주세요. 오늘은 직원들이 함께 달린 거리만큼 기부도 이어집니다.',
+      desc: '워밍업과 페이스업 인증을 마치고, 스페셜 인증까지 확인해 주세요. 오늘은 직원들이 함께 달린 거리만큼 기부도 이어집니다.',
       stats: [
         { v: '4/15', l: 'RUN DAY' },
-        { v: '주 3회+', l: '집중기간 기준' },
+        { v: '주 3회+', l: '페이스업 기준' },
         { v: '각 1회', l: '스페셜 인증' },
       ]
     },
@@ -9595,7 +9600,7 @@ function renderChallenge() {
       desc: 'HI RUN DAY 챌린지가 종료되었습니다. 함께 해주셔서 감사합니다.',
       stats: [
         { v: '2주', l: '워밍업기간' },
-        { v: '10일', l: '집중기간' },
+        { v: '10일', l: '페이스업' },
         { v: '4/15', l: 'RUN DAY' },
       ]
     },
@@ -9662,7 +9667,7 @@ function renderChallenge() {
         </div>
         <div style="font-size:13px;line-height:1.72;color:var(--text-secondary)">
           HI RUN DAY 챌린지가 시작됩니다.<br><br>
-          워밍업기간에는 운동으로 루틴을 만들고, 집중기간에는 운동과 혈당 기록을 함께 진행합니다.<br>
+          워밍업기간에는 운동으로 루틴을 만들고, 페이스업 기간에는 운동과 혈당 기록을 함께 진행합니다.<br>
           스페셜 인증 미션도 참여해 주세요.
         </div>
       </div>
@@ -9751,8 +9756,8 @@ function renderChallenge() {
     },
     {
       date: '4/5(일) - 4/14(화)',
-      title: '집중기간',
-      desc: '운동 + 혈당 기록 주 3회 이상. 운동과 혈당 기록을 함께 진행하는 핵심 기간입니다.',
+      title: '페이스업',
+      desc: '운동 + 혈당 기록 주 3회 이상. 운동과 혈당 기록을 함께 진행하는 페이스업 기간입니다.',
       status: now > CH.mainEnd ? 'done' : now >= CH.mainStart ? 'active' : 'future',
     },
     {
@@ -9805,7 +9810,7 @@ function renderChallenge() {
           <div class="ch-program-num">2</div>
           <div style="flex:1">
             <div style="display:flex;align-items:baseline;justify-content:space-between;gap:8px">
-              <div class="ch-program-title">집중기간 인증</div>
+              <div class="ch-program-title">페이스업 인증</div>
               <div style="font-size:11px;font-weight:700;color:var(--primary);white-space:nowrap">주 3회 이상</div>
             </div>
             <div class="ch-program-desc">운동과 혈당 기록을 함께 진행하며 보다 집중적으로 인증해 주세요.</div>
