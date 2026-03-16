@@ -3361,7 +3361,6 @@
   <!-- Geo-access restriction: Seoul & Gyeonggi-do only -->
   <script>
   (function(){
-    var ALLOWED_REGIONS = ['Seoul','Gyeonggi-do','Gyeonggi'];
     var ALLOWED_COUNTRY = 'KR';
     function showBlock(){
       document.documentElement.style.display='none';
@@ -3370,7 +3369,7 @@
         document.body.innerHTML='<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;font-family:\'Noto Sans KR\',sans-serif;background:#f8f7f0;color:#1e1b4b;text-align:center;padding:24px;">'
           +'<div style="font-size:48px;margin-bottom:16px;">🔒</div>'
           +'<div style="font-size:18px;font-weight:700;margin-bottom:8px;">접근이 제한된 지역입니다</div>'
-          +'<div style="font-size:14px;color:#6b7280;line-height:1.6;">이 서비스는 서울 및 경기도 지역에서만<br>이용하실 수 있습니다.</div>'
+          +'<div style="font-size:14px;color:#6b7280;line-height:1.6;">이 서비스는 국내에서만<br>이용하실 수 있습니다.</div>'
           +'</div>';
       });
     }
@@ -3379,13 +3378,7 @@
         .then(function(r){return r.json();})
         .then(function(d){
           var country = (d.country_code||'').toUpperCase();
-          var region  = (d.region||'');
-          var city    = (d.city||'');
-          var isKR    = country === ALLOWED_COUNTRY;
-          var isAllowed = isKR && ALLOWED_REGIONS.some(function(r){
-            return region.indexOf(r)!==-1 || city.indexOf(r)!==-1;
-          });
-          if(!isAllowed) showBlock();
+          if(country && country !== ALLOWED_COUNTRY) showBlock();
         })
         .catch(function(){/* 조회 실패 시 허용 */});
     } catch(e){}
