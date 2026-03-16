@@ -1356,7 +1356,7 @@
       padding: 20px; cursor: pointer;
     }
     .photo-lightbox img { max-width:100%; max-height:80vh; border-radius:12px; pointer-events:none; }
-    .photo-lightbox-close { position:absolute; top:max(env(safe-area-inset-top),16px); right:16px; width:36px; height:36px; border-radius:50%; background:rgba(255,255,255,0.15); border:none; color:#fff; font-size:20px; cursor:pointer; display:flex; align-items:center; justify-content:center; z-index:1; }
+    .photo-lightbox-close { position:absolute; top:max(env(safe-area-inset-top),16px); right:16px; width:36px; height:36px; border-radius:50%; background:rgba(255,255,255,0.15); border:none; color:#fff; font-size:20px; cursor:pointer; display:flex; align-items:center; justify-content:center; z-index:2; touch-action:manipulation; }
     .route-sheet-overlay {
       position: fixed; inset: 0;
       background: rgba(15,23,42,0.56);
@@ -8209,7 +8209,7 @@ function viewPhoto(id) {
   if (!w || !w.photo) return;
   const box = document.createElement('div');
   box.className = 'photo-lightbox';
-  box.onclick = () => box.remove();
+  box.onclick = (e) => { if (e.target === box) box.remove(); };
   const img = document.createElement('img');
   img.src = w.photo; img.alt = '운동 인증';
   box.appendChild(img);
@@ -10557,8 +10557,9 @@ function openShoeLightbox(src, alt) {
   if (!src) return;
   const box = document.createElement('div');
   box.className = 'photo-lightbox';
-  box.onclick = () => box.remove();
+  box.onclick = (e) => { if (e.target === box) box.remove(); };
   const closeBtn = document.createElement('button');
+  closeBtn.type = 'button';
   closeBtn.className = 'photo-lightbox-close';
   closeBtn.innerHTML = '✕';
   closeBtn.onclick = (e) => { e.stopPropagation(); box.remove(); };
@@ -10697,10 +10698,8 @@ async function syncMyChallengeRegistration() {
         byId.set(id, { ...(byId.get(id) || {}), ...r });
       });
       next = [...byId.values()];
-    } else if (myMatches.length) {
-      const removeIds = new Set(myMatches.map(r => normChallengeId(r?.id)).filter(Boolean));
-      next = next.filter(r => !removeIds.has(normChallengeId(r?.id)));
     }
+    // Supabase에 결과가 없어도 로컬 신청 데이터는 보존 (apiSync 지연/실패 대응)
     setStoredChallengeRegs(next);
 
     const activeReg = getMyReg();
