@@ -5184,7 +5184,7 @@ function sanitizeWorkoutTextValue(value, workoutId = '') {
   if (!text) return '';
   const recordId = String(workoutId ?? '').trim();
   if (recordId && text === recordId) return '';
-  if (/^\d{8}$/.test(text)) return '';
+  if (/^\d{6,}$/.test(text)) return '';
   return text;
 }
 
@@ -6589,7 +6589,7 @@ function workoutItemHTML(w) {
     <div class="workout-item">
       <span class="wo-icon">${ex.icon}</span>
       <span class="wo-name">${name}</span>
-      <span class="wo-meta">${w.duration}분 · ${fmtTime(w.ts)}${memo ? ' · ' + escHtmlComm(memo) : ''}</span>
+      <span class="wo-meta">${w.duration}분${memo ? ' · ' + escHtmlComm(memo) : ''} · ${fmtTime(w.ts)}</span>
       ${hasRoute ? `<button type="button" class="wo-map-btn" onclick="openWorkoutRouteMap('${w.id}')">지도</button>` : ''}
       <div class="wo-pts">+${w.points}p</div>
       <button type="button" class="wo-del" onclick="deleteWorkout(${w.id})" title="삭제">${_trashSvgSm}</button>
