@@ -629,11 +629,15 @@
       min-height: calc(100vh - var(--header-height) - var(--nav-height));
       overflow-x: hidden;
     }
+    .app-content.white-page-bg { background: #fff; }
     .page {
       display: none; padding: 18px;
       animation: pageIn 0.3s cubic-bezier(0.22,1,0.36,1);
     }
     .page.active { display: block; }
+    #page-exercise,
+    #page-community,
+    #page-rewards { background: #fff; }
     #page-challenge {
       padding: 0;
       margin-top: calc(-1 * (var(--header-height) + max(env(safe-area-inset-top), 44px)));
@@ -3388,7 +3392,7 @@
   </div>
   <div class="app-login-card">
     <img src="images/avatars/hi_health_home_2.png?v=20260316-1" alt="HI Health" class="app-login-logo">
-    <div class="app-login-title">HI Health</div>
+
     <div class="app-login-sub">등록번호와 이름을 입력해 시작하세요</div>
     <div class="login-id-wrapper" id="login-id-wrapper" style="position:relative">
       <span class="login-id-prefix" id="login-id-prefix">HI-</span>
@@ -6227,6 +6231,7 @@ function navigate(page) {
   const content = document.querySelector('.app-content');
   const isHome = page === 'home';
   const isChallenge = page === 'challenge';
+  const useWhiteContentBg = page === 'exercise' || page === 'community' || page === 'rewards';
   const useFlowHeader = isHome && !isChallenge;
   const useSolidHeader = isChallenge || !useFlowHeader;
   // 헤더 DOM 이동: 홈이면 hero-card-home 안, 다른 탭이면 sentinel 앞
@@ -6256,6 +6261,7 @@ function navigate(page) {
   }
   if (content) {
     content.classList.remove('no-top-margin');
+    content.classList.toggle('white-page-bg', useWhiteContentBg);
     if (useFlowHeader || isChallenge) content.classList.add('no-top-margin');
   }
   const challengePage = document.getElementById('page-challenge');
