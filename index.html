@@ -6299,7 +6299,7 @@ function placeGuestBanner(page = null) {
   if (currentPage === 'home') {
     const spacer = document.getElementById('hero-spacer');
     if (spacer?.parentNode) spacer.parentNode.insertBefore(banner, spacer.nextSibling);
-    banner.classList.add('home');
+    banner.classList.remove('home');
     banner.classList.remove('page-top-gap');
   } else {
     const pageEl = document.getElementById('page-' + currentPage);
