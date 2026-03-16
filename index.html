@@ -5652,7 +5652,7 @@ async function shareLevelCard() {
   const restoreBtn = () => {
     if (!btn) return;
     btn.disabled = false;
-    btn.innerHTML = levelShareBtnHTML('레벨 카드 공유');
+    btn.innerHTML = levelShareBtnHTML('레벨카드 공유');
   };
 
   // ── 데이터 수집 ────────────────────────────────────────────
@@ -5665,6 +5665,8 @@ async function shareLevelCard() {
   const totalCnt = S.workouts.length;
   const totalMin = S.workouts.reduce((s, w) => s + (w.duration || 0), 0);
   const timeStr  = totalMin >= 60 ? `${Math.floor(totalMin/60)}h ${totalMin%60}m` : `${totalMin}분`;
+  const earned   = typeof earnedAchs === 'function' ? earnedAchs() : [];
+  const achCount = earned.length;
 
   const avatarSrc = (S.user.avatar && S.user.avatar.includes('images/')) ? S.user.avatar : (AVATARS[0] || '');
 
@@ -5693,12 +5695,15 @@ async function shareLevelCard() {
   const userTags = allTags.slice(0, 3);
   const extraTagCount = Math.max(0, allTags.length - 3);
 
-  const [lvIconPng, logoPng, avatarImg, bgImg] = await Promise.all([
+  const achImgSrcs = earned.slice(0, 6).map(a => a.img);
+  const [lvIconPng, logoPng, avatarImg, bgImg, ...achImgs] = await Promise.all([
     _svgToPng(lv.icon, 320),
     loadImg('images/logo-white.png'),
     avatarSrc ? loadImg(avatarSrc) : Promise.resolve(null),
     loadImg('images/happy-play.jpg'),
+    ...achImgSrcs.map(src => loadImg(src)),
   ]);
+  const achPngUrls = achImgs.map((img, i) => imgToPng(img, 60) || achImgSrcs[i]);
 
   const logoPngUrl   = imgToPng(logoPng, logoPng ? logoPng.naturalWidth : 240, logoPng ? logoPng.naturalHeight : 60) || 'images/logo-white.png';
   const avatarPngUrl = imgToPng(avatarImg, 192);
@@ -5718,12 +5723,11 @@ async function shareLevelCard() {
   }
   const bgPngUrl     = bgImg ? imgToPng(bgImg, bgImg.naturalWidth, bgImg.naturalHeight) : '';
 
-  // ── 공유 카드 DOM 생성 ────────────────────────────────────────
-  // ── 정사각형 (360×360px, scale×4 = 1440×1440px 고해상도) ──────
+  // ── 공유 카드 DOM 생성 ──────────────────────────────────────────
   const card = document.createElement('div');
   Object.assign(card.style, {
     position: 'fixed', left: '-9999px', top: '0',
-    width: '360px', height: '360px',
+    width: '360px',
     background: '#ffffff',
     fontFamily: "-apple-system,'Apple SD Gothic Neo','Noto Sans KR',sans-serif",
     boxSizing: 'border-box',
@@ -5774,52 +5778,66 @@ async function shareLevelCard() {
       </div>
     </div>
 
-    <!-- ② 레벨 카드 (화이트, 심플 버전) -->
-    <div style="flex-shrink:0;background:#fff;border:1px solid #DCE6F7;border-radius:18px;margin:8px 12px 0;padding:12px 14px 12px;box-shadow:0 8px 18px rgba(79,70,229,0.06);position:relative">
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+    <!-- ② 레벨 카드 -->
+    <div style="flex-shrink:0;background:#fff;border:1px solid #DCE6F7;border-radius:18px;margin:8px 12px 0;padding:14px 16px;box-shadow:0 4px 16px rgba(0,0,0,0.06);position:relative">
+      <!-- 헤더: 아이콘+이름+레벨 | 연속일 뱃지 -->
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
         <div style="display:flex;align-items:center;gap:10px;min-width:0">
-          <img src="${lvIconPng}" style="width:34px;height:34px;flex-shrink:0">
-          <div style="min-width:0">
-            <div style="display:flex;align-items:center;gap:6px">
-              <span style="font-size:15px;font-weight:900;color:#1E1B4B;letter-spacing:-0.3px">${lv.name}</span>
-              <span style="font-size:11px;font-weight:800;color:#4F46E5">Level ${lv.lv}</span>
-            </div>
+          <img src="${lvIconPng}" style="width:32px;height:32px;flex-shrink:0">
+          <div style="display:flex;align-items:center;gap:6px">
+            <span style="font-size:14px;font-weight:900;color:#1E1B4B;letter-spacing:-0.3px">${lv.name}</span>
+            <span style="font-size:11px;font-weight:800;color:#4F46E5">Level ${lv.lv}</span>
           </div>
         </div>
-        <div style="display:inline-flex;align-items:center;gap:4px;padding:7px 10px;border-radius:999px;background:#EEF2FF;border:1px solid rgba(79,70,229,0.12);color:#4F46E5;white-space:nowrap">
-          <span style="font-size:10px;font-weight:700;color:#6366F1">연속</span>
-          <span style="font-size:14px;font-weight:900;color:#312E81;line-height:1">${streak}</span>
-          <span style="font-size:10px;font-weight:700;color:#6366F1">일</span>
+        <div style="display:inline-flex;align-items:center;gap:3px;padding:4px 10px;border-radius:999px;background:#EEF2FF;white-space:nowrap">
+          <span style="font-size:11px;font-weight:600;color:#4F46E5">연속</span>
+          <span style="font-size:11px;font-weight:600;color:#4F46E5">${streak}</span>
+          <span style="font-size:11px;font-weight:600;color:#4F46E5">일</span>
         </div>
       </div>
 
-      <div style="margin-top:12px;margin-bottom:7px"></div>
-      <div style="width:100%;height:12px;background:linear-gradient(180deg,#E6ECF8 0%,#EFF4FB 100%);border-radius:999px;overflow:visible;position:relative;box-shadow:inset 0 1px 2px rgba(15,23,42,0.06)">
-        <div style="width:${pct}%;height:100%;background:linear-gradient(90deg,#4F46E5 0%,#3B82F6 56%,#22C1C3 100%);border-radius:999px;box-shadow:0 4px 10px rgba(79,70,229,0.16);position:relative;overflow:hidden">
-          <div style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(255,255,255,0) 0%,rgba(255,255,255,0.35) 52%,rgba(255,255,255,0) 100%);opacity:0.55"></div>
+      <!-- 프로그레스 바 -->
+      <div style="margin-top:12px;width:100%;height:10px;background:#EFF4FB;border-radius:999px;overflow:visible;position:relative">
+        <div style="width:${pct}%;height:100%;background:linear-gradient(90deg,#4F46E5 0%,#3B82F6 56%,#22C1C3 100%);border-radius:999px;position:relative;overflow:hidden">
+          <div style="position:absolute;inset:0;background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,0.3) 50%,transparent 100%)"></div>
         </div>
-        <div style="width:16px;height:16px;border-radius:50%;border:3px solid #fff;background:linear-gradient(135deg,#4F46E5 0%,#22C1C3 100%);position:absolute;top:50%;left:${pct}%;transform:translate(-50%,-50%);box-shadow:0 3px 10px rgba(79,70,229,0.16)"></div>
+        <div style="width:14px;height:14px;border-radius:50%;border:3px solid #fff;background:linear-gradient(135deg,#4F46E5 0%,#22C1C3 100%);position:absolute;top:50%;left:${pct}%;transform:translate(-50%,-50%);box-shadow:0 2px 8px rgba(79,70,229,0.2)"></div>
       </div>
-      <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:9px;font-weight:700;color:#64748B">
+      <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:9px;font-weight:700;color:#94A3B8">
         <span>${curPts}p</span>
         <span>${nextLv ? `다음 레벨까지 ${nextLv.min - curPts}p` : '최고 레벨 달성'}</span>
       </div>
+
+      <!-- 구분선 -->
+      <div style="margin:10px 0;height:1px;background:#F1F5F9"></div>
+
+      <!-- 배지 행 -->
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <span style="font-size:13px;font-weight:700;color:#1E293B">획득한 배지</span>
+        <span style="font-size:11px;font-weight:600;color:#4F46E5;background:#EEF2FF;padding:3px 8px;border-radius:20px">${achCount}개</span>
+      </div>
+
+      <!-- 배지 스트립 -->
+      ${achCount > 0 ? `
+      <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:nowrap;overflow:hidden">
+        ${achPngUrls.map(url => `<div style="width:32px;height:32px;border-radius:50%;background:#F8FAFC;border:1px solid #E2E8F0;overflow:hidden;flex-shrink:0"><img src="${url}" style="width:100%;height:100%;object-fit:cover"></div>`).join('')}
+        ${achCount > 6 ? `<div style="width:32px;height:32px;border-radius:50%;background:#EEF2FF;display:flex;align-items:center;justify-content:center;flex-shrink:0"><span style="font-size:9px;font-weight:700;color:#4F46E5">+${achCount-6}</span></div>` : ''}
+      </div>` : `<div style="margin-top:8px;font-size:11px;color:#94A3B8">아직 획득한 배지가 없어요</div>`}
     </div>
 
-    <!-- ③ 하단 이미지 -->
-    <div style="flex-shrink:0;height:78px;position:relative;overflow:hidden;margin-top:8px;background:#fff">
-      ${bgPngUrl ? `<img src="${bgPngUrl}" style="${bgImgStyle}">` : ''}
-      <!-- 상하 + 좌우 그라디언트 (하단 흐림 축소) -->
-      <div style="position:absolute;inset:0;background:linear-gradient(to right,rgba(255,255,255,0.7) 0%,rgba(255,255,255,0) 12%,rgba(255,255,255,0) 88%,rgba(255,255,255,0.7) 100%),linear-gradient(to bottom,rgba(255,255,255,1) 0%,rgba(255,255,255,0) 30%,rgba(255,255,255,0) 85%,rgba(255,255,255,0.2) 100%);pointer-events:none;z-index:1"></div>
+    <!-- ③ 하단 여백 + 워터마크 -->
+    <div style="flex:1;display:flex;align-items:flex-end;justify-content:center;padding-bottom:12px;padding-top:8px">
+      <span style="font-size:9px;font-weight:600;color:#CBD5E1;letter-spacing:0.3px">HI Health · 건강 챌린지</span>
     </div>
   `;
 
   document.body.appendChild(card);
 
   try {
+    const cardH = card.scrollHeight || card.offsetHeight || 560;
     const canvas = await html2canvas(card, {
       scale: 4,
-      width: 360, height: 360,
+      width: 360, height: cardH,
       backgroundColor: '#FFFFFF',
       useCORS: true,
       allowTaint: true,
