@@ -2098,6 +2098,49 @@
     renderRundayProfileHeader();
   }
 
+  function resetRegistrationForm(opts = {}) {
+    const preserveIdentity = opts.preserveIdentity !== false;
+    const keepDept = !!opts.keepDept;
+    const nameEl = document.getElementById('f-name');
+    const empIdEl = document.getElementById('f-empid');
+    const deptEl = document.getElementById('f-dept');
+    const phoneEl = document.getElementById('f-phone');
+    const shoeEl = document.getElementById('f-shoe');
+    const tshirtEl = document.getElementById('f-tshirt');
+    const shoeNoteEl = document.getElementById('f-shoe-note');
+    const consentEl = document.getElementById('f-consent');
+    const preservedName = preserveIdentity ? String(nameEl?.value || '').trim() : '';
+    const preservedEmpId = preserveIdentity ? String(empIdEl?.value || '').trim().toUpperCase() : '';
+    const preservedDept = keepDept ? String(deptEl?.value || '') : '';
+
+    if (nameEl) nameEl.value = preservedName;
+    if (empIdEl) empIdEl.value = preservedEmpId;
+    if (deptEl) deptEl.value = preservedDept;
+    if (phoneEl) phoneEl.value = '';
+    if (shoeEl) shoeEl.value = '';
+    if (tshirtEl) tshirtEl.value = '';
+    if (shoeNoteEl) shoeNoteEl.value = '';
+    if (consentEl) consentEl.checked = false;
+
+    ['cgm', 'fam', 'cruise', 'event'].forEach(groupName => {
+      document.querySelectorAll(`input[name="${groupName}"]`).forEach(input => { input.checked = false; });
+    });
+
+    selectedBrand = '';
+    nikeIdx = 0;
+    nbIdx = 0;
+    familyMembers = [];
+    document.getElementById('fam-detail')?.classList.remove('show');
+    renderFamilyMembers();
+    renderShoes();
+
+    const submitBtn = document.getElementById('btn-submit');
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = '신청 완료하기';
+    }
+  }
+
   function notifyParentRegistrationChange(payload = {}) {
     try {
       if (window.parent && window.parent !== window) {
@@ -2548,6 +2591,7 @@
     notifyParentRegistrationChange({ registrationId: regId, cancelled: true, empId: getCurrentEmpId(), registration: cancelledReg });
     await syncCurrentUserRegistrationRef('', cancelledReg.empId || getCurrentEmpId(), cancelledReg.deviceId || getCurrentDeviceId());
     editingRegId = '';
+    resetRegistrationForm({ preserveIdentity: true });
     loadPeople();
     document.getElementById('success-screen').classList.remove('show');
     document.getElementById('form-screen').classList.remove('hide');
@@ -2569,6 +2613,9 @@
       document.getElementById('form-screen').classList.add('hide');
       document.getElementById('success-screen').classList.add('show');
     } else {
+      if (document.getElementById('success-screen').classList.contains('show')) {
+        resetRegistrationForm({ preserveIdentity: true });
+      }
       document.getElementById('success-screen').classList.remove('show');
       document.getElementById('form-screen').classList.remove('hide');
     }
