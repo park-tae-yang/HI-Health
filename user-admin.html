@@ -376,10 +376,10 @@
         <div class="stat-card sk"><div class="s-lbl">총 운동시간</div><div class="s-val" id="wo-sum-mins">-</div><div class="s-sub">분</div></div>
       </div>
       <div class="wo-guide" id="wo-guide">
-        전체 운동기록을 한 번에 나열하지 않고, 먼저 활동 요약과 최근 활동 이용자를 보여줍니다. 특정 이용자를 선택하면 그 사람 기록만 자세히 볼 수 있습니다.
+        전체 운동기록을 한 번에 나열하지 않고, 먼저 활동 요약과 최근 활동 이용자 상위 목록을 보여줍니다. 특정 이용자를 선택하면 그 사람 기록만 자세히 볼 수 있습니다.
       </div>
       <div class="ctrl-bar">
-        <input class="ctrl-inp" id="wo-search" placeholder="이용자명 또는 선택한 이용자의 운동 종류·메모 검색" oninput="woReset()">
+        <input class="ctrl-inp" id="wo-search" placeholder="이용자명·등록번호 검색 또는 선택한 이용자의 운동 종류·메모 검색" oninput="woReset()">
         <select class="ctrl-sel" id="wo-user" onchange="woReset()"><option value="">이용자 선택</option></select>
         <div class="wo-inline-actions">
           <button class="cbtn sky" onclick="useSelectedUserForWorkouts()">선택 이용자 보기</button>
@@ -397,7 +397,7 @@
           <option value="100">100건씩</option>
           <option value="200">200건씩</option>
         </select>
-        <span class="ctrl-count" id="wo-count">최근 활동 이용자 보기</span>
+        <span class="ctrl-count" id="wo-count">최근 활동 이용자 상위 보기</span>
       </div>
       <div class="sel-bar" id="wo-sel-bar" style="display:none">
         <span id="wo-sel-name"></span> 운동기록 보는 중
@@ -938,6 +938,7 @@ function getRegRequestSummaryText(r) {
    STATE
 ══════════════════════════════════════════════ */
 const ADMIN_EMPIDS = ['1111','A1803'];
+const USER_LIST_EXCLUDE_EMPIDS = ['1111']; // 이용자 목록에서 제외할 관리자 전용 계정
 let ADMIN_PW = localStorage.getItem('hi_admin_pw') || '1111'; // 비밀번호 변경용 (하위호환)
 let db = null;
 let GD = { users:[], workouts:[], posts:[], glucose:[], registrations:[], orders:[], adminPosts:[] };
@@ -1486,6 +1487,8 @@ function filteredUsers() {
   const mode = document.getElementById('u-filter')?.value || 'all';
   const dupIds = getDupEmpIds();
   return GD.users.filter(u => {
+    // 관리자 전용 계정 제외
+    if (USER_LIST_EXCLUDE_EMPIDS.includes((u.empId || '').trim().toUpperCase())) return false;
     // 서브탭 필터 (최우선)
     if (uTab === 'gen') { if (isChallenger(u)) return false; }
     if (uTab === 'ch')  { if (!isChallenger(u)) return false; }
@@ -1875,9 +1878,9 @@ function syncWorkoutSelectionUI(deviceId = getWorkoutSelectedUserId()) {
   } else {
     if (wrap) wrap.style.display = 'none';
     if (nameEl) nameEl.textContent = '';
-    if (guideEl) guideEl.textContent = '전체 운동기록을 한 번에 나열하지 않고, 먼저 활동 요약과 최근 활동 이용자를 보여줍니다. 특정 이용자를 선택하면 그 사람 기록만 자세히 볼 수 있습니다.';
+    if (guideEl) guideEl.textContent = '전체 운동기록을 한 번에 나열하지 않고, 먼저 활동 요약과 최근 활동 이용자 상위 목록을 보여줍니다. 특정 이용자를 선택하면 그 사람 기록만 자세히 볼 수 있습니다.';
     detailOnlyControls.forEach(el => { el.disabled = true; });
-    if (countEl) countEl.textContent = '최근 활동 이용자 보기';
+    if (countEl) countEl.textContent = '최근 활동 이용자 상위 보기';
   }
 }
 
@@ -1959,12 +1962,12 @@ function renderWorkoutOverview() {
   document.getElementById('wo-pager').innerHTML = '';
 
   if (!rows.length) {
-    tbody.innerHTML = `<tr><td class="empty-cell" colspan="8">운동기록이 있는 이용자가 없습니다</td></tr>`;
+    tbody.innerHTML = `<tr><td class="empty-cell" colspan="8">검색 조건에 맞는 활동 이용자가 없습니다</td></tr>`;
     document.getElementById('wo-count').textContent = '0명';
     return;
   }
 
-  document.getElementById('wo-count').textContent = `최근 활동 이용자 ${allRows.length}명`;
+  document.getElementById('wo-count').textContent = `최근 활동 이용자 ${allRows.length}명 · 상위 ${rows.length}명 표시`;
   tbody.innerHTML = rows.map(({ user, stat }, idx) => {
     const safeId = String(user.deviceId || '').replace(/'/g, "\\'");
     const latestText = stat.latestTs
