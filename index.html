@@ -407,6 +407,22 @@
       font-size: 48px; margin-bottom: 24px;
       border: 1px solid rgba(109,40,217,0.08);
     }
+    .ui-svg-icon {
+      --ui-icon-size: 1em;
+      --ui-icon-color: currentColor;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: var(--ui-icon-size);
+      height: var(--ui-icon-size);
+      color: var(--ui-icon-color);
+      line-height: 1;
+      flex-shrink: 0;
+      vertical-align: middle;
+    }
+    .ui-svg-icon svg { width: 100%; height: 100%; display: block; }
+    .rank-medal { margin-right: 3px; vertical-align: -0.12em; }
+    .app-intro-icon .ui-svg-icon { --ui-icon-size: 48px; }
     .app-intro-title {
       font-size: 20px; font-weight: 900; color: #1E1B4B;
       letter-spacing: -0.5px; margin-bottom: 10px; line-height: 1.3;
@@ -1277,7 +1293,8 @@
       border-color: var(--primary); background: #EEF2FF;
       box-shadow: 0 2px 10px rgba(79,70,229,0.18);
     }
-    .ex-type-icon { font-size: 13px; line-height: 1; }
+    .ex-type-icon { font-size: 13px; line-height: 1; display:inline-flex; align-items:center; justify-content:center; }
+    .ex-type-icon .ui-svg-icon { --ui-icon-size: 15px; }
     .ex-type-name { font-size: 13px; font-weight: inherit; color: var(--text); }
     .ex-type-pts { display: none; }
     .ex-type-btn.selected .ex-type-name { color: var(--primary); }
@@ -1337,7 +1354,8 @@
     /* ── Workout History Items ── */
     .workout-item { display: flex; align-items: center; gap: 6px; padding: 7px 0; border-bottom: 1px solid var(--border); }
     .workout-item:last-child { border-bottom: none; }
-    .wo-icon { font-size: 16px; flex-shrink: 0; line-height: 1; }
+    .wo-icon { font-size: 16px; flex-shrink: 0; line-height: 1; display:inline-flex; align-items:center; justify-content:center; }
+    .wo-icon .ui-svg-icon { --ui-icon-size: 16px; color: var(--primary); }
     .wo-name { font-size: 12px; font-weight: 700; white-space: nowrap; }
     .wo-meta { font-size: 11px; color: var(--text-secondary); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .wo-pts { font-size: 12px; font-weight: 800; color: #5B21B6; white-space: nowrap; }
@@ -1637,7 +1655,7 @@
       background:var(--primary-light); border:1.5px solid var(--border); border-radius:var(--radius-sm);
       padding:11px 13px; margin-bottom:8px;
     }
-    .share-preview-tag { font-size:11px; font-weight:700; color:var(--primary); margin-bottom:5px; }
+    .share-preview-tag { font-size:11px; font-weight:700; color:var(--primary); margin-bottom:5px; display:inline-flex; align-items:center; gap:5px; }
     .share-msg-input {
       width:100%; padding:12px 13px; border:1.5px solid rgba(203,213,225,0.9);
       border-radius:14px; font-size:13px; font-family:inherit;
@@ -1876,7 +1894,8 @@
     .wo-day-group + .workout-item { border-top:none; }
     .wo-day-label { font-size:12px; font-weight:700; color:var(--text-secondary); }
     .wo-day-pts { font-size:12px; font-weight:700; color:var(--warning); }
-    .wo-month-empty { text-align:center; padding:36px 0; color:var(--text-secondary); font-size:13px; }
+    .wo-month-empty { text-align:center; padding:36px 0; color:var(--text-secondary); font-size:13px; display:flex; align-items:center; justify-content:center; gap:6px; }
+    .wo-month-empty .ui-svg-icon { --ui-icon-size: 14px; color:#7c3aed; }
     /* ── Glucose Graph ── */
     .glucose-graph-wrap { padding:6px 0 4px; }
     .glucose-graph-legend { display:flex; gap:12px; justify-content:center; font-size:10px; font-weight:600; margin-top:8px; flex-wrap:wrap; color:var(--text-secondary); }
@@ -2044,7 +2063,12 @@
     /* Hero card tag display */
     .hero-tags { display:flex; flex-wrap:nowrap; align-items:center; gap:5px; margin-bottom:0; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; flex:1; min-width:0; align-self:center; }
     .hero-tags::-webkit-scrollbar { display:none; }
-    .hero-tag { font-size:10px; padding:4px 10px; border-radius:20px; background:rgba(255,255,255,0.18); color:#fff; font-weight:600; flex-shrink:0; white-space:nowrap; letter-spacing:0.02em; border:1px solid rgba(255,255,255,0.25); line-height:1.2; }
+    .hero-tag { font-size:10px; padding:4px 10px; border-radius:20px; background:rgba(255,255,255,0.18); color:#fff; font-weight:600; flex-shrink:0; white-space:nowrap; letter-spacing:0.02em; border:1px solid rgba(255,255,255,0.25); line-height:1.2; display:inline-flex; align-items:center; gap:4px; }
+    .hero-tag .ui-svg-icon,
+    #pm-challenge-tag .ui-svg-icon,
+    .ch-reg-badge .ui-svg-icon,
+    .comment-btn .ui-svg-icon,
+    .share-preview-tag .ui-svg-icon { --ui-icon-size: 12px; }
     .avatar-grid { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:10px; margin-bottom:10px; }
     .avatar-opt {
       width:100%; aspect-ratio:1; padding:0; --avatar-pad:0px;
@@ -2419,6 +2443,7 @@
     .podium-item.podium-second .podium-avatar,
     .podium-item.podium-third .podium-avatar { width:58px; height:58px; }
     .podium-name { font-size: 11px; font-weight: 600; text-align: center; max-width: 70px; }
+    .podium-name .ui-svg-icon { --ui-icon-size: 12px; vertical-align: -0.14em; }
     .podium-pts { font-size: 10px; color: var(--warning); font-weight: 700; }
     .podium-stand {
       border-radius: 8px 8px 0 0;
@@ -2968,7 +2993,8 @@
     .nav-dot.hidden { display: none; }
 
     .empty-state { text-align: center; padding: 36px 20px; color: var(--text-secondary); }
-    .empty-state .ei { font-size: 44px; margin-bottom: 10px; }
+    .empty-state .ei { font-size: 44px; margin-bottom: 10px; display:flex; align-items:center; justify-content:center; }
+    .empty-state .ei .ui-svg-icon { --ui-icon-size: 44px; color: var(--primary); }
     .empty-state p { font-size: 13px; }
 
     /* ══════════════════════════════
@@ -3480,37 +3506,37 @@
   <div class="app-intro-card" onclick="event.stopPropagation()">
     <div class="app-intro-slides" id="app-intro-slides">
       <div class="app-intro-slide">
-        <div class="app-intro-icon">🏃</div>
+        <div class="app-intro-icon" data-svg-icon="running" data-svg-color="#ef4444" data-svg-size="48px"></div>
         <div class="app-intro-title">매일의 운동을<br>간편하게 기록해요</div>
         <div class="app-intro-desc">걷기, 달리기, 요가 등 다양한 운동을 기록하고 포인트를 모아보세요</div>
       </div>
       <div class="app-intro-slide">
-        <div class="app-intro-icon">⭐</div>
+        <div class="app-intro-icon" data-svg-icon="star" data-svg-color="#f59e0b" data-svg-size="48px"></div>
         <div class="app-intro-title">운동할수록<br>레벨이 올라가요</div>
         <div class="app-intro-desc">꾸준히 기록하면 새싹에서 레전드까지! 나만의 성장을 확인하세요</div>
       </div>
       <div class="app-intro-slide">
-        <div class="app-intro-icon">💬</div>
+        <div class="app-intro-icon" data-svg-icon="chat" data-svg-color="#4f46e5" data-svg-size="48px"></div>
         <div class="app-intro-title">함께하면<br>더 즐거워요</div>
         <div class="app-intro-desc">같은 목표를 가진 멤버들과 응원을 나누고 건강한 습관을 만들어요</div>
       </div>
       <div class="app-intro-slide">
-        <div class="app-intro-icon">🏆</div>
+        <div class="app-intro-icon" data-svg-icon="trophy" data-svg-color="#2563eb" data-svg-size="48px"></div>
         <div class="app-intro-title">챌린지로<br>함께 도전해요</div>
         <div class="app-intro-desc">팀원들과 함께하는 건강 챌린지! 목표를 달성하고 특별한 보상을 받아보세요</div>
       </div>
       <div class="app-intro-slide">
-        <div class="app-intro-icon">🎁</div>
+        <div class="app-intro-icon" data-svg-icon="gift" data-svg-color="#db2777" data-svg-size="48px"></div>
         <div class="app-intro-title">포인트로<br>다양한 혜택을</div>
         <div class="app-intro-desc">모은 포인트로 건강 용품을 구매하고 특별한 리워드를 받아보세요</div>
       </div>
       <div class="app-intro-slide">
-        <div class="app-intro-icon">🏅</div>
+        <div class="app-intro-icon" data-svg-icon="medal" data-svg-color="#b45309" data-svg-size="48px"></div>
         <div class="app-intro-title">달리기 측정으로<br>기록을 남겨요</div>
         <div class="app-intro-desc">실시간 달리기 타이머로 거리·시간을 측정하고 운동 기록에 바로 저장할 수 있어요</div>
       </div>
       <div class="app-intro-slide">
-        <div class="app-intro-icon">📡</div>
+        <div class="app-intro-icon" data-svg-icon="signal" data-svg-color="#0891b2" data-svg-size="48px"></div>
         <div class="app-intro-title">덱스콤 연동으로<br>혈당을 자동 확인</div>
         <div class="app-intro-desc">덱스콤 앱과 연동하면 실시간 혈당 수치와 추이가 HI Health에 자동으로 불러와져요</div>
       </div>
@@ -6827,7 +6853,7 @@ function renderHome() {
   document.getElementById('hero-name').textContent = myDisplayName() + '님';
   const tagsEl = document.getElementById('hero-tags');
   if (tagsEl) {
-    const challengeTag = hasActiveChallengeRegistration() ? `<span class="hero-tag" style="background:var(--purple);color:#fff">🏅 챌린지 참여중</span>` : '';
+    const challengeTag = hasActiveChallengeRegistration() ? `<span class="hero-tag" style="background:var(--purple);color:#fff">${renderNamedSvgIcon('medal', { size:'11px', color:'#fff' })}<span>챌린지 참여중</span></span>` : '';
     tagsEl.innerHTML = challengeTag + (S.user.tags || []).map(t => `<span class="hero-tag">${t}</span>`).join('');
   }
   document.getElementById('today-cnt').textContent = tw.length;
@@ -6867,18 +6893,17 @@ function renderHome() {
     : '최고 레벨 달성';
 
   // Quick action subtitles
-  const _medals = {1:'🥇',2:'🥈',3:'🥉'};
   const _base = (_realLeagueUsers && _realLeagueUsers.length) ? _realLeagueUsers : MOCK_USERS;
   if (hasActiveChallengeRegistration()) {
     const chTotal = _base.filter(u => u.isChallenger).length + 1;
     const chRank  = _base.filter(u => u.isChallenger && u.pts > (S.user.totalPoints || S.user.points)).length + 1;
     document.getElementById('rank-quick-label').textContent = '(챌린지)';
-    document.getElementById('my-rank-quick').textContent = (_medals[chRank] ? _medals[chRank] + ' ' : '') + chRank + '위 / 전체 ' + chTotal + '명';
+    document.getElementById('my-rank-quick').innerHTML = formatRankSummary(chRank, chTotal);
   } else {
     const lgRank = myLeagueRank();
     const lgTotal = _base.length + 1;
     document.getElementById('rank-quick-label').textContent = '';
-    document.getElementById('my-rank-quick').textContent = (_medals[lgRank] ? _medals[lgRank] + ' ' : '') + lgRank + '위 / 전체 ' + lgTotal + '명';
+    document.getElementById('my-rank-quick').innerHTML = formatRankSummary(lgRank, lgTotal);
   }
   const canRedeem = REWARDS_DATA.some(r => !S.redeemedRewards.includes(r.id) && !S.pendingRewards.includes(r.id) && S.user.points >= r.cost);
   document.getElementById('pts-quick').textContent = '보유 ' + S.user.points + 'p' + (canRedeem ? ' · 교환 가능' : '');
@@ -7024,7 +7049,7 @@ function workoutItemHTML(w) {
   const hasRoute = compressRoutePath(w.routePath || [], 2).length > 1;
   return `
     <div class="workout-item">
-      <span class="wo-icon">${ex.icon}</span>
+      <span class="wo-icon">${renderExerciseIcon(w.exId, { size:'16px' })}</span>
       <span class="wo-name">${name}</span>
       <span class="wo-meta">${w.duration}분${memo ? ' · ' + escHtmlComm(memo) : ''} · ${fmtTime(w.ts)}</span>
       ${hasRoute ? `<button type="button" class="wo-map-btn" onclick="openWorkoutRouteMap('${w.id}')">지도</button>` : ''}
@@ -7044,7 +7069,7 @@ function renderWoTypeFilter() {
   el.innerHTML = chips.map(e => `
     <button type="button" class="wo-type-chip ${_woTypeFilter === e.id ? 'active' : ''}"
             onclick="_woTypeFilter='${e.id}';_woShowCount=10;renderWoTypeFilter();renderExerciseHistory()">
-      ${e.icon ? `<span>${e.icon}</span>` : ''}<span>${e.name}</span>
+      ${e.id !== 'all' ? `${renderExerciseIcon(e.id, { size:'14px' })}` : ''}<span>${e.name}</span>
     </button>`).join('');
 }
 
@@ -7055,7 +7080,7 @@ function renderExerciseHistory() {
   if (_woViewMode === 'recent') {
     document.getElementById('wo-total-badge').textContent = '총 ' + S.workouts.length + '회';
     if (!allWorkouts.length) {
-      wo.innerHTML = `<div class="empty-state"><div class="ei">🏃</div><p>아직 기록된 운동이 없어요.<br>첫 운동을 기록해보세요!</p></div>`;
+      wo.innerHTML = `<div class="empty-state"><div class="ei">${renderExerciseIcon('running', { size:'44px', color:'var(--primary)' })}</div><p>아직 기록된 운동이 없어요.<br>첫 운동을 기록해보세요!</p></div>`;
       return;
     }
     const reversed = [...allWorkouts].reverse();
@@ -7082,7 +7107,7 @@ function renderExerciseHistory() {
   document.getElementById('wo-total-badge').textContent = (month + 1) + '월 ' + monthWo.length + '회';
 
   if (!monthWo.length) {
-    wo.innerHTML = `<div class="wo-month-empty">이 달에는 운동 기록이 없어요 💪</div>`;
+    wo.innerHTML = `<div class="wo-month-empty">${renderExerciseIcon('strength', { size:'14px', color:'#7c3aed' })}<span>이 달에는 운동 기록이 없어요</span></div>`;
     return;
   }
 
@@ -7114,6 +7139,7 @@ const EX_SVG_ICONS = {
   swimming: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="16" cy="5" r="1.5"/><path d="M5 11c2-2 4-2 6-1l5-4"/><path d="M3 16.5c1.5-1.5 3-1.5 4.5 0s3 1.5 4.5 0 3-1.5 4.5 0 3 1.5 4.5 0"/><path d="M3 20.5c1.5-1.5 3-1.5 4.5 0s3 1.5 4.5 0 3-1.5 4.5 0 3 1.5 4.5 0"/></svg>`,
   cycling: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="16" r="4"/><circle cx="18" cy="16" r="4"/><path d="M6 16l4-8h4l4 8"/><path d="M10 8l2-3"/><circle cx="12" cy="5" r="1"/></svg>`,
   yoga: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="4" r="1.5"/><path d="M12 6v5"/><path d="M5 14c2-3 5-4 7-3s5 0 7 3"/><path d="M5 14l2 5M19 14l-2 5"/><path d="M7 19h10"/></svg>`,
+  pilates: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="9" r="1.5"/><path d="M9.5 10.5l4 1.5 3-2"/><path d="M10 12l-3 4"/><path d="M13.5 12l3.5 5"/><path d="M4 19h16"/></svg>`,
   strength: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="7.5" y1="12" x2="16.5" y2="12"/><rect x="3" y="10" width="4.5" height="4" rx="1.2"/><rect x="16.5" y="10" width="4.5" height="4" rx="1.2"/><line x1="7.5" y1="9.5" x2="7.5" y2="14.5"/><line x1="16.5" y1="9.5" x2="16.5" y2="14.5"/></svg>`,
   stretching: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="4" r="1.5"/><path d="M12 6v6"/><path d="M4 10l8 2 8-2"/><path d="M12 12l-3 6M12 12l3 6"/></svg>`,
   hiking: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20l5.5-10 4 5.5 3-5 5.5 9.5z"/><circle cx="18" cy="6" r="1.5"/><path d="M18 8l-1 4"/></svg>`,
@@ -7126,6 +7152,84 @@ const EX_SVG_ICONS = {
   badminton: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="18.5" r="2"/><path d="M12 16.5l-4-9M12 16.5l4-9"/><path d="M8 7.5c1-2 6-2 8 0"/><path d="M9 5h6"/></svg>`,
   custom: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>`,
 };
+
+const UI_SVG_ICONS = {
+  star: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.8l2.7 5.48 6.05.88-4.38 4.27 1.04 6.03L12 16.74l-5.41 2.85 1.04-6.03L3.25 9.16l6.05-.88L12 2.8z"/></svg>`,
+  chat: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17.5V6.5A2.5 2.5 0 0 1 7.5 4h9A2.5 2.5 0 0 1 19 6.5v6A2.5 2.5 0 0 1 16.5 15H11l-4 4v-4H7.5A2.5 2.5 0 0 1 5 12.5"/><path d="M8.5 8.5h7M8.5 11.5h5"/></svg>`,
+  trophy: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v4a4 4 0 0 1-8 0V4z"/><path d="M10 16h4"/><path d="M9 20h6"/><path d="M6 4H4.5A1.5 1.5 0 0 0 3 5.5 3.5 3.5 0 0 0 6.5 9H8"/><path d="M18 4h1.5A1.5 1.5 0 0 1 21 5.5 3.5 3.5 0 0 1 17.5 9H16"/><path d="M12 12v4"/></svg>`,
+  gift: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="9" width="16" height="11" rx="2"/><path d="M12 9v11M4 13h16"/><path d="M12 9H8.5a2.5 2.5 0 1 1 0-5c2.4 0 3.5 2.3 3.5 5z"/><path d="M12 9h3.5a2.5 2.5 0 1 0 0-5c-2.4 0-3.5 2.3-3.5 5z"/></svg>`,
+  medal: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h4l1 4H8L7 3z"/><path d="M13 3h4l-1 4h-4l1-4z"/><circle cx="12" cy="14" r="5.5"/><path d="M12 11.4l1.1 2.2 2.4.35-1.75 1.7.42 2.39L12 16.95l-2.17 1.15.42-2.39-1.75-1.7 2.4-.35L12 11.4z"/></svg>`,
+  signal: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="18" r="1.6" fill="currentColor" stroke="none"/><path d="M8.5 14.5a5 5 0 0 1 7 0"/><path d="M6 12a8.5 8.5 0 0 1 12 0"/><path d="M3.5 9.5a12 12 0 0 1 17 0"/></svg>`,
+  blood: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c2.8 4 5 6.6 5 10a5 5 0 1 1-10 0c0-3.4 2.2-6 5-10z"/><path d="M10 14.5c.6.9 1.4 1.3 2.4 1.3 1 0 1.9-.5 2.6-1.6"/></svg>`,
+  pencil: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l4.2-1 9-9a2.1 2.1 0 0 0-3-3l-9 9L4 20z"/><path d="M13 6l4 4"/></svg>`,
+};
+
+const EX_ICON_COLORS = {
+  walking:'#16a34a',
+  running:'#ef4444',
+  swimming:'#2563eb',
+  cycling:'#d97706',
+  yoga:'#7c3aed',
+  pilates:'#9333ea',
+  strength:'#db2777',
+  stretching:'#0891b2',
+  hiking:'#059669',
+  tennis:'#65a30d',
+  'aerial-yoga':'#a855f7',
+  climbing:'#c2410c',
+  kendo:'#64748b',
+  soccer:'#16a34a',
+  boxing:'#dc2626',
+  badminton:'#0284c7',
+  custom:'#6b7280',
+};
+
+function renderSvgIcon(svg, opts = {}) {
+  if (!svg) return '';
+  const classes = ['ui-svg-icon', opts.className || ''].filter(Boolean).join(' ');
+  const styles = [];
+  if (opts.size) styles.push(`--ui-icon-size:${opts.size}`);
+  if (opts.color) styles.push(`--ui-icon-color:${opts.color}`);
+  const styleAttr = styles.length ? ` style="${styles.join(';')}"` : '';
+  return `<span class="${classes}"${styleAttr} aria-hidden="true">${svg}</span>`;
+}
+
+function renderNamedSvgIcon(key, opts = {}) {
+  return renderSvgIcon(UI_SVG_ICONS[key] || EX_SVG_ICONS[key] || UI_SVG_ICONS.pencil, opts);
+}
+
+function renderExerciseIcon(exId, opts = {}) {
+  const key = EX_SVG_ICONS[exId] ? exId : 'custom';
+  const color = opts.color || EX_ICON_COLORS[key] || '#6366f1';
+  return renderNamedSvgIcon(key, { ...opts, color, className: ['exercise-svg-icon', opts.className].filter(Boolean).join(' ') });
+}
+
+function renderMedalIcon(rank, opts = {}) {
+  const numericRank = Number(rank);
+  if (![1, 2, 3].includes(numericRank)) return '';
+  const colors = { 1:'#f59e0b', 2:'#94a3b8', 3:'#b45309' };
+  return renderNamedSvgIcon('medal', { ...opts, color: opts.color || colors[numericRank], className: ['rank-medal', opts.className].filter(Boolean).join(' ') });
+}
+
+function formatRankSummary(rank, total) {
+  const medal = renderMedalIcon(rank, { size:'14px' });
+  return `${medal ? medal + ' ' : ''}${rank}위 / 전체 ${total}명`;
+}
+
+function hydrateStaticSvgIcons(root = document) {
+  root.querySelectorAll('[data-svg-icon]').forEach(el => {
+    const key = el.dataset.svgIcon;
+    const text = el.dataset.svgText || '';
+    const iconHtml = renderNamedSvgIcon(key, {
+      size: el.dataset.svgSize || '',
+      color: el.dataset.svgColor || '',
+      className: el.dataset.svgClass || '',
+    });
+    el.innerHTML = text ? `${iconHtml}<span>${text}</span>` : iconHtml;
+  });
+}
+
+hydrateStaticSvgIcons();
 
 function renderExercise() {
   // Today stats strip
@@ -7152,10 +7256,10 @@ function renderExercise() {
   document.getElementById('ex-type-grid').innerHTML =
     EX_TYPES.filter(e => e.id !== 'custom').map(e => `
       <button class="ex-type-btn ${S.selectedEx === e.id ? 'selected' : ''}"
-              onclick="selectEx('${e.id}')"><span class="ex-type-icon">${e.icon}</span><span class="ex-type-name">${e.name}</span></button>
+              onclick="selectEx('${e.id}')"><span class="ex-type-icon">${renderExerciseIcon(e.id, { size:'15px' })}</span><span class="ex-type-name">${e.name}</span></button>
     `).join('')
     + customBtns
-    + `<button class="custom-ex-link ${isCustomInput ? 'selected' : ''}" onclick="selectEx('custom')">✏️ 직접 입력</button>`;
+    + `<button class="custom-ex-link ${isCustomInput ? 'selected' : ''}" onclick="selectEx('custom')">${renderNamedSvgIcon('pencil', { size:'14px', color:'currentColor' })}<span>직접 입력</span></button>`;
 
   const cw = document.getElementById('custom-ex-wrap');
   if (cw) cw.classList.toggle('show', isCustomInput);
@@ -7666,9 +7770,8 @@ function updateSharePreview() {
   const name = S.selectedEx === 'custom'
     ? (document.getElementById('custom-ex-name')?.value.trim() || '기타 운동')
     : ex.name;
-  const tag = ex.icon + ' ' + name + ' ' + S.duration + '분';
   const tagEl = document.getElementById('share-ex-tag');
-  if (tagEl) tagEl.textContent = tag;
+  if (tagEl) tagEl.innerHTML = `${renderExerciseIcon(S.selectedEx, { size:'13px' })}<span>${escHtmlComm(name)} ${S.duration}분</span>`;
 
   renderShareOptions();
 }
@@ -8526,7 +8629,7 @@ function renderGlucose() {
                     String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
     const metaParts = [r.timing, r.value + ' mg/dL', r.memo ? escHtmlComm(r.memo) : '', timeStr].filter(Boolean);
     return `<div class="glucose-item">
-      <span class="wo-icon" style="font-size:16px">🩸</span>
+      <span class="wo-icon" style="font-size:16px">${renderNamedSvgIcon('blood', { size:'16px', color:'#dc2626' })}</span>
       <span class="wo-name">${r.value} <span style="font-size:10px;font-weight:500;opacity:0.7">mg/dL</span></span>
       <span class="wo-meta">${[r.timing, r.memo ? escHtmlComm(r.memo) : '', timeStr].filter(Boolean).join(' · ')}</span>
       <span class="glucose-status-tag ${st.cls}" style="flex-shrink:0">${st.label}</span>
@@ -8926,7 +9029,7 @@ function openProfileModal(onboarding = false) {
   const chEl = document.getElementById('pm-challenge-section');
   if (chEl) { chEl.innerHTML = ''; chEl.style.display = 'none'; }
   const pmChallengeTag = document.getElementById('pm-challenge-tag');
-  if (pmChallengeTag) pmChallengeTag.style.display = hasActiveChallengeRegistration() ? '' : 'none';
+  if (pmChallengeTag) pmChallengeTag.style.display = hasActiveChallengeRegistration() ? 'inline-flex' : 'none';
   refreshPushPreferenceUI();
 
   // 관리자 버튼 표시 여부
@@ -9558,7 +9661,7 @@ function renderLeague() {
     } else {
       document.getElementById('my-rank-card').innerHTML = `
         <div style="padding:16px;text-align:center;color:var(--text-secondary);font-size:13px">
-          🏃 챌린지에 신청하면 랭킹에 참여할 수 있어요
+          ${renderExerciseIcon('running', { size:'16px', color:'var(--primary)' })} 챌린지에 신청하면 랭킹에 참여할 수 있어요
         </div>`;
     }
 
@@ -9567,7 +9670,6 @@ function renderLeague() {
     const podOrder = [top3[1], top3[0], top3[2]];
     const standClass = ['stand-silver','stand-gold','stand-bronze'];
     const standNum   = ['2','1','3'];
-    const medals     = ['🥈','🥇','🥉'];
     document.getElementById('podium').innerHTML = podOrder.map((u, i) => {
       const sizeClass = i === 1 ? 'podium-first' : i === 0 ? 'podium-second' : 'podium-third';
       if (!u) return `<div class="podium-item ${sizeClass}"><div class="podium-av-wrap"><div class="podium-avatar"></div></div><div class="podium-stand ${standClass[i]}">${standNum[i]}</div></div>`;
@@ -9579,7 +9681,7 @@ function renderLeague() {
             <div class="podium-bubble"><span class="podium-bubble-lv">${lv.icon}</span>${tags ? `<div class="podium-bubble-tags">${tags}</div>` : ''}</div>
             <div class="podium-avatar">${avHTML(u.avatar)}</div>
           </div>
-          <div class="podium-name">${medals[i]} ${u.name}</div>
+          <div class="podium-name">${renderMedalIcon(Number(standNum[i]), { size:'12px' })} ${escHtmlComm(u.name)}</div>
           <div class="podium-pts">${u.pts}p</div>
           <div class="podium-stand ${standClass[i]}">${standNum[i]}</div>
         </div>`;
@@ -9656,7 +9758,6 @@ function renderLeague() {
   const podOrder = [top3[1], top3[0], top3[2]];
   const standClass = ['stand-silver','stand-gold','stand-bronze'];
   const standNum   = ['2','1','3'];
-  const medals     = ['🥈','🥇','🥉'];
   document.getElementById('podium').innerHTML = podOrder.map((u,i) => {
     const sizeClass = i === 1 ? 'podium-first' : i === 0 ? 'podium-second' : 'podium-third';
     if (!u) return `<div class="podium-item ${sizeClass}"><div class="podium-av-wrap"><div class="podium-avatar"></div></div><div class="podium-stand ${standClass[i]}">${standNum[i]}</div></div>`;
@@ -9670,7 +9771,7 @@ function renderLeague() {
           <div class="podium-bubble"><span class="podium-bubble-lv">${lv.icon}</span>${tags ? `<div class="podium-bubble-tags">${tags}</div>` : ''}</div>
           <div class="podium-avatar">${avHTML(u.avatar)}</div>
         </div>
-        <div class="podium-name">${medals[i]} ${u.name}</div>
+        <div class="podium-name">${renderMedalIcon(Number(standNum[i]), { size:'12px' })} ${escHtmlComm(u.name)}</div>
         <div class="podium-pts">${currentTab === 'level' ? lv2.name : pts + 'p'}</div>
         <div class="podium-stand ${standClass[i]}">${standNum[i]}</div>
       </div>`;
@@ -9830,7 +9931,7 @@ function renderCommunity() {
 
   const feed = document.getElementById('posts-feed');
   if (!combined.length) {
-    feed.innerHTML = `<div class="empty-state"><div class="ei">💬</div><p>해당하는 게시물이 없어요</p></div>`;
+    feed.innerHTML = `<div class="empty-state"><div class="ei">${renderNamedSvgIcon('chat', { size:'44px', color:'var(--primary)' })}</div><p>해당하는 게시물이 없어요</p></div>`;
     return;
   }
 
@@ -9891,7 +9992,7 @@ function renderCommunity() {
         ${p.sharePhoto ? `<div class="post-photo-wrap"><img class="post-photo" src="${p.sharePhoto}" alt="운동 사진"></div>` : ''}
         ${p.shareHealth ? buildPostHealthHtml(p.shareHealth) : ''}
         <div class="sticker-row">${stickersHtml}</div>
-        <button type="button" class="comment-btn" onclick="openComments(${p.id})">💬 댓글 ${cmCount}개</button>
+        <button type="button" class="comment-btn" onclick="openComments(${p.id})">${renderNamedSvgIcon('chat', { size:'12px', color:'currentColor' })}<span>댓글 ${cmCount}개</span></button>
       </div>
     `;
   }).join('');
@@ -11211,8 +11312,12 @@ function applyRundayRegistrationSync(payload = {}) {
 
   if (reg && regId) {
     const idx = regs.findIndex(row => normChallengeId(row?.id) === regId);
-    if (idx >= 0) regs[idx] = { ...regs[idx], ...reg };
-    else regs.push(reg);
+    if (idx >= 0) {
+      const merged = { ...regs[idx], ...reg };
+      // Don't restore cancelled status from iframe sync
+      if (regs[idx].status === 'cancelled') merged.status = 'cancelled';
+      regs[idx] = merged;
+    } else regs.push(reg);
     setStoredChallengeRegs(regs);
   }
 
@@ -11231,6 +11336,7 @@ function applyRundayRegistrationSync(payload = {}) {
   save();
   renderHeader();
   if (document.getElementById('page-home')?.classList.contains('active')) renderHome();
+  if (document.getElementById('page-challenge')?.classList.contains('active')) renderChallenge();
 }
 
 function scrollToExerciseForm() {
@@ -11374,7 +11480,7 @@ function renderChallenge() {
     const canCancelReg = myReg.status === 'pending' && now <= CH.deadline;
     doneEl.innerHTML = `
       <div class="ch-reg-card">
-        <div class="ch-reg-badge">🏅 HI RUN DAY 신청 완료</div>
+        <div class="ch-reg-badge">${renderNamedSvgIcon('medal', { size:'12px', color:'#b45309' })}<span>HI RUN DAY 신청 완료</span></div>
         <div class="ch-reg-person">
           <div class="ch-reg-icon">${avHTML(S.user.avatar)}</div>
           <div>
@@ -12551,7 +12657,7 @@ async function init() {
     <div class="pm-summary-card">
       <div class="pm-summary-avatar" id="pm-avatar-preview"></div>
       <div class="pm-summary-main">
-        <div class="pm-summary-label" style="display:flex;align-items:center;gap:7px;">My Profile<span id="pm-challenge-tag" style="display:none;font-size:10px;padding:3px 9px;border-radius:20px;background:var(--purple);color:#fff;font-weight:700;letter-spacing:0.02em;flex-shrink:0;">🏅 챌린지 참여중</span></div>
+        <div class="pm-summary-label" style="display:flex;align-items:center;gap:7px;">My Profile<span id="pm-challenge-tag" style="display:none;font-size:10px;padding:3px 9px;border-radius:20px;background:var(--purple);color:#fff;font-weight:700;letter-spacing:0.02em;flex-shrink:0;" data-svg-icon="medal" data-svg-color="#ffffff" data-svg-size="12px" data-svg-text="챌린지 참여중"></span></div>
         <div class="pm-summary-name" id="pm-preview-name">-</div>
         <div class="pm-summary-meta">
           <span class="pm-meta-chip"><strong>등록번호</strong><span id="pm-empid">-</span></span>
@@ -12654,7 +12760,7 @@ async function init() {
     </div>
     <div class="cm-list" id="cm-list"></div>
     <div class="cm-compose">
-      <span class="cm-compose-av" id="cm-av">🏃</span>
+      <span class="cm-compose-av" id="cm-av"></span>
       <input class="cm-input" id="cm-input" type="text" placeholder="댓글을 입력하세요..." maxlength="200"
              onkeydown="if(event.key==='Enter')submitComment()">
       <button type="button" class="cm-send" onclick="submitComment()">게시</button>
