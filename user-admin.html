@@ -611,6 +611,35 @@
         </div>
       </div>
     </div>
+
+    <!-- ── PANEL: SETTINGS ── -->
+    <div class="panel" id="panel-settings">
+      <!-- 챌린지 신청 마감일 -->
+      <div class="shop-config-bar" style="margin-bottom:14px">
+        <div>
+          <div class="shop-config-title">🏆 챌린지 신청 마감일</div>
+          <div id="ch-deadline-status" style="font-size:11px;color:var(--t3);margin-top:2px"></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <input type="date" id="ch-deadline-input" class="ctrl-inp" style="width:160px;min-width:unset">
+          <button class="cbtn pri" onclick="saveChDeadline()">저장</button>
+        </div>
+      </div>
+      <!-- 구매 기능 ON/OFF -->
+      <div class="shop-config-bar">
+        <div>
+          <div class="shop-config-title">🛒 구매 기능 운영</div>
+          <div id="shop-config-status2" style="font-size:11px;color:var(--t3);margin-top:2px"></div>
+        </div>
+        <div class="shop-toggle-wrap">
+          <input type="checkbox" id="admin-shop-toggle2" style="display:none" onchange="applyShopPurchaseToggle2()">
+          <div class="shop-toggle-track" id="admin-shop-track2" onclick="document.getElementById('admin-shop-toggle2').click()">
+            <div class="shop-toggle-thumb" id="admin-shop-thumb2"></div>
+          </div>
+          <span id="admin-shop-label2" style="font-size:13px;font-weight:600;color:var(--t3)">로딩중...</span>
+        </div>
+      </div>
+    </div>
   </div><!-- /adm-body -->
 </div><!-- /admin -->
 
@@ -2507,6 +2536,7 @@ function switchTab(name, btn) {
   document.getElementById('panel-' + name).classList.add('active');
   btn.classList.add('active');
   if (name === 'orders') loadShopConfig();
+  if (name === 'settings') loadSettingsTab();
 }
 
 /* ── 구매 기능 설정 ── */
@@ -2543,6 +2573,68 @@ async function applyShopPurchaseToggle() {
     alert(enabled ? '✅ 구매 기능이 활성화되었습니다' : '🔒 구매 기능이 비활성화되었습니다');
   } catch(e) {
     alert('저장 실패: ' + e.message);
+  }
+}
+
+/* ── 설정 탭 ── */
+async function loadSettingsTab() {
+  if (!db) return;
+  // 챌린지 마감일 로드
+  try {
+    const { data } = await db.from('app_config').select('key,value').eq('key','ch_deadline').maybeSingle();
+    const inp = document.getElementById('ch-deadline-input');
+    const st  = document.getElementById('ch-deadline-status');
+    if (inp) inp.value = data?.value || '';
+    if (st)  st.textContent = data?.value ? `현재 마감일: ${data.value}` : '마감일 미설정';
+  } catch(e) {}
+  // 구매 기능 상태 로드
+  try {
+    const { data } = await db.from('app_config').select('key,value').eq('key','shop_purchase_enabled').maybeSingle();
+    const enabled = data?.value === 'true';
+    renderShopConfigUI2(enabled);
+  } catch(e) {}
+}
+
+async function saveChDeadline() {
+  const val = document.getElementById('ch-deadline-input').value;
+  const st  = document.getElementById('ch-deadline-status');
+  if (!val) { toast('날짜를 선택해주세요'); return; }
+  if (!db)  { toast('DB 연결 필요'); return; }
+  try {
+    await db.from('app_config').upsert({ key: 'ch_deadline', value: val, updated_at: new Date().toISOString() }, { onConflict: 'key' });
+    if (st) st.textContent = `현재 마감일: ${val}`;
+    toast('마감일이 저장되었습니다 ✓');
+  } catch(e) {
+    toast('저장 실패: ' + e.message);
+  }
+}
+
+function renderShopConfigUI2(enabled) {
+  const track  = document.getElementById('admin-shop-track2');
+  const thumb  = document.getElementById('admin-shop-thumb2');
+  const toggle = document.getElementById('admin-shop-toggle2');
+  const label  = document.getElementById('admin-shop-label2');
+  const status = document.getElementById('shop-config-status2');
+  if (!track) return;
+  if (toggle) toggle.checked = enabled;
+  track.classList.toggle('on', enabled);
+  thumb?.classList.toggle('on', enabled);
+  if (label) label.textContent = enabled ? '운영 중' : '비활성화';
+  if (status) status.textContent = enabled ? '🟢 사용자가 구매를 이용할 수 있습니다' : '🔴 사용자에게 문의하기로 표시됩니다';
+}
+
+async function applyShopPurchaseToggle2() {
+  const enabled = document.getElementById('admin-shop-toggle2').checked;
+  renderShopConfigUI2(enabled);
+  if (!db) return;
+  try {
+    await db.from('app_config').upsert({ key: 'shop_purchase_enabled', value: String(enabled), updated_at: new Date().toISOString() }, { onConflict: 'key' });
+    // 구매 탭 토글도 동기화
+    const t = document.getElementById('admin-shop-toggle');
+    if (t) { t.checked = enabled; renderShopConfigUI(enabled); }
+    toast(enabled ? '✅ 구매 기능 활성화' : '🔒 구매 기능 비활성화');
+  } catch(e) {
+    toast('저장 실패: ' + e.message);
   }
 }
 
