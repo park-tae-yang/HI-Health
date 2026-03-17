@@ -1841,8 +1841,92 @@
   const DONATION_PER_PERSON = 41000;
   const SB_URL = 'https://nbnmvvobehjitophkqmu.supabase.co';
   const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ibm12dm9iZWhqaXRvcGhrcW11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3Nzk4NzQsImV4cCI6MjA4ODM1NTg3NH0.iZS4JvhHUqv4ZMPxm9STit6xqVp2JA5H55M8Wmd1yjY';
+  const DEFAULT_CHALLENGE_DEADLINE = '2026-03-21';
+  let challengeDeadlineValue = DEFAULT_CHALLENGE_DEADLINE;
 
   let editingRegId = '';
+
+  function parseChallengeDeadlineValue(value = '') {
+    const raw = String(value || '').trim();
+    const match = raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (!match) return null;
+    const [, year, month, day] = match;
+    return new Date(`${year}-${month}-${day}T23:59:59`);
+  }
+
+  function setChallengeDeadlineValue(value = '') {
+    const parsed = parseChallengeDeadlineValue(value) || parseChallengeDeadlineValue(DEFAULT_CHALLENGE_DEADLINE);
+    if (!parsed) return false;
+    const normalized = [
+      parsed.getFullYear(),
+      String(parsed.getMonth() + 1).padStart(2, '0'),
+      String(parsed.getDate()).padStart(2, '0'),
+    ].join('-');
+    const changed = normalized !== challengeDeadlineValue;
+    challengeDeadlineValue = normalized;
+    return changed;
+  }
+
+  function formatChallengeDeadlineLabel(value = challengeDeadlineValue) {
+    const match = String(value || '').trim().match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (!match) return value || '';
+    return `${Number(match[1])}년 ${Number(match[2])}월 ${Number(match[3])}일`;
+  }
+
+  function isChallengeRegistrationEditable(now = new Date()) {
+    const deadline = parseChallengeDeadlineValue(challengeDeadlineValue) || parseChallengeDeadlineValue(DEFAULT_CHALLENGE_DEADLINE);
+    return !!deadline && now <= deadline;
+  }
+
+  function getChallengeRegistrationNotice() {
+    const label = formatChallengeDeadlineLabel();
+    return isChallengeRegistrationEditable()
+      ? `수정 및 취소는 ${label}까지 가능합니다.`
+      : `수정 및 취소 기간이 ${label}에 종료되었습니다.`;
+  }
+
+  function getLatestActiveRegistrationForCurrentEmp() {
+    const uid = String(getCurrentEmpId() || '').trim().toUpperCase();
+    if (!uid) return null;
+    const regs = JSON.parse(localStorage.getItem(CH_KEY) || '[]')
+      .filter(r => isActiveRegRow(r) && String(r?.empId || '').trim().toUpperCase() === uid)
+      .sort((a, b) => new Date(b?.registeredAt || 0) - new Date(a?.registeredAt || 0));
+    return regs[0] || null;
+  }
+
+  function refreshDeadlineDrivenUi() {
+    if (String(editingRegId || '').trim()) return;
+    if (!document.getElementById('success-screen')?.classList.contains('show')) return;
+    const reg = getLatestActiveRegistrationForCurrentEmp();
+    if (reg) renderSuccessScreen(reg);
+  }
+
+  async function loadChallengeConfig() {
+    try {
+      const parentDeadline = String(window.parent?.getChallengeDeadlineValue?.() || window.parent?.CH?.deadline || '').trim();
+      if (/^\d{4}-\d{2}-\d{2}$/.test(parentDeadline) && setChallengeDeadlineValue(parentDeadline)) {
+        refreshDeadlineDrivenUi();
+        return;
+      }
+    } catch (e) {}
+
+    try {
+      const res = await fetch(
+        SB_URL + '/rest/v1/app_config?select=value&key=eq.ch_deadline&limit=1',
+        { headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY } }
+      );
+      if (!res.ok) return;
+      const data = await res.json();
+      const nextValue = String(data?.[0]?.value || '').trim();
+      if (setChallengeDeadlineValue(nextValue)) refreshDeadlineDrivenUi();
+    } catch (e) {}
+  }
+
+  function ensureChallengeRegistrationEditable() {
+    if (isChallengeRegistrationEditable()) return true;
+    toast(getChallengeRegistrationNotice());
+    return false;
+  }
 
   function isActiveRegRow(reg) {
     return String(reg?.status || '').trim().toLowerCase() !== 'cancelled';
@@ -2169,10 +2253,15 @@
   }
 
   syncInitialIdentity();
+  loadChallengeConfig();
   setTimeout(syncInitialIdentity, 100);
   setTimeout(syncInitialIdentity, 500);
 
   window.addEventListener('message', (e) => {
+    if (e.data?.type === 'CHALLENGE_CONFIG') {
+      if (setChallengeDeadlineValue(e.data.deadline)) refreshDeadlineDrivenUi();
+      return;
+    }
     if (e.data?.type === 'LOGIN' || e.data?.type === 'AVATAR_CHANGE') {
       prefillFromLogin(e.data.name, e.data.empId, e.data.avatar);
       if (e.data?.type === 'LOGIN') checkExisting(e.data.empId);
@@ -2205,6 +2294,7 @@
       setRundayPageActive(e.data.active !== false);
       if (e.data.active !== false) {
         syncInitialIdentity();
+        loadChallengeConfig();
         checkExisting();
       }
     }
@@ -2462,6 +2552,8 @@
   setRundayPageActive(true);
 
   function renderSuccessScreen(reg) {
+    const canManage = isChallengeRegistrationEditable();
+    const manageNotice = getChallengeRegistrationNotice();
     const prefs = (reg.shoePrefs || [])
       .filter(Boolean).map(id => shortLabel(id));
     const familyRows = normalizeFamilyMembers(reg.familyMembers || []).filter(m => m.gender || m.tshirtSize || m.memo);
@@ -2492,11 +2584,11 @@
           ${rows.map(([label, value]) => `<div class="succ-item"><div class="succ-label">${label}</div><div class="succ-val">${value}</div></div>`).join('')}
         </div>
         <div class="succ-actions">
-          <div class="succ-note">수정 및 취소는 3월 21일까지 가능합니다.</div>
-          <div class="succ-btn-row">
+          <div class="succ-note">${manageNotice}</div>
+          ${canManage ? `<div class="succ-btn-row">
             <button type="button" class="btn-edit-reg" onclick="editReg('${reg.id}')">수정</button>
             <button type="button" class="btn-cancel-reg" onclick="cancelReg('${reg.id}')">취소</button>
-          </div>
+          </div>` : ''}
         </div>
       </div>
       <div class="succ-actions">
@@ -2512,6 +2604,7 @@
   }
 
   function editReg(regId) {
+    if (!ensureChallengeRegistrationEditable()) return;
     const regs = JSON.parse(localStorage.getItem(CH_KEY) || '[]');
     const reg = regs.find(r => r.id === regId);
     if (!reg) return;
@@ -2563,6 +2656,7 @@
   }
 
   async function cancelReg(regId) {
+    if (!ensureChallengeRegistrationEditable()) return;
     if (!confirm('정말 취소하시겠습니까?')) return;
     const regs = JSON.parse(localStorage.getItem(CH_KEY) || '[]');
     const idx = regs.findIndex(r => String(r.id) === String(regId));

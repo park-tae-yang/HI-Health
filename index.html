@@ -4746,7 +4746,7 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const PUSH_PUBLIC_KEY   = 'BLGJTMpYpyBS_TUbqZ54-x56lvRc2LULPdj_FpReD4CPsIEdHJJNX0DFx5h57aLMV3kkKz_h9mPgntTcK73GGu8';
 const PUSH_TABLE        = 'push_subscriptions';
 const PUSH_DEFAULT_URL  = './index.html#community';
-const SW_VERSION        = '20260318-74';
+const SW_VERSION        = '20260318-75';
 let _db = null; // Supabase 클라이언트
 let _realLeagueUsers = null; // Supabase에서 가져온 실제 유저 목록
 let _leagueFetching = false;
@@ -4884,11 +4884,19 @@ async function loadAppConfig() {
   try {
     const { data } = await _db.from('app_config').select('key,value');
     if (!data) return;
+    let challengeConfigChanged = false;
     data.forEach(row => {
       if (row.key === 'shop_purchase_enabled') {
         _shopPurchaseEnabled = row.value === 'true';
+      } else if (row.key === 'ch_deadline') {
+        challengeConfigChanged = setChallengeDeadlineFromConfig(row.value) || challengeConfigChanged;
       }
     });
+    if (challengeConfigChanged) {
+      renderHeader();
+      if (document.getElementById('page-challenge')?.classList.contains('active')) renderChallenge();
+    }
+    syncChallengeConfigToRunday();
   } catch(e) { /* app_config 테이블 없으면 기본값 유지 */ }
 }
 
@@ -6590,7 +6598,7 @@ function getRundayIframe() {
 
 function queueRundayMessage(payload) {
   if (!payload) return;
-  const dedupeTypes = { LOGIN:1, AVATAR_CHANGE:1, PAGE_VISIBILITY:1, SCROLL_TOP:1 };
+  const dedupeTypes = { LOGIN:1, AVATAR_CHANGE:1, PAGE_VISIBILITY:1, SCROLL_TOP:1, CHALLENGE_CONFIG:1 };
   if (payload.type && dedupeTypes[payload.type]) {
     const idx = _rundayIframeQueue.findIndex(msg => msg?.type === payload.type);
     if (idx >= 0) {
@@ -6758,6 +6766,12 @@ function navigate(page) {
       empId: S.user.empId || ACTIVE_EMPID,
       avatar: normalizeAvatar(S.user.avatar),
     }, { ensureLoaded: true });
+    syncChallengeConfigToRunday();
+    loadAppConfig().then(() => {
+      renderHeader();
+      renderChallenge();
+      syncChallengeConfigToRunday();
+    });
   }
   placeGuestBanner(page);
   window.scrollTo({top:0, behavior:'smooth'});
@@ -10818,6 +10832,7 @@ const CH = {
   mainEnd:   new Date('2026-04-14T23:59:59'),
   eventDay:  new Date('2026-04-15T23:59:59'),
 };
+const DEFAULT_CH_DEADLINE_VALUE = '2026-03-21';
 const CH_REG_KEY = 'hi_health_registrations_v2';
 const CH_SHOE_MODELS = [
   { id:'nike1', label:'Nike Vomero Plus (화이트)', image:'images/nike1.png', genderLabel:'여성' },
@@ -10835,6 +10850,45 @@ const CH_SHOE_SIZES = ['215','220','225','230','235','240','245','250','255','26
 let _chShoePrefs = [''];
 let _chShoeRequestNote = '';
 let _chRouteExpanded = false;
+
+function parseChallengeDeadlineValue(value = '') {
+  const raw = String(value || '').trim();
+  const match = raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!match) return null;
+  const [, year, month, day] = match;
+  return new Date(`${year}-${month}-${day}T23:59:59`);
+}
+
+function getChallengeDeadlineValue() {
+  const current = CH.deadline instanceof Date && !Number.isNaN(CH.deadline.getTime())
+    ? CH.deadline
+    : parseChallengeDeadlineValue(DEFAULT_CH_DEADLINE_VALUE);
+  const year = current.getFullYear();
+  const month = String(current.getMonth() + 1).padStart(2, '0');
+  const day = String(current.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function setChallengeDeadlineFromConfig(value = '') {
+  const parsed = parseChallengeDeadlineValue(value) || parseChallengeDeadlineValue(DEFAULT_CH_DEADLINE_VALUE);
+  if (!parsed) return false;
+  const prevTs = CH.deadline instanceof Date ? CH.deadline.getTime() : NaN;
+  CH.deadline = parsed;
+  return prevTs !== parsed.getTime();
+}
+
+function formatChallengeDeadlineShort(value = getChallengeDeadlineValue()) {
+  const match = String(value || '').trim().match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!match) return value || '';
+  return `${Number(match[2])}/${Number(match[3])}`;
+}
+
+function syncChallengeConfigToRunday() {
+  postToRunday({
+    type: 'CHALLENGE_CONFIG',
+    deadline: getChallengeDeadlineValue(),
+  });
+}
 
 function normChShoeModelId(v) {
   const id = String(v || '').trim().toLowerCase();
@@ -11823,7 +11877,7 @@ function renderChallenge() {
       <div class="card">
         <div class="card-header">
           <span class="card-title">챌린지 신청</span>
-          <span class="badge badge-warning">3/21 마감</span>
+          <span class="badge badge-warning">${formatChallengeDeadlineShort()} 마감</span>
         </div>
         <div class="ch-dup-warn" id="ch-dup-warn">이미 신청하신 사번입니다</div>
         <form id="ch-form" onsubmit="submitChReg(event)" novalidate>
