@@ -853,14 +853,17 @@ function getRegTshirtText(r) {
   return String(getRegNoteLine(r, '티셔츠') || '').trim();
 }
 
-function getRegCgmParticipation(r) {
+function getRegCgmParticipationState(r) {
   const noteVal = getRegNoteLine(r, '혈당체크기기');
   if (noteVal) {
     if (/미신청|안 함|없음/i.test(noteVal)) return false;
     if (/신청|예|yes/i.test(noteVal)) return true;
   }
-  const direct = parseRegBool(r?.cgmParticipation ?? r?.cgmparticipation);
-  return direct !== null ? direct : false;
+  return parseRegBool(r?.cgmParticipation ?? r?.cgmparticipation);
+}
+
+function getRegCgmParticipation(r) {
+  return getRegCgmParticipationState(r) === true;
 }
 
 function escHtml(v) {
@@ -921,6 +924,10 @@ function getRegFamilyMembers(r) {
 }
 
 function getRegFamilyParticipation(r) {
+  return getRegFamilyParticipationState(r) === true;
+}
+
+function getRegFamilyParticipationState(r) {
   // note 우선: DB 기본값이 의도치 않게 override 하는 것 방지
   const noteVal = getRegNoteLine(r, '가족참여');
   if (noteVal) {
@@ -928,7 +935,7 @@ function getRegFamilyParticipation(r) {
     if (/가족|함께|참여/i.test(noteVal)) return true;
   }
   const direct = parseRegBool(r?.familyParticipation);
-  return direct !== null ? direct : false;
+  return direct;
 }
 
 function getRegFamilyGenderText(r) {
@@ -954,6 +961,10 @@ function getRegFamilyMemoText(r) {
 }
 
 function getRegCruiseParticipation(r) {
+  return getRegCruiseParticipationState(r) === true;
+}
+
+function getRegCruiseParticipationState(r) {
   // note 우선: DB 기본값이 의도치 않게 override 하는 것 방지
   const noteVal = getRegNoteLine(r, '크루즈');
   if (noteVal) {
@@ -961,10 +972,14 @@ function getRegCruiseParticipation(r) {
     if (/탑승|희망|참여/i.test(noteVal)) return true;
   }
   const direct = parseRegBool(r?.cruiseParticipation);
-  return direct !== null ? direct : false;
+  return direct;
 }
 
 function getRegEventParticipation(r) {
+  return getRegEventParticipationState(r) === true;
+}
+
+function getRegEventParticipationState(r) {
   // note 우선: DB 기본값이 의도치 않게 override 하는 것 방지
   const noteVal = getRegNoteLine(r, '행사');
   if (noteVal) {
@@ -972,23 +987,42 @@ function getRegEventParticipation(r) {
     if (/참여|희망/i.test(noteVal)) return true;
   }
   const direct = parseRegBool(r?.eventParticipation);
-  return direct !== null ? direct : false;
+  return direct;
+}
+
+function isSyncPendingRegistration(r) {
+  return !!r?.__derived;
+}
+
+function getRegDisplayText(r, value, fallback = '-') {
+  const text = String(value || '').trim();
+  if (text) return text;
+  return isSyncPendingRegistration(r) ? '동기화 필요' : fallback;
+}
+
+function getRegChoiceText(state, yesText, noText, r, unknownText = '동기화 필요') {
+  if (state === true) return yesText;
+  if (state === false) return noText;
+  return isSyncPendingRegistration(r) ? unknownText : '-';
 }
 
 function getRegFamilySummaryText(r) {
-  if (!getRegFamilyParticipation(r)) return '본인만';
+  const familyState = getRegFamilyParticipationState(r);
+  if (familyState === false) return '본인만';
+  if (familyState === null) return isSyncPendingRegistration(r) ? '동기화 필요' : '본인만';
   const members = getRegFamilyMembers(r);
   if (members.length) {
     return `가족 ${members.length}인 · ` + members.map((m, idx) => `가족 ${idx + 1} ${[m.gender, m.tshirtSize].filter(Boolean).join(' / ') || '입력 없음'}`).join(' / ');
   }
   const bits = [getRegFamilyGenderText(r), getRegFamilyAgeText(r), getRegFamilyShoeText(r)].filter(Boolean);
-  return bits.length ? `가족 1인 · ${bits.join(' / ')}` : '가족 1인';
+  if (bits.length) return `가족 1인 · ${bits.join(' / ')}`;
+  return isSyncPendingRegistration(r) ? '동기화 필요' : '가족 1인';
 }
 
 function getRegOptionSummaryText(r) {
   return [
-    `크루즈 ${getRegCruiseParticipation(r) ? '희망' : '안 함'}`,
-    `행사 ${getRegEventParticipation(r) ? '참여' : '불참'}`,
+    `크루즈 ${getRegChoiceText(getRegCruiseParticipationState(r), '희망', '안 함', r)}`,
+    `행사 ${getRegChoiceText(getRegEventParticipationState(r), '참여', '불참', r)}`,
   ].join(' / ');
 }
 
@@ -1010,6 +1044,7 @@ const PAGE = 50;
 let uSearchTimer = null;
 let _pollTimer = null;
 let _loadInFlight = null;
+let _loadSafetyTimer = null;
 let _queuedLoadOpts = null;
 let _lastDataSignature = '';
 let _adminVisibilityBound = false;
@@ -1080,12 +1115,12 @@ function initSupabase() {
     _adminVisibilityBound = true;
   }
 
-  // 폴링 백업: 5초마다 갱신
+  // 폴링 백업: 2초마다 갱신
   if (_pollTimer) clearInterval(_pollTimer);
   _pollTimer = setInterval(() => {
     if (document.hidden) return;
     loadAll({ silent: true });
-  }, 5000);
+  }, 2000);
 }
 
 let _rtChannels = [];
@@ -1272,6 +1307,84 @@ function regTs(r) {
   return Number.isFinite(t) ? t : 0;
 }
 
+function normRegIdValue(v) {
+  return String(v || '').trim();
+}
+
+function buildDerivedRegistrationFromUser(u) {
+  const regId = normRegIdValue(u?.registrationId || u?.registrationid);
+  return normalizeRegistrationRow({
+    id: regId,
+    deviceId: normRegIdValue(u?.deviceId),
+    empId: normRegEmpId(u?.empId),
+    name: String(u?.name || '').trim(),
+    dept: String(u?.dept || '').trim(),
+    phone: String(u?.phone || '').trim(),
+    note: '',
+    status: 'pending',
+    registeredAt: u?.lastActiveAt || u?.lastactiveat || u?.createdAt || u?.createdat || '',
+    __derived: true,
+  });
+}
+
+function findMatchingChallengeRegistrationForUser(u, registrations = GD.registrations) {
+  const regId = normRegIdValue(u?.registrationId || u?.registrationid);
+  const empId = normRegEmpId(u?.empId);
+  const deviceId = normRegIdValue(u?.deviceId);
+  return (registrations || []).find(r => {
+    const rowRegId = normRegIdValue(r?.id);
+    const rowEmpId = normRegEmpId(r?.empId);
+    const rowDeviceId = normRegIdValue(r?.deviceId);
+    if (regId && rowRegId === regId) return true;
+    if (empId && rowEmpId === empId) return true;
+    if (!empId && deviceId && rowDeviceId === deviceId) return true;
+    return false;
+  }) || null;
+}
+
+function getEffectiveChallengeRegistrations() {
+  const rows = [...(GD.registrations || [])].map(normalizeRegistrationRow);
+  const seenRegIds = new Set(rows.map(r => normRegIdValue(r?.id)).filter(Boolean));
+  const seenEmpIds = new Set(rows.map(r => normRegEmpId(r?.empId)).filter(Boolean));
+  const seenDeviceIds = new Set(rows.map(r => normRegIdValue(r?.deviceId)).filter(Boolean));
+
+  (GD.users || []).forEach(u => {
+    const regId = normRegIdValue(u?.registrationId || u?.registrationid);
+    const empId = normRegEmpId(u?.empId);
+    const deviceId = normRegIdValue(u?.deviceId);
+    if (!regId) return;
+    if (findMatchingChallengeRegistrationForUser(u, rows)) return;
+    const derived = buildDerivedRegistrationFromUser(u);
+    if (!derived.id) return;
+    if (seenRegIds.has(derived.id)) return;
+    if (empId && seenEmpIds.has(empId)) return;
+    if (!empId && deviceId && seenDeviceIds.has(deviceId)) return;
+    rows.push(derived);
+    seenRegIds.add(derived.id);
+    if (empId) seenEmpIds.add(empId);
+    if (deviceId) seenDeviceIds.add(deviceId);
+  });
+
+  return rows;
+}
+
+function buildAdminChallengeRegistrationPayload(r, overrides = {}) {
+  return {
+    id: normRegIdValue(r?.id),
+    deviceId: normRegIdValue(r?.deviceId),
+    empId: normRegEmpId(r?.empId),
+    name: String(r?.name || '').trim(),
+    dept: String(r?.dept || '').trim(),
+    phone: String(r?.phone || '').trim(),
+    shoeSize: String(r?.shoeSize || '').trim(),
+    familyParticipation: getRegFamilyParticipationState(r),
+    familyCount: Number(r?.familyCount) || 0,
+    status: String(r?.status || 'pending').trim() || 'pending',
+    registeredAt: r?.registeredAt || r?.createdAt || new Date().toISOString(),
+    ...overrides,
+  };
+}
+
 function isSyntheticDerivedDeviceId(deviceId) {
   const id = String(deviceId || '').trim();
   return id.startsWith('emp:') || id.startsWith('reg:');
@@ -1394,6 +1507,16 @@ async function loadAll(opts = {}) {
   }
   const client = db;
   if (!req.silent) showLoading(true);
+  // 15초 안전 타임아웃: _loadInFlight가 영구 차단되는 상황 방지
+  if (_loadSafetyTimer) clearTimeout(_loadSafetyTimer);
+  _loadSafetyTimer = setTimeout(() => {
+    if (_loadInFlight) {
+      console.warn('[loadAll] safety timeout — resetting');
+      _loadInFlight = null;
+      _loadSafetyTimer = null;
+      loadAll({ silent: true });
+    }
+  }, 15000);
   _loadInFlight = (async () => {
   try {
     const [u, w, p, g, r, o, ap] = await Promise.all([
@@ -1406,7 +1529,21 @@ async function loadAll(opts = {}) {
       client.from('admin_posts').select('*').order('createdAt', { ascending: false }),
     ]);
     if (db !== client) return;
-    if (u.error) { console.error('[users]', u.error); setStatus('users 오류: ' + u.error.message, false); return; }
+    const queryErrors = [
+      ['users', u.error],
+      ['workouts', w.error],
+      ['posts', p.error],
+      ['glucose', g.error],
+      ['registrations', r.error],
+      ['orders', o.error],
+      ['admin_posts', ap.error],
+    ].filter(([, error]) => !!error);
+    if (queryErrors.length) {
+      const [table, error] = queryErrors[0];
+      console.error(`[${table}]`, error);
+      setStatus(`${table} 오류: ${error.message}`, false);
+      return;
+    }
     const rawUsers = u.data || [];
     const rawRegistrations = (r.data || []).map(normalizeRegistrationRow);
     const fallbackUsers = rawUsers.length
@@ -1448,6 +1585,7 @@ async function loadAll(opts = {}) {
     toast('오류: ' + e.message);
   } finally {
     if (!req.silent) showLoading(false);
+    if (_loadSafetyTimer) { clearTimeout(_loadSafetyTimer); _loadSafetyTimer = null; }
     _loadInFlight = null;
     if (_queuedLoadOpts) {
       const next = _queuedLoadOpts;
@@ -1478,8 +1616,9 @@ function renderAll() {
 ══════════════════════════════════════════════ */
 function renderStats() {
   const totalMins = GD.workouts.reduce((s, w) => s + (Number(w.duration) || 0), 0);
+  const effectiveRegs = getEffectiveChallengeRegistrations();
   document.getElementById('st-users').textContent = GD.users.length;
-  document.getElementById('st-regs').textContent = GD.registrations.filter(r => r.status !== 'cancelled').length;
+  document.getElementById('st-regs').textContent = effectiveRegs.filter(r => r.status !== 'cancelled').length;
   document.getElementById('st-wo').textContent = GD.workouts.length;
   document.getElementById('st-posts').textContent = GD.posts.length;
   document.getElementById('st-mins').textContent = totalMins.toLocaleString();
@@ -1535,7 +1674,7 @@ function getDupEmpIds() {
 }
 
 function getChEmpIds() {
-  return new Set(GD.registrations.filter(r => r.status !== 'cancelled').map(r => (r.empId||'').trim()));
+  return new Set(getEffectiveChallengeRegistrations().filter(r => r.status !== 'cancelled').map(r => (r.empId||'').trim()));
 }
 
 let uTab = 'all'; // 'all' | 'gen' | 'ch'
@@ -1554,7 +1693,11 @@ function onUserSearch() {
 }
 
 function isChallenger(u) {
-  return !!u?.__isChallenger;
+  if (u?.__isChallenger) return true;
+  const fallback = normRegIdValue(u?.registrationId || u?.registrationid);
+  if (!fallback) return false;
+  const actual = findMatchingChallengeRegistrationForUser(u, GD.registrations);
+  return !actual;
 }
 
 function filteredUsers() {
@@ -2400,7 +2543,8 @@ async function deletePost(id) {
 function renderChallenge() {
   const q = document.getElementById('ch-search').value.toLowerCase();
   const sf = document.getElementById('ch-sfilter').value;
-  const list = GD.registrations.filter(r => {
+  const all = getEffectiveChallengeRegistrations();
+  const list = all.filter(r => {
     if (sf && r.status !== sf) return false;
     const hay = [
       r.id || '',
@@ -2418,7 +2562,6 @@ function renderChallenge() {
     return true;
   }).sort((a,b) => new Date(b.registeredAt||0) - new Date(a.registeredAt||0));
 
-  const all = GD.registrations;
   document.getElementById('ch-total').textContent   = all.length;
   document.getElementById('ch-pend').textContent    = all.filter(r => r.status === 'pending').length;
   document.getElementById('ch-ok').textContent      = all.filter(r => r.status === 'confirmed').length;
@@ -2439,10 +2582,10 @@ function renderChallenge() {
       : r.status === 'cancelled' ? '<span class="badge can">취소</span>'
       : '<span class="badge pend">대기</span>';
     const safeId = (r.id||'').replace(/'/g,'');
-    const ownShoe = withMm(r.shoeSize) || withMm(getRegNoteLine(r, '신발사이즈')) || '-';
-    const tshirtText = getRegTshirtText(r) || '-';
-    const cgmText = getRegCgmParticipation(r) ? '신청' : '미신청';
-    const shoePrefText = getRegShoePrefText(r) || '-';
+    const ownShoe = getRegDisplayText(r, withMm(r.shoeSize) || withMm(getRegNoteLine(r, '신발사이즈')));
+    const tshirtText = getRegDisplayText(r, getRegTshirtText(r));
+    const cgmText = getRegChoiceText(getRegCgmParticipationState(r), '신청', '미신청', r);
+    const shoePrefText = getRegDisplayText(r, getRegShoePrefText(r));
     const familySummary = getRegFamilySummaryText(r);
     const optionSummary = getRegOptionSummaryText(r);
     const requestParts = [];
@@ -2452,7 +2595,7 @@ function renderChallenge() {
     if (familyMemo) requestParts.push(`가족메모: ${familyMemo}`);
     const requestHtml = requestParts.length
       ? requestParts.map(v => `<div>${escHtml(v)}</div>`).join('')
-      : '-';
+      : getRegDisplayText(r, '');
     return `<tr>
       <td class="td-date">${r.id||'-'}</td>
       <td class="td-name">${escHtml(r.name||'-')}</td>
@@ -2473,33 +2616,33 @@ function renderChallenge() {
 }
 
 function showChDetail(id) {
-  const r = GD.registrations.find(x => String(x.id) === String(id));
+  const r = getEffectiveChallengeRegistrations().find(x => String(x.id) === String(id));
   if (!r) return;
-  const tshirtText = getRegTshirtText(r);
-  const cgmText = getRegCgmParticipation(r) ? '신청' : '미신청';
-  const shoePrefText = getRegShoePrefText(r);
-  const shoeRequestText = getRegShoeRequestText(r);
-  const familyParticipation = getRegFamilyParticipation(r);
+  const tshirtText = getRegDisplayText(r, getRegTshirtText(r));
+  const cgmText = getRegChoiceText(getRegCgmParticipationState(r), '신청', '미신청', r);
+  const shoePrefText = getRegDisplayText(r, getRegShoePrefText(r));
+  const shoeRequestText = getRegDisplayText(r, getRegShoeRequestText(r));
+  const familyParticipation = getRegFamilyParticipationState(r);
   const familySummary = getRegFamilySummaryText(r);
-  const familyMemo = getRegFamilyMemoText(r);
-  const cruiseParticipation = getRegCruiseParticipation(r);
-  const eventParticipation = getRegEventParticipation(r);
+  const familyMemo = getRegDisplayText(r, getRegFamilyMemoText(r));
+  const cruiseText = getRegChoiceText(getRegCruiseParticipationState(r), '탑승 희망', '탑승 안 함', r);
+  const eventText = getRegChoiceText(getRegEventParticipationState(r), '참여', '불참', r);
   const rows = [
     ['신청번호', r.id],
     ['이름', r.name],
     ['등록번호', r.empId],
     ['부서', r.dept],
     ['연락처', r.phone],
-    ['신발(본인)', withMm(r.shoeSize) || withMm(getRegNoteLine(r, '신발사이즈')) || '-'],
-    ['티셔츠', tshirtText || '-'],
+    ['신발(본인)', getRegDisplayText(r, withMm(r.shoeSize) || withMm(getRegNoteLine(r, '신발사이즈')))],
+    ['티셔츠', tshirtText],
     ['혈당체크기기', cgmText],
-    ['희망브랜드', shoePrefText || '-'],
-    ['운동화요청', shoeRequestText || '-'],
-    ['가족참여', familyParticipation ? '가족함께 참여' : '본인만'],
-    ['가족정보', familySummary || '-'],
-    ['가족메모', familyMemo || '-'],
-    ['크루즈', cruiseParticipation ? '탑승 희망' : '탑승 안 함'],
-    ['행사', eventParticipation ? '참여' : '불참'],
+    ['희망브랜드', shoePrefText],
+    ['운동화요청', shoeRequestText],
+    ['가족참여', familyParticipation === true ? '가족함께 참여' : familyParticipation === false ? '본인만' : getRegChoiceText(familyParticipation, '가족함께 참여', '본인만', r)],
+    ['가족정보', familySummary],
+    ['가족메모', familyMemo],
+    ['크루즈', cruiseText],
+    ['행사', eventText],
     ['상태', r.status],
     ['신청일', r.registeredAt ? new Date(r.registeredAt).toLocaleString('ko-KR') : '-'],
     ['비고', r.adminNote||'-'],
@@ -2519,24 +2662,52 @@ function showChDetail(id) {
 }
 
 async function updateChStatus(id, status) {
+  const target = getEffectiveChallengeRegistrations().find(x => String(x.id) === String(id));
+  if (!target) { toast('신청 정보를 찾을 수 없습니다'); return; }
   showLoading(true);
-  const res = await db.from('registrations').update({ status }).eq('id', id);
+  const res = await db.from('registrations').upsert(
+    buildAdminChallengeRegistrationPayload(target, { status }),
+    { onConflict: 'id' }
+  );
   const error = res.error || null;
   showLoading(false);
   if (error) { toast('실패: ' + error.message); return; }
-  const r = GD.registrations.find(x => String(x.id) === String(id));
-  if (r) r.status = status;
+  const nextRow = normalizeRegistrationRow({ ...target, status, __derived: false });
+  const idx = GD.registrations.findIndex(x => String(x.id) === String(id));
+  if (idx >= 0) GD.registrations[idx] = { ...GD.registrations[idx], ...nextRow };
+  else GD.registrations.push(nextRow);
+  const user = GD.users.find(u => {
+    const regId = normRegIdValue(u?.registrationId || u?.registrationid);
+    const empId = normRegEmpId(u?.empId);
+    return (regId && regId === nextRow.id) || (empId && empId === normRegEmpId(nextRow.empId));
+  });
+  if (user) {
+    user.registrationId = nextRow.id || user.registrationId || '';
+    if (!user.dept && nextRow.dept) user.dept = nextRow.dept;
+    user.__isChallenger = status !== 'cancelled';
+  }
   closeModal('ch-modal');
+  renderStats();
+  renderUsers();
   renderChallenge();
   toast(status === 'confirmed' ? '✅ 확정 처리 완료' : '취소 처리 완료');
 }
 
 function exportChallengeCsv() {
   const rows = [['신청번호','이름','등록번호','부서','연락처','본인신발','티셔츠','혈당체크기기','희망브랜드','운동화요청','가족참여','가족정보','가족메모','크루즈','행사','상태','신청일']];
-  GD.registrations.forEach(r => rows.push([
-    r.id, r.name, r.empId, r.dept, r.phone, withMm(r.shoeSize) || withMm(getRegNoteLine(r, '신발사이즈')), getRegTshirtText(r), getRegCgmParticipation(r) ? '신청' : '미신청', getRegShoePrefText(r), getRegShoeRequestText(r),
-    getRegFamilyParticipation(r) ? 'Y':'N', getRegFamilySummaryText(r), getRegFamilyMemoText(r),
-    getRegCruiseParticipation(r) ? 'Y':'N', getRegEventParticipation(r) ? 'Y' : 'N', r.status,
+  getEffectiveChallengeRegistrations().forEach(r => rows.push([
+    r.id, r.name, r.empId, r.dept, r.phone,
+    getRegDisplayText(r, withMm(r.shoeSize) || withMm(getRegNoteLine(r, '신발사이즈')), ''),
+    getRegDisplayText(r, getRegTshirtText(r), ''),
+    getRegChoiceText(getRegCgmParticipationState(r), '신청', '미신청', r, ''),
+    getRegDisplayText(r, getRegShoePrefText(r), ''),
+    getRegDisplayText(r, getRegShoeRequestText(r), ''),
+    getRegChoiceText(getRegFamilyParticipationState(r), 'Y', 'N', r, ''),
+    getRegFamilySummaryText(r),
+    getRegDisplayText(r, getRegFamilyMemoText(r), ''),
+    getRegChoiceText(getRegCruiseParticipationState(r), 'Y', 'N', r, ''),
+    getRegChoiceText(getRegEventParticipationState(r), 'Y', 'N', r, ''),
+    r.status,
     r.registeredAt ? new Date(r.registeredAt).toLocaleDateString('ko-KR') : '',
   ]));
   const csv = rows.map(r => r.map(v => `"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
