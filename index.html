@@ -5794,13 +5794,90 @@ function openCurrentRunRouteMap() {
     note: 'GPS 오차가 큰 구간은 자동으로 제외될 수 있어요.',
   });
 }
+
+function normalizeEmpIdValue(empId) {
+  return String(empId || '').trim().toUpperCase();
+}
+
+function getDeviceStorageKey(empId = ACTIVE_EMPID) {
+  const normalized = normalizeEmpIdValue(empId);
+  return normalized ? 'hi_device_id_' + normalized : 'hi_device_id';
+}
+
+function buildAccountDeviceId(empId = ACTIVE_EMPID) {
+  const normalized = normalizeEmpIdValue(empId).replace(/[^A-Z0-9_-]/g, '');
+  if (!normalized) return 'u' + Date.now().toString(36).slice(-4) + Math.random().toString(36).slice(2,5);
+  return 'acct_' + normalized;
+}
+
+async function hydrateAccountFromRemote(empId, fallbackName = '') {
+  const normalizedEmpId = normalizeEmpIdValue(empId);
+  if (!normalizedEmpId) return null;
+
+  const didKey = getDeviceStorageKey(normalizedEmpId);
+  const fallbackDid = localStorage.getItem(didKey) || buildAccountDeviceId(normalizedEmpId);
+  S.deviceId = fallbackDid;
+  localStorage.setItem(didKey, fallbackDid);
+
+  if (!_db) {
+    if (!S.user.name && fallbackName) S.user.name = fallbackName;
+    S.user.empId = S.user.empId || normalizedEmpId;
+    return { user: null, deviceId: fallbackDid };
+  }
+
+  try {
+    const { data: rows, error } = await _db.from('users')
+      .select('*')
+      .or(`empId.eq.${normalizedEmpId},empId.eq.${normalizedEmpId.toLowerCase()}`)
+      .limit(1);
+    if (error) throw error;
+
+    const u = rows?.[0] || null;
+    if (!u) {
+      if (!S.user.name && fallbackName) S.user.name = fallbackName;
+      S.user.empId = S.user.empId || normalizedEmpId;
+      return { user: null, deviceId: fallbackDid };
+    }
+
+    const resolvedDid = String(u.deviceId || fallbackDid).trim() || fallbackDid;
+    S.deviceId = resolvedDid;
+    localStorage.setItem(didKey, resolvedDid);
+
+    const [w, g] = await Promise.all([
+      _db.from('workouts').select('*').eq('deviceId', resolvedDid),
+      _db.from('glucose').select('*').eq('deviceId', resolvedDid),
+    ]);
+    if (w.error) throw w.error;
+    if (g.error) throw g.error;
+
+    S.user = { ...S.user,
+      name: u.name || S.user.name || fallbackName,
+      avatar: S.user.avatar?.includes('images/') ? S.user.avatar : (u.avatar || S.user.avatar),
+      empId: u.empId || normalizedEmpId,
+      dept: u.dept || S.user.dept || '',
+      points: Number(u.points) || 0,
+      totalPoints: Number(u.totalPoints || u.points) || 0,
+      streak: Number(u.streak) || 0,
+      tags: typeof u.tags === 'string' ? u.tags.split(',').filter(Boolean) : (u.tags || []),
+      registrationId: u.registrationId || null,
+    };
+    S.workouts = mergeWorkoutRecords(w.data || [], S.workouts);
+    S.glucoseRecords = mergeGlucoseRecords(g.data || [], S.glucoseRecords);
+    return { user: u, deviceId: resolvedDid };
+  } catch (e) {
+    console.error('[hydrateAccountFromRemote]', e);
+    if (!S.user.name && fallbackName) S.user.name = fallbackName;
+    S.user.empId = S.user.empId || normalizedEmpId;
+    return { user: null, deviceId: fallbackDid, error: e };
+  }
+}
+
 function load() {
   try {
-    // deviceId: 사번+기기 조합 (사번 로그인 후 설정됨)
-    const didKey = ACTIVE_EMPID ? 'hi_device_id_' + ACTIVE_EMPID : 'hi_device_id';
+    const didKey = getDeviceStorageKey();
     let did = localStorage.getItem(didKey);
     if (!did) {
-      did = 'u' + (ACTIVE_EMPID || '') + Date.now().toString(36).slice(-4) + Math.random().toString(36).slice(2,5);
+      did = buildAccountDeviceId();
       localStorage.setItem(didKey, did);
     }
     S.deviceId = did;
@@ -7768,6 +7845,30 @@ function logExercise() {
   }
 }
 
+async function deleteRemoteRecordById(table, id, deviceId) {
+  if (!_db) return;
+  const idText = String(id ?? '').trim();
+  const idCandidates = [];
+  if (idText) {
+    if (/^\d+$/.test(idText)) idCandidates.push(Number(idText));
+    idCandidates.push(idText);
+  }
+  const scopes = [];
+  if (deviceId) scopes.push(query => query.eq('deviceId', deviceId));
+  scopes.push(query => query);
+
+  for (const applyScope of scopes) {
+    for (const candidate of idCandidates) {
+      const { data, error } = await applyScope(
+        _db.from(table).delete().eq('id', candidate)
+      ).select('id,deviceId');
+      if (error) throw error;
+      if (data?.length) return data;
+    }
+  }
+  throw new Error(`[${table}] delete affected 0 rows for id=${idText}`);
+}
+
 function deleteWorkout(id) {
   const idx = S.workouts.findIndex(w => w.id === id);
   if (idx === -1) return;
@@ -7795,8 +7896,7 @@ function deleteWorkout(id) {
       updateSharePreview();
       if (_db) {
         try {
-          const { error } = await _db.from('workouts').delete().eq('id', String(id)).eq('deviceId', S.deviceId);
-          if (error) throw error;
+          await deleteRemoteRecordById('workouts', id, S.deviceId);
         } catch (e) {
           console.error('[deleteWorkout]', e);
           S.workouts = prevWorkouts;
@@ -8290,8 +8390,7 @@ function deleteGlucose(id) {
       updateSharePreview();
       if (_db) {
         try {
-          const { error } = await _db.from('glucose').delete().eq('id', String(id)).eq('deviceId', S.deviceId);
-          if (error) throw error;
+          await deleteRemoteRecordById('glucose', id, S.deviceId);
         } catch (e) {
           console.error('[deleteGlucose]', e);
           S.glucoseRecords = prevGlucoseRecords;
@@ -12210,8 +12309,6 @@ async function doAppLogin() {
       }
     }
   }
-  loadEl.style.display = 'none';
-
   ACTIVE_EMPID = regId;
   STORAGE_KEY  = 'hi_health_v2_' + regId;
   SHOP_ORDERS_KEY = 'hi_health_shop_orders_' + regId;
@@ -12232,7 +12329,9 @@ async function doAppLogin() {
 
   S.user.empId = S.user.empId || ACTIVE_EMPID;
   if (!S.user.name) S.user.name = inputName;
-  save({ skipRemote: true });
+  await hydrateAccountFromRemote(ACTIVE_EMPID, inputName);
+  await syncMyChallengeRegistration();
+  save();
   sessionStorage.setItem('hi_session_empid', ACTIVE_EMPID);
   // IS_RUN_MODE(챌린지 직원)는 항상 localStorage에 저장 (카카오톡 인앱브라우저 세션 유실 방지)
   if (keepLogin || IS_RUN_MODE) {
@@ -12254,73 +12353,20 @@ async function doAppLogin() {
   document.getElementById('app-login-screen').classList.add('hidden');
   document.getElementById('guest-banner')?.style.setProperty('display', 'none');
   window.dispatchEvent(new Event('hi:loggedin'));
+  loadCart();
+  setTimeout(() => showIntroIfNeeded(), 400);
+
+  renderHeader();
+  renderHome();
+  navigate(IS_RUN_MODE ? 'challenge' : 'home');
   postToRunday({
     type: 'LOGIN',
     name: S.user.name,
     empId: S.user.empId || ACTIVE_EMPID,
     avatar: normalizeAvatar(S.user.avatar),
   });
-  loadCart();
-  setTimeout(() => showIntroIfNeeded(), 400);
-
+  loadEl.style.display = 'none';
   btn.disabled = false;
-
-  // Supabase에서 empId로 사용자 조회 → 항상 최신 데이터 복원
-  if (_db && ACTIVE_EMPID) {
-    const _loginEmpId = ACTIVE_EMPID; // 클로저로 로그인 시점의 empId 고정
-    _db.from('users').select('*').or(`empId.eq.${_loginEmpId},empId.eq.${_loginEmpId.toLowerCase()}`).limit(1).then(async ({ data: rows }) => {
-      // 콜백 도착 시점에 이미 다른 계정으로 전환됐으면 무시 (race condition 방지)
-      if (ACTIVE_EMPID !== _loginEmpId) return;
-      const u = rows?.[0] || null;
-      if (!u) {
-        await syncMyChallengeRegistration();
-        save();
-        renderHeader();
-        renderHome();
-        renderChallenge();
-        return; // Supabase에 없으면 신규 사용자
-      }
-      // 기존 deviceId로 데이터 조회
-      const did = u.deviceId;
-      // 현재 기기의 deviceId를 Supabase의 deviceId로 덮어씀 (데이터 연속성 유지)
-      S.deviceId = did;
-      const didKey = 'hi_device_id_' + _loginEmpId;
-      localStorage.setItem(didKey, did);
-
-      const [w, g] = await Promise.all([
-        _db.from('workouts').select('*').eq('deviceId', did),
-        _db.from('glucose').select('*').eq('deviceId', did),
-      ]);
-      S.user = { ...S.user,
-        name: u.name || S.user.name,
-        avatar: S.user.avatar?.includes('images/') ? S.user.avatar : (u.avatar || S.user.avatar),
-        empId: u.empId || ACTIVE_EMPID,
-        dept: u.dept || '',
-        points: Number(u.points) || 0,
-        totalPoints: Number(u.totalPoints || u.points) || 0,
-        streak: Number(u.streak) || 0,
-        tags: typeof u.tags === 'string' ? u.tags.split(',').filter(Boolean) : (u.tags || []),
-        registrationId: u.registrationId || null,
-      };
-      S.workouts = mergeWorkoutRecords(w.data || [], S.workouts);
-      S.glucoseRecords = mergeGlucoseRecords(g.data || [], S.glucoseRecords);
-      await syncMyChallengeRegistration();
-      save();
-      renderHeader();
-      renderHome();
-      renderChallenge();
-      postToRunday({
-        type: 'LOGIN',
-        name: S.user.name,
-        empId: S.user.empId || ACTIVE_EMPID,
-        avatar: normalizeAvatar(S.user.avatar),
-      });
-    });
-  }
-
-  renderHeader();
-  renderHome();
-  navigate(IS_RUN_MODE ? 'challenge' : 'home');
 
   if (!S.user.name) setTimeout(() => openProfileModal(true), 400);
   setTimeout(() => {
@@ -12397,7 +12443,7 @@ function appLogout() {
 /* ════════════════════════════════════════
    INIT
 ════════════════════════════════════════ */
-function init() {
+async function init() {
   if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
   window.scrollTo(0, 0);
   // ?run 파라미터 없으면 히어로 섹션 숨김, 서브타이틀 변경
@@ -12444,6 +12490,7 @@ function init() {
 
   // 로그인 유지 또는 세션에서 자동 로그인 복원
   const keepId = localStorage.getItem('hi_keep_login_id');
+  const keepName = localStorage.getItem('hi_keep_login_name') || '';
   const savedEmpId = keepId || sessionStorage.getItem('hi_session_empid');
   if (savedEmpId) {
     ACTIVE_EMPID = savedEmpId;
@@ -12456,11 +12503,25 @@ function init() {
     scheduleMidnightReset();
     loadCart();
     S.user.empId = savedEmpId;
+    if (!S.user.name && keepName) S.user.name = keepName;
+    const autoLoadEl = document.getElementById('login-loading');
+    if (autoLoadEl) autoLoadEl.style.display = 'block';
+    await hydrateAccountFromRemote(savedEmpId, keepName || S.user.name || '');
+    await syncMyChallengeRegistration();
+    save();
     document.getElementById('app-login-screen').classList.add('hidden');
   
     renderHeader();
     renderHome();
     navigate(IS_RUN_MODE ? 'challenge' : 'home');
+    window.dispatchEvent(new Event('hi:loggedin'));
+    postToRunday({
+      type: 'LOGIN',
+      name: S.user.name,
+      empId: S.user.empId || savedEmpId,
+      avatar: normalizeAvatar(S.user.avatar),
+    });
+    if (autoLoadEl) autoLoadEl.style.display = 'none';
     requestAnimationFrame(() => { window.scrollTo(0, 0); document.documentElement.scrollTop = 0; document.body.scrollTop = 0; });
     setTimeout(() => {
       const lv = getLevel(S.user.points);
@@ -12471,56 +12532,9 @@ function init() {
         if (bar) { bar.style.width = '0%'; setTimeout(() => bar.style.width = pct + '%', 100); }
       }
     }, 200);
-    // 자동 로그인 시에도 Supabase 최신 데이터 동기화
-    if (_db && savedEmpId) {
-      _db.from('users').select('*').or(`empId.eq.${savedEmpId},empId.eq.${savedEmpId.toLowerCase()}`).limit(1).then(async ({ data: rows }) => {
-        const u = rows?.[0] || null;
-        if (!u) {
-          await syncMyChallengeRegistration();
-          save();
-          renderHeader();
-          renderHome();
-          renderChallenge();
-          return;
-        }
-        const did = u.deviceId;
-        S.deviceId = did;
-        localStorage.setItem('hi_device_id_' + savedEmpId, did);
-        const [w, g] = await Promise.all([
-          _db.from('workouts').select('*').eq('deviceId', did),
-          _db.from('glucose').select('*').eq('deviceId', did),
-        ]);
-        S.user = { ...S.user,
-          name: u.name || S.user.name,
-          avatar: S.user.avatar?.includes('images/') ? S.user.avatar : (u.avatar || S.user.avatar),
-          empId: u.empId || savedEmpId,
-          dept: u.dept || '',
-          points: Number(u.points) || 0,
-          totalPoints: Number(u.totalPoints || u.points) || 0,
-          streak: Number(u.streak) || 0,
-          tags: typeof u.tags === 'string' ? u.tags.split(',').filter(Boolean) : (u.tags || []),
-          registrationId: u.registrationId || null,
-        };
-        S.workouts = mergeWorkoutRecords(w.data || [], S.workouts);
-        S.glucoseRecords = mergeGlucoseRecords(g.data || [], S.glucoseRecords);
-        await syncMyChallengeRegistration();
-        save();
-        renderHeader();
-        renderHome();
-        renderChallenge();
-        postToRunday({
-          type: 'LOGIN',
-          name: S.user.name,
-          empId: S.user.empId || savedEmpId,
-          avatar: normalizeAvatar(S.user.avatar),
-        });
-      });
-    }
   }
   // 세션 없으면 로그인 화면이 기본 표시됨
 }
-
-init();
 </script>
 
 <!-- Profile Modal -->
@@ -13178,96 +13192,60 @@ init();
 <!-- Supabase SDK -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-(function() {
+(async function() {
   try {
-    if (!SUPABASE_URL || SUPABASE_URL === 'YOUR_SUPABASE_URL') return;
-    const { createClient } = supabase;
-    _db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    if (SUPABASE_URL && SUPABASE_URL !== 'YOUR_SUPABASE_URL') {
+      const { createClient } = supabase;
+      _db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // 앱 설정 로드 (구매 기능 ON/OFF 등)
-    loadAppConfig().then(() => { renderShop(); saveCart(); });
+      // 앱 설정 로드 (구매 기능 ON/OFF 등)
+      loadAppConfig().then(() => { renderShop(); saveCart(); });
 
-    // _db 초기화 후 이미 로그인 상태면 즉시 Supabase 동기화
-    // (init()이 _db보다 먼저 실행되므로 여기서 재sync 필요)
-    setTimeout(() => {
-      if (S.deviceId && ACTIVE_EMPID) {
-        save({ skipRemote: true }); // 기존 대표 deviceId 확인 전에는 재등록 방지
-        // Supabase에서 최신 데이터 복원 (자동 로그인 경우)
-        const _empId = ACTIVE_EMPID;
-        _db.from('users').select('*').or(`empId.eq.${_empId},empId.eq.${_empId.toLowerCase()}`).limit(1).then(async ({ data: rows }) => {
-          if (ACTIVE_EMPID !== _empId) return;
-          const u = rows?.[0] || null;
-          if (!u) {
-            await syncMyChallengeRegistration();
-            save();
-            renderHeader();
-            renderHome();
-            setTimeout(syncPushSubscriptionIfNeeded, 1200);
-            return;
+      // admin_posts 실시간 리스너 (커뮤니티 탭 자동 갱신)
+      _db.channel('admin_posts_ch')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'admin_posts' }, async () => {
+          const { data } = await _db.from('admin_posts').select('*').order('createdAt', { ascending: false });
+          if (data) {
+            S.adminPosts = data;
+            _adminPostsFetched = true;
+            const page = document.querySelector('.page.active');
+            if (page && page.id === 'page-community') renderCommunity();
           }
-          S.deviceId = u.deviceId;
-          localStorage.setItem('hi_device_id_' + _empId, u.deviceId);
-          const [w, g] = await Promise.all([
-            _db.from('workouts').select('*').eq('deviceId', u.deviceId),
-            _db.from('glucose').select('*').eq('deviceId', u.deviceId),
-          ]);
-          S.user = { ...S.user,
-            name: u.name || S.user.name,
-            avatar: S.user.avatar?.includes('images/') ? S.user.avatar : (u.avatar || S.user.avatar),
-            empId: u.empId || _empId,
-            points: Number(u.points) || 0,
-            totalPoints: Number(u.totalPoints || u.points) || 0,
-            streak: Number(u.streak) || 0,
-            tags: typeof u.tags === 'string' ? u.tags.split(',').filter(Boolean) : (u.tags || []),
-            registrationId: u.registrationId || null,
-          };
-          S.workouts = mergeWorkoutRecords(w.data || [], S.workouts);
-          S.glucoseRecords = mergeGlucoseRecords(g.data || [], S.glucoseRecords);
-          await syncMyChallengeRegistration();
-          save();
-          renderHeader();
-          renderHome();
-          setTimeout(syncPushSubscriptionIfNeeded, 1200);
-        });
-      }
-    }, 0);
-
-    // admin_posts 실시간 리스너 (커뮤니티 탭 자동 갱신)
-    _db.channel('admin_posts_ch')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'admin_posts' }, async () => {
-        const { data } = await _db.from('admin_posts').select('*').order('createdAt', { ascending: false });
-        if (data) {
-          S.adminPosts = data;
-          _adminPostsFetched = true;
+        })
+        .subscribe();
+      // posts 실시간 리스너 (게시글 추가/수정/삭제 자동 반영)
+      _db.channel('posts_ch')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'posts' }, async () => {
+          _adminPostsFetched = false;
           const page = document.querySelector('.page.active');
-          if (page && page.id === 'page-community') renderCommunity();
-        }
-      })
-      .subscribe();
-    // posts 실시간 리스너 (게시글 추가/수정/삭제 자동 반영)
-    _db.channel('posts_ch')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'posts' }, async () => {
-        _adminPostsFetched = false;
-        const page = document.querySelector('.page.active');
-        if (page && page.id === 'page-community') { fetchAdminPosts(); fetchCommunityPosts(); }
-      })
-      .subscribe();
-    // orders 실시간 리스너 (관리자 승인 상태 자동 반영)
-    _db.channel('orders_ch')
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'orders' }, async (payload) => {
-        if (!S.deviceId) return;
-        const changed = payload.new;
-        if (changed.deviceId !== S.deviceId) return;
-        const orders = JSON.parse(localStorage.getItem(SHOP_ORDERS_KEY) || '[]');
-        const idx = orders.findIndex(o => String(o.id) === String(changed.id));
-        if (idx >= 0) {
-          orders[idx].status = changed.status;
-          localStorage.setItem(SHOP_ORDERS_KEY, JSON.stringify(orders));
-          renderShopOrderHistory();
-        }
-      })
-      .subscribe();
-  } catch(e) { console.warn('Supabase 초기화 실패:', e); }
+          if (page && page.id === 'page-community') { fetchAdminPosts(); fetchCommunityPosts(); }
+        })
+        .subscribe();
+      // orders 실시간 리스너 (관리자 승인 상태 자동 반영)
+      _db.channel('orders_ch')
+        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'orders' }, async (payload) => {
+          if (!S.deviceId) return;
+          const changed = payload.new;
+          if (changed.deviceId !== S.deviceId) return;
+          const orders = JSON.parse(localStorage.getItem(SHOP_ORDERS_KEY) || '[]');
+          const idx = orders.findIndex(o => String(o.id) === String(changed.id));
+          if (idx >= 0) {
+            orders[idx].status = changed.status;
+            localStorage.setItem(SHOP_ORDERS_KEY, JSON.stringify(orders));
+            renderShopOrderHistory();
+          }
+        })
+        .subscribe();
+    }
+  } catch(e) {
+    console.warn('Supabase 초기화 실패:', e);
+  } finally {
+    try {
+      await init();
+    } catch (initErr) {
+      console.warn('앱 초기화 실패:', initErr);
+    }
+  }
 })();
 </script>
 </body>
