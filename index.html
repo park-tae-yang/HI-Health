@@ -62,10 +62,11 @@
     input, textarea, select { font-size: max(16px, 1em); }
     body {
       font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
-      font-size: 17px;
+      font-size: clamp(14px, 4.3vw, 17px);
       background: var(--bg);
       color: var(--text);
       min-height: 100vh;
+      min-height: 100dvh;
       max-width: 480px;
       margin: 0 auto;
       position: relative;
@@ -73,6 +74,50 @@
     }
     @media (min-width: 481px) {
       body { background: #E8E8ED; }
+    }
+    /* ── 반응형 기기별 조정 ── */
+    /* 소형 기기 (Galaxy A, Pixel 4a 등 ~ 360px) */
+    @media (max-width: 360px) {
+      :root {
+        --nav-height: 70px;
+        --header-height: 50px;
+      }
+      .page { padding: 14px; }
+      .card { padding: 14px; }
+      .hero-stat-value { font-size: 17px; }
+      .hero-greeting { font-size: 12px; }
+      .ch-hero-title { font-size: 32px; }
+      .app-login-logo { height: 112px; }
+      .app-login-input, .app-login-btn { padding: 12px 14px; }
+      .app-login-sub { margin-bottom: 14px; }
+      .app-login-keep { margin: 12px 0; }
+      .login-divider { margin: 12px 0 10px; }
+    }
+    /* 초소형 기기 (iPhone SE 1세대, 구형 Android ~ 320px) */
+    @media (max-width: 320px) {
+      :root {
+        --nav-height: 66px;
+        --header-height: 48px;
+      }
+      .page { padding: 12px; }
+      .card { padding: 12px; }
+      .hero-stat-value { font-size: 15px; }
+      .ch-hero-title { font-size: 26px; }
+      .hc-body { padding: 12px 14px 0; }
+      .hero-stats { margin: 8px -14px 0; padding: 9px 14px; }
+      .app-login-logo { height: 92px; }
+      .app-login-input, .app-login-btn { padding: 10px 12px; font-size: 14px; }
+      .app-login-title { font-size: 13px; }
+      .app-login-sub { font-size: 11px; margin-bottom: 10px; }
+      .app-login-keep { margin: 8px 0; }
+      .login-divider { margin: 8px 0 8px; }
+    }
+    /* 대형 기기 (iPhone Plus, Pro Max, 대형 Android 414px 이상) */
+    @media (min-width: 414px) and (max-width: 480px) {
+      .card { padding: 20px; }
+      .page { padding: 20px; }
+      .hero-stat-value { font-size: 22px; }
+      .ch-hero-title { font-size: 44px; }
     }
 
     /* ── App Login Screen ── */
@@ -628,6 +673,7 @@
       margin-top: calc(var(--header-height) + max(env(safe-area-inset-top), 44px));
       margin-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom));
       min-height: calc(100vh - var(--header-height) - var(--nav-height));
+      min-height: calc(100dvh - var(--header-height) - var(--nav-height));
       overflow-x: hidden;
     }
     .app-content.white-page-bg { background: #fff; }
@@ -643,6 +689,7 @@
       padding: 0;
       margin-top: calc(-1 * (var(--header-height) + max(env(safe-area-inset-top), 44px)));
       height: calc(100vh - var(--nav-height) - env(safe-area-inset-bottom));
+      height: calc(100dvh - var(--nav-height) - env(safe-area-inset-bottom));
       overflow: hidden;
       background: #fdfcf0;
       animation: none;
