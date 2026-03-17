@@ -2321,9 +2321,20 @@
 
   function cancelReg(regId) {
     if (!confirm('정말 취소하시겠습니까?')) return;
-    const regs = JSON.parse(localStorage.getItem(CH_KEY) || '[]').filter(r => r.id !== regId);
+    const regs = JSON.parse(localStorage.getItem(CH_KEY) || '[]');
+    const idx = regs.findIndex(r => String(r.id) === String(regId));
+    const cancelledReg = idx >= 0 ? { ...regs[idx], status: 'cancelled' } : {
+      id: regId,
+      empId: getCurrentEmpId(),
+      deviceId: '',
+      status: 'cancelled',
+      registeredAt: new Date().toISOString(),
+      note: '취소 처리됨',
+    };
+    if (idx >= 0) regs[idx] = cancelledReg;
+    else regs.push(cancelledReg);
     localStorage.setItem(CH_KEY, JSON.stringify(regs));
-    notifyParentRegistrationChange({ registrationId: regId, cancelled: true, empId: getCurrentEmpId() });
+    notifyParentRegistrationChange({ registrationId: regId, cancelled: true, empId: getCurrentEmpId(), registration: cancelledReg });
     try {
       fetch(SB_URL + '/rest/v1/registrations?id=eq.' + regId, {
         method: 'PATCH',

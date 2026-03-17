@@ -11202,7 +11202,30 @@ function getChallengePhaseLabel(phase = getChPhase()) {
 function chDays(a, b) { return Math.ceil((b - a) / 86400000); }
 function getMyReg(opts = {}) {
   const includeCancelled = !!opts.includeCancelled;
-  const match = getMyChallengeRegMatches(getStoredChallengeRegs())[0] || null;
+  const regId = normChallengeId(S.user.registrationId);
+  const empId = normChallengeEmpId(S.user.empId || ACTIVE_EMPID);
+  const deviceId = normChallengeId(S.deviceId);
+  const matches = getMyChallengeRegMatches(getStoredChallengeRegs());
+  if (!matches.length) return null;
+  const scoreIdentity = r => {
+    let score = 0;
+    if (empId && normChallengeEmpId(r?.empId) === empId) score += 2;
+    if (deviceId && normChallengeId(r?.deviceId) === deviceId) score += 1;
+    return score;
+  };
+  const compareCandidates = (a, b) => {
+    const tsDiff = challengeRegTs(b) - challengeRegTs(a);
+    if (tsDiff) return tsDiff;
+    const scoreDiff = scoreIdentity(b) - scoreIdentity(a);
+    if (scoreDiff) return scoreDiff;
+    const activeDiff = Number(isActiveChallengeReg(b)) - Number(isActiveChallengeReg(a));
+    if (activeDiff) return activeDiff;
+    return 0;
+  };
+  const exact = regId
+    ? matches.filter(r => normChallengeId(r?.id) === regId).sort(compareCandidates)[0] || null
+    : null;
+  const match = exact || [...matches].sort(compareCandidates)[0] || null;
   if (!match) return null;
   return includeCancelled || isActiveChallengeReg(match) ? match : null;
 }
@@ -11309,6 +11332,11 @@ function cancelRegistration(regId) {
   r.status = 'cancelled';
   setStoredChallengeRegs(regs);
   if (_db) _db.from('registrations').update({ status: 'cancelled' }).eq('id', regId);
+  const activeReg = getMyReg();
+  S.user.registrationId = activeReg ? activeReg.id : null;
+  save();
+  renderHeader();
+  if (document.getElementById('page-home')?.classList.contains('active')) renderHome();
   renderChallenge();
   showToast('신청이 취소됐습니다');
 }
@@ -11351,7 +11379,24 @@ function applyRundayRegistrationSync(payload = {}) {
   }
 
   if (payload?.cancelled && regId) {
-    regs = regs.filter(row => normChallengeId(row?.id) !== regId);
+    const idx = regs.findIndex(row => normChallengeId(row?.id) === regId);
+    if (idx >= 0) {
+      regs[idx] = {
+        ...regs[idx],
+        ...(payload.registration || {}),
+        status: 'cancelled',
+      };
+    } else {
+      regs.push({
+        ...(payload.registration || {}),
+        id: regId,
+        empId: payload.empId || currentEmpId || '',
+        deviceId: S.deviceId || '',
+        status: 'cancelled',
+        registeredAt: new Date().toISOString(),
+        note: payload?.registration?.note || '취소 처리됨',
+      });
+    }
     setStoredChallengeRegs(regs);
   }
 
