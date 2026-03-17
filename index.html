@@ -12242,6 +12242,14 @@ async function doAppLogin() {
     localStorage.removeItem('hi_keep_login_id');
     localStorage.removeItem('hi_keep_login_name');
   }
+  const saveEmpId = document.getElementById('login-save-empid-checkbox')?.checked;
+  if (saveEmpId) {
+    localStorage.setItem('hi_saved_empid', regId);
+    localStorage.setItem('hi_saved_name', inputName);
+  } else {
+    localStorage.removeItem('hi_saved_empid');
+    localStorage.removeItem('hi_saved_name');
+  }
 
   document.getElementById('app-login-screen').classList.add('hidden');
   document.getElementById('guest-banner')?.style.setProperty('display', 'none');
@@ -12414,6 +12422,26 @@ function init() {
   } else {
     if (loginEmpInput) loginEmpInput.style.letterSpacing = '0';
   }
+  // 저장된 등록번호 미리 채우기
+  const _storedEmpId = localStorage.getItem('hi_saved_empid');
+  const _storedName  = localStorage.getItem('hi_saved_name');
+  if (_storedEmpId) {
+    const _empInp = document.getElementById('login-empid-input');
+    const _empOverlay = document.getElementById('login-empid-overlay');
+    const _empPrefix  = document.getElementById('login-id-prefix');
+    if (_empInp) { _empInp.value = _storedEmpId; _empInp.classList.remove('login-placeholder-val'); }
+    if (_empOverlay) _empOverlay.style.display = 'none';
+    if (_empPrefix)  _empPrefix.style.display = 'inline';
+    const _saveCb = document.getElementById('login-save-empid-checkbox');
+    if (_saveCb) _saveCb.checked = true;
+  }
+  if (_storedName) {
+    const _nameInp = document.getElementById('login-name-input');
+    const _nameOverlay = document.getElementById('login-name-overlay');
+    if (_nameInp) { _nameInp.value = _storedName; _nameInp.classList.remove('login-placeholder-val'); }
+    if (_nameOverlay) _nameOverlay.style.display = 'none';
+  }
+
   // 로그인 유지 또는 세션에서 자동 로그인 복원
   const keepId = localStorage.getItem('hi_keep_login_id');
   const savedEmpId = keepId || sessionStorage.getItem('hi_session_empid');
