@@ -1198,8 +1198,8 @@
     /* Weekly chart */
     .week-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 5px; margin-top: 10px; }
     .week-day { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-    .week-label { font-size: 9px; color: var(--text-secondary); }
-    .week-date { font-size: 9px; color: var(--text-secondary); opacity: 0.7; }
+    .week-label { font-size: 9px; color: var(--text-secondary); white-space: nowrap; }
+    .week-date { font-size: 9px; color: var(--text-secondary); opacity: 0.7; white-space: nowrap; }
     .week-bar {
       width: 100%; height: 40px; background: var(--border); border-radius: 5px; display: flex; align-items: flex-end; overflow: hidden;
     }
@@ -6155,7 +6155,7 @@ function weekData(offset = _weekOffset) {
     const mins = S.workouts
       .filter(w => new Date(w.ts).toDateString() === ds)
       .reduce((s,w) => s + w.duration, 0);
-    return { label: `${d.getMonth()+1}/${d.getDate()} ${WEEK_DAYS[i]}`, mins, isToday: ds === now.toDateString() };
+    return { date: `${d.getMonth()+1}/${d.getDate()}`, day: WEEK_DAYS[i], mins, isToday: ds === now.toDateString() };
   });
 }
 function shiftWeek(dir) {
@@ -6179,7 +6179,8 @@ function renderWeekCard() {
   document.getElementById('week-next-btn').style.pointerEvents = _weekOffset === 0 ? 'none' : '';
   document.getElementById('week-grid').innerHTML = wd.map(d => `
     <div class="week-day ${d.isToday ? 'today' : ''}">
-      <span class="week-label">${d.label}</span>
+      <span class="week-date">${d.date}</span>
+      <span class="week-label">${d.day}</span>
       <div class="week-bar">
         <div class="week-fill" style="height:${d.mins ? Math.max(10, (d.mins/maxMins*100)) : 0}%"></div>
       </div>
