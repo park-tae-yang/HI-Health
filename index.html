@@ -1426,8 +1426,9 @@
       font-family: inherit; font-size: 11px; font-weight: 700;
       cursor: pointer; white-space: nowrap; flex-shrink: 0;
     }
-    .workout-item--has-route { flex-wrap: wrap; }
-    .wo-inline-route { width: 100%; margin-top: 8px; border-radius: 14px; overflow: hidden; min-height: 130px; }
+    .wo-item-wrap { border-bottom: 1px solid var(--border); }
+    .wo-item-wrap .workout-item { border-bottom: none; }
+    .wo-inline-route { width: 100%; margin: 4px 0 10px; border-radius: 14px; overflow: hidden; min-height: 130px; }
     .wo-photo { width:36px; height:36px; object-fit:cover; border-radius:6px; flex-shrink:0; cursor:pointer; border:1.5px solid var(--border); }
     .route-map-card {
       position: relative;
@@ -7531,13 +7532,15 @@ function workoutItemHTML(w) {
   const memo = getWorkoutDisplayMemo(w);
   const hasRoute = compressRoutePath(w.routePath || [], 2).length > 1;
   return `
-    <div class="workout-item${hasRoute ? ' workout-item--has-route' : ''}">
-      <span class="wo-icon">${renderExerciseIcon(w.exId, { size:'16px' })}</span>
-      <span class="wo-name">${name}</span>
-      <span class="wo-meta">${w.duration}분${memo ? ' · ' + escHtmlComm(memo) : ''} · ${fmtTime(w.ts)}</span>
-      ${hasRoute ? `<button type="button" class="wo-map-btn" onclick="openWorkoutRouteMap('${w.id}')">지도</button>` : ''}
-      <div class="wo-pts">+${w.points}p</div>
-      <button type="button" class="wo-del" onclick="deleteWorkout(${w.id})" title="삭제">${_trashSvgSm}</button>
+    <div class="wo-item-wrap">
+      <div class="workout-item">
+        <span class="wo-icon">${renderExerciseIcon(w.exId, { size:'16px' })}</span>
+        <span class="wo-name">${name}</span>
+        <span class="wo-meta">${w.duration}분${memo ? ' · ' + escHtmlComm(memo) : ''} · ${fmtTime(w.ts)}</span>
+        ${hasRoute ? `<button type="button" class="wo-map-btn" onclick="openWorkoutRouteMap('${w.id}')">지도</button>` : ''}
+        <div class="wo-pts">+${w.points}p</div>
+        <button type="button" class="wo-del" onclick="deleteWorkout(${w.id})" title="삭제">${_trashSvgSm}</button>
+      </div>
       ${hasRoute ? `<div class="wo-inline-route" id="wo-inline-route-${w.id}"></div>` : ''}
     </div>
   `;
