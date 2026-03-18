@@ -2801,6 +2801,15 @@
     return true;
   }
 
+  function tryRestoreCurrentRegistrationFromRows(rows = [], opts = {}) {
+    try {
+      return restoreCurrentRegistrationFromRows(rows, opts);
+    } catch (e) {
+      console.warn('[restoreCurrentRegistrationFromRows]', e);
+      return false;
+    }
+  }
+
   function peopleRowTs(row) {
     const ts = Date.parse(String(row?.registeredAt || ''));
     return Number.isFinite(ts) ? ts : 0;
@@ -2865,7 +2874,10 @@
     const local = JSON.parse(localStorage.getItem(CH_KEY) || '[]')
       .sort((a, b) => peopleRowTs(b) - peopleRowTs(a));
     renderPeople(local);
-    restoreCurrentRegistrationFromRows(local, { render: !document.getElementById('success-screen')?.classList.contains('show') });
+    const shouldRenderRecoveredLocal = !document.getElementById('success-screen')?.classList.contains('show');
+    setTimeout(() => {
+      tryRestoreCurrentRegistrationFromRows(local, { render: shouldRenderRecoveredLocal });
+    }, 0);
 
     // Supabase에서 실시간 데이터 fetch
     try {
@@ -2886,7 +2898,9 @@
           const merged = [...byId.values()];
           merged.sort((a, b) => peopleRowTs(b) - peopleRowTs(a));
           renderPeople(merged);
-          restoreCurrentRegistrationFromRows(merged);
+          setTimeout(() => {
+            tryRestoreCurrentRegistrationFromRows(merged);
+          }, 0);
         }
       }
     } catch(e) { /* 오프라인 시 로컬 데이터 유지 */ }
@@ -3110,7 +3124,7 @@
       document.getElementById('form-screen').classList.add('hide');
       document.getElementById('success-screen').classList.add('show');
     } else {
-      if (restoreCurrentRegistrationFromRows(latestPeopleList)) return;
+      if (tryRestoreCurrentRegistrationFromRows(latestPeopleList)) return;
       if (document.getElementById('success-screen').classList.contains('show')) {
         resetRegistrationForm({ preserveIdentity: true });
       }
