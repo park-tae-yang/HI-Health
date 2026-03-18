@@ -3157,7 +3157,6 @@ async function sendPushNotice(mode = 'all') {
     const errors = result?.errors || [];
     const label = mode === 'selected' ? '선택 사용자 테스트' : '전체 푸시';
     toast(`${label} 완료 ✓ (총 ${total}건 / 발송 ${sent}건${failed ? ` / 실패 ${failed}건` : ''}${invalid ? ` / 정리 ${invalid}건` : ''})`);
-    if (errors.length) alert('FCM 오류:\n' + errors.join('\n'));
     if (mode === 'all') {
       document.getElementById('push-title').value = '';
       document.getElementById('push-body').value = '';
