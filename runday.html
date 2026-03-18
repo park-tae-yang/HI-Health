@@ -2539,7 +2539,7 @@
     }, Math.max(0, Number(delay) || 0));
   }
 
-  function syncInitialIdentity() {
+  function syncInitialIdentity(options = {}) {
     let name = '';
     let empId = '';
     let avatar = '';
@@ -2556,7 +2556,13 @@
       try { empId = String(sessionStorage.getItem('hi_session_empid') || localStorage.getItem('hi_keep_login_id') || '').trim(); } catch (e) {}
     }
     prefillFromLogin(name, empId, avatar);
-    scheduleRegistrationRestoreCheck(empId, 30);
+    const normalizedEmpId = String(empId || '').trim().toUpperCase();
+    if (options.scheduleRestore !== false) scheduleRegistrationRestoreCheck(normalizedEmpId, 30);
+    return {
+      name: String(name || '').trim(),
+      empId: normalizedEmpId,
+      avatar: currentLoginAvatar || LIVE_AVATAR_FALLBACK,
+    };
   }
 
   function applyParentChallengeRegistrationState(payload = {}) {
@@ -2635,25 +2641,109 @@
     }
   }
 
-  syncInitialIdentity();
-  loadChallengeConfig();
+  function updateStoredAvatarForCurrentEmp(empId = '', avatar = '') {
+    const normalizedEmpId = String(empId || '').trim().toUpperCase();
+    const newAvatar = normalizeLiveAvatar(avatar);
+    if (!normalizedEmpId || !newAvatar) return false;
+    let changed = false;
+    try {
+      const regs = JSON.parse(localStorage.getItem(CH_KEY) || '[]');
+      const updated = regs.map(r => {
+        if (String(r.empId || '').toUpperCase() !== normalizedEmpId) return r;
+        if (String(r.avatar || '') === newAvatar) return r;
+        changed = true;
+        return { ...r, avatar: newAvatar };
+      });
+      if (changed) localStorage.setItem(CH_KEY, JSON.stringify(updated));
+    } catch (e) {}
+    latestPeopleList = latestPeopleList.map(r =>
+      String(r.empId || '').toUpperCase() === normalizedEmpId
+        ? { ...r, avatar: newAvatar }
+        : r
+    );
+    return changed;
+  }
+
+  let challengeBootstrapPromise = null;
+  let challengeBootstrapPending = null;
+  let challengeBootstrapTimer = 0;
+  let challengeBootstrapScheduled = null;
+
+  function mergeChallengeBootstrapOptions(base = {}, extra = {}) {
+    const merged = {
+      reason: String(extra.reason || base.reason || '').trim(),
+      empId: String(extra.empId || base.empId || '').trim().toUpperCase(),
+      delay: Math.max(0, Number(extra.delay ?? base.delay ?? 0) || 0),
+      active: (extra.active ?? base.active),
+      force: !!(base.force || extra.force),
+      forceConfig: !!(base.forceConfig || extra.forceConfig),
+      forcePeople: !!(base.forcePeople || extra.forcePeople),
+    };
+    return merged;
+  }
+
+  function scheduleChallengeBootstrap(options = {}) {
+    challengeBootstrapScheduled = mergeChallengeBootstrapOptions(challengeBootstrapScheduled || {}, options);
+    const delay = challengeBootstrapScheduled.delay;
+    if (challengeBootstrapTimer) clearTimeout(challengeBootstrapTimer);
+    challengeBootstrapTimer = setTimeout(() => {
+      challengeBootstrapTimer = 0;
+      const nextOptions = challengeBootstrapScheduled || {};
+      challengeBootstrapScheduled = null;
+      bootstrapChallengePage({ ...nextOptions, delay: 0 });
+    }, delay);
+  }
+
+  async function bootstrapChallengePage(options = {}) {
+    const nextOptions = mergeChallengeBootstrapOptions({}, options);
+    if (challengeBootstrapPromise) {
+      challengeBootstrapPending = mergeChallengeBootstrapOptions(challengeBootstrapPending || {}, nextOptions);
+      return challengeBootstrapPromise;
+    }
+
+    const runPromise = (async () => {
+      if (nextOptions.active === false) {
+        setRundayPageActive(false, { bootstrap: false });
+        return false;
+      }
+      setRundayPageActive(true, { bootstrap: false });
+      const identity = syncInitialIdentity({ scheduleRestore: false });
+      syncChallengeStateFromParent();
+      syncChallengePeopleFromParent();
+      const normalizedEmpId = String(nextOptions.empId || identity.empId || getCurrentEmpId() || '').trim().toUpperCase();
+      await Promise.all([
+        loadChallengeConfig({ force: nextOptions.force || nextOptions.forceConfig }),
+        checkExisting(normalizedEmpId),
+        loadPeople({ force: nextOptions.force || nextOptions.forcePeople }),
+      ]);
+      return true;
+    })();
+
+    challengeBootstrapPromise = runPromise;
+    try {
+      return await runPromise;
+    } finally {
+      if (challengeBootstrapPromise === runPromise) challengeBootstrapPromise = null;
+      if (challengeBootstrapPending) {
+        const pending = challengeBootstrapPending;
+        challengeBootstrapPending = null;
+        scheduleChallengeBootstrap(pending);
+      }
+    }
+  }
+
   bindChallengeConfigSync();
-  syncChallengeStateFromParent();
-  syncChallengePeopleFromParent();
-  setTimeout(() => syncInitialIdentity(), 100);
-  setTimeout(() => syncInitialIdentity(), 500);
-  setTimeout(() => syncChallengeStateFromParent(), 120);
-  setTimeout(() => syncChallengeStateFromParent(), 600);
-  setTimeout(() => syncChallengePeopleFromParent(), 120);
-  setTimeout(() => syncChallengePeopleFromParent(), 600);
+  setTimeout(() => scheduleChallengeBootstrap({ reason: 'challenge-init-settled' }), 120);
+  setTimeout(() => scheduleChallengeBootstrap({ reason: 'challenge-init-late', forcePeople: true }), 600);
 
   window.addEventListener('message', (e) => {
     if (e.data?.type === 'CHALLENGE_CONFIG') {
-      if (setChallengeDeadlineValue(e.data.deadline)) refreshDeadlineDrivenUi();
+      handleChallengeConfigSync(e.data);
       return;
     }
     if (e.data?.type === 'CHALLENGE_REGISTRATION_STATE') {
       applyParentChallengeRegistrationState(e.data);
+      scheduleChallengeBootstrap({ reason: 'parent-registration-state', empId: e.data.empId, delay: 20 });
       return;
     }
     if (e.data?.type === 'CHALLENGE_PEOPLE_STATE') {
@@ -2662,25 +2752,14 @@
     }
     if (e.data?.type === 'LOGIN' || e.data?.type === 'AVATAR_CHANGE') {
       prefillFromLogin(e.data.name, e.data.empId, e.data.avatar);
-      if (e.data?.type === 'LOGIN') checkExisting(e.data.empId);
-      // localStorage의 내 reg 아바타도 즉시 업데이트
-      const newAvatar = normalizeLiveAvatar(e.data.avatar);
-      if (newAvatar && e.data.empId) {
-        const regs = JSON.parse(localStorage.getItem(CH_KEY) || '[]');
-        const updated = regs.map(r =>
-          String(r.empId || '').toUpperCase() === String(e.data.empId || '').toUpperCase()
-            ? { ...r, avatar: newAvatar }
-            : r
-        );
-        localStorage.setItem(CH_KEY, JSON.stringify(updated));
-        // latestPeopleList도 동기화
-        latestPeopleList = latestPeopleList.map(r =>
-          String(r.empId || '').toUpperCase() === String(e.data.empId || '').toUpperCase()
-            ? { ...r, avatar: newAvatar }
-            : r
-        );
-      }
+      updateStoredAvatarForCurrentEmp(e.data.empId, e.data.avatar);
+      const activeReg = getLatestActiveRegistrationForCurrentEmp();
+      if (activeReg) renderSuccessScreen(activeReg);
       if (latestPeopleList.length) renderPeople(latestPeopleList);
+      if (e.data?.type === 'LOGIN') {
+        scheduleChallengeBootstrap({ reason: 'login-message', empId: e.data.empId, delay: 20 });
+      }
+      return;
     }
     if (e.data?.type === 'SCROLL_TOP') {
       closeImgPreview();
@@ -2689,14 +2768,8 @@
       document.body.scrollTop = 0;
     }
     if (e.data?.type === 'PAGE_VISIBILITY') {
-      setRundayPageActive(e.data.active !== false);
-      if (e.data.active !== false) {
-        syncInitialIdentity();
-        syncChallengeStateFromParent();
-        syncChallengePeopleFromParent();
-        loadChallengeConfig();
-        checkExisting();
-      }
+      setRundayPageActive(e.data.active !== false, { reason: 'page-visibility-message' });
+      return;
     }
   });
 
@@ -3141,11 +3214,13 @@
     peoplePollTimer = null;
   }
 
-  function setRundayPageActive(active) {
+  function setRundayPageActive(active, options = {}) {
     rundayPageActive = active !== false;
     if (rundayPageActive) {
-      loadPeople();
       startPeoplePolling();
+      if (options.bootstrap !== false) {
+        scheduleChallengeBootstrap({ reason: options.reason || 'page-active' });
+      }
       return;
     }
     stopPeoplePolling();
@@ -3154,23 +3229,15 @@
   setRundayPageActive(true);
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) {
-      stopPeoplePolling();
+      setRundayPageActive(false, { bootstrap: false });
       return;
     }
-    if (rundayPageActive) {
-      loadPeople();
-      startPeoplePolling();
-    }
+    setRundayPageActive(true, { reason: 'document-visible' });
   });
   window.addEventListener('focus', () => {
     if (rundayPageActive && !document.hidden) {
-      loadChallengeConfig();
-      loadPeople();
+      scheduleChallengeBootstrap({ reason: 'window-focus' });
     }
-  });
-
-  document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) loadChallengeConfig();
   });
 
   function renderSuccessScreen(reg) {
@@ -3356,8 +3423,6 @@
       document.getElementById('form-screen').classList.remove('hide');
     }
   }
-  checkExisting();
-
   // 코스 상세 버튼 - JS 직접 바인딩 (onclick 속성 보완)
   const courseBtn = document.getElementById('route-focus-toggle');
   if (courseBtn) {

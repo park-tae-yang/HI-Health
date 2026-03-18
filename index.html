@@ -7009,7 +7009,7 @@ function buildInlineRundayScript(source = '') {
     "if (window.parent && window.parent !== window) {\n        window.parent.postMessage({ type: 'RUNDAY_IMAGE_PREVIEW_CLOSE' }, '*');\n      }",
     "if (window.parent && window.parent !== window) {\n        window.parent.postMessage({ type: 'RUNDAY_IMAGE_PREVIEW_CLOSE' }, '*');\n      } else {\n        window.dispatchEvent(new CustomEvent('hi:runday-preview-close'));\n      }"
   );
-  return `(function () {\nif (window.RundayInline?.__mounted) return;\n${code}\nconst inlineExports = {\n  openRundayProfile,\n  openCourseDetail,\n  closeCourseDetail,\n  toggleFam,\n  addFamilyMember,\n  removeFamilyMember,\n  updateFamilyMember,\n  nikeGoTo,\n  nbGoTo,\n  toggleBrand,\n  openImgPreview,\n  previewNav,\n  closeImgPreview,\n  submitReg,\n  editReg,\n  cancelReg,\n  setRundayPageActive,\n  loadPeople,\n  checkExisting,\n  loadChallengeConfig,\n  syncInitialIdentity,\n};\nwindow.RundayInline = { __mounted: true, ...inlineExports };\nObject.assign(window, inlineExports);\n})();`;
+  return `(function () {\nif (window.RundayInline?.__mounted) return;\n${code}\nconst inlineExports = {\n  openRundayProfile,\n  openCourseDetail,\n  closeCourseDetail,\n  toggleFam,\n  addFamilyMember,\n  removeFamilyMember,\n  updateFamilyMember,\n  nikeGoTo,\n  nbGoTo,\n  toggleBrand,\n  openImgPreview,\n  previewNav,\n  closeImgPreview,\n  submitReg,\n  editReg,\n  cancelReg,\n  bootstrapChallengePage,\n  setRundayPageActive,\n  loadPeople,\n  checkExisting,\n  loadChallengeConfig,\n  syncInitialIdentity,\n};\nwindow.RundayInline = { __mounted: true, ...inlineExports };\nObject.assign(window, inlineExports);\n})();`;
 }
 
 function mountInlineChallengeHtml(page, html) {
@@ -7109,14 +7109,7 @@ async function ensureInlineChallengeMounted() {
 async function activateInlineChallengePage() {
   try {
     await ensureInlineChallengeMounted();
-    syncChallengeConfigToRunday();
-    syncChallengeStateToRunday();
-    syncChallengePeopleToRunday({ silent: true });
-    window.RundayInline?.setRundayPageActive?.(true);
-    window.RundayInline?.syncInitialIdentity?.();
-    window.RundayInline?.loadChallengeConfig?.();
-    window.RundayInline?.checkExisting?.();
-    window.RundayInline?.loadPeople?.();
+    syncChallengeRuntimeToRunday({ reason: 'parent-activate', active: true, silent: true }).catch(() => {});
   } catch (e) {}
 }
 
@@ -11425,6 +11418,10 @@ function writeChallengePeopleCache(rows = []) {
   } catch (e) {}
 }
 
+function postChallengePeopleStateToRunday(rows = [], options = {}) {
+  postToRunday({ type: 'CHALLENGE_PEOPLE_STATE', rows: Array.isArray(rows) ? rows : [] }, options);
+}
+
 let _challengePeopleSyncPromise = null;
 
 async function fetchChallengePeopleRows(options = {}) {
@@ -11458,9 +11455,36 @@ async function fetchChallengePeopleRows(options = {}) {
 }
 
 async function syncChallengePeopleToRunday(options = {}) {
+  const cachedRows = readChallengePeopleCache();
+  if (cachedRows.length) postChallengePeopleStateToRunday(cachedRows, options);
   const rows = await fetchChallengePeopleRows({ silent: options.silent !== false });
-  postToRunday({ type: 'CHALLENGE_PEOPLE_STATE', rows }, options);
+  postChallengePeopleStateToRunday(rows, options);
   return rows;
+}
+
+async function syncChallengeRuntimeToRunday(options = {}) {
+  const runtime = window.RundayInline;
+  syncChallengeConfigToRunday();
+  syncChallengeStateToRunday();
+  const peoplePromise = syncChallengePeopleToRunday({ silent: options.silent !== false });
+  if (typeof runtime?.bootstrapChallengePage === 'function') {
+    await Promise.allSettled([
+      runtime.bootstrapChallengePage({
+        reason: options.reason || 'parent-runtime-sync',
+        active: options.active !== false,
+        force: !!options.force,
+      }),
+      peoplePromise,
+    ]);
+    return true;
+  }
+  runtime?.setRundayPageActive?.(options.active !== false);
+  runtime?.syncInitialIdentity?.();
+  runtime?.loadChallengeConfig?.();
+  runtime?.checkExisting?.();
+  await peoplePromise;
+  runtime?.loadPeople?.();
+  return true;
 }
 
 function handleChallengeConfigSyncPayload(payload = {}) {
