@@ -3151,9 +3151,11 @@ async function sendPushNotice(mode = 'all') {
     const result = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(result?.error || '푸시 전송에 실패했어요.');
     const sent = Number(result?.sent || 0);
+    const failed = Number(result?.failed || 0);
     const invalid = Number(result?.invalid || 0);
+    const total = Number(result?.total || 0);
     const label = mode === 'selected' ? '선택 사용자 테스트' : '전체 푸시';
-    toast(`${label} 완료 ✓ (${sent}건 발송${invalid ? ` / ${invalid}건 정리` : ''})`);
+    toast(`${label} 완료 ✓ (총 ${total}건 / 발송 ${sent}건${failed ? ` / 실패 ${failed}건` : ''}${invalid ? ` / 정리 ${invalid}건` : ''})`);
     if (mode === 'all') {
       document.getElementById('push-title').value = '';
       document.getElementById('push-body').value = '';
@@ -3329,16 +3331,58 @@ async function applyShopPurchaseToggle() {
 }
 
 /* ── 설정 탭 ── */
+const CHALLENGE_CONFIG_SYNC_KEY = 'hi_health_challenge_config_sync';
+
+function notifyChallengeDeadlineChange(deadline) {
+  const payload = {
+    type: 'CHALLENGE_CONFIG',
+    deadline: String(deadline || '').trim(),
+    updatedAt: new Date().toISOString(),
+  };
+
+  try {
+    localStorage.setItem(CHALLENGE_CONFIG_SYNC_KEY, JSON.stringify(payload));
+  } catch (e) {}
+
+  try {
+    if ('BroadcastChannel' in window) {
+      const channel = new BroadcastChannel('hi-health-challenge-config');
+      channel.postMessage(payload);
+      channel.close();
+    }
+  } catch (e) {}
+
+  [window.opener, window.parent].forEach(target => {
+    if (!target || target === window) return;
+    try {
+      if (typeof target.setChallengeDeadlineFromConfig === 'function') {
+        target.setChallengeDeadlineFromConfig(payload.deadline);
+        if (typeof target.renderHeader === 'function') target.renderHeader();
+        if (target.document?.getElementById('page-challenge')?.classList.contains('active') && typeof target.renderChallenge === 'function') {
+          target.renderChallenge();
+        }
+        if (typeof target.syncChallengeConfigToRunday === 'function') target.syncChallengeConfigToRunday();
+      } else if (typeof target.postMessage === 'function') {
+        target.postMessage(payload, '*');
+      }
+    } catch (e) {}
+  });
+}
+
 async function loadSettingsTab() {
   if (!db) return;
   // 챌린지 마감일 로드
   try {
-    const { data } = await db.from('app_config').select('key,value').eq('key','ch_deadline').maybeSingle();
+    const { data, error } = await db.from('app_config').select('key,value').eq('key','ch_deadline').maybeSingle();
+    if (error) throw error;
     const inp = document.getElementById('ch-deadline-input');
     const st  = document.getElementById('ch-deadline-status');
     if (inp) inp.value = data?.value || '';
     if (st)  st.textContent = data?.value ? `현재 마감일: ${data.value}` : '마감일 미설정';
-  } catch(e) {}
+  } catch(e) {
+    const st = document.getElementById('ch-deadline-status');
+    if (st) st.textContent = '마감일을 불러오지 못했습니다';
+  }
   // 구매 기능 상태 로드
   try {
     const { data } = await db.from('app_config').select('key,value').eq('key','shop_purchase_enabled').maybeSingle();
@@ -3353,8 +3397,10 @@ async function saveChDeadline() {
   if (!val) { toast('날짜를 선택해주세요'); return; }
   if (!db)  { toast('DB 연결 필요'); return; }
   try {
-    await db.from('app_config').upsert({ key: 'ch_deadline', value: val, updated_at: new Date().toISOString() }, { onConflict: 'key' });
+    const { error } = await db.from('app_config').upsert({ key: 'ch_deadline', value: val, updated_at: new Date().toISOString() }, { onConflict: 'key' });
+    if (error) throw error;
     if (st) st.textContent = `현재 마감일: ${val}`;
+    notifyChallengeDeadlineChange(val);
     toast('마감일이 저장되었습니다 ✓');
   } catch(e) {
     toast('저장 실패: ' + e.message);
