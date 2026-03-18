@@ -3154,8 +3154,10 @@ async function sendPushNotice(mode = 'all') {
     const failed = Number(result?.failed || 0);
     const invalid = Number(result?.invalid || 0);
     const total = Number(result?.total || 0);
+    const errors = result?.errors || [];
     const label = mode === 'selected' ? '선택 사용자 테스트' : '전체 푸시';
     toast(`${label} 완료 ✓ (총 ${total}건 / 발송 ${sent}건${failed ? ` / 실패 ${failed}건` : ''}${invalid ? ` / 정리 ${invalid}건` : ''})`);
+    if (errors.length) alert('FCM 오류:\n' + errors.join('\n'));
     if (mode === 'all') {
       document.getElementById('push-title').value = '';
       document.getElementById('push-body').value = '';
@@ -3294,15 +3296,64 @@ function switchTab(name, btn) {
 }
 
 /* ── 구매 기능 설정 ── */
+function isAppConfigMissingColumnError(error) {
+  const message = String(error?.message || error || '');
+  return /column .* does not exist|Could not find the '.*' column/i.test(message);
+}
+
+function isAppConfigMissingTableError(error) {
+  const message = String(error?.message || error || '');
+  return /app_config|schema cache|relation .*app_config.* does not exist|Could not find the table .*app_config/i.test(message);
+}
+
+function formatAppConfigError(error) {
+  if (isAppConfigMissingTableError(error)) {
+    return 'app_config 테이블이 없습니다. Supabase migration 적용이 먼저 필요합니다';
+  }
+  return error?.message || String(error || '알 수 없는 오류');
+}
+
+async function saveAdminAppConfigValue(key, value) {
+  const configKey = String(key || '').trim();
+  if (!configKey) return { error: new Error('설정 키가 비어 있습니다') };
+
+  const { data: existing, error: findError } = await db
+    .from('app_config')
+    .select('key')
+    .eq('key', configKey)
+    .maybeSingle();
+  if (findError) return { error: findError };
+
+  const baseValue = String(value ?? '');
+  const withTimestamp = existing
+    ? { value: baseValue, updated_at: new Date().toISOString() }
+    : { key: configKey, value: baseValue, updated_at: new Date().toISOString() };
+  const withoutTimestamp = existing
+    ? { value: baseValue }
+    : { key: configKey, value: baseValue };
+
+  const writeConfig = async payload => (
+    existing
+      ? db.from('app_config').update(payload).eq('key', configKey)
+      : db.from('app_config').insert(payload)
+  );
+
+  let result = await writeConfig(withTimestamp);
+  if (!result.error) return result;
+  if (!isAppConfigMissingColumnError(result.error)) return result;
+  return writeConfig(withoutTimestamp);
+}
+
 async function loadShopConfig() {
   const statusEl = document.getElementById('shop-config-status');
   if (!db) { if (statusEl) statusEl.textContent = 'DB 연결 필요'; return; }
   try {
-    const { data } = await db.from('app_config').select('key,value').eq('key','shop_purchase_enabled').maybeSingle();
+    const { data, error } = await db.from('app_config').select('key,value').eq('key','shop_purchase_enabled').maybeSingle();
+    if (error) throw error;
     const enabled = data?.value === 'true';
     renderShopConfigUI(enabled);
   } catch(e) {
-    if (statusEl) statusEl.textContent = '설정 로드 실패 (app_config 테이블 확인 필요)';
+    if (statusEl) statusEl.textContent = formatAppConfigError(e);
   }
 }
 
@@ -3323,10 +3374,11 @@ async function applyShopPurchaseToggle() {
   renderShopConfigUI(enabled);
   if (!db) return;
   try {
-    await db.from('app_config').upsert({ key: 'shop_purchase_enabled', value: String(enabled), updated_at: new Date().toISOString() }, { onConflict: 'key' });
+    const { error } = await saveAdminAppConfigValue('shop_purchase_enabled', String(enabled));
+    if (error) throw error;
     alert(enabled ? '✅ 구매 기능이 활성화되었습니다' : '🔒 구매 기능이 비활성화되었습니다');
   } catch(e) {
-    alert('저장 실패: ' + e.message);
+    alert('저장 실패: ' + formatAppConfigError(e));
   }
 }
 
@@ -3381,14 +3433,18 @@ async function loadSettingsTab() {
     if (st)  st.textContent = data?.value ? `현재 마감일: ${data.value}` : '마감일 미설정';
   } catch(e) {
     const st = document.getElementById('ch-deadline-status');
-    if (st) st.textContent = '마감일을 불러오지 못했습니다';
+    if (st) st.textContent = formatAppConfigError(e);
   }
   // 구매 기능 상태 로드
   try {
-    const { data } = await db.from('app_config').select('key,value').eq('key','shop_purchase_enabled').maybeSingle();
+    const { data, error } = await db.from('app_config').select('key,value').eq('key','shop_purchase_enabled').maybeSingle();
+    if (error) throw error;
     const enabled = data?.value === 'true';
     renderShopConfigUI2(enabled);
-  } catch(e) {}
+  } catch(e) {
+    const status = document.getElementById('shop-config-status2');
+    if (status) status.textContent = formatAppConfigError(e);
+  }
 }
 
 async function saveChDeadline() {
@@ -3397,13 +3453,13 @@ async function saveChDeadline() {
   if (!val) { toast('날짜를 선택해주세요'); return; }
   if (!db)  { toast('DB 연결 필요'); return; }
   try {
-    const { error } = await db.from('app_config').upsert({ key: 'ch_deadline', value: val, updated_at: new Date().toISOString() }, { onConflict: 'key' });
+    const { error } = await saveAdminAppConfigValue('ch_deadline', val);
     if (error) throw error;
     if (st) st.textContent = `현재 마감일: ${val}`;
     notifyChallengeDeadlineChange(val);
     toast('마감일이 저장되었습니다 ✓');
   } catch(e) {
-    toast('저장 실패: ' + e.message);
+    toast('저장 실패: ' + formatAppConfigError(e));
   }
 }
 
@@ -3426,13 +3482,14 @@ async function applyShopPurchaseToggle2() {
   renderShopConfigUI2(enabled);
   if (!db) return;
   try {
-    await db.from('app_config').upsert({ key: 'shop_purchase_enabled', value: String(enabled), updated_at: new Date().toISOString() }, { onConflict: 'key' });
+    const { error } = await saveAdminAppConfigValue('shop_purchase_enabled', String(enabled));
+    if (error) throw error;
     // 구매 탭 토글도 동기화
     const t = document.getElementById('admin-shop-toggle');
     if (t) { t.checked = enabled; renderShopConfigUI(enabled); }
     toast(enabled ? '✅ 구매 기능 활성화' : '🔒 구매 기능 비활성화');
   } catch(e) {
-    toast('저장 실패: ' + e.message);
+    toast('저장 실패: ' + formatAppConfigError(e));
   }
 }
 
