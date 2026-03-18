@@ -1890,7 +1890,7 @@
     if (!uid) return null;
     const regs = JSON.parse(localStorage.getItem(CH_KEY) || '[]')
       .filter(r => isActiveRegRow(r) && String(r?.empId || '').trim().toUpperCase() === uid)
-      .sort((a, b) => new Date(b?.registeredAt || 0) - new Date(a?.registeredAt || 0));
+      .sort((a, b) => registrationRowTs(b) - registrationRowTs(a));
     return regs[0] || null;
   }
 
@@ -1932,6 +1932,84 @@
     return String(reg?.status || '').trim().toLowerCase() !== 'cancelled';
   }
 
+  function registrationRowTs(row) {
+    const ts = Date.parse(String(row?.registeredAt || row?.createdAt || ''));
+    return Number.isFinite(ts) ? ts : 0;
+  }
+
+  function normalizeStoredRegRow(reg = {}, fallbackEmpId = '') {
+    const normalizedEmpId = String(reg?.empId || fallbackEmpId || '').trim().toUpperCase();
+    const normalizedId = String(reg?.id || '').trim();
+    if (!normalizedId && !normalizedEmpId) return null;
+    return {
+      ...reg,
+      id: normalizedId,
+      empId: normalizedEmpId,
+      deviceId: String(reg?.deviceId || '').trim(),
+      name: String(reg?.name || '').trim(),
+      dept: String(reg?.dept || '').trim(),
+      phone: String(reg?.phone || '').trim(),
+      shoeSize: String(reg?.shoeSize || '').trim(),
+      tshirtSize: String(reg?.tshirtSize || '').trim(),
+      shoePrefs: Array.isArray(reg?.shoePrefs) ? reg.shoePrefs : (typeof reg?.shoePrefs === 'string' ? (() => {
+        try { return JSON.parse(reg.shoePrefs); } catch (e) { return reg.shoePrefs ? [reg.shoePrefs] : []; }
+      })() : []),
+      shoeRequestNote: String(reg?.shoeRequestNote || '').trim(),
+      cgmParticipation: reg?.cgmParticipation === true,
+      familyParticipation: reg?.familyParticipation === true,
+      familyCount: Number(reg?.familyCount) || 0,
+      familyMembers: Array.isArray(reg?.familyMembers) ? reg.familyMembers : [],
+      familyShoeSize: String(reg?.familyShoeSize || '').trim(),
+      familyTshirtSize: String(reg?.familyTshirtSize || '').trim(),
+      familyGender: String(reg?.familyGender || '').trim(),
+      familyAge: String(reg?.familyAge || '').trim(),
+      familyMemo: String(reg?.familyMemo || '').trim(),
+      cruiseParticipation: reg?.cruiseParticipation === true,
+      eventParticipation: reg?.eventParticipation === true,
+      note: String(reg?.note || '').trim(),
+      adminNote: String(reg?.adminNote || '').trim(),
+      status: String(reg?.status || 'pending').trim() || 'pending',
+      registeredAt: reg?.registeredAt || reg?.createdAt || new Date().toISOString(),
+    };
+  }
+
+  function mergeStoredRegRows(rows = []) {
+    const local = JSON.parse(localStorage.getItem(CH_KEY) || '[]');
+    const byId = new Map(local.map(r => [String(r?.id || '').trim(), r]));
+    let changed = false;
+    (Array.isArray(rows) ? rows : []).forEach(row => {
+      const normalized = normalizeStoredRegRow(row);
+      if (!normalized?.id) return;
+      const prev = byId.get(normalized.id) || null;
+      const merged = prev ? { ...prev, ...normalized } : normalized;
+      if (!prev || JSON.stringify(prev) !== JSON.stringify(merged)) {
+        byId.set(normalized.id, merged);
+        changed = true;
+      }
+    });
+    if (!changed) return local;
+    const next = [...byId.values()].sort((a, b) => registrationRowTs(b) - registrationRowTs(a));
+    localStorage.setItem(CH_KEY, JSON.stringify(next));
+    return next;
+  }
+
+  function restoreChallengeBackupForEmp(empId = getCurrentEmpId()) {
+    const normalizedEmpId = String(empId || '').trim().toUpperCase();
+    if (!normalizedEmpId) return null;
+    const keys = [`hi_health_challenge_backup_${normalizedEmpId}`];
+    const recovered = [];
+    keys.forEach(key => {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(key) || 'null');
+        const normalized = normalizeStoredRegRow(parsed, normalizedEmpId);
+        if (normalized && normalized.empId === normalizedEmpId) recovered.push(normalized);
+      } catch (e) {}
+    });
+    if (!recovered.length) return null;
+    const merged = mergeStoredRegRows(recovered);
+    return merged.find(r => String(r?.empId || '').trim().toUpperCase() === normalizedEmpId && isActiveRegRow(r)) || recovered[0] || null;
+  }
+
   function hasDup(empId, ignoreId = editingRegId) {
     const normalizedEmpId = String(empId || '').trim().toUpperCase();
     const excludedId = String(ignoreId || '').trim();
@@ -1957,8 +2035,8 @@
       const filters = [`empId.eq.${normalizedEmpId}`];
       if (normalizedEmpId.toLowerCase() !== normalizedEmpId) filters.push(`empId.eq.${normalizedEmpId.toLowerCase()}`);
       const res = await fetch(
-        SB_URL + '/rest/v1/registrations?select=*&or=(' + filters.join(',') + ')',
-        { headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY } }
+        SB_URL + '/rest/v1/registrations?select=*&or=(' + filters.join(',') + ')&_=' + Date.now(),
+        { cache: 'no-store', headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY } }
       );
       if (res.ok) remote = await res.json();
     } catch (e) {
@@ -2469,9 +2547,44 @@
     return currentLoginAvatar || LIVE_AVATAR_FALLBACK;
   }
 
+  function peopleRowTs(row) {
+    const ts = Date.parse(String(row?.registeredAt || ''));
+    return Number.isFinite(ts) ? ts : 0;
+  }
+
+  function peopleIdentityKey(row) {
+    const empId = String(row?.empId || '').trim().toUpperCase();
+    if (empId) return 'emp:' + empId;
+    const deviceId = String(row?.deviceId || '').trim();
+    if (deviceId) return 'device:' + deviceId;
+    const id = String(row?.id || '').trim();
+    return id ? 'id:' + id : '';
+  }
+
+  function collapsePeopleRows(list) {
+    const keyed = new Map();
+    const anonymous = [];
+    (Array.isArray(list) ? list : []).forEach(row => {
+      const key = peopleIdentityKey(row);
+      if (!key) {
+        anonymous.push(row);
+        return;
+      }
+      const prev = keyed.get(key);
+      if (!prev) {
+        keyed.set(key, { ...row });
+        return;
+      }
+      const nextIsNewer = peopleRowTs(row) >= peopleRowTs(prev);
+      keyed.set(key, nextIsNewer ? { ...prev, ...row } : { ...row, ...prev });
+    });
+    return [...keyed.values(), ...anonymous].sort((a, b) => peopleRowTs(b) - peopleRowTs(a));
+  }
+
   function renderPeople(list) {
-    latestPeopleList = Array.isArray(list) ? list.slice() : [];
-    const active = (Array.isArray(list) ? list : []).filter(r => String(r?.status || '').toLowerCase() !== 'cancelled');
+    const rows = collapsePeopleRows(list);
+    latestPeopleList = rows.slice();
+    const active = rows.filter(r => String(r?.status || '').toLowerCase() !== 'cancelled');
     const total = active.length;
     document.getElementById('people-count').textContent = total;
     document.getElementById('people-donation').innerHTML = `예상 기부금 <strong>${(total * DONATION_PER_PERSON).toLocaleString('ko-KR')}원</strong>`;
@@ -2496,18 +2609,19 @@
   async function loadPeople() {
     // 로컬 데이터 먼저 렌더
     const local = JSON.parse(localStorage.getItem(CH_KEY) || '[]')
-      .sort((a, b) => new Date(b.registeredAt) - new Date(a.registeredAt));
+      .sort((a, b) => peopleRowTs(b) - peopleRowTs(a));
     renderPeople(local);
 
     // Supabase에서 실시간 데이터 fetch
     try {
+      const peopleFetchUrl = SB_URL + '/rest/v1/registrations?select=id,deviceId,name,dept,empId,registeredAt,status&order=registeredAt.desc&_=' + Date.now();
       const res = await fetch(
-        SB_URL + '/rest/v1/registrations?select=id,name,dept,empId,registeredAt,status&order=registeredAt.desc&limit=50',
-        { headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY } }
+        peopleFetchUrl,
+        { cache: 'no-store', headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY } }
       );
       if (res.ok) {
         const data = await res.json();
-        if (data && data.length) {
+        if (Array.isArray(data)) {
           const byId = new Map(local.map(row => [String(row?.id || '').trim(), row]));
           data.forEach(row => {
             const rowId = String(row?.id || '').trim();
@@ -2515,7 +2629,7 @@
             byId.set(rowId, { ...(byId.get(rowId) || {}), ...row });
           });
           const merged = [...byId.values()];
-          merged.sort((a, b) => new Date(b.registeredAt) - new Date(a.registeredAt));
+          merged.sort((a, b) => peopleRowTs(b) - peopleRowTs(a));
           renderPeople(merged);
         }
       }
@@ -2550,6 +2664,19 @@
   }
 
   setRundayPageActive(true);
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      stopPeoplePolling();
+      return;
+    }
+    if (rundayPageActive) {
+      loadPeople();
+      startPeoplePolling();
+    }
+  });
+  window.addEventListener('focus', () => {
+    if (rundayPageActive && !document.hidden) loadPeople();
+  });
 
   function renderSuccessScreen(reg) {
     const canManage = isChallengeRegistrationEditable();
@@ -2699,11 +2826,15 @@
       return;
     }
     const uid = (empId || getCurrentEmpId() || '').toUpperCase();
-    if (uid) await syncLocalRegsForEmp(uid, { pruneMissing: true });
+    if (uid) {
+      restoreChallengeBackupForEmp(uid);
+      await syncLocalRegsForEmp(uid);
+    }
     const regs = JSON.parse(localStorage.getItem(CH_KEY) || '[]')
-      .filter(r => r.status !== 'cancelled' && (uid ? String(r.empId || '').toUpperCase() === uid : true));
+      .filter(r => r.status !== 'cancelled' && (uid ? String(r.empId || '').toUpperCase() === uid : true))
+      .sort((a, b) => registrationRowTs(b) - registrationRowTs(a));
     if (regs.length) {
-      renderSuccessScreen(regs[regs.length - 1]);
+      renderSuccessScreen(regs[0]);
       document.getElementById('form-screen').classList.add('hide');
       document.getElementById('success-screen').classList.add('show');
     } else {

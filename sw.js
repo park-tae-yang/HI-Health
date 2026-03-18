@@ -1,4 +1,4 @@
-const CACHE = 'hi-health-v540';
+const CACHE = 'hi-health-v541';
 const STATIC_ASSETS = [
   './manifest.webmanifest',
   './icons/icon.svg',
@@ -27,6 +27,8 @@ self.addEventListener('activate', e => {
 // 요청 가로채기: HTML은 네트워크 우선, 나머지는 캐시 우선
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
+  const url = new URL(e.request.url);
+  const isSameOrigin = url.origin === self.location.origin;
 
   // HTML 파일 / 아바타 이미지: 항상 네트워크에서 최신 버전 가져오기
   if (e.request.destination === 'document' || e.request.url.endsWith('.html') || e.request.url.includes('/images/avatars/')) {
@@ -38,6 +40,14 @@ self.addEventListener('fetch', e => {
         }
         return res;
       }).catch(() => caches.match(e.request))
+    );
+    return;
+  }
+
+  // 외부 API 데이터는 캐시 우선으로 두면 관리자 변경사항이 늦게 반영될 수 있어 네트워크 우선으로 처리
+  if (!isSameOrigin || url.pathname.includes('/rest/v1/') || url.pathname.includes('/functions/v1/')) {
+    e.respondWith(
+      fetch(e.request).catch(() => caches.match(e.request))
     );
     return;
   }
