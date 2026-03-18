@@ -4789,7 +4789,7 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const PUSH_PUBLIC_KEY   = 'BEaMexe-bw1jM31PgeQdkkZeqs29Ls1KIMY-TViYgH2dPqg_v7tRRObOpRUTGu5-ZgH13qR_ZTtxeOWh9_vnhTk';
 const PUSH_TABLE        = 'push_subscriptions';
 const PUSH_DEFAULT_URL  = './index.html#community';
-const SW_VERSION        = '20260318-82';
+const SW_VERSION        = '20260318-83';
 const CHALLENGE_PEOPLE_CACHE_KEY = 'hi_health_people_cache_v1';
 let _db = null; // Supabase 클라이언트
 let _realLeagueUsers = null; // Supabase에서 가져온 실제 유저 목록
@@ -6673,7 +6673,7 @@ function myWeekPts() {
    NAVIGATION
 ════════════════════════════════════════ */
 const _isTouch = () => window.matchMedia('(hover: none)').matches;
-const RUNDAY_IFRAME_SRC = 'runday.html?v=20260318-82';
+const RUNDAY_IFRAME_SRC = 'runday.html?v=20260318-83';
 let _rundayIframeReady = false;
 let _rundayIframeLoadStarted = false;
 const _rundayIframeQueue = [];
@@ -6817,7 +6817,7 @@ function buildInlineRundayScript(source = '') {
   let code = String(source || '');
   code = code.replace(
     /const IS_EMBEDDED_RUN_DAY = \(\(\) => \{\s*try \{ return window\.parent && window\.parent !== window; \} catch \(e\) \{ return false; \}\s*\}\)\(\);/,
-    "const IS_EMBEDDED_RUN_DAY = false;"
+    "const IS_EMBEDDED_RUN_DAY = true;"
   );
   code = code.replace(
     "if (window.parent && window.parent !== window && typeof window.parent.openProfileModal === 'function') {",
