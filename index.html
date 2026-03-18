@@ -7118,6 +7118,22 @@ async function activateInlineChallengePage() {
   } catch (e) {}
 }
 
+let _inlineChallengeActivationQueued = false;
+
+function queueActivateInlineChallengePage() {
+  if (_inlineChallengeActivationQueued) return;
+  _inlineChallengeActivationQueued = true;
+  const run = () => {
+    _inlineChallengeActivationQueued = false;
+    activateInlineChallengePage();
+  };
+  if (typeof window.requestAnimationFrame === 'function') {
+    window.requestAnimationFrame(() => setTimeout(run, 0));
+    return;
+  }
+  setTimeout(run, 0);
+}
+
 function deactivateInlineChallengePage() {
   window.RundayInline?.setRundayPageActive?.(false);
 }
@@ -7227,11 +7243,11 @@ function navigate(page) {
   if (!isChallenge) deactivateInlineChallengePage();
   if (page === 'challenge') {
     renderChallenge();
-    activateInlineChallengePage();
+    queueActivateInlineChallengePage();
     loadAppConfig().then(() => {
       renderHeader();
       renderChallenge();
-      activateInlineChallengePage();
+      queueActivateInlineChallengePage();
     });
   }
   placeGuestBanner(page);
@@ -12280,7 +12296,7 @@ function scrollToExerciseForm() {
 
 function renderChallenge() {
   if (document.getElementById('page-challenge') && !document.getElementById('ch-hero')) {
-    activateInlineChallengePage();
+    queueActivateInlineChallengePage();
     return;
   }
   if (!document.getElementById('ch-hero')) return; // iframe 모드: runday.html이 렌더링 담당
