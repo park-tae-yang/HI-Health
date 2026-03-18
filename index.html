@@ -717,16 +717,37 @@
     #page-challenge {
       padding: 0;
       margin-top: calc(-1 * (var(--header-height) + max(env(safe-area-inset-top), 44px)));
-      height: calc(100vh - var(--nav-height) - env(safe-area-inset-bottom));
-      height: calc(100dvh - var(--nav-height) - env(safe-area-inset-bottom));
-      overflow: hidden;
+      min-height: calc(100vh - var(--nav-height) - env(safe-area-inset-bottom));
+      min-height: calc(100dvh - var(--nav-height) - env(safe-area-inset-bottom));
+      overflow-x: hidden;
+      overflow-y: auto;
       background: #fdfcf0;
       animation: none;
     }
-    #runday-iframe {
-      width: 100%; height: 100%;
-      border: none; display: block;
-      background: #fdfcf0;
+    #page-challenge .challenge-inline-loading,
+    #page-challenge .challenge-inline-error {
+      min-height: calc(100vh - var(--nav-height) - env(safe-area-inset-bottom));
+      min-height: calc(100dvh - var(--nav-height) - env(safe-area-inset-bottom));
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 28px 20px;
+      text-align: center;
+      color: #6b7280;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+    #page-challenge .challenge-inline-error button {
+      border: none;
+      border-radius: 999px;
+      background: #1e1047;
+      color: #fff;
+      padding: 10px 18px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
     }
     @keyframes pageIn {
       from { opacity: 0; transform: translateY(14px); }
@@ -4486,7 +4507,7 @@
 
   <!-- ████  CHALLENGE  ████ -->
   <section id="page-challenge" class="page">
-    <iframe id="runday-iframe" data-src="runday.html?v=20260318-75" title="HI RUN DAY" loading="lazy"></iframe>
+    <div class="challenge-inline-loading">챌린지 화면 불러오는 중...</div>
   </section>
 
   <!-- ████  ADMIN  ████ -->
@@ -4768,7 +4789,7 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const PUSH_PUBLIC_KEY   = 'BEaMexe-bw1jM31PgeQdkkZeqs29Ls1KIMY-TViYgH2dPqg_v7tRRObOpRUTGu5-ZgH13qR_ZTtxeOWh9_vnhTk';
 const PUSH_TABLE        = 'push_subscriptions';
 const PUSH_DEFAULT_URL  = './index.html#community';
-const SW_VERSION        = '20260318-81';
+const SW_VERSION        = '20260318-82';
 const CHALLENGE_PEOPLE_CACHE_KEY = 'hi_health_people_cache_v1';
 let _db = null; // Supabase 클라이언트
 let _realLeagueUsers = null; // Supabase에서 가져온 실제 유저 목록
@@ -6652,10 +6673,11 @@ function myWeekPts() {
    NAVIGATION
 ════════════════════════════════════════ */
 const _isTouch = () => window.matchMedia('(hover: none)').matches;
-const RUNDAY_IFRAME_SRC = 'runday.html?v=20260318-75';
+const RUNDAY_IFRAME_SRC = 'runday.html?v=20260318-82';
 let _rundayIframeReady = false;
 let _rundayIframeLoadStarted = false;
 const _rundayIframeQueue = [];
+let _rundayInlineMountPromise = null;
 
 function getRundayIframe() {
   return document.getElementById('runday-iframe');
@@ -6733,6 +6755,153 @@ function postToRunday(payload, options = {}) {
   }
   queueRundayMessage(payload);
 }
+
+function scopeRundaySelector(selector, scope) {
+  const trimmed = String(selector || '').trim();
+  if (!trimmed) return '';
+  if (trimmed.startsWith(scope)) return trimmed;
+  if (trimmed.startsWith(':root')) return `${scope}${trimmed.slice(5)}`;
+  if (trimmed === 'body') return scope;
+  if (trimmed.startsWith('body.')) {
+    return trimmed.replace(/^body([^\s]*)(.*)$/, (_, bodyState, rest) => `body${bodyState} ${scope}${rest}`);
+  }
+  if (trimmed.startsWith('body ')) return `${scope}${trimmed.slice(4)}`;
+  if (trimmed === 'html') return scope;
+  if (trimmed.startsWith('html.')) {
+    return trimmed.replace(/^html([^\s]*)(.*)$/, (_, htmlState, rest) => `html${htmlState} ${scope}${rest}`);
+  }
+  if (trimmed.startsWith('html ')) return `${scope}${trimmed.slice(4)}`;
+  return `${scope} ${trimmed}`;
+}
+
+function scopeRundayCss(css, scope = '#page-challenge') {
+  const keyframes = [];
+  const placeholder = idx => `__RUNDAY_KEYFRAMES_${idx}__`;
+  const tokenized = String(css || '').replace(/@keyframes[\s\S]*?}\s*}/g, block => placeholder(keyframes.push(block) - 1));
+  const scoped = tokenized.replace(/(^|})\s*([^@{}][^{}]*)\{/g, (match, prefix, selectorGroup) => {
+    const scopedSelectors = selectorGroup
+      .split(',')
+      .map(selector => scopeRundaySelector(selector, scope))
+      .filter(Boolean)
+      .join(', ');
+    return `${prefix}\n${scopedSelectors}{`;
+  });
+  return scoped.replace(/__RUNDAY_KEYFRAMES_(\d+)__/g, (_, idx) => keyframes[Number(idx)] || '');
+}
+
+function rewriteInlineRundayHandlers(html) {
+  const handlerNames = [
+    'openRundayProfile',
+    'openCourseDetail',
+    'closeCourseDetail',
+    'toggleFam',
+    'addFamilyMember',
+    'removeFamilyMember',
+    'updateFamilyMember',
+    'nikeGoTo',
+    'nbGoTo',
+    'toggleBrand',
+    'openImgPreview',
+    'previewNav',
+    'closeImgPreview',
+    'submitReg',
+    'editReg',
+    'cancelReg',
+  ];
+  return handlerNames.reduce((acc, name) => (
+    acc.replace(new RegExp(`\\b${name}\\s*\\(`, 'g'), `window.RundayInline.${name}(`)
+  ), String(html || ''));
+}
+
+function buildInlineRundayScript(source = '') {
+  let code = String(source || '');
+  code = code.replace(
+    /const IS_EMBEDDED_RUN_DAY = \(\(\) => \{\s*try \{ return window\.parent && window\.parent !== window; \} catch \(e\) \{ return false; \}\s*\}\)\(\);/,
+    "const IS_EMBEDDED_RUN_DAY = false;"
+  );
+  code = code.replace(
+    "if (window.parent && window.parent !== window && typeof window.parent.openProfileModal === 'function') {",
+    "if (typeof window.openProfileModal === 'function') { window.openProfileModal(); return; }\n      if (window.parent && window.parent !== window && typeof window.parent.openProfileModal === 'function') {"
+  );
+  code = code.replace(
+    "if (window.parent && window.parent !== window) {\n        window.parent.postMessage({ type: 'RUNDAY_REGISTRATION_SYNC', ...payload }, '*');\n      }",
+    "if (window.parent && window.parent !== window) {\n        window.parent.postMessage({ type: 'RUNDAY_REGISTRATION_SYNC', ...payload }, '*');\n        return;\n      }\n      window.dispatchEvent(new CustomEvent('hi:runday-registration-sync', { detail: payload }));"
+  );
+  return `(function () {\nif (window.RundayInline?.__mounted) return;\n${code}\nwindow.RundayInline = {\n  __mounted: true,\n  openRundayProfile,\n  openCourseDetail,\n  closeCourseDetail,\n  toggleFam,\n  addFamilyMember,\n  removeFamilyMember,\n  updateFamilyMember,\n  nikeGoTo,\n  nbGoTo,\n  toggleBrand,\n  openImgPreview,\n  previewNav,\n  closeImgPreview,\n  submitReg,\n  editReg,\n  cancelReg,\n  setRundayPageActive,\n  loadPeople,\n  checkExisting,\n  loadChallengeConfig,\n  syncInitialIdentity,\n};\n})();`;
+}
+
+async function ensureInlineChallengeMounted() {
+  const page = document.getElementById('page-challenge');
+  if (!page) return null;
+  if (window.RundayInline?.__mounted && page.dataset.challengeMounted === '1') return page;
+  if (_rundayInlineMountPromise) return _rundayInlineMountPromise;
+
+  _rundayInlineMountPromise = (async () => {
+    page.innerHTML = '<div class="challenge-inline-loading">챌린지 화면 불러오는 중...</div>';
+    try {
+      const res = await fetch(RUNDAY_IFRAME_SRC, { cache: 'no-store' });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const html = await res.text();
+      const parsed = new DOMParser().parseFromString(html, 'text/html');
+      const styleText = [...parsed.querySelectorAll('style')].map(el => el.textContent || '').join('\n');
+      const bodyClone = parsed.body.cloneNode(true);
+      const scriptNodes = [...bodyClone.querySelectorAll('script')];
+      const scriptSource = scriptNodes.map(node => node.textContent || '').join('\n');
+      scriptNodes.forEach(node => node.remove());
+      const bodyHtml = rewriteInlineRundayHandlers(bodyClone.innerHTML);
+      page.innerHTML = `<style id="runday-inline-style">${scopeRundayCss(styleText)}</style>${bodyHtml}`;
+      const scriptEl = document.createElement('script');
+      scriptEl.id = 'runday-inline-script';
+      scriptEl.text = buildInlineRundayScript(scriptSource);
+      page.appendChild(scriptEl);
+      page.dataset.challengeMounted = '1';
+      return page;
+    } catch (error) {
+      console.error('[ensureInlineChallengeMounted]', error);
+      page.innerHTML = `
+        <div class="challenge-inline-error">
+          <div>챌린지 화면을 불러오지 못했습니다.</div>
+          <button type="button" onclick="window.retryInlineChallengeMount()">다시 시도</button>
+        </div>`;
+      throw error;
+    } finally {
+      _rundayInlineMountPromise = null;
+    }
+  })();
+
+  return _rundayInlineMountPromise;
+}
+
+async function activateInlineChallengePage() {
+  try {
+    await ensureInlineChallengeMounted();
+    window.RundayInline?.setRundayPageActive?.(true);
+    window.RundayInline?.syncInitialIdentity?.();
+    window.RundayInline?.loadChallengeConfig?.();
+    window.RundayInline?.checkExisting?.();
+    window.RundayInline?.loadPeople?.();
+  } catch (e) {}
+}
+
+function deactivateInlineChallengePage() {
+  window.RundayInline?.setRundayPageActive?.(false);
+}
+
+window.retryInlineChallengeMount = function retryInlineChallengeMount() {
+  delete window.RundayInline;
+  const page = document.getElementById('page-challenge');
+  if (page) delete page.dataset.challengeMounted;
+  return activateInlineChallengePage();
+};
+
+window.addEventListener('hi:runday-registration-sync', () => {
+  const activeReg = getMyReg();
+  S.user.registrationId = activeReg ? activeReg.id : null;
+  save();
+  renderHeader();
+  if (document.getElementById('page-home')?.classList.contains('active')) renderHome();
+  if (document.getElementById('page-community')?.classList.contains('active')) renderCommunity();
+});
 
 function quickNav(btn, fn) {
   document.querySelectorAll('.quick-btn.clicked').forEach(b => {
@@ -6820,26 +6989,14 @@ function navigate(page) {
   if (!isChallenge && _rundayIframeLoadStarted) {
     postToRunday({ type: 'PAGE_VISIBILITY', active: false });
   }
+  if (!isChallenge) deactivateInlineChallengePage();
   if (page === 'challenge') {
     renderChallenge();
-    ensureRundayIframeLoaded();
-    postToRunday({ type: 'PAGE_VISIBILITY', active: true }, { ensureLoaded: true });
-    postToRunday({ type: 'SCROLL_TOP' }, { ensureLoaded: true });
-    postToRunday({
-      type: 'LOGIN',
-      name: S.user.name,
-      empId: S.user.empId || ACTIVE_EMPID,
-      avatar: normalizeAvatar(S.user.avatar),
-    }, { ensureLoaded: true });
-    syncChallengeConfigToRunday();
-    syncChallengeStateToRunday({ ensureLoaded: true });
-    syncChallengePeopleToRunday({ ensureLoaded: true });
+    activateInlineChallengePage();
     loadAppConfig().then(() => {
       renderHeader();
       renderChallenge();
-      syncChallengeConfigToRunday();
-      syncChallengeStateToRunday({ ensureLoaded: true });
-      syncChallengePeopleToRunday({ ensureLoaded: true });
+      activateInlineChallengePage();
     });
   }
   placeGuestBanner(page);
@@ -11888,6 +12045,10 @@ function scrollToExerciseForm() {
 }
 
 function renderChallenge() {
+  if (document.getElementById('page-challenge') && !document.getElementById('ch-hero')) {
+    activateInlineChallengePage();
+    return;
+  }
   if (!document.getElementById('ch-hero')) return; // iframe 모드: runday.html이 렌더링 담당
   const phase = getChPhase();
   const now = new Date();
