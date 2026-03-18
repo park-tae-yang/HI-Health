@@ -350,20 +350,23 @@
       50% { box-shadow: 0 7px 14px rgba(14,165,233,0.22); }
     }
     .route-focus-chip {
+      -webkit-appearance:none;
+      appearance:none;
       display:inline-flex;
       align-items:center;
       justify-content:center;
-      gap:8px;
-      padding:5px 10px 6px;
+      gap:6px;
+      min-height:28px;
+      padding:4px 9px;
       border:1px solid rgba(255,255,255,0.22);
-      border-radius:12px;
+      border-radius:11px;
       background:linear-gradient(135deg, #06B6D4 0%, #2563EB 100%);
       color:#fff;
       font-family:inherit;
-      font-size:9px;
+      font-size:8px;
       font-weight:800;
-      letter-spacing:.15px;
-      line-height:1.15;
+      letter-spacing:.08px;
+      line-height:1;
       white-space:nowrap;
       cursor:pointer;
       touch-action:manipulation;
@@ -372,6 +375,11 @@
       animation:routeChipFloat 1.9s ease-in-out infinite, routeChipGlow 1.9s ease-in-out infinite;
       position:relative;
       z-index:1;
+      flex-shrink:0;
+    }
+    .route-focus-chip svg {
+      width:12px;
+      height:12px;
       flex-shrink:0;
     }
     .route-focus-chip:hover {
@@ -388,8 +396,8 @@
     .route-focus-chip::after {
       content:'';
       position:absolute;
-      left:18px;
-      bottom:-3px;
+      left:16px;
+      bottom:-2px;
       width:6px;
       height:3px;
       background:#2563EB;
@@ -567,7 +575,9 @@
         padding:14px 16px 24px;
       }
       .route-focus-chip {
-        font-size:8px;
+        min-height:26px;
+        padding:4px 8px;
+        font-size:7px;
       }
     }
     @media (prefers-reduced-motion: reduce) {
