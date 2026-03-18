@@ -6867,6 +6867,9 @@ function mountInlineChallengeHtml(page, html) {
   page.dataset.challengeMounted = '1';
 }
 
+let _rundayInlineHtmlText = '';
+let _rundayInlineHtmlPromise = null;
+
 async function readCachedInlineChallengeHtml() {
   if (!('caches' in window)) return '';
   try {
@@ -6878,6 +6881,35 @@ async function readCachedInlineChallengeHtml() {
   }
 }
 
+async function fetchInlineChallengeHtml(options = {}) {
+  const refresh = !!options.refresh;
+  if (!refresh && _rundayInlineHtmlText) return _rundayInlineHtmlText;
+  if (!refresh && _rundayInlineHtmlPromise) return _rundayInlineHtmlPromise;
+  _rundayInlineHtmlPromise = (async () => {
+    if (!refresh) {
+      const cachedHtml = await readCachedInlineChallengeHtml();
+      if (cachedHtml) {
+        _rundayInlineHtmlText = cachedHtml;
+        return cachedHtml;
+      }
+    }
+    const res = await fetch(RUNDAY_IFRAME_SRC, { cache: 'no-store' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const html = await res.text();
+    _rundayInlineHtmlText = html;
+    return html;
+  })();
+  try {
+    return await _rundayInlineHtmlPromise;
+  } finally {
+    _rundayInlineHtmlPromise = null;
+  }
+}
+
+function warmInlineChallengeHtml(options = {}) {
+  fetchInlineChallengeHtml(options).catch(() => {});
+}
+
 async function ensureInlineChallengeMounted() {
   const page = document.getElementById('page-challenge');
   if (!page) return null;
@@ -6886,18 +6918,17 @@ async function ensureInlineChallengeMounted() {
 
   _rundayInlineMountPromise = (async () => {
     try {
-      const cachedHtml = await readCachedInlineChallengeHtml();
-      if (cachedHtml) {
-        mountInlineChallengeHtml(page, cachedHtml);
-        fetch(RUNDAY_IFRAME_SRC, { cache: 'no-store' }).catch(() => {});
+      const hasWarmSource = !!_rundayInlineHtmlText || !!_rundayInlineHtmlPromise;
+      if (!hasWarmSource) {
+        page.innerHTML = '<div class="challenge-inline-loading">챌린지 화면 불러오는 중...</div>';
+      }
+      const html = await fetchInlineChallengeHtml();
+      if (html) {
+        mountInlineChallengeHtml(page, html);
+        warmInlineChallengeHtml({ refresh: true });
         return page;
       }
-      page.innerHTML = '<div class="challenge-inline-loading">챌린지 화면 불러오는 중...</div>';
-      const res = await fetch(RUNDAY_IFRAME_SRC, { cache: 'no-store' });
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      const html = await res.text();
-      mountInlineChallengeHtml(page, html);
-      return page;
+      throw new Error('empty challenge html');
     } catch (error) {
       console.error('[ensureInlineChallengeMounted]', error);
       page.innerHTML = `
@@ -13127,6 +13158,7 @@ async function doAppLogin() {
 
   btn.disabled = true;
   loadEl.style.display = 'block';
+  warmInlineChallengeHtml();
 
   // Supabase에서 이름 일치 검증 (기존 사용자인 경우)
   if (_db) {
@@ -13294,6 +13326,7 @@ function appLogout() {
 async function init() {
   if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
   window.scrollTo(0, 0);
+  warmInlineChallengeHtml();
   // ?run 파라미터 없으면 히어로 섹션 숨김, 서브타이틀 변경
   const loginScreen = document.getElementById('app-login-screen');
   if (loginScreen) loginScreen.classList.toggle('runday', IS_RUN_MODE);
