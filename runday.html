@@ -2594,6 +2594,18 @@
     return '';
   }
 
+  function getCurrentUserName() {
+    const fieldName = String(document.getElementById('f-name')?.value || '').trim();
+    if (fieldName) return fieldName;
+    try {
+      return String(window.parent?.S?.user?.name || '').trim();
+    } catch (e) {}
+    try {
+      return String(sessionStorage.getItem('hi_keep_login_name') || localStorage.getItem('hi_keep_login_name') || '').trim();
+    } catch (e) {}
+    return '';
+  }
+
   function getCurrentDeviceId() {
     try {
       const parentDeviceId = String(window.parent?.S?.deviceId || '').trim();
@@ -2741,6 +2753,54 @@
     return currentLoginAvatar || LIVE_AVATAR_FALLBACK;
   }
 
+  function getRegistrationMatchScore(reg, identity = getCurrentRegIdentity(), currentName = getCurrentUserName()) {
+    let score = 0;
+    const rowId = String(reg?.id || '').trim();
+    const rowEmpId = String(reg?.empId || '').trim().toUpperCase();
+    const rowDeviceId = String(reg?.deviceId || '').trim();
+    const rowName = String(reg?.name || '').trim();
+    if (identity.regId && rowId && rowId === identity.regId) score += 16;
+    if (identity.empId && rowEmpId && rowEmpId === identity.empId) score += 8;
+    if (identity.deviceId && rowDeviceId && rowDeviceId === identity.deviceId) score += 4;
+    if (currentName && rowName && rowName === currentName) score += 2;
+    return score;
+  }
+
+  function findRecoverableRegistration(rows = []) {
+    const identity = getCurrentRegIdentity();
+    const currentName = getCurrentUserName();
+    const activeRows = (Array.isArray(rows) ? rows : [])
+      .map(row => normalizeStoredRegRow(row, identity.empId))
+      .filter(Boolean)
+      .filter(isActiveRegRow);
+    if (!activeRows.length) return null;
+
+    const scored = activeRows
+      .map(row => ({ row, score: getRegistrationMatchScore(row, identity, currentName) }))
+      .filter(entry => entry.score > 0)
+      .sort((a, b) => (b.score - a.score) || (registrationRowTs(b.row) - registrationRowTs(a.row)));
+    if (!scored.length) return null;
+
+    const best = scored[0];
+    if (best.score <= 2) {
+      const sameNameRows = scored.filter(entry => entry.score === best.score);
+      if (sameNameRows.length !== 1) return null;
+    }
+    return best.row;
+  }
+
+  function restoreCurrentRegistrationFromRows(rows = [], opts = {}) {
+    const reg = findRecoverableRegistration(rows);
+    if (!reg) return false;
+    mergeStoredRegRows([reg]);
+    if (opts.render !== false && !String(editingRegId || '').trim()) {
+      renderSuccessScreen(reg);
+      document.getElementById('form-screen')?.classList.add('hide');
+      document.getElementById('success-screen')?.classList.add('show');
+    }
+    return true;
+  }
+
   function peopleRowTs(row) {
     const ts = Date.parse(String(row?.registeredAt || ''));
     return Number.isFinite(ts) ? ts : 0;
@@ -2805,6 +2865,7 @@
     const local = JSON.parse(localStorage.getItem(CH_KEY) || '[]')
       .sort((a, b) => peopleRowTs(b) - peopleRowTs(a));
     renderPeople(local);
+    restoreCurrentRegistrationFromRows(local, { render: !document.getElementById('success-screen')?.classList.contains('show') });
 
     // Supabase에서 실시간 데이터 fetch
     try {
@@ -2825,6 +2886,7 @@
           const merged = [...byId.values()];
           merged.sort((a, b) => peopleRowTs(b) - peopleRowTs(a));
           renderPeople(merged);
+          restoreCurrentRegistrationFromRows(merged);
         }
       }
     } catch(e) { /* 오프라인 시 로컬 데이터 유지 */ }
@@ -3048,6 +3110,7 @@
       document.getElementById('form-screen').classList.add('hide');
       document.getElementById('success-screen').classList.add('show');
     } else {
+      if (restoreCurrentRegistrationFromRows(latestPeopleList)) return;
       if (document.getElementById('success-screen').classList.contains('show')) {
         resetRegistrationForm({ preserveIdentity: true });
       }
