@@ -6851,6 +6851,33 @@ function buildInlineRundayScript(source = '') {
   return `(function () {\nif (window.RundayInline?.__mounted) return;\n${code}\nconst inlineExports = {\n  openRundayProfile,\n  openCourseDetail,\n  closeCourseDetail,\n  toggleFam,\n  addFamilyMember,\n  removeFamilyMember,\n  updateFamilyMember,\n  nikeGoTo,\n  nbGoTo,\n  toggleBrand,\n  openImgPreview,\n  previewNav,\n  closeImgPreview,\n  submitReg,\n  editReg,\n  cancelReg,\n  setRundayPageActive,\n  loadPeople,\n  checkExisting,\n  loadChallengeConfig,\n  syncInitialIdentity,\n};\nwindow.RundayInline = { __mounted: true, ...inlineExports };\nObject.assign(window, inlineExports);\n})();`;
 }
 
+function mountInlineChallengeHtml(page, html) {
+  const parsed = new DOMParser().parseFromString(String(html || ''), 'text/html');
+  const styleText = [...parsed.querySelectorAll('style')].map(el => el.textContent || '').join('\n');
+  const bodyClone = parsed.body.cloneNode(true);
+  const scriptNodes = [...bodyClone.querySelectorAll('script')];
+  const scriptSource = scriptNodes.map(node => node.textContent || '').join('\n');
+  scriptNodes.forEach(node => node.remove());
+  const bodyHtml = rewriteInlineRundayHandlers(bodyClone.innerHTML);
+  page.innerHTML = `<style id="runday-inline-style">${scopeRundayCss(styleText)}</style>${bodyHtml}`;
+  const scriptEl = document.createElement('script');
+  scriptEl.id = 'runday-inline-script';
+  scriptEl.text = buildInlineRundayScript(scriptSource);
+  page.appendChild(scriptEl);
+  page.dataset.challengeMounted = '1';
+}
+
+async function readCachedInlineChallengeHtml() {
+  if (!('caches' in window)) return '';
+  try {
+    const cached = await caches.match(RUNDAY_IFRAME_SRC);
+    if (!cached || !cached.ok) return '';
+    return await cached.text();
+  } catch (e) {
+    return '';
+  }
+}
+
 async function ensureInlineChallengeMounted() {
   const page = document.getElementById('page-challenge');
   if (!page) return null;
@@ -6858,24 +6885,18 @@ async function ensureInlineChallengeMounted() {
   if (_rundayInlineMountPromise) return _rundayInlineMountPromise;
 
   _rundayInlineMountPromise = (async () => {
-    page.innerHTML = '<div class="challenge-inline-loading">챌린지 화면 불러오는 중...</div>';
     try {
+      const cachedHtml = await readCachedInlineChallengeHtml();
+      if (cachedHtml) {
+        mountInlineChallengeHtml(page, cachedHtml);
+        fetch(RUNDAY_IFRAME_SRC, { cache: 'no-store' }).catch(() => {});
+        return page;
+      }
+      page.innerHTML = '<div class="challenge-inline-loading">챌린지 화면 불러오는 중...</div>';
       const res = await fetch(RUNDAY_IFRAME_SRC, { cache: 'no-store' });
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const html = await res.text();
-      const parsed = new DOMParser().parseFromString(html, 'text/html');
-      const styleText = [...parsed.querySelectorAll('style')].map(el => el.textContent || '').join('\n');
-      const bodyClone = parsed.body.cloneNode(true);
-      const scriptNodes = [...bodyClone.querySelectorAll('script')];
-      const scriptSource = scriptNodes.map(node => node.textContent || '').join('\n');
-      scriptNodes.forEach(node => node.remove());
-      const bodyHtml = rewriteInlineRundayHandlers(bodyClone.innerHTML);
-      page.innerHTML = `<style id="runday-inline-style">${scopeRundayCss(styleText)}</style>${bodyHtml}`;
-      const scriptEl = document.createElement('script');
-      scriptEl.id = 'runday-inline-script';
-      scriptEl.text = buildInlineRundayScript(scriptSource);
-      page.appendChild(scriptEl);
-      page.dataset.challengeMounted = '1';
+      mountInlineChallengeHtml(page, html);
       return page;
     } catch (error) {
       console.error('[ensureInlineChallengeMounted]', error);
