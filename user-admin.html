@@ -187,6 +187,7 @@
     /* ── CHALLENGE STATUS COUNTS ── */
     .ch-status-bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;}
     .ch-s-pill{background:var(--card);border-radius:var(--rs);padding:10px 16px;box-shadow:var(--shadow);text-align:center;min-width:90px;}
+    .ch-s-pill.wide{min-width:120px;}
     .ch-s-val{font-size:20px;font-weight:700;line-height:1;}
     .ch-s-lbl{font-size:11px;color:var(--t3);margin-top:3px;}
 
@@ -500,6 +501,8 @@
     <div class="panel" id="panel-challenge">
       <div class="ch-status-bar">
         <div class="ch-s-pill"><div class="ch-s-val" id="ch-total">-</div><div class="ch-s-lbl">전체</div></div>
+        <div class="ch-s-pill"><div class="ch-s-val" id="ch-live">-</div><div class="ch-s-lbl">같이 달려요</div></div>
+        <div class="ch-s-pill wide"><div class="ch-s-val" id="ch-donation">-</div><div class="ch-s-lbl">예상기부금(원)</div></div>
         <div class="ch-s-pill"><div class="ch-s-val" id="ch-pend">-</div><div class="ch-s-lbl">대기</div></div>
         <div class="ch-s-pill"><div class="ch-s-val" id="ch-ok">-</div><div class="ch-s-lbl">확정</div></div>
         <div class="ch-s-pill"><div class="ch-s-val" id="ch-can">-</div><div class="ch-s-lbl">취소</div></div>
@@ -821,6 +824,7 @@
 const SUPABASE_URL = 'https://nbnmvvobehjitophkqmu.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ibm12dm9iZWhqaXRvcGhrcW11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3Nzk4NzQsImV4cCI6MjA4ODM1NTg3NH0.iZS4JvhHUqv4ZMPxm9STit6xqVp2JA5H55M8Wmd1yjY';
 const CH_REG_KEY = 'hi_health_registrations_v2';
+const CHALLENGE_DONATION_PER_PERSON = 3000;
 const SEND_PUSH_FN = SUPABASE_URL + '/functions/v1/send-push';
 
 const EX_MAP = {
@@ -1336,6 +1340,37 @@ function normalizeRegistrationRow(r) {
 
 function isActiveRegistration(r) {
   return String(r?.status || 'pending').trim() !== 'cancelled';
+}
+
+function challengeLivePeopleKey(r) {
+  const empId = normRegEmpId(r?.empId);
+  if (empId) return 'emp:' + empId;
+  const deviceId = normRegIdValue(r?.deviceId);
+  if (deviceId) return 'device:' + deviceId;
+  const id = normRegIdValue(r?.id);
+  return id ? 'id:' + id : '';
+}
+
+function getChallengeLivePeopleRows(rows = getEffectiveChallengeRegistrations()) {
+  const keyed = new Map();
+  const anonymous = [];
+  [...(rows || [])]
+    .map(normalizeRegistrationRow)
+    .filter(isActiveRegistration)
+    .forEach(r => {
+      const key = challengeLivePeopleKey(r);
+      if (!key) {
+        anonymous.push(r);
+        return;
+      }
+      const prev = keyed.get(key);
+      if (!prev) {
+        keyed.set(key, r);
+        return;
+      }
+      keyed.set(key, regTs(r) >= regTs(prev) ? { ...prev, ...r } : { ...r, ...prev });
+    });
+  return [...keyed.values(), ...anonymous].sort((a, b) => regTs(b) - regTs(a));
 }
 
 function regTs(r) {
@@ -2595,6 +2630,7 @@ function renderChallenge() {
   const q = document.getElementById('ch-search').value.toLowerCase();
   const sf = document.getElementById('ch-sfilter').value;
   const all = getEffectiveChallengeRegistrations();
+  const livePeopleRows = getChallengeLivePeopleRows(all);
   const list = all.filter(r => {
     const status = String(r?.status || '').trim().toLowerCase();
     if (sf) {
@@ -2619,6 +2655,8 @@ function renderChallenge() {
   }).sort((a,b) => new Date(b.registeredAt||0) - new Date(a.registeredAt||0));
 
   document.getElementById('ch-total').textContent   = all.length;
+  document.getElementById('ch-live').textContent    = livePeopleRows.length;
+  document.getElementById('ch-donation').textContent = (livePeopleRows.length * CHALLENGE_DONATION_PER_PERSON).toLocaleString('ko-KR');
   document.getElementById('ch-pend').textContent    = all.filter(r => r.status === 'pending').length;
   document.getElementById('ch-ok').textContent      = all.filter(r => r.status === 'confirmed').length;
   document.getElementById('ch-can').textContent     = all.filter(r => r.status === 'cancelled').length;
