@@ -4486,7 +4486,7 @@
 
   <!-- ████  CHALLENGE  ████ -->
   <section id="page-challenge" class="page">
-    <iframe id="runday-iframe" data-src="runday.html?v=20260315-70" title="HI RUN DAY" loading="lazy"></iframe>
+    <iframe id="runday-iframe" data-src="runday.html?v=20260318-71" title="HI RUN DAY" loading="lazy"></iframe>
   </section>
 
   <!-- ████  ADMIN  ████ -->
@@ -4768,7 +4768,7 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const PUSH_PUBLIC_KEY   = 'BEaMexe-bw1jM31PgeQdkkZeqs29Ls1KIMY-TViYgH2dPqg_v7tRRObOpRUTGu5-ZgH13qR_ZTtxeOWh9_vnhTk';
 const PUSH_TABLE        = 'push_subscriptions';
 const PUSH_DEFAULT_URL  = './index.html#community';
-const SW_VERSION        = '20260318-76';
+const SW_VERSION        = '20260318-77';
 let _db = null; // Supabase 클라이언트
 let _realLeagueUsers = null; // Supabase에서 가져온 실제 유저 목록
 let _leagueFetching = false;
@@ -6651,7 +6651,7 @@ function myWeekPts() {
    NAVIGATION
 ════════════════════════════════════════ */
 const _isTouch = () => window.matchMedia('(hover: none)').matches;
-const RUNDAY_IFRAME_SRC = 'runday.html?v=20260315-70';
+const RUNDAY_IFRAME_SRC = 'runday.html?v=20260318-71';
 let _rundayIframeReady = false;
 let _rundayIframeLoadStarted = false;
 const _rundayIframeQueue = [];
@@ -10972,12 +10972,13 @@ function syncChallengeConfigToRunday() {
 }
 
 function getChallengeSyncPayload() {
-  const reg = getMyReg({ includeCancelled: true });
+  const activeReg = getMyReg();
+  const fallbackReg = activeReg || getMyReg({ includeCancelled: true });
   return {
     type: 'CHALLENGE_REGISTRATION_STATE',
     empId: S.user.empId || ACTIVE_EMPID || '',
-    registrationId: reg?.id || S.user.registrationId || '',
-    registration: reg && isActiveChallengeReg(reg) ? { ...reg } : null,
+    registrationId: activeReg?.id || fallbackReg?.id || S.user.registrationId || '',
+    registration: activeReg ? { ...activeReg } : null,
   };
 }
 
@@ -11412,12 +11413,12 @@ function getMyReg(opts = {}) {
     return score;
   };
   const compareCandidates = (a, b) => {
-    const tsDiff = challengeRegTs(b) - challengeRegTs(a);
-    if (tsDiff) return tsDiff;
-    const scoreDiff = scoreIdentity(b) - scoreIdentity(a);
-    if (scoreDiff) return scoreDiff;
     const activeDiff = Number(isActiveChallengeReg(b)) - Number(isActiveChallengeReg(a));
     if (activeDiff) return activeDiff;
+    const scoreDiff = scoreIdentity(b) - scoreIdentity(a);
+    if (scoreDiff) return scoreDiff;
+    const tsDiff = challengeRegTs(b) - challengeRegTs(a);
+    if (tsDiff) return tsDiff;
     return 0;
   };
   const exact = regId

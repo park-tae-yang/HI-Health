@@ -2486,6 +2486,9 @@
       const normalized = normalizeStoredRegRow(reg, empId);
       if (normalized) {
         mergeStoredRegRows([normalized]);
+        renderSuccessScreen(normalized);
+        document.getElementById('form-screen')?.classList.add('hide');
+        document.getElementById('success-screen')?.classList.add('show');
         changed = true;
       }
     }
