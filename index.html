@@ -8991,7 +8991,7 @@ async function enablePushNotifications() {
     showToast('앱 알림이 켜졌어요 🔔');
   } catch (e) {
     console.warn('enablePushNotifications failed', e);
-    showToast('알림 설정에 실패했어요. 잠시 후 다시 시도해주세요.');
+    showToast('알림 설정 실패: ' + (e?.message || String(e)));
   }
 }
 
