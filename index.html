@@ -5270,14 +5270,11 @@ async function loadNotifList() {
   if (!listEl) return;
   try {
     let query = _db.from('push_logs').select('*').order('sent_at', { ascending: false }).limit(30);
-    if (identity.deviceId || identity.empId) {
-      // 전체 발송 OR 나에게 온 것
-      query = query.or(
-        `target_type.eq.all,target_device_id.eq.${identity.deviceId || ''},target_emp_id.eq.${(identity.empId || '').toUpperCase()}`
-      );
-    } else {
-      query = query.eq('target_type', 'all');
-    }
+    // 전체 발송 OR 나에게 온 것 (빈 값은 필터에서 제외)
+    const orParts = ['target_type.eq.all'];
+    if (identity.deviceId) orParts.push(`target_device_id.eq.${identity.deviceId}`);
+    if (identity.empId) orParts.push(`target_emp_id.eq.${identity.empId.toUpperCase()}`);
+    query = query.or(orParts.join(','));
     const { data } = await query;
     if (!data?.length) {
       listEl.innerHTML = '<div class="cart-panel-empty" style="padding:20px">알림이 없어요</div>';
