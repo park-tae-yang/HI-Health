@@ -9897,12 +9897,12 @@ function renderLeague() {
 
     document.getElementById('podium').className = 'podium challenger';
     const top3 = challengers.slice(0, 3);
-    const podOrder = [top3[1], top3[0], top3[2]];
-    const standClass = ['stand-silver','stand-gold','stand-bronze'];
-    const standNum   = ['2','1','3'];
+    const podOrder = [top3[0], top3[1], top3[2]];
+    const standClass = ['stand-gold','stand-silver','stand-bronze'];
+    const standLabel = ['1위','2위','3위'];
     document.getElementById('podium').innerHTML = podOrder.map((u, i) => {
-      const sizeClass = i === 1 ? 'podium-first' : i === 0 ? 'podium-second' : 'podium-third';
-      if (!u) return `<div class="podium-item ${sizeClass}"><div class="podium-av-wrap"><div class="podium-avatar"></div></div><div class="podium-stand ${standClass[i]}">${standNum[i]}</div></div>`;
+      const sizeClass = i === 0 ? 'podium-first' : i === 1 ? 'podium-second' : 'podium-third';
+      if (!u) return `<div class="podium-item ${sizeClass}"><div class="podium-av-wrap"><div class="podium-avatar"></div></div><div class="podium-stand ${standClass[i]}">${standLabel[i]}</div></div>`;
       const lv = LEVELS[Math.min(u.lv - 1, LEVELS.length - 1)];
       const tags = (u.tags || []).slice(0, 2).map(t => `<span class="profile-tag" style="font-size:9px;padding:1px 5px">${t}</span>`).join('');
       return `
@@ -9911,9 +9911,9 @@ function renderLeague() {
             <div class="podium-bubble"><span class="podium-bubble-lv">${lv.icon}</span>${tags ? `<div class="podium-bubble-tags">${tags}</div>` : ''}</div>
             <div class="podium-avatar">${avHTML(u.avatar)}</div>
           </div>
-          <div class="podium-name">${renderMedalIcon(Number(standNum[i]), { size:'12px' })} ${escHtmlComm(u.name)}</div>
+          <div class="podium-name">${escHtmlComm(u.name)}</div>
           <div class="podium-pts">${u.pts}p</div>
-          <div class="podium-stand ${standClass[i]}">${standNum[i]}</div>
+          <div class="podium-stand ${standClass[i]}">${standLabel[i]}</div>
         </div>`;
     }).join('');
 
@@ -9928,7 +9928,7 @@ function renderLeague() {
           <div class="lb-rank ${u.rank <= 3 ? 'top3' : ''}">${u.rank}</div>
           <div class="lb-avatar">${avHTML(u.avatar)}</div>
           <div class="lb-info">
-            <div class="lb-name"><span class="lb-level-icon">${lv.icon}</span><span>${u.name}</span></div>
+            <div class="lb-name"><span>${u.name}</span></div>
             ${(u.tags || []).length ? `<div class="lb-tags">${u.tags.slice(0,2).map(t => `<span class="profile-tag">${t}</span>`).join('')}${u.tags.length > 2 ? `<span class="profile-tag" style="letter-spacing:1px">···</span>` : ''}</div>` : ''}
           </div>
           <div class="lb-right">
@@ -9985,12 +9985,12 @@ function renderLeague() {
 
   document.getElementById('podium').className = 'podium';
   const top3 = list.slice(0,3);
-  const podOrder = [top3[1], top3[0], top3[2]];
-  const standClass = ['stand-silver','stand-gold','stand-bronze'];
-  const standNum   = ['2','1','3'];
+  const podOrder = [top3[0], top3[1], top3[2]];
+  const standClass = ['stand-gold','stand-silver','stand-bronze'];
+  const standLabel = ['1위','2위','3위'];
   document.getElementById('podium').innerHTML = podOrder.map((u,i) => {
-    const sizeClass = i === 1 ? 'podium-first' : i === 0 ? 'podium-second' : 'podium-third';
-    if (!u) return `<div class="podium-item ${sizeClass}"><div class="podium-av-wrap"><div class="podium-avatar"></div></div><div class="podium-stand ${standClass[i]}">${standNum[i]}</div></div>`;
+    const sizeClass = i === 0 ? 'podium-first' : i === 1 ? 'podium-second' : 'podium-third';
+    if (!u) return `<div class="podium-item ${sizeClass}"><div class="podium-av-wrap"><div class="podium-avatar"></div></div><div class="podium-stand ${standClass[i]}">${standLabel[i]}</div></div>`;
     const lv = LEVELS[Math.min(u.lv - 1, LEVELS.length - 1)];
     const tags = (u.tags || []).slice(0, 2).map(t => `<span class="profile-tag" style="font-size:9px;padding:1px 5px">${t}</span>`).join('');
     const pts = currentTab === 'weekly' ? u.wPts : u.pts;
@@ -10001,9 +10001,9 @@ function renderLeague() {
           <div class="podium-bubble"><span class="podium-bubble-lv">${lv.icon}</span>${tags ? `<div class="podium-bubble-tags">${tags}</div>` : ''}</div>
           <div class="podium-avatar">${avHTML(u.avatar)}</div>
         </div>
-        <div class="podium-name">${renderMedalIcon(Number(standNum[i]), { size:'12px' })} ${escHtmlComm(u.name)}</div>
+        <div class="podium-name">${escHtmlComm(u.name)}</div>
         <div class="podium-pts">${currentTab === 'level' ? lv2.name : pts + 'p'}</div>
-        <div class="podium-stand ${standClass[i]}">${standNum[i]}</div>
+        <div class="podium-stand ${standClass[i]}">${standLabel[i]}</div>
       </div>`;
   }).join('');
 
@@ -10022,7 +10022,7 @@ function renderLeague() {
         <div class="lb-rank ${u.rank<=3?'top3':''}">${u.rank}</div>
         <div class="lb-avatar">${avHTML(u.avatar)}</div>
         <div class="lb-info">
-          <div class="lb-name"><span class="lb-level-icon">${lv.icon}</span><span>${u.name}</span></div>
+          <div class="lb-name"><span>${u.name}</span></div>
           ${(u.tags || []).length ? `<div class="lb-tags">${u.tags.slice(0,2).map(t => `<span class="profile-tag">${t}</span>`).join('')}${u.tags.length > 2 ? `<span class="profile-tag" style="letter-spacing:1px">···</span>` : ''}</div>` : ''}
         </div>
         <div class="lb-right">
