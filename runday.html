@@ -2900,6 +2900,10 @@
     stack.innerHTML = stackHTML;
   }
 
+  function countActivePeople(rows = []) {
+    return collapsePeopleRows(rows).filter(r => String(r?.status || '').toLowerCase() !== 'cancelled').length;
+  }
+
   async function loadPeople() {
     // 재실행 직후에는 마지막으로 본 전체 목록 캐시를 우선 사용
     const local = JSON.parse(localStorage.getItem(CH_KEY) || '[]')
@@ -2907,11 +2911,18 @@
     const cached = readCachedPeopleRows()
       .sort((a, b) => peopleRowTs(b) - peopleRowTs(a));
     const initialRows = mergePeopleRows(cached, local);
-    renderPeople(initialRows);
     const shouldRenderRecoveredLocal = !document.getElementById('success-screen')?.classList.contains('show');
-    setTimeout(() => {
-      tryRestoreCurrentRegistrationFromRows(initialRows, { render: shouldRenderRecoveredLocal });
-    }, 0);
+    let fallbackRendered = false;
+    const renderFallbackPeople = () => {
+      if (fallbackRendered) return;
+      fallbackRendered = true;
+      renderPeople(initialRows);
+      setTimeout(() => {
+        tryRestoreCurrentRegistrationFromRows(initialRows, { render: shouldRenderRecoveredLocal });
+      }, 0);
+    };
+    const fallbackDelay = countActivePeople(initialRows) > 1 ? 0 : 600;
+    const fallbackTimer = setTimeout(renderFallbackPeople, fallbackDelay);
 
     // Supabase에서 실시간 데이터 fetch
     try {
@@ -2923,15 +2934,19 @@
       if (res.ok) {
         const data = await res.json();
         if (Array.isArray(data)) {
+          clearTimeout(fallbackTimer);
           const merged = mergePeopleRows(initialRows, data);
           writeCachedPeopleRows(merged);
           renderPeople(merged);
           setTimeout(() => {
             tryRestoreCurrentRegistrationFromRows(merged);
           }, 0);
+          return;
         }
       }
     } catch(e) { /* 오프라인 시 로컬 데이터 유지 */ }
+    clearTimeout(fallbackTimer);
+    renderFallbackPeople();
   }
 
   let peoplePollTimer = null;
