@@ -1897,6 +1897,16 @@
 
   const CHALLENGE_CONFIG_SYNC_KEY = 'hi_health_challenge_config_sync';
   let challengeConfigChannel = null;
+  const CHALLENGE_CONFIG_STALE_MS = 15000;
+  const REG_SYNC_STALE_MS = 1200;
+  const PEOPLE_FETCH_STALE_MS = 10000;
+  let challengeConfigLoadPromise = null;
+  let challengeConfigLoadedAt = 0;
+  let regSyncPromise = null;
+  let regSyncKey = '';
+  let regSyncAt = 0;
+  let peopleLoadPromise = null;
+  let peopleLoadedAt = 0;
 
   function readChallengeBackupRows(empId = getCurrentEmpId(), regId = '') {
     const normalizedEmpId = String(empId || '').trim().toUpperCase();
@@ -1990,29 +2000,46 @@
     if (reg) renderSuccessScreen(reg);
   }
 
-  async function loadChallengeConfig() {
+  async function loadChallengeConfig(options = {}) {
+    const force = !!options.force;
     try {
       const parentDeadline = String(window.parent?.getChallengeDeadlineValue?.() || window.parent?.CH?.deadline || '').trim();
-      if (/^\d{4}-\d{2}-\d{2}$/.test(parentDeadline) && setChallengeDeadlineValue(parentDeadline)) {
-        refreshDeadlineDrivenUi();
+      if (/^\d{4}-\d{2}-\d{2}$/.test(parentDeadline)) {
+        challengeConfigLoadedAt = Date.now();
+        if (setChallengeDeadlineValue(parentDeadline)) refreshDeadlineDrivenUi();
         return;
       }
     } catch (e) {}
 
+    const now = Date.now();
+    if (!force && challengeConfigLoadPromise) return challengeConfigLoadPromise;
+    if (!force && challengeConfigLoadedAt && (now - challengeConfigLoadedAt) < CHALLENGE_CONFIG_STALE_MS) return;
+
+    const loadPromise = (async () => {
+      try {
+        const res = await fetch(
+          SB_URL + '/rest/v1/app_config?select=value&key=eq.ch_deadline&limit=1&_=' + Date.now(),
+          { cache: 'no-store', headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY } }
+        );
+        if (!res.ok) return;
+        const data = await res.json();
+        const nextValue = String(data?.[0]?.value || '').trim();
+        challengeConfigLoadedAt = Date.now();
+        if (setChallengeDeadlineValue(nextValue)) refreshDeadlineDrivenUi();
+      } catch (e) {}
+    })();
+    challengeConfigLoadPromise = loadPromise;
     try {
-      const res = await fetch(
-        SB_URL + '/rest/v1/app_config?select=value&key=eq.ch_deadline&limit=1&_=' + Date.now(),
-        { cache: 'no-store', headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY } }
-      );
-      if (!res.ok) return;
-      const data = await res.json();
-      const nextValue = String(data?.[0]?.value || '').trim();
-      if (setChallengeDeadlineValue(nextValue)) refreshDeadlineDrivenUi();
-    } catch (e) {}
+      return await loadPromise;
+    } finally {
+      challengeConfigLoadedAt = Date.now();
+      if (challengeConfigLoadPromise === loadPromise) challengeConfigLoadPromise = null;
+    }
   }
 
   function handleChallengeConfigSync(payload = {}) {
     if (payload?.type !== 'CHALLENGE_CONFIG') return;
+    challengeConfigLoadedAt = Date.now();
     if (setChallengeDeadlineValue(payload.deadline)) {
       refreshDeadlineDrivenUi();
       return;
@@ -2152,62 +2179,83 @@
       deviceId: opts.deviceId || getCurrentDeviceId(),
     });
     if (!identity.empId && !identity.regId && !identity.deviceId) return false;
+    const syncKey = [
+      identity.empId,
+      identity.regId,
+      identity.deviceId,
+      pruneMissing ? '1' : '0',
+    ].join('|');
+    const force = !!opts.force;
+    const now = Date.now();
+    if (!force && regSyncPromise && regSyncKey === syncKey) return regSyncPromise;
+    if (!force && regSyncKey === syncKey && regSyncAt && (now - regSyncAt) < REG_SYNC_STALE_MS) return false;
     const local = JSON.parse(localStorage.getItem(CH_KEY) || '[]');
-    let remote = [];
-    try {
-      const filters = [];
-      if (identity.regId) filters.push(`id.eq.${identity.regId}`);
-      if (identity.empId) {
-        filters.push(`empId.eq.${identity.empId}`);
-        if (identity.empId.toLowerCase() !== identity.empId) filters.push(`empId.eq.${identity.empId.toLowerCase()}`);
+    const syncPromise = (async () => {
+      let remote = [];
+      try {
+        const filters = [];
+        if (identity.regId) filters.push(`id.eq.${identity.regId}`);
+        if (identity.empId) {
+          filters.push(`empId.eq.${identity.empId}`);
+          if (identity.empId.toLowerCase() !== identity.empId) filters.push(`empId.eq.${identity.empId.toLowerCase()}`);
+        }
+        if (identity.deviceId) filters.push(`deviceId.eq.${identity.deviceId}`);
+        if (!filters.length) return false;
+        const res = await fetch(
+          SB_URL + '/rest/v1/registrations?select=*&or=(' + filters.join(',') + ')&_=' + Date.now(),
+          { cache: 'no-store', headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY } }
+        );
+        if (res.ok) remote = await res.json();
+      } catch (e) {
+        return false;
       }
-      if (identity.deviceId) filters.push(`deviceId.eq.${identity.deviceId}`);
-      if (!filters.length) return false;
-      const res = await fetch(
-        SB_URL + '/rest/v1/registrations?select=*&or=(' + filters.join(',') + ')&_=' + Date.now(),
-        { cache: 'no-store', headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY } }
-      );
-      if (res.ok) remote = await res.json();
-    } catch (e) {
-      return false;
-    }
 
-    const remoteRows = (Array.isArray(remote) ? remote : [])
-      .map(r => normalizeStoredRegRow(r, identity.empId))
-      .filter(Boolean);
-    const byId = new Map(local.map(r => [String(r?.id || '').trim(), r]));
-    remoteRows.forEach(r => {
-      const id = String(r?.id || '').trim();
-      if (!id) return;
-      byId.set(id, { ...(byId.get(id) || {}), ...r });
-    });
-    let next = [...byId.values()];
-    if (pruneMissing) {
-      const activeRemoteIds = new Set(
-        remoteRows.filter(isActiveRegRow).map(r => String(r?.id || '').trim()).filter(Boolean)
-      );
-      const activeRemoteEmpIds = new Set(
-        remoteRows.filter(isActiveRegRow).map(r => String(r?.empId || '').trim().toUpperCase()).filter(Boolean)
-      );
-      const activeRemoteDeviceIds = new Set(
-        remoteRows.filter(isActiveRegRow).map(r => String(r?.deviceId || '').trim()).filter(Boolean)
-      );
-      next = next.filter(r => {
-        if (!isCurrentRegIdentityMatch(r, identity)) return true;
-        if (!isActiveRegRow(r)) return true;
-        const rowId = String(r?.id || '').trim();
-        if (rowId) return activeRemoteIds.has(rowId);
-        const rowEmpId = String(r?.empId || '').trim().toUpperCase();
-        if (rowEmpId) return activeRemoteEmpIds.has(rowEmpId);
-        const rowDeviceId = String(r?.deviceId || '').trim();
-        return rowDeviceId && activeRemoteDeviceIds.has(rowDeviceId);
+      const remoteRows = (Array.isArray(remote) ? remote : [])
+        .map(r => normalizeStoredRegRow(r, identity.empId))
+        .filter(Boolean);
+      const byId = new Map(local.map(r => [String(r?.id || '').trim(), r]));
+      remoteRows.forEach(r => {
+        const id = String(r?.id || '').trim();
+        if (!id) return;
+        byId.set(id, { ...(byId.get(id) || {}), ...r });
       });
-    }
+      let next = [...byId.values()];
+      if (pruneMissing) {
+        const activeRemoteIds = new Set(
+          remoteRows.filter(isActiveRegRow).map(r => String(r?.id || '').trim()).filter(Boolean)
+        );
+        const activeRemoteEmpIds = new Set(
+          remoteRows.filter(isActiveRegRow).map(r => String(r?.empId || '').trim().toUpperCase()).filter(Boolean)
+        );
+        const activeRemoteDeviceIds = new Set(
+          remoteRows.filter(isActiveRegRow).map(r => String(r?.deviceId || '').trim()).filter(Boolean)
+        );
+        next = next.filter(r => {
+          if (!isCurrentRegIdentityMatch(r, identity)) return true;
+          if (!isActiveRegRow(r)) return true;
+          const rowId = String(r?.id || '').trim();
+          if (rowId) return activeRemoteIds.has(rowId);
+          const rowEmpId = String(r?.empId || '').trim().toUpperCase();
+          if (rowEmpId) return activeRemoteEmpIds.has(rowEmpId);
+          const rowDeviceId = String(r?.deviceId || '').trim();
+          return rowDeviceId && activeRemoteDeviceIds.has(rowDeviceId);
+        });
+      }
 
-    next.sort((a, b) => registrationRowTs(b) - registrationRowTs(a));
-    const changed = JSON.stringify(next) !== JSON.stringify(local);
-    if (changed) localStorage.setItem(CH_KEY, JSON.stringify(next));
-    return changed;
+      next.sort((a, b) => registrationRowTs(b) - registrationRowTs(a));
+      const changed = JSON.stringify(next) !== JSON.stringify(local);
+      if (changed) localStorage.setItem(CH_KEY, JSON.stringify(next));
+      regSyncAt = Date.now();
+      return changed;
+    })();
+    regSyncKey = syncKey;
+    regSyncPromise = syncPromise;
+    try {
+      return await syncPromise;
+    } finally {
+      regSyncAt = Date.now();
+      if (regSyncPromise === syncPromise) regSyncPromise = null;
+    }
   }
 
   async function submitReg() {
@@ -2525,6 +2573,7 @@
   function applyParentChallengePeopleState(payload = {}) {
     const rows = Array.isArray(payload?.rows) ? payload.rows : [];
     if (!rows.length) return false;
+    peopleLoadedAt = Date.now();
     writeCachedPeopleRows(rows);
     const local = JSON.parse(localStorage.getItem(CH_KEY) || '[]');
     const merged = mergePeopleRows(rows, local);
@@ -2957,7 +3006,8 @@
     return collapsePeopleRows(rows).filter(r => String(r?.status || '').toLowerCase() !== 'cancelled').length;
   }
 
-  async function loadPeople() {
+  async function loadPeople(options = {}) {
+    const force = !!options.force;
     // 재실행 직후에는 마지막으로 본 전체 목록 캐시를 우선 사용
     const local = JSON.parse(localStorage.getItem(CH_KEY) || '[]')
       .sort((a, b) => peopleRowTs(b) - peopleRowTs(a));
@@ -2976,30 +3026,51 @@
     };
     const fallbackDelay = countActivePeople(initialRows) > 1 ? 0 : 600;
     const fallbackTimer = setTimeout(renderFallbackPeople, fallbackDelay);
+    const now = Date.now();
+    if (!force && peopleLoadPromise) {
+      clearTimeout(fallbackTimer);
+      return peopleLoadPromise;
+    }
+    if (!force && peopleLoadedAt && (now - peopleLoadedAt) < PEOPLE_FETCH_STALE_MS) {
+      clearTimeout(fallbackTimer);
+      renderFallbackPeople();
+      return initialRows;
+    }
 
     // Supabase에서 실시간 데이터 fetch
-    try {
-      const peopleFetchUrl = SB_URL + '/rest/v1/registrations?select=id,deviceId,name,dept,empId,registeredAt,status&order=registeredAt.desc&_=' + Date.now();
-      const res = await fetch(
-        peopleFetchUrl,
-        { cache: 'no-store', headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY } }
-      );
-      if (res.ok) {
-        const data = await res.json();
-        if (Array.isArray(data)) {
-          clearTimeout(fallbackTimer);
-          const merged = mergePeopleRows(initialRows, data);
-          writeCachedPeopleRows(merged);
-          renderPeople(merged);
-          setTimeout(() => {
-            tryRestoreCurrentRegistrationFromRows(merged);
-          }, 0);
-          return;
+    const loadPromise = (async () => {
+      try {
+        const peopleFetchUrl = SB_URL + '/rest/v1/registrations?select=id,deviceId,name,dept,empId,registeredAt,status&order=registeredAt.desc&_=' + Date.now();
+        const res = await fetch(
+          peopleFetchUrl,
+          { cache: 'no-store', headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY } }
+        );
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data)) {
+            clearTimeout(fallbackTimer);
+            const merged = mergePeopleRows(initialRows, data);
+            peopleLoadedAt = Date.now();
+            writeCachedPeopleRows(merged);
+            renderPeople(merged);
+            setTimeout(() => {
+              tryRestoreCurrentRegistrationFromRows(merged);
+            }, 0);
+            return merged;
+          }
         }
-      }
-    } catch(e) { /* 오프라인 시 로컬 데이터 유지 */ }
-    clearTimeout(fallbackTimer);
-    renderFallbackPeople();
+      } catch(e) { /* 오프라인 시 로컬 데이터 유지 */ }
+      clearTimeout(fallbackTimer);
+      renderFallbackPeople();
+      return initialRows;
+    })();
+    peopleLoadPromise = loadPromise;
+    try {
+      return await loadPromise;
+    } finally {
+      peopleLoadedAt = Date.now();
+      if (peopleLoadPromise === loadPromise) peopleLoadPromise = null;
+    }
   }
 
   let peoplePollTimer = null;
