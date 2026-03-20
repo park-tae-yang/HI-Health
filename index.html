@@ -6832,7 +6832,7 @@ function myWeekPts() {
    NAVIGATION
 ════════════════════════════════════════ */
 const _isTouch = () => window.matchMedia('(hover: none)').matches;
-const RUNDAY_IFRAME_SRC = 'runday.html?v=20260320-87';
+const RUNDAY_IFRAME_SRC = 'runday.html?v=20260320-89';
 let _rundayIframeReady = false;
 let _rundayIframeLoadStarted = false;
 const _rundayIframeQueue = [];
@@ -6948,8 +6948,7 @@ function scopeRundaySelector(selector, scope) {
 
 function scopeRundayCss(css, scope = '#page-challenge') {
   const keyframes = [];
-  const placeholder = idx => `__RUNDAY_KEYFRAMES_${idx}__`;
-  const tokenized = String(css || '').replace(/@keyframes[\s\S]*?}\s*}/g, block => placeholder(keyframes.push(block) - 1));
+  const tokenized = String(css || '').replace(/@keyframes[\s\S]*?}\s*}/g, block => { keyframes.push(block); return ''; });
   const scoped = tokenized.replace(/(^|})\s*([^@{}][^{}]*)\{/g, (match, prefix, selectorGroup) => {
     const scopedSelectors = selectorGroup
       .split(',')
@@ -6958,7 +6957,7 @@ function scopeRundayCss(css, scope = '#page-challenge') {
       .join(', ');
     return `${prefix}\n${scopedSelectors}{`;
   });
-  return scoped.replace(/__RUNDAY_KEYFRAMES_(\d+)__/g, (_, idx) => keyframes[Number(idx)] || '');
+  return scoped + (keyframes.length ? '\n' + keyframes.join('\n') : '');
 }
 
 function rewriteInlineRundayHandlers(html) {
@@ -11322,7 +11321,7 @@ const CH = {
 const DEFAULT_CH_DEADLINE_VALUE = '2026-03-21';
 const CH_REG_KEY = 'hi_health_registrations_v2';
 const CH_SHOE_MODELS = [
-  { id:'nb-860-v15', label:'New Balance Fresh Foam X 860 v15', image:'images/nb-860.png', genderLabel:'공용' },
+  { id:'nb-860-v15', label:'NB 860 v15', image:'images/nb.png', genderLabel:'공용' },
   { id:'nike1', label:'Nike Vomero Plus (화이트)', image:'images/nike1.png', genderLabel:'여성' },
   { id:'nike2', label:'Nike Vomero Plus (베이지)', image:'images/nike2.png', genderLabel:'여성' },
   { id:'nike3', label:'Nike Vomero Plus (그레이)', image:'images/nike3.png', genderLabel:'남성' },

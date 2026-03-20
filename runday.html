@@ -758,129 +758,86 @@
     .rank-chip .rv { font-size: 10px; font-weight: 600; color: var(--sub); }
     .rank-chip.on .rv { color: var(--p); }
 
-    /* shoe brand 2-column grid */
-    .shoe-brand-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 4px; }
-    .shoe-model-guide {
-      display: grid;
-      gap: 12px;
-      background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
-      border: 1.5px solid #e5e7eb;
-      border-radius: 18px;
-      padding: 14px;
-      box-shadow: 0 10px 24px rgba(15,23,42,0.06);
+    .souvenir-grid { display:grid; gap:14px; }
+    .souvenir-card {
+      display:grid;
+      gap:12px;
+      background:#fff;
+      border:1.5px solid #e5e7eb;
+      border-radius:20px;
+      padding:14px;
+      box-shadow:0 10px 26px rgba(15,23,42,0.06);
     }
-    .shoe-model-head {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 12px;
+    .souvenir-media {
+      width:100%;
+      border-radius:16px;
+      overflow:hidden;
+      border:1px solid #eef2f7;
+      background:#f8fafc;
+      aspect-ratio: 16 / 10;
     }
-    .shoe-model-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      width: fit-content;
-      padding: 5px 10px;
-      border-radius: 999px;
-      background: #eef2ff;
-      color: #4338ca;
-      font-size: 11px;
-      font-weight: 800;
-      letter-spacing: -0.1px;
-      margin-bottom: 8px;
+    .souvenir-media img {
+      width:100%;
+      height:100%;
+      object-fit:contain;
+      display:block;
+      padding:10px;
+      box-sizing:border-box;
     }
-    .shoe-model-title {
-      font-size: 17px;
-      font-weight: 900;
-      letter-spacing: -0.4px;
-      color: #111827;
-      line-height: 1.2;
+    .souvenir-head {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
     }
-    .shoe-model-sub {
-      margin-top: 5px;
-      font-size: 12px;
-      color: #6b7280;
-      line-height: 1.5;
+    .souvenir-copy { min-width:0; }
+    .souvenir-type {
+      display:inline-flex;
+      align-items:center;
+      padding:5px 9px;
+      border-radius:999px;
+      background:#f5f3ff;
+      color:#6d28d9;
+      font-size:10px;
+      font-weight:800;
+      letter-spacing:0.02em;
+      margin-bottom:8px;
     }
-    .shoe-model-chip {
-      flex-shrink: 0;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-width: 76px;
-      padding: 8px 12px;
-      border-radius: 14px;
-      background: #111827;
-      color: #fff;
-      font-size: 11px;
-      font-weight: 800;
-      line-height: 1.35;
-      text-align: center;
+    .souvenir-name {
+      font-size:17px;
+      font-weight:900;
+      letter-spacing:-0.4px;
+      color:#111827;
+      line-height:1.2;
     }
-    .shoe-model-gallery {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 10px;
+    .souvenir-action {
+      flex-shrink:0;
+      border:none;
+      border-radius:999px;
+      background:#111827;
+      color:#fff;
+      padding:10px 14px;
+      font-size:12px;
+      font-weight:800;
+      cursor:pointer;
+      font-family:inherit;
     }
-    .shoe-model-thumb {
-      border: 1.5px solid #e5e7eb;
-      background: #fff;
-      border-radius: 16px;
-      padding: 0;
-      overflow: hidden;
-      cursor: zoom-in;
-      font-family: inherit;
-      text-align: left;
-      transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
-      box-shadow: 0 6px 18px rgba(15,23,42,0.06);
+    .souvenir-field {
+      display:grid;
+      gap:8px;
     }
-    .shoe-model-thumb:hover {
-      transform: translateY(-2px);
-      border-color: #c7d2fe;
-      box-shadow: 0 12px 24px rgba(79,70,229,0.12);
+    .souvenir-radio {
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
     }
-    .shoe-model-thumb img {
-      width: 100%;
-      aspect-ratio: 1 / 1;
-      object-fit: cover;
-      display: block;
-      background: #f8fafc;
+    .souvenir-radio .rl {
+      flex:1;
+      min-width:120px;
+      justify-content:center;
+      text-align:center;
     }
-    .shoe-model-thumb-meta {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      padding: 10px 12px 12px;
-      font-size: 11px;
-      font-weight: 800;
-      color: #111827;
-    }
-    .shoe-model-thumb-hint {
-      color: #6d28d9;
-      font-size: 10px;
-      font-weight: 800;
-      letter-spacing: 0.02em;
-      white-space: nowrap;
-    }
-    .shoe-model-points {
-      margin: 0;
-      padding-left: 18px;
-      display: grid;
-      gap: 7px;
-      color: #4b5563;
-      font-size: 12px;
-      line-height: 1.6;
-    }
-    .shoe-model-note {
-      font-size: 11px;
-      color: #6b7280;
-      line-height: 1.6;
-      background: #f9fafb;
-      border-radius: 12px;
-      padding: 11px 12px;
-      border: 1px solid #e5e7eb;
-    }
+    .shoe-model-guide { display:block; }
 
     /* nike combined card */
     .nk-card {
@@ -1165,10 +1122,9 @@
       }
       .img-preview-nav.prev { left: 8px; }
       .img-preview-nav.next { right: 8px; }
-      .shoe-model-guide { padding: 12px; }
-      .shoe-model-head { flex-direction: column; }
-      .shoe-model-chip { min-width: 0; width: fit-content; }
-      .shoe-model-gallery { grid-template-columns: 1fr; }
+      .souvenir-card { padding:12px; }
+      .souvenir-head { align-items:flex-start; flex-direction:column; }
+      .souvenir-action { width:100%; }
     }
 
     /* ─── TOAST ──────────────────────────────── */
@@ -1567,42 +1523,53 @@
 
     <div class="fcard">
       <div class="fcard-label">기념품 신청</div>
-      <div class="fg row2">
-        <div>
-          <label class="lbl" for="f-tshirt">티셔츠 사이즈 <span class="req">*</span></label>
-          <select class="fs" id="f-tshirt" title="티셔츠 사이즈" required>
-            <option value="">사이즈 선택</option>
-            <option>XS</option><option>S</option><option>M</option><option>L</option>
-            <option>XL</option><option>2XL</option><option>3XL</option>
-          </select>
+      <div class="souvenir-grid">
+        <div class="souvenir-card">
+          <div id="shoe-model-guide"></div>
+          <div class="souvenir-field">
+            <label class="lbl" for="f-shoe">러닝화 사이즈 <span class="req">*</span></label>
+            <select class="fs" id="f-shoe" title="신발 사이즈" required>
+              <option value="">사이즈(mm) 선택</option>
+              <option>215</option><option>220</option><option>225</option><option>230</option>
+              <option>235</option><option>240</option><option>245</option><option>250</option>
+              <option>255</option><option>260</option><option>265</option><option>270</option>
+              <option>275</option><option>280</option><option>285</option><option>290</option>
+              <option>295</option><option>300</option>
+            </select>
+          </div>
         </div>
-        <div>
-          <label class="lbl" for="f-shoe">신발 사이즈 <span class="req">*</span></label>
-          <select class="fs" id="f-shoe" title="신발 사이즈" onchange="" required>
-            <option value="">사이즈(mm) 선택</option>
-            <option>215</option><option>220</option><option>225</option><option>230</option>
-            <option>235</option><option>240</option><option>245</option><option>250</option>
-            <option>255</option><option>260</option><option>265</option><option>270</option>
-            <option>275</option><option>280</option><option>285</option><option>290</option>
-            <option>295</option><option>300</option>
-          </select>
+        <div class="souvenir-card">
+          <div class="souvenir-media"><img src="images/andar.png" alt="ANDAR 티셔츠"></div>
+          <div class="souvenir-head">
+            <div class="souvenir-copy">
+              <div class="souvenir-type">티셔츠</div>
+              <div class="souvenir-name">ANDAR</div>
+            </div>
+          </div>
+          <div class="souvenir-field">
+            <label class="lbl" for="f-tshirt">티셔츠 사이즈 <span class="req">*</span></label>
+            <select class="fs" id="f-tshirt" title="티셔츠 사이즈" required>
+              <option value="">사이즈 선택</option>
+              <option>XS</option><option>S</option><option>M</option><option>L</option>
+              <option>XL</option><option>2XL</option><option>3XL</option>
+            </select>
+          </div>
         </div>
-      </div>
-      <div style="font-size:11px;color:#6b7280;line-height:1.6;background:#f9fafb;border-radius:8px;padding:10px 12px;margin-bottom:12px;">
-        🔔 티셔츠와 러닝화는 커스텀 패치 부착으로 수령 후 교환 및 반품이 어려워 사이즈를 신중하게 작성해주시기 바랍니다.
-      </div>
-      <div class="fg">
-        <label class="lbl">지급 운동화 안내</label>
-        <div id="shoe-model-guide"></div>
-        <label class="lbl" for="f-shoe-note" style="margin-top:12px">사이즈 요청사항 <span style="font-weight:400;color:#d1d5db">선택</span></label>
-        <textarea class="snote" id="f-shoe-note" rows="2" placeholder="발볼, 반 사이즈 고민, 착화감 메모 등 사이즈 관련 요청사항을 적어주세요"></textarea>
-      </div>
-      <div class="fg" style="margin-top:12px">
-        <label class="lbl">혈당체크기기 신청 여부 <span class="req">*</span></label>
-        <p class="hint">페이스업 기간 10일간 착용</p>
-        <div class="rg">
-          <label class="rl"><input type="radio" name="cgm" value="yes">신청</label>
-          <label class="rl"><input type="radio" name="cgm" value="no">미신청</label>
+        <div class="souvenir-card">
+          <div class="souvenir-media"><img src="images/dexcom.png" alt="Dexcom 혈당체크기기"></div>
+          <div class="souvenir-head">
+            <div class="souvenir-copy">
+              <div class="souvenir-type">혈당체크기기</div>
+              <div class="souvenir-name">Dexcom</div>
+            </div>
+          </div>
+          <div class="souvenir-field">
+            <label class="lbl">신청 여부 <span class="req">*</span></label>
+            <div class="rg souvenir-radio">
+              <label class="rl"><input type="radio" name="cgm" value="yes">신청</label>
+              <label class="rl"><input type="radio" name="cgm" value="no">미신청</label>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -1686,24 +1653,24 @@
 
   const FIXED_SHOE_MODEL = {
     id: 'nb-860-v15',
-    label: 'New Balance Fresh Foam X 860 v15',
+    label: 'NB 860 v15',
     shortLabel: 'NB 860 v15',
     brandLabel: 'New Balance',
   };
   const MODELS = [
     {
       id: 'nb-860-main',
-      label: 'New Balance Fresh Foam X 860 v15',
+      label: 'NB 860 v15',
       img: 'images/nb-860.png',
-      badge: 'LOOK 1',
-      desc: '단일 지급 모델 전면/사이드 참고 이미지',
+      badge: 'DETAIL 1',
+      desc: '',
     },
     {
       id: 'nb-860-alt',
-      label: 'New Balance Fresh Foam X 860 v15',
+      label: 'NB 860 v15',
       img: 'images/nb-860-1.png',
-      badge: 'LOOK 2',
-      desc: '단일 지급 모델 디테일 참고 이미지',
+      badge: 'DETAIL 2',
+      desc: '',
     },
   ];
   const MAX_FAMILY_MEMBERS = 3;
@@ -1865,32 +1832,13 @@
     if (!guide) return;
     selectedBrand = FIXED_SHOE_MODEL.id;
     guide.innerHTML = `
-      <div class="shoe-model-guide">
-        <div class="shoe-model-head">
-          <div>
-            <div class="shoe-model-badge">단일 지급 모델</div>
-            <div class="shoe-model-title">${FIXED_SHOE_MODEL.label}</div>
-            <div class="shoe-model-sub">챌린지 지급 운동화는 단일 모델로 운영되며, 신청 시에는 사이즈만 선택해 주세요.</div>
-          </div>
-          <div class="shoe-model-chip">${FIXED_SHOE_MODEL.brandLabel}<br>${FIXED_SHOE_MODEL.shortLabel}</div>
+      <div class="souvenir-media"><img src="images/nb.png" alt="${FIXED_SHOE_MODEL.label}"></div>
+      <div class="souvenir-head">
+        <div class="souvenir-copy">
+          <div class="souvenir-type">러닝화</div>
+          <div class="souvenir-name">${FIXED_SHOE_MODEL.label}</div>
         </div>
-        <div class="shoe-model-gallery">
-          ${MODELS.map((model, idx) => `
-            <button type="button" class="shoe-model-thumb" onclick="openImgPreview(${idx})" title="${model.label} 크게 보기">
-              <img src="${model.img}" alt="${model.label}">
-              <div class="shoe-model-thumb-meta">
-                <span>${model.badge}</span>
-                <span class="shoe-model-thumb-hint">확대 보기</span>
-              </div>
-            </button>
-          `).join('')}
-        </div>
-        <ul class="shoe-model-points">
-          <li>지급 모델은 ${FIXED_SHOE_MODEL.shortLabel} 한 가지로 운영됩니다.</li>
-          <li>컬러나 브랜드 선택 없이, 실제 신청에는 러닝화 사이즈만 접수됩니다.</li>
-          <li>발볼이나 착화감 관련 요청은 아래 메모칸에 남겨주시면 운영 참고용으로 확인합니다.</li>
-        </ul>
-        <div class="shoe-model-note">참고 이미지는 지급 모델 안내용입니다. 실제 수령 일정과 세부 운영 안내는 챌린지 진행 공지에 맞춰 별도로 안내됩니다.</div>
+        <button type="button" class="souvenir-action" onclick="openImgPreview(0)">상세보기</button>
       </div>
     `;
   }
@@ -2468,7 +2416,10 @@
     badgeEl.textContent = m.badge || FIXED_SHOE_MODEL.shortLabel;
     badgeEl.className = 'img-preview-gender model';
     document.getElementById('img-preview-label').textContent = m.label;
-    document.getElementById('img-preview-sub').textContent = m.desc || '탭하면 닫힙니다';
+    const subEl = document.getElementById('img-preview-sub');
+    const desc = String(m.desc || '').trim();
+    subEl.textContent = desc;
+    subEl.style.display = desc ? '' : 'none';
   }
 
   function openImgPreview(idx) {
