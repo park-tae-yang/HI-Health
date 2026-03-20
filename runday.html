@@ -1068,7 +1068,7 @@
   <div class="hero-topbar">
     <button type="button" class="hero-profile-trigger" onclick="openRundayProfile()" title="프로필 설정">
       <span class="hero-profile-label">프로필변경</span>
-      <span class="hero-profile-avatar" id="hero-profile-avatar"></span>
+      <span class="hero-profile-avatar" id="hero-profile-avatar"><img id="hero-profile-avatar-img" src="images/avatars/av1.png" alt="프로필 아바타" decoding="async" draggable="false" onerror="if(this.dataset.err)return;this.dataset.err=1;this.src='images/avatars/av1.png'"></span>
     </button>
   </div>
   <div class="hero-inner">
@@ -2430,18 +2430,44 @@
   function renderRundayProfileHeader() {
     const avatarEl = document.getElementById('hero-profile-avatar');
     if (!avatarEl) return;
+    const currentImg = document.getElementById('hero-profile-avatar-img') || avatarEl.querySelector('img');
     const avatarSrc = currentLoginAvatar || LIVE_AVATAR_FALLBACK;
-    const currentImg = avatarEl.querySelector('img');
     if (currentImg && lastProfileAvatarSrc === avatarSrc) return;
     lastProfileAvatarSrc = avatarSrc;
-    if (currentImg) {
-      if (currentImg.getAttribute('src') !== avatarSrc) {
-        delete currentImg.dataset.err;
-        currentImg.src = avatarSrc;
-      }
-      return;
+    if (!currentImg) return;
+    if (currentImg.getAttribute('src') !== avatarSrc) {
+      delete currentImg.dataset.err;
+      currentImg.src = avatarSrc;
+      currentImg.setAttribute('src', avatarSrc);
+      currentImg.alt = '프로필 아바타';
+      currentImg.decoding = 'async';
+      currentImg.draggable = false;
     }
-    avatarEl.innerHTML = `<img src="${avatarSrc}" alt="프로필 아바타" onerror="if(this.dataset.err)return;this.dataset.err=1;this.src='${LIVE_AVATAR_FALLBACK}'">`;
+  }
+
+  function normalizeLiveAvatar(src) {
+    const raw = String(src || '').trim();
+    if (!raw) return '';
+    const cleaned = raw.replace(/[?#].*$/, '');
+    if (LIVE_AVATAR_SET.has(cleaned)) return cleaned;
+    const runMatch = cleaned.match(/images\/avatars\/run(\d+)\.png$/i);
+    if (runMatch) {
+      const mapped = `images/avatars/av${Math.max(1, Math.min(20, Number(runMatch[1]) || 1))}.png`;
+      return LIVE_AVATAR_SET.has(mapped) ? mapped : LIVE_AVATAR_FALLBACK;
+    }
+    return cleaned.includes('images/avatars/') ? LIVE_AVATAR_FALLBACK : '';
+  }
+
+  function prefillFromLogin(name, empId, avatar) {
+    const nameEl = document.getElementById('f-name');
+    const empIdEl = document.getElementById('f-empid');
+    const normalizedName = String(name || '').trim();
+    const normalizedEmpId = String(empId || '').trim().toUpperCase();
+    if (nameEl && normalizedName && nameEl.value !== normalizedName) nameEl.value = normalizedName;
+    if (empIdEl && normalizedEmpId && empIdEl.value !== normalizedEmpId) empIdEl.value = normalizedEmpId;
+    const nextAvatar = normalizeLiveAvatar(avatar);
+    if (nextAvatar && nextAvatar !== currentLoginAvatar) currentLoginAvatar = nextAvatar;
+    renderRundayProfileHeader();
   }
 
   function openRundayProfile() {
@@ -2452,28 +2478,6 @@
       }
     } catch (e) {}
     toast('앱에서 프로필 설정을 열 수 있어요.');
-  }
-
-  function normalizeLiveAvatar(src) {
-    const raw = String(src || '').trim();
-    if (!raw) return '';
-    if (LIVE_AVATAR_SET.has(raw)) return raw;
-    const runMatch = raw.match(/images\/avatars\/run(\d+)\.png$/i);
-    if (runMatch) {
-      const mapped = `images/avatars/av${Math.max(1, Math.min(20, Number(runMatch[1]) || 1))}.png`;
-      return LIVE_AVATAR_SET.has(mapped) ? mapped : LIVE_AVATAR_FALLBACK;
-    }
-    return raw.includes('images/avatars/') ? LIVE_AVATAR_FALLBACK : '';
-  }
-
-  function prefillFromLogin(name, empId, avatar) {
-    const nameEl = document.getElementById('f-name');
-    const empIdEl = document.getElementById('f-empid');
-    if (nameEl && name) nameEl.value = name;
-    if (empIdEl && empId) empIdEl.value = empId.toUpperCase();
-    const nextAvatar = normalizeLiveAvatar(avatar);
-    if (nextAvatar) currentLoginAvatar = nextAvatar;
-    renderRundayProfileHeader();
   }
 
   function resetRegistrationForm(opts = {}) {
