@@ -1579,7 +1579,10 @@
         </div>
         <div class="souvenir-card">
           <div class="souvenir-body">
-            <div class="souvenir-media"><img src="images/avatars/andar-1.png" alt="ANDAR 티셔츠"></div>
+            <div class="souvenir-media-stack">
+              <div class="souvenir-media"><img src="images/avatars/andar-1.png" alt="ANDAR 티셔츠"></div>
+              <button type="button" class="souvenir-action" onclick="openImgPreview(0, 'andar')">상세보기</button>
+            </div>
             <div class="souvenir-side">
               <div class="souvenir-head">
                 <div class="souvenir-copy">
@@ -1702,7 +1705,7 @@
     shortLabel: 'New Balance 860 v15',
     brandLabel: 'New Balance',
   };
-  const MODELS = [
+  const SHOE_PREVIEW_MODELS = [
     {
       id: 'nb-860-detail-0',
       label: 'New Balance 860 v15',
@@ -1746,6 +1749,40 @@
       desc: '',
     },
   ];
+  const ANDAR_PREVIEW_MODELS = [
+    {
+      id: 'andar-detail-0',
+      label: 'Andar 에어로코튼 스탠다드핏',
+      img: 'images/andar-0.png',
+      badge: 'DETAIL 1',
+      desc: '',
+    },
+    {
+      id: 'andar-detail-2',
+      label: 'Andar 에어로코튼 스탠다드핏',
+      img: 'images/andar-2.png',
+      badge: 'DETAIL 2',
+      desc: '',
+    },
+    {
+      id: 'andar-detail-3',
+      label: 'Andar 에어로코튼 스탠다드핏',
+      img: 'images/andar-3.png',
+      badge: 'DETAIL 3',
+      desc: '',
+    },
+    {
+      id: 'andar-detail-4',
+      label: 'Andar 에어로코튼 스탠다드핏',
+      img: 'images/andar-4.png',
+      badge: 'DETAIL 4',
+      desc: '',
+    },
+  ];
+  const PREVIEW_GALLERIES = {
+    shoe: SHOE_PREVIEW_MODELS,
+    andar: ANDAR_PREVIEW_MODELS,
+  };
   const MAX_FAMILY_MEMBERS = 3;
   let selectedBrand = FIXED_SHOE_MODEL.id;
   let familyMembers = [];
@@ -1901,11 +1938,11 @@
   }
 
   function nikeGoTo(i = 0) {
-    openImgPreview(Math.max(0, Math.min(MODELS.length - 1, Number(i) || 0)));
+    openImgPreview(Math.max(0, Math.min(SHOE_PREVIEW_MODELS.length - 1, Number(i) || 0)));
   }
 
   function nbGoTo(i = 0) {
-    openImgPreview(Math.max(0, Math.min(MODELS.length - 1, Number(i) || 0)));
+    openImgPreview(Math.max(0, Math.min(SHOE_PREVIEW_MODELS.length - 1, Number(i) || 0)));
   }
 
   function renderShoes() {
@@ -2479,9 +2516,15 @@
 
   /* ── 이미지 크게 보기 ──────────────────────── */
   let previewIdx = 0;
+  let previewGalleryKey = 'shoe';
+
+  function getPreviewGalleryItems(key = 'shoe') {
+    return PREVIEW_GALLERIES[String(key || 'shoe').trim().toLowerCase()] || SHOE_PREVIEW_MODELS;
+  }
 
   function setPreviewContent(idx) {
-    const m = MODELS[idx] || MODELS[0];
+    const items = getPreviewGalleryItems(previewGalleryKey);
+    const m = items[idx] || items[0];
     if (!m) return;
     document.getElementById('img-preview-img').src = m.img;
     const badgeEl = document.getElementById('img-preview-gender');
@@ -2494,8 +2537,10 @@
     subEl.style.display = desc ? '' : 'none';
   }
 
-  function openImgPreview(idx) {
-    previewIdx = idx;
+  function openImgPreview(idx, galleryKey = 'shoe') {
+    previewGalleryKey = String(galleryKey || 'shoe').trim().toLowerCase() || 'shoe';
+    const items = getPreviewGalleryItems(previewGalleryKey);
+    previewIdx = Math.max(0, Math.min(items.length - 1, Number(idx) || 0));
     setPreviewContent(previewIdx);
     document.getElementById('img-preview').classList.remove('hidden');
     document.body.classList.add('preview-open');
@@ -2508,7 +2553,8 @@
   }
 
   function previewNav(dir) {
-    previewIdx = (previewIdx + dir + MODELS.length) % MODELS.length;
+    const items = getPreviewGalleryItems(previewGalleryKey);
+    previewIdx = (previewIdx + dir + items.length) % items.length;
     setPreviewContent(previewIdx);
   }
 
