@@ -760,13 +760,17 @@
 
     .souvenir-grid { display:grid; gap:14px; }
     .souvenir-card {
-      display:grid;
-      gap:12px;
       background:#fff;
       border:1.5px solid #e5e7eb;
       border-radius:20px;
       padding:14px;
       box-shadow:0 10px 26px rgba(15,23,42,0.06);
+    }
+    .souvenir-body {
+      display:grid;
+      grid-template-columns: 116px minmax(0, 1fr);
+      gap:14px;
+      align-items:start;
     }
     .souvenir-media {
       width:100%;
@@ -774,7 +778,7 @@
       overflow:hidden;
       border:1px solid #eef2f7;
       background:#f8fafc;
-      aspect-ratio: 16 / 10;
+      aspect-ratio: 1 / 1;
     }
     .souvenir-media img {
       width:100%;
@@ -784,9 +788,15 @@
       padding:10px;
       box-sizing:border-box;
     }
+    .souvenir-side {
+      min-width:0;
+      display:grid;
+      gap:12px;
+      align-content:start;
+    }
     .souvenir-head {
       display:flex;
-      align-items:center;
+      align-items:flex-start;
       justify-content:space-between;
       gap:12px;
     }
@@ -1123,6 +1133,7 @@
       .img-preview-nav.prev { left: 8px; }
       .img-preview-nav.next { right: 8px; }
       .souvenir-card { padding:12px; }
+      .souvenir-body { grid-template-columns: 92px minmax(0, 1fr); gap:12px; }
       .souvenir-head { align-items:flex-start; flex-direction:column; }
       .souvenir-action { width:100%; }
     }
@@ -1525,49 +1536,68 @@
       <div class="fcard-label">기념품 신청</div>
       <div class="souvenir-grid">
         <div class="souvenir-card">
-          <div id="shoe-model-guide"></div>
-          <div class="souvenir-field">
-            <label class="lbl" for="f-shoe">러닝화 사이즈 <span class="req">*</span></label>
-            <select class="fs" id="f-shoe" title="신발 사이즈" required>
-              <option value="">사이즈(mm) 선택</option>
-              <option>215</option><option>220</option><option>225</option><option>230</option>
-              <option>235</option><option>240</option><option>245</option><option>250</option>
-              <option>255</option><option>260</option><option>265</option><option>270</option>
-              <option>275</option><option>280</option><option>285</option><option>290</option>
-              <option>295</option><option>300</option>
-            </select>
+          <div class="souvenir-body">
+            <div id="shoe-model-guide"></div>
+            <div class="souvenir-side">
+              <div class="souvenir-head">
+                <div class="souvenir-copy">
+                  <div class="souvenir-type">러닝화</div>
+                  <div class="souvenir-name">NB 860 v15</div>
+                </div>
+                <button type="button" class="souvenir-action" onclick="openImgPreview(0)">상세보기</button>
+              </div>
+              <div class="souvenir-field">
+                <label class="lbl" for="f-shoe">러닝화 사이즈 <span class="req">*</span></label>
+                <select class="fs" id="f-shoe" title="신발 사이즈" required>
+                  <option value="">사이즈(mm) 선택</option>
+                  <option>215</option><option>220</option><option>225</option><option>230</option>
+                  <option>235</option><option>240</option><option>245</option><option>250</option>
+                  <option>255</option><option>260</option><option>265</option><option>270</option>
+                  <option>275</option><option>280</option><option>285</option><option>290</option>
+                  <option>295</option><option>300</option>
+                </select>
+              </div>
+            </div>
           </div>
         </div>
         <div class="souvenir-card">
-          <div class="souvenir-media"><img src="images/andar.png" alt="ANDAR 티셔츠"></div>
-          <div class="souvenir-head">
-            <div class="souvenir-copy">
-              <div class="souvenir-type">티셔츠</div>
-              <div class="souvenir-name">ANDAR</div>
+          <div class="souvenir-body">
+            <div class="souvenir-media"><img src="images/andar.png" alt="ANDAR 티셔츠"></div>
+            <div class="souvenir-side">
+              <div class="souvenir-head">
+                <div class="souvenir-copy">
+                  <div class="souvenir-type">티셔츠</div>
+                  <div class="souvenir-name">ANDAR</div>
+                </div>
+              </div>
+              <div class="souvenir-field">
+                <label class="lbl" for="f-tshirt">티셔츠 사이즈 <span class="req">*</span></label>
+                <select class="fs" id="f-tshirt" title="티셔츠 사이즈" required>
+                  <option value="">사이즈 선택</option>
+                  <option>XS</option><option>S</option><option>M</option><option>L</option>
+                  <option>XL</option><option>2XL</option><option>3XL</option>
+                </select>
+              </div>
             </div>
-          </div>
-          <div class="souvenir-field">
-            <label class="lbl" for="f-tshirt">티셔츠 사이즈 <span class="req">*</span></label>
-            <select class="fs" id="f-tshirt" title="티셔츠 사이즈" required>
-              <option value="">사이즈 선택</option>
-              <option>XS</option><option>S</option><option>M</option><option>L</option>
-              <option>XL</option><option>2XL</option><option>3XL</option>
-            </select>
           </div>
         </div>
         <div class="souvenir-card">
-          <div class="souvenir-media"><img src="images/dexcom.png" alt="Dexcom 혈당체크기기"></div>
-          <div class="souvenir-head">
-            <div class="souvenir-copy">
-              <div class="souvenir-type">혈당체크기기</div>
-              <div class="souvenir-name">Dexcom</div>
-            </div>
-          </div>
-          <div class="souvenir-field">
-            <label class="lbl">신청 여부 <span class="req">*</span></label>
-            <div class="rg souvenir-radio">
-              <label class="rl"><input type="radio" name="cgm" value="yes">신청</label>
-              <label class="rl"><input type="radio" name="cgm" value="no">미신청</label>
+          <div class="souvenir-body">
+            <div class="souvenir-media"><img src="images/dexcom.png" alt="Dexcom 혈당체크기기"></div>
+            <div class="souvenir-side">
+              <div class="souvenir-head">
+                <div class="souvenir-copy">
+                  <div class="souvenir-type">혈당체크기기</div>
+                  <div class="souvenir-name">Dexcom</div>
+                </div>
+              </div>
+              <div class="souvenir-field">
+                <label class="lbl">신청 여부 <span class="req">*</span></label>
+                <div class="rg souvenir-radio">
+                  <label class="rl"><input type="radio" name="cgm" value="yes">신청</label>
+                  <label class="rl"><input type="radio" name="cgm" value="no">미신청</label>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -1831,16 +1861,7 @@
     const guide = document.getElementById('shoe-model-guide');
     if (!guide) return;
     selectedBrand = FIXED_SHOE_MODEL.id;
-    guide.innerHTML = `
-      <div class="souvenir-media"><img src="images/nb.png" alt="${FIXED_SHOE_MODEL.label}"></div>
-      <div class="souvenir-head">
-        <div class="souvenir-copy">
-          <div class="souvenir-type">러닝화</div>
-          <div class="souvenir-name">${FIXED_SHOE_MODEL.label}</div>
-        </div>
-        <button type="button" class="souvenir-action" onclick="openImgPreview(0)">상세보기</button>
-      </div>
-    `;
+    guide.innerHTML = `<div class="souvenir-media"><img src="images/nb.png" alt="${FIXED_SHOE_MODEL.label}"></div>`;
   }
 
   function shortLabel(id) {
