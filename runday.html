@@ -808,12 +808,14 @@
       display:grid;
       grid-template-columns: 116px minmax(0, 1fr);
       gap:14px;
-      align-items:start;
+      align-items:stretch;
     }
     .souvenir-media-stack {
       display:grid;
       gap:8px;
-      align-content:start;
+      align-content:stretch;
+      grid-template-rows:minmax(0, 1fr) auto;
+      height:100%;
     }
     .souvenir-media {
       width:100%;
@@ -834,7 +836,9 @@
       min-width:0;
       display:grid;
       gap:12px;
-      align-content:start;
+      align-content:stretch;
+      grid-template-rows:minmax(0, 1fr) auto;
+      height:100%;
     }
     .souvenir-head {
       display:flex;
@@ -915,6 +919,12 @@
       cursor:pointer;
       font-family:inherit;
       letter-spacing:-0.02em;
+    }
+    .souvenir-action-spacer {
+      width:100%;
+      min-height:28px;
+      visibility:hidden;
+      pointer-events:none;
     }
     .souvenir-field {
       display:grid;
@@ -1680,7 +1690,10 @@
         </div>
         <div class="souvenir-card">
           <div class="souvenir-body">
-            <div class="souvenir-media"><img src="images/dexcom-1.png?v=20260321-128" alt="Dexcom 혈당체크기기" decoding="async" onerror="if(this.dataset.err)return;this.dataset.err=1;this.src='images/dexcom.png'"></div>
+            <div class="souvenir-media-stack">
+              <div class="souvenir-media"><img src="images/dexcom-1.png?v=20260321-128" alt="Dexcom 혈당체크기기" decoding="async" onerror="if(this.dataset.err)return;this.dataset.err=1;this.src='images/dexcom.png'"></div>
+              <div class="souvenir-action-spacer" aria-hidden="true"></div>
+            </div>
             <div class="souvenir-side">
               <div class="souvenir-head">
                 <div class="souvenir-copy">
