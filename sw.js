@@ -1,4 +1,4 @@
-const CACHE = 'hi-health-v559';
+const CACHE = 'hi-health-v560';
 const STATIC_ASSETS = [
   './manifest.webmanifest',
   './icons/icon.svg',
@@ -29,9 +29,10 @@ self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
   const url = new URL(e.request.url);
   const isSameOrigin = url.origin === self.location.origin;
+  const isHtmlRequest = e.request.destination === 'document' || url.pathname.endsWith('.html');
 
   // HTML 파일 / 아바타 이미지: 항상 네트워크에서 최신 버전 가져오기
-  if (e.request.destination === 'document' || e.request.url.endsWith('.html') || e.request.url.includes('/images/avatars/')) {
+  if (isHtmlRequest || url.pathname.includes('/images/avatars/')) {
     e.respondWith(
       fetch(e.request).then(res => {
         if (res && res.status === 200) {

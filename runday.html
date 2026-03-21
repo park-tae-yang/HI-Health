@@ -243,6 +243,22 @@
       font-size: 20px; font-weight: 700;
       letter-spacing: -0.5px; color: var(--text); margin-bottom: 20px;
     }
+    .section-title-row {
+      display:flex;
+      align-items:center;
+      gap:8px;
+      margin-bottom:20px;
+      flex-wrap:wrap;
+    }
+    .section-title-row .section-title {
+      display:inline-flex;
+      align-items:center;
+      line-height:1.2;
+      margin-bottom:0;
+    }
+    .section-title-row .fcard-badge {
+      align-self:center;
+    }
 
     .sch-card {
       background: #fff;
@@ -691,6 +707,9 @@
       margin-bottom:12px;
     }
     .fcard-label-row .fcard-label {
+      display:inline-flex;
+      align-items:center;
+      line-height:1.2;
       margin-bottom:0;
     }
     .fcard-badge {
@@ -908,6 +927,7 @@
       align-items:center;
       justify-content:center;
       width:100%;
+      min-height:30px;
       flex-shrink:0;
       border:1px solid #d1d5db;
       border-radius:999px;
@@ -916,6 +936,7 @@
       padding:6px 10px;
       font-size:10px;
       font-weight:800;
+      line-height:1;
       cursor:pointer;
       font-family:inherit;
       letter-spacing:-0.02em;
@@ -1386,7 +1407,10 @@
 <!-- ─── EVENT PROGRAM ──────────────────────── -->
 <div class="prog-wrap">
   <div class="section-kicker">Apr 15</div>
-  <div class="section-title">RUN DAY 프로그램</div>
+  <div class="section-title-row">
+    <div class="section-title">RUN DAY 프로그램</div>
+    <span class="fcard-badge staff">직원만 참여</span>
+  </div>
   <div class="prog-card">
     <div class="prog-list">
       <div class="prog-step">
@@ -1471,7 +1495,7 @@
       <div>
         <div class="route-modal-kicker">RUN COURSE DETAIL</div>
         <div class="route-modal-title" id="route-modal-title">여의도 유람선터미널 → 선유도공원 입구</div>
-        <div class="route-modal-sub">한강변 기준 약 4.3km 코스입니다. 평지 위주로 이어지지만 단체 러닝에서는 보행 구간과 포토타임을 함께 고려해 운영합니다.</div>
+        <div class="route-modal-sub">여의도에서 서쪽으로 서강대교를 지나 양화대교 남단 선유도공원 입구까지 약 4.3km 평지로 달리는 코스입니다.</div>
       </div>
       <button type="button" class="route-modal-close" onclick="closeCourseDetail()" aria-label="닫기">✕</button>
     </div>
@@ -1552,14 +1576,14 @@
           <div class="route-focus-point-desc">터미널 앞 집결 후 가벼운 스트레칭과 안내를 마치고 한강변 주로로 진입합니다.</div>
         </div>
         <div class="route-focus-point">
-          <div class="route-focus-point-dist">1.4KM</div>
-          <div class="route-focus-point-title">여의도한강공원 중간 포인트</div>
-          <div class="route-focus-point-desc">코스가 넓어져 페이스를 정리하기 좋고, 단체 사진을 남기기 좋은 여유 구간입니다.</div>
+          <div class="route-focus-point-dist">1.0KM</div>
+          <div class="route-focus-point-title">서강대교 부근</div>
+          <div class="route-focus-point-desc">출발 후 서쪽으로 직선 주로를 따라 달리면 서강대교가 가까워지는 지점으로, 초반 리듬을 안정적으로 잡기 좋은 구간입니다.</div>
         </div>
         <div class="route-focus-point">
-          <div class="route-focus-point-dist">3.3KM</div>
-          <div class="route-focus-point-title">양화대교 남단 구간</div>
-          <div class="route-focus-point-desc">보행자와 자전거가 섞일 수 있어 2열 이하 간격 유지가 필요한 구간입니다.</div>
+          <div class="route-focus-point-dist">2.2KM</div>
+          <div class="route-focus-point-title">보행로 진입 구간</div>
+          <div class="route-focus-point-desc">여의도 서울 마리나를 지나 작은 다리 밑으로 내려가면 양화공원 쪽으로 이어지는 보행로가 나타나며, 흐름을 유지해 부드럽게 이어 달리기 좋습니다.</div>
         </div>
         <div class="route-focus-point">
           <div class="route-focus-point-dist">4.3KM</div>
@@ -1567,7 +1591,7 @@
           <div class="route-focus-point-desc">도착 후 재정비와 마무리 스트레칭을 진행하기 편한 최종 집결 지점입니다.</div>
         </div>
       </div>
-      <div class="route-focus-note">실제 운영 시간은 단체 출발과 포토타임, 보행 혼합 여부에 따라 달라질 수 있습니다. 노면은 대부분 평탄하지만 강변 바람이 강할 수 있어 가벼운 겉옷을 챙기면 좋아요.</div>
+      <div class="route-focus-note">직선 주로가 많아 쾌적하지만 주로가 좁아지거나 자전거 주행과 겹치는 구간이 발생하여 주의가 필요합니다. 햇살이 강할수 있어 선캡이나 선글라스 착용을 추천합니다.</div>
     </div>
   </div>
 </div>
@@ -1692,7 +1716,7 @@
           <div class="souvenir-body">
             <div class="souvenir-media-stack">
               <div class="souvenir-media"><img src="images/dexcom-1.png?v=20260321-128" alt="Dexcom 혈당체크기기" decoding="async" onerror="if(this.dataset.err)return;this.dataset.err=1;this.src='images/dexcom.png'"></div>
-              <div class="souvenir-action-spacer" aria-hidden="true"></div>
+              <button type="button" class="souvenir-action" onclick="openImgPreview(0, 'dexcom')">상세보기</button>
             </div>
             <div class="souvenir-side">
               <div class="souvenir-head">
@@ -1703,6 +1727,7 @@
                     <div class="souvenir-name">G7</div>
                     <span class="souvenir-inline-sub">(10일간 착용)</span>
                   </div>
+                  <div class="souvenir-note">4월 5일부터 시작되는 페이스업 기간에 착용하여 10일 동안 혈당을 측정하고 기록합니다.</div>
                 </div>
               </div>
               <div class="souvenir-field">
@@ -1887,9 +1912,26 @@
       desc: '',
     },
   ];
+  const DEXCOM_PREVIEW_MODELS = [
+    {
+      id: 'dexcom-detail-0',
+      label: 'Dexcom G7',
+      img: 'images/dexcom-1.png',
+      badge: 'DETAIL 1',
+      desc: '',
+    },
+    {
+      id: 'dexcom-detail-1',
+      label: 'Dexcom G7',
+      img: 'images/dexcom-2.png',
+      badge: 'DETAIL 2',
+      desc: '',
+    },
+  ];
   const PREVIEW_GALLERIES = {
     shoe: SHOE_PREVIEW_MODELS,
     andar: ANDAR_PREVIEW_MODELS,
+    dexcom: DEXCOM_PREVIEW_MODELS,
   };
   const MAX_FAMILY_MEMBERS = 3;
   let selectedBrand = FIXED_SHOE_MODEL.id;
@@ -2007,7 +2049,7 @@
         </div>
         <div class="fg" style="margin-bottom:0">
           <label class="lbl">기타 메모</label>
-          <input type="text" class="fi" value="${escAttr(member.memo)}" placeholder="직접 입력" oninput="updateFamilyMember(${idx}, 'memo', this.value)">
+          <input type="text" class="fi" value="${escAttr(member.memo)}" placeholder="키즈 제품 신청시 사이즈 110 - 150 중 선택하여 기입" oninput="updateFamilyMember(${idx}, 'memo', this.value)">
         </div>
       </div>
     `).join('');
@@ -2570,8 +2612,9 @@
     if (!cruise) return toast('크루즈 탑승 여부를 선택해주세요');
     if (!eventV) return toast('행사 참여 여부를 선택해주세요');
     if (!ok)     return toast('개인정보 동의가 필요합니다');
+    const currentEditId = String(editingRegId || '').trim();
     await syncLocalRegsForEmp(empId, { pruneMissing: true });
-    if (hasDup(empId)) return toast('이미 신청하신 사번입니다');
+    if (hasDup(empId, currentEditId)) return toast('이미 신청하신 사번입니다');
 
     const submitBtn = document.getElementById('btn-submit');
     if (submitBtn) {
@@ -2580,7 +2623,6 @@
     }
 
     const fam = famVal === 'yes';
-    const currentEditId = String(editingRegId || '').trim();
     const regs = JSON.parse(localStorage.getItem(CH_KEY) || '[]');
     const prevReg = currentEditId
       ? (regs.find(r => String(r?.id || '').trim() === currentEditId) || null)
@@ -2627,7 +2669,7 @@
       toast('신청 저장에 실패했습니다. 잠시 후 다시 시도해주세요');
       if (submitBtn) {
         submitBtn.disabled = false;
-        submitBtn.textContent = currentEditId ? '수정 완료' : '신청하기';
+        submitBtn.textContent = currentEditId ? '수정 완료하기' : '신청 완료하기';
       }
       return;
     }
@@ -2645,7 +2687,7 @@
     document.getElementById('success-screen').classList.add('show');
     if (submitBtn) {
       submitBtn.disabled = false;
-      submitBtn.textContent = '신청하기';
+      submitBtn.textContent = '신청 완료하기';
     }
   }
 
@@ -2881,6 +2923,29 @@
     const regId = String(payload?.registrationId || reg?.id || '').trim();
     const empId = String(payload?.empId || reg?.empId || getCurrentEmpId()).trim().toUpperCase();
     if (!empId && !regId) return false;
+
+    if (payload?.cancelled && regId) {
+      const rows = JSON.parse(localStorage.getItem(CH_KEY) || '[]');
+      const idx = rows.findIndex(row => String(row?.id || '').trim() === regId);
+      if (idx >= 0) {
+        rows[idx] = {
+          ...rows[idx],
+          ...(payload.registration || {}),
+          status: 'cancelled',
+        };
+        localStorage.setItem(CH_KEY, JSON.stringify(rows));
+      }
+      if (restoreCheckTimer) {
+        clearTimeout(restoreCheckTimer);
+        restoreCheckTimer = 0;
+      }
+      lastSuccessRenderKey = '';
+      editingRegId = '';
+      resetRegistrationForm({ preserveIdentity: true });
+      document.getElementById('success-screen')?.classList.remove('show');
+      document.getElementById('form-screen')?.classList.remove('hide');
+      return true;
+    }
 
     let changed = false;
     if (reg && regId) {
@@ -3733,7 +3798,7 @@
 
     // 제출 버튼 초기화
     const btn = document.getElementById('btn-submit');
-    if (btn) { btn.disabled = false; btn.textContent = '신청하기'; }
+    if (btn) { btn.disabled = false; btn.textContent = '수정 완료하기'; }
 
     // 화면 전환
     document.getElementById('success-screen').classList.remove('show');
@@ -3786,12 +3851,15 @@
     localStorage.setItem(CH_KEY, JSON.stringify(regs));
     notifyParentRegistrationChange({ registrationId: normalizedRegId, cancelled: true, empId: getCurrentEmpId(), registration: cancelledReg });
     await syncCurrentUserRegistrationRef('', cancelledReg.empId || getCurrentEmpId(), cancelledReg.deviceId || getCurrentDeviceId());
+    if (restoreCheckTimer) {
+      clearTimeout(restoreCheckTimer);
+      restoreCheckTimer = 0;
+    }
     editingRegId = '';
     resetRegistrationForm({ preserveIdentity: true });
     loadPeople();
     document.getElementById('success-screen').classList.remove('show');
     document.getElementById('form-screen').classList.remove('hide');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   async function checkExisting(empId) {

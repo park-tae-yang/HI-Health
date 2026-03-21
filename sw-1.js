@@ -1,4 +1,4 @@
-const CACHE = 'hi-health-v348';
+const CACHE = 'hi-health-v349';
 const STATIC_ASSETS = [
   './manifest.webmanifest',
   './icons/icon.svg',
@@ -27,9 +27,11 @@ self.addEventListener('activate', e => {
 // 요청 가로채기: HTML은 네트워크 우선, 나머지는 캐시 우선
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
+  const url = new URL(e.request.url);
+  const isHtmlRequest = e.request.destination === 'document' || url.pathname.endsWith('.html');
 
   // HTML 파일 / 아바타 이미지 / 히어로 이미지: 항상 네트워크에서 최신 버전 가져오기
-  if (e.request.destination === 'document' || e.request.url.endsWith('.html') || e.request.url.includes('/images/avatars/') || e.request.url.includes('run_day_rola')) {
+  if (isHtmlRequest || url.pathname.includes('/images/avatars/') || url.pathname.includes('run_day_rola')) {
     e.respondWith(
       fetch(e.request).then(res => {
         if (res && res.status === 200) {

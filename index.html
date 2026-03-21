@@ -976,10 +976,17 @@
       padding: 18px; box-shadow: var(--shadow); margin-bottom: 14px;
     }
     .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
-    .card-title { font-size: 15px; font-weight: 700; }
+    .card-title {
+      display: inline-flex;
+      align-items: center;
+      font-size: 15px;
+      font-weight: 700;
+      line-height: 1.2;
+    }
     .badge {
-      display: inline-flex; align-items: center; gap: 3px;
+      display: inline-flex; align-items: center; justify-content: center; gap: 3px;
       padding: 3px 8px; border-radius: 20px; font-size: 11px; font-weight: 600;
+      line-height: 1;
     }
     .badge-primary { background: var(--primary-light); color: var(--primary); }
     .badge-success { background: var(--secondary-light); color: #166534; }
@@ -2683,40 +2690,218 @@
        REWARDS
     ══════════════════════════════ */
     .balance-card {
-      background: var(--card); border-radius: var(--radius-lg); padding: 20px 22px;
-      margin-bottom: 20px; box-shadow: var(--shadow);
-      display: flex; align-items: center; justify-content: space-between;
+      background: var(--card);
+      border-radius: var(--radius-lg);
+      padding: 20px 22px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
     }
     .bal-left { flex: 1; }
-    .bal-label { font-size: 12px; color: var(--text-secondary); font-weight: 600; margin-bottom: 4px; }
+    .bal-label {
+      font-size: 12px;
+      color: var(--text-secondary);
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
     .bal-amt { font-size: 36px; font-weight: 900; color: var(--text-primary); line-height: 1; }
     .bal-unit { font-size: 16px; font-weight: 700; color: var(--text-secondary); margin-left: 2px; }
     .bal-sub { font-size: 12px; color: var(--text-secondary); margin-top: 6px; }
     .bal-sub-icon { display: none; }
+    .reward-hero-kicker {
+      display:inline-flex;
+      align-items:center;
+      font-size:11px;
+      font-weight:700;
+      color:var(--text-secondary);
+      margin-bottom:8px;
+    }
+    .reward-hero-kicker::before {
+      display:none;
+    }
+    .reward-hero-title {
+      font-size:17px;
+      font-weight:800;
+      color:var(--text-primary);
+      letter-spacing:-0.02em;
+      margin-bottom:6px;
+    }
+    .reward-hero-next {
+      margin-top: 14px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .reward-hero-chip {
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:7px 11px;
+      border-radius:999px;
+      background:var(--bg-secondary);
+      border:1px solid var(--border);
+      color:var(--text-secondary);
+      font-size:11px;
+      font-weight:700;
+    }
+    .reward-hero-progress {
+      margin-top: 14px;
+    }
+    .reward-hero-progress-bar {
+      width:100%;
+      height:10px;
+      border-radius:999px;
+      overflow:hidden;
+      background:rgba(148,163,184,0.18);
+    }
+    .reward-hero-progress-fill {
+      display:block;
+      height:100%;
+      width:0;
+      border-radius:999px;
+      background:var(--primary);
+      transition:width .25s ease;
+    }
+    .reward-hero-progress-label {
+      margin-top:8px;
+      font-size:12px;
+      color:var(--text-secondary);
+      font-weight:600;
+    }
+    .reward-hero-side {
+      position:relative;
+      z-index:1;
+      min-width:120px;
+      display:flex;
+      flex-direction:column;
+      align-items:flex-end;
+      justify-content:flex-end;
+      gap:10px;
+    }
+    .reward-hero-badge {
+      display:none;
+    }
+    .reward-hero-mini {
+      display:flex;
+      flex-direction:column;
+      align-items:flex-end;
+      gap:6px;
+    }
+    .reward-hero-mini-chip {
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-width:74px;
+      padding:6px 10px;
+      border-radius:999px;
+      background:var(--bg-secondary);
+      border:1px solid var(--border);
+      color:var(--text-secondary);
+      font-size:11px;
+      font-weight:700;
+      text-align:center;
+    }
+    .reward-section-head {
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:10px;
+    }
+    .reward-section-copy {
+      min-width:0;
+    }
+    .reward-section-sub {
+      font-size:12px;
+      color:var(--text-secondary);
+      line-height:1.5;
+      margin-bottom:2px;
+    }
 
     .section-title { font-size: 15px; font-weight: 700; margin-bottom: 10px; color: var(--text-primary); }
 
     .reward-grid { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
     .reward-card {
-      background: var(--card); border-radius: var(--radius-sm);
-      box-shadow: var(--shadow); padding: 14px 16px;
-      display: flex; align-items: center; gap: 12px;
-      cursor: pointer; transition: opacity 0.15s; border: 1.5px solid transparent;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 14px rgba(15,23,42,0.04);
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: transform 0.15s, opacity 0.15s, box-shadow 0.15s;
+      border: 1px solid var(--border);
     }
-    .reward-card:active { opacity: 0.75; }
-    .reward-card.can { border-color: var(--secondary); }
-    .reward-card.pending { border-color: #f59e0b; cursor: default; }
+    .reward-card:active { opacity: 0.8; transform: scale(0.995); }
+    .reward-card.can { border-color: rgba(22,163,74,0.26); background:#f8fff9; }
+    .reward-card.pending { border-color: rgba(245,158,11,0.35); background:#fffdf7; cursor: default; }
     .reward-card.done { opacity: 0.5; cursor: default; }
+    .reward-thumb {
+      width:64px;
+      height:64px;
+      border-radius:16px;
+      flex-shrink:0;
+      overflow:hidden;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:#fff;
+      border:1px solid rgba(15,23,42,0.06);
+    }
+    .reward-thumb img,
+    .reward-thumb svg {
+      width:100%;
+      height:100%;
+      display:block;
+      object-fit:cover;
+    }
     .reward-info { flex: 1; }
-    .reward-name { font-size: 14px; font-weight: 700; margin-bottom: 3px; }
-    .reward-pts  { font-size: 12px; color: var(--warning); font-weight: 600; }
+    .reward-top {
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:5px;
+    }
+    .reward-name { font-size: 14px; font-weight: 800; margin-bottom: 2px; letter-spacing:-0.02em; }
+    .reward-desc { font-size: 12px; color: var(--text-secondary); line-height: 1.45; margin-bottom: 6px; }
+    .reward-pts  {
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      font-size: 11px;
+      color: var(--text-secondary);
+      font-weight: 700;
+      background:var(--bg-secondary);
+      border:1px solid var(--border);
+      border-radius:999px;
+      padding:4px 9px;
+      white-space:nowrap;
+    }
+    .reward-progress-label {
+      font-size:11px;
+      font-weight:700;
+      color:var(--text-secondary);
+      line-height:1.4;
+    }
+    .reward-status-wrap {
+      display:flex;
+      align-items:center;
+      flex-shrink:0;
+    }
     .reward-cost {
       display: inline-flex; align-items: center;
-      font-size: 11px; font-weight: 700; color: var(--warning);
-      background: var(--warning-light); padding: 3px 10px; border-radius: 20px;
+      font-size: 11px; font-weight: 700; color: var(--text-secondary);
+      background: var(--bg-secondary); padding: 3px 10px; border-radius: 20px;
+      border: 1px solid var(--border);
     }
-    .reward-pending-badge { color: #b45309; background: #FEF3C7; }
-    .reward-done-badge    { color: #6b7280; background: #F3F4F6; }
+    .reward-pending-badge { color: #b45309; background: #fff7ed; border-color:#fed7aa; }
+    .reward-done-badge    { color: #6b7280; background: #f8fafc; }
     .reward-confirm-btn {
       padding: 7px 12px; border-radius: 20px; border: none; cursor: pointer;
       background: #16a34a; color: #fff; font-size: 11px; font-weight: 700; white-space: nowrap;
@@ -2743,7 +2928,7 @@
     .shop-item-info  { flex: 1; min-width: 0; }
     .shop-item-name  { font-size: 14px; font-weight: 700; }
     .shop-item-price { font-size: 12px; color: var(--primary); font-weight: 700; margin-top: 3px; }
-    .shop-item-ctrl  { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0; }
+    .shop-item-ctrl  { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
     .shop-item-cart-row { display: flex; align-items: center; gap: 8px; }
     .shop-detail-btn { font-size: 11px; font-weight: 600; color: var(--text-secondary); background: none; border: 1px solid var(--border); border-radius: 12px; padding: 3px 10px; cursor: pointer; white-space: nowrap; }
     .shop-detail-btn:active { background: var(--bg); }
@@ -2792,6 +2977,11 @@
     .shop-notice-action:active { opacity: 0.88; }
     .shop-item:active { opacity: 0.75; }
     .shop-item-thumb { width: 52px; height: 52px; flex-shrink: 0; border-radius: 8px; overflow: hidden; background: #f3f4f6; display: flex; align-items: center; justify-content: center; }
+    .shop-item-thumb-btn {
+      border: none;
+      padding: 0;
+      cursor: pointer;
+    }
     .shop-item-thumb svg { width: 100%; height: 100%; display: block; }
     .pd-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
     .pd-tag { font-size: 11px; font-weight: 600; color: var(--primary); background: var(--primary-light, #f0eeff); border-radius: 20px; padding: 3px 10px; }
@@ -2883,6 +3073,7 @@
     .shop-cart-close:hover { color: #fff; }
     /* 신청내역 */
     .order-history { margin: 16px 0 80px; }
+    .order-history:empty { display: none; margin: 0; }
     .order-history-title { font-size: 14px; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
     .order-card { background: var(--card); border-radius: var(--radius-sm); padding: 14px 16px; margin-bottom: 10px; box-shadow: var(--shadow); border-left: 3px solid var(--border); }
     .order-card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
@@ -2998,6 +3189,15 @@
       display: inline-block; margin-top: 7px; padding: 5px 12px;
       background: var(--primary); color: #fff; border: none; border-radius: 20px;
       font-size: 12px; font-weight: 600; cursor: pointer;
+    }
+    @media (max-width: 420px) {
+      .reward-card {
+        align-items: flex-start;
+      }
+      .reward-status-wrap {
+        align-self: stretch;
+        justify-content: flex-end;
+      }
     }
     /* ── Reward Form Modal ── */
     .reward-form-modal {
@@ -4540,8 +4740,13 @@
       <img src="icons/HI_icon_29.png" style="width:48px;height:48px;object-fit:contain;opacity:0.18" alt="">
     </div>
 
-
-    <p class="section-title">교환 가능한 보상</p>
+    <div class="reward-section-head">
+      <div class="reward-section-copy">
+        <div class="reward-section-sub">챌린지 기간 동안 교환할 수 있는 보상입니다</div>
+        <p class="section-title">교환 가능한 보상</p>
+      </div>
+      <span class="badge badge-warning">챌린지 운영중</span>
+    </div>
     <div class="reward-grid" id="reward-grid"></div>
     <div class="reward-history" id="reward-history"></div>
 
@@ -4570,9 +4775,27 @@
     <div style="margin-top:6px"></div>
     <p class="section-title">레벨 안내</p>
     <div class="level-guide" id="level-guide"></div>
+
     </div><!-- /rew-rewards-panel -->
 
     <div id="rew-shop-panel" style="display:none">
+      <div class="reward-guide-card">
+        <p class="reward-guide-title">영양제 구매 안내</p>
+        <div class="reward-guide-row">
+          <span class="reward-guide-icon"><img src="icons/HI_icon_29.png" class="rg-icon" alt="영양제 구매"></span>
+          <div>
+            <span class="reward-guide-label">필요한 영양제를 골라 담아보세요</span>
+            <span class="reward-guide-desc">구매 탭에서 원하는 영양제를 장바구니에 담고 주문서를 제출하면 담당자가 순서대로 확인합니다.</span>
+          </div>
+        </div>
+        <div class="reward-guide-row">
+          <span class="reward-guide-icon"><img src="icons/HI_icon_14.png" class="rg-icon" alt="수령 안내"></span>
+          <div>
+            <span class="reward-guide-label">입금 확인 후 준비됩니다</span>
+            <span class="reward-guide-desc">직접 수령 또는 배송을 선택할 수 있으며, 주문 상세에서 진행 상태를 확인할 수 있습니다.</span>
+          </div>
+        </div>
+      </div>
       <div class="shop-banner"></div>
       <div class="order-history" id="shop-order-history"></div>
       <div class="shop-list" id="shop-list"></div>
@@ -4893,7 +5116,7 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const PUSH_PUBLIC_KEY   = 'BEaMexe-bw1jM31PgeQdkkZeqs29Ls1KIMY-TViYgH2dPqg_v7tRRObOpRUTGu5-ZgH13qR_ZTtxeOWh9_vnhTk';
 const PUSH_TABLE        = 'push_subscriptions';
 const PUSH_DEFAULT_URL  = './index.html#community';
-const SW_VERSION        = '20260318-84';
+const SW_VERSION        = '20260321-87';
 const CHALLENGE_PEOPLE_CACHE_KEY = 'hi_health_people_cache_v1';
 let _db = null; // Supabase 클라이언트
 let _realLeagueUsers = null; // Supabase에서 가져온 실제 유저 목록
@@ -4937,11 +5160,11 @@ const STICKERS = [
 ];
 
 const REWARDS_DATA = [
-  { id:'r1', name:'HI 로고 보틀',   cost:300,  desc:'HI 브랜드 로고 보틀' },
-  { id:'r2', name:'HI 스포츠타올',  cost:500,  desc:'HI 브랜드 스포츠 타올' },
-  { id:'r3', name:'HI 슈즈백',      cost:800,  desc:'HI 브랜드 슈즈 가방' },
-  { id:'r4', name:'HI 텀블러',      cost:1200, desc:'HI 브랜드 텀블러' },
-  { id:'r5', name:'아르기닌 1box',   cost:1500, desc:'아르기닌 1박스' },
+  { id:'r1', name:'스타벅스 아메리카노 교환권', cost:300,  desc:'스타벅스 아메리카노 1잔 교환권' },
+  { id:'r2', name:'아몬드브리즈 24팩',          cost:500,  desc:'아몬드브리즈 24팩 세트' },
+  { id:'r3', name:'킨토 물병 500ml',            cost:800,  desc:'킨토 워터보틀 500ml' },
+  { id:'r4', name:'안다르 3만원 교환권',        cost:1200, desc:'안다르 3만원 교환권' },
+  { id:'r5', name:'아르기닌(젤리) 1박스',       cost:1500, desc:'아르기닌 젤리 1박스' },
 ];
 
 const SUPP_SVG = {
@@ -4983,7 +5206,6 @@ const SHOP_PRODUCTS = [
   { id:'sp10', name:'엘레뉴2',                price:85000, cat:'supp', svg:'elenew2',      tags:['시니어특화','루테인','항노화','관절건강'],         desc:'엘레뉴1의 업그레이드 버전으로 50대 이상을 위해 주요 성분을 강화했습니다. 루테인·아스타잔틴 등 노화 방지 성분과 관절 건강 성분이 추가되어 전반적인 노화 관리를 지원합니다.' },
   { id:'sp11', name:'엘레뉴럭스',             price:86000, cat:'supp', svg:'elenew1lux',   tags:['프리미엄멀티비타민','고함량','면역강화','항산화'], desc:'성지약품 프리미엄 라인의 럭스 에디션으로, 비타민 A·C·D·E와 B 복합체를 최적 비율로 조합하여 면역력 강화·항산화·에너지 대사를 종합적으로 지원합니다. 고급 원료로 배합한 프리미엄 제품입니다.' },
   { id:'sp12', name:'알티지 오메가',           price:55000, cat:'supp', svg:'rtomega',      tags:['고순도오메가3','rTG형','심혈관','고흡수율'],       desc:'고순도 rTG 형태의 오메가-3 지방산으로 일반 오메가-3 대비 흡수율이 월등히 높습니다. EPA와 DHA를 균형 있게 함유하여 혈중 중성지방 감소, 뇌 기능 향상, 심혈관 건강에 기여합니다.' },
-  { id:'sp13', name:'아스트로(윤활제)',        price:30000, cat:'supp', svg:'',             tags:['여성건강','질건강','갱년기','보습'],               desc:'여성 질 건조증 및 갱년기 증상 완화를 위한 윤활 제품입니다. 피부 자극이 없는 순한 성분으로 구성되어 일상적으로 편안하게 사용할 수 있습니다.' },
   { id:'sp14', name:'에브리D 성인(스프레이)', price:39000, cat:'supp', svg:'everyd',       tags:['비타민D','스프레이형','면역력','뼈건강'],          desc:'입안에 뿌리는 스프레이 방식으로 간편하게 섭취하는 비타민 D3 성인용 제품입니다. 구강 점막을 통한 빠른 흡수로 높은 생체이용률을 자랑하며, 뼈 건강·면역력 강화·칼슘 흡수 촉진에 필수적입니다.' },
   { id:'sp15', name:'퍼틸우먼 액티브',        price:90000, cat:'supp', svg:'fertil_w',     img:'images/fertility_women.png', tags:['임신준비','엽산','코큐텐','가임기여성'],           desc:'임신을 준비하는 여성을 위한 특화 영양 솔루션으로, 엽산·코엔자임Q10·이노시톨·비타민D·철분 등 가임기 여성에게 필수적인 영양소를 균형 있게 담았습니다. 난자의 질 향상에 도움을 줍니다.' },
   { id:'sp16', name:'퍼틸맨 액티브',          price:95000, cat:'supp', svg:'fertil_m',     tags:['남성임신준비','정자건강','아연','셀레늄'],         desc:'남성 임신 준비를 위한 전문 영양 포뮬러로, 아연·셀레늄·코큐텐·L-카르니틴·비타민E가 정자 DNA 손상 방지와 생성 촉진에 도움을 줍니다. 부부가 함께 준비하는 임신을 지원합니다.' },
@@ -6872,7 +7094,7 @@ function myWeekPts() {
    NAVIGATION
 ════════════════════════════════════════ */
 const _isTouch = () => window.matchMedia('(hover: none)').matches;
-const RUNDAY_IFRAME_SRC = 'runday.html?v=20260321-131';
+const RUNDAY_IFRAME_SRC = 'runday.html?v=20260321-134';
 let _rundayIframeReady = false;
 let _rundayIframeLoadStarted = false;
 const _rundayIframeQueue = [];
@@ -7084,18 +7306,20 @@ async function fetchInlineChallengeHtml(options = {}) {
   if (!refresh && _rundayInlineHtmlText) return _rundayInlineHtmlText;
   if (!refresh && _rundayInlineHtmlPromise) return _rundayInlineHtmlPromise;
   _rundayInlineHtmlPromise = (async () => {
-    if (!refresh) {
+    try {
+      const res = await fetch(RUNDAY_IFRAME_SRC, { cache: 'no-store' });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const html = await res.text();
+      _rundayInlineHtmlText = html;
+      return html;
+    } catch (error) {
       const cachedHtml = await readCachedInlineChallengeHtml();
       if (cachedHtml) {
         _rundayInlineHtmlText = cachedHtml;
         return cachedHtml;
       }
+      throw error;
     }
-    const res = await fetch(RUNDAY_IFRAME_SRC, { cache: 'no-store' });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const html = await res.text();
-    _rundayInlineHtmlText = html;
-    return html;
   })();
   try {
     return await _rundayInlineHtmlPromise;
@@ -8389,7 +8613,7 @@ function logExercise() {
     _pendingTrackedRun.routePath.length > 1 &&
     _pendingTrackedRun.token &&
     _pendingTrackedRun.token === trackedRunToken;
-  S.workouts.push({
+  const workoutRecord = {
     id: Date.now(),
     exId: S.selectedEx,
     customName: customName || null,
@@ -8404,7 +8628,8 @@ function logExercise() {
     supp:      _suppTaken,
     suppList:  _suppList.length ? [..._suppList] : null,
     ts: Date.now(),
-  });
+  };
+  S.workouts.push(workoutRecord);
   if (memoEl?.dataset) delete memoEl.dataset.trackedRunToken;
   _pendingTrackedRun = null;
   const prevEarnedIds = new Set(earnedAchs().map(a => a.id));
@@ -8430,21 +8655,20 @@ function logExercise() {
   document.getElementById('dur-val')?.classList.remove('active');
   save();
   // 운동 기록 구글 시트 동기화
-  const lastW = S.workouts[0];
-  if (lastW) {
-    const exInfo = getExType(lastW.exId);
+  if (workoutRecord) {
+    const exInfo = getExType(workoutRecord.exId);
     apiSync('addWorkout', {
-      id: lastW.id,
+      id: workoutRecord.id,
       deviceId: S.deviceId,
       userName: S.user.name,
-      date: new Date(lastW.ts).toLocaleDateString('ko-KR'),
-      exId: lastW.exId,
-      exName: lastW.customName || exInfo.name,
-      duration: lastW.duration,
-      points: lastW.points,
-      memo: lastW.memo || '',
-      ts: lastW.ts,
-      routepath: (lastW.routePath && lastW.routePath.length > 1) ? lastW.routePath : null,
+      date: new Date(workoutRecord.ts).toLocaleDateString('ko-KR'),
+      exId: workoutRecord.exId,
+      exName: workoutRecord.customName || exInfo.name,
+      duration: workoutRecord.duration,
+      points: workoutRecord.points,
+      memo: workoutRecord.memo || '',
+      ts: workoutRecord.ts,
+      routepath: (workoutRecord.routePath && workoutRecord.routePath.length > 1) ? workoutRecord.routePath : null,
     });
   }
   renderHeader();
@@ -8481,14 +8705,15 @@ async function deleteRemoteRecordById(table, id, deviceId) {
 
   for (const applyScope of scopes) {
     for (const candidate of idCandidates) {
-      const { data, error } = await applyScope(
-        _db.from(table).delete().eq('id', candidate)
-      ).select('id,deviceId');
+      const { count, error } = await applyScope(
+        _db.from(table).delete({ count: 'exact' }).eq('id', candidate)
+      );
       if (error) throw error;
-      if (data?.length) return data;
+      if ((count || 0) > 0) return count;
     }
   }
-  throw new Error(`[${table}] delete affected 0 rows for id=${idText}`);
+  console.warn(`[deleteRemoteRecordById] no remote row matched ${table} id=${idText}`);
+  return 0;
 }
 
 function deleteWorkout(id) {
@@ -8511,7 +8736,7 @@ function deleteWorkout(id) {
       S.user.points = Math.max(0, S.user.points - wo.points);
       S.user.totalPoints = Math.max(0, (S.user.totalPoints || 0) - wo.points);
       updateStreak();
-      save();
+      save({ skipRemote: true });
       renderHeader();
       renderExercise();
       renderRecordTabDots();
@@ -8526,7 +8751,7 @@ function deleteWorkout(id) {
           S.user.points = prevPoints;
           S.user.totalPoints = prevTotalPoints;
           updateStreak();
-          save();
+          save({ skipRemote: true });
           renderHeader();
           renderExercise();
           renderRecordTabDots();
@@ -8535,6 +8760,7 @@ function deleteWorkout(id) {
           return;
         }
       }
+      save();
       showToast('운동 기록이 삭제되었습니다');
     },
   });
@@ -9005,7 +9231,7 @@ function deleteGlucose(id) {
       S.glucoseRecords = S.glucoseRecords.filter(r => r.id !== id);
       S.user.points = Math.max(0, S.user.points - (rec.points || GLUCOSE_POINTS));
       S.user.totalPoints = Math.max(0, (S.user.totalPoints || 0) - (rec.points || GLUCOSE_POINTS));
-      save();
+      save({ skipRemote: true });
       renderHeader();
       renderGlucose();
       renderRecordTabDots();
@@ -9019,7 +9245,7 @@ function deleteGlucose(id) {
           S.glucoseRecords = prevGlucoseRecords;
           S.user.points = prevPoints;
           S.user.totalPoints = prevTotalPoints;
-          save();
+          save({ skipRemote: true });
           renderHeader();
           renderGlucose();
           renderRecordTabDots();
@@ -9028,6 +9254,7 @@ function deleteGlucose(id) {
           return;
         }
       }
+      save();
       showToast('혈당 기록이 삭제되었습니다');
     },
   });
@@ -10900,7 +11127,7 @@ function renderShop() {
     return products.map(p => {
       const qty = _cart[p.id] || 0;
       const thumbHtml = (p.svg && SUPP_SVG[p.svg])
-        ? `<div class="shop-item-thumb">${SUPP_SVG[p.svg]}</div>`
+        ? `<button type="button" class="shop-item-thumb shop-item-thumb-btn" onclick="openProductDetail('${p.id}')">${SUPP_SVG[p.svg]}</button>`
         : '';
       const actionHtml = _shopPurchaseEnabled
         ? (qty > 0 ? `
@@ -11180,13 +11407,71 @@ function submitShopOrder() {
    RENDER: REWARDS
 ════════════════════════════════════════ */
 function renderRewards() {
-  document.getElementById('bal-display').textContent = S.user.points;
+  const points = Number(S.user.points || 0);
+  document.getElementById('bal-display').textContent = points;
+  const availableCount = REWARDS_DATA.filter(r => !S.redeemedRewards.includes(r.id) && !S.pendingRewards.includes(r.id) && points >= r.cost).length;
+  const doneCount = REWARDS_DATA.filter(r => S.redeemedRewards.includes(r.id)).length;
+  const nextReward = [...REWARDS_DATA]
+    .filter(r => !S.redeemedRewards.includes(r.id) && !S.pendingRewards.includes(r.id))
+    .sort((a, b) => a.cost - b.cost)
+    .find(r => points < r.cost) || null;
+  const nextChip = document.getElementById('reward-next-chip');
+  const canChip = document.getElementById('reward-can-chip');
+  const doneChip = document.getElementById('reward-done-chip');
+  const heroSub = document.getElementById('reward-hero-sub');
+  const heroFill = document.getElementById('reward-hero-progress-fill');
+  const heroLabel = document.getElementById('reward-hero-progress-label');
+  const totalChip = document.getElementById('reward-total-chip');
+  if (nextChip) nextChip.textContent = nextReward ? `다음 목표 · ${nextReward.name}` : '축하해요 · 모든 보상이 열려 있어요';
+  if (canChip) canChip.textContent = `교환 가능 ${availableCount}개`;
+  if (doneChip) doneChip.textContent = `교환 완료 ${doneCount}개`;
+  if (totalChip) totalChip.textContent = `특별 보상 ${REWARDS_DATA.length}종`;
+  if (heroSub) {
+    heroSub.textContent = nextReward
+      ? `${Math.max(0, nextReward.cost - points)}p만 더 모으면 ${nextReward.name}에 도전할 수 있어요.`
+      : '지금은 모든 특별 보상에 도전할 수 있는 상태예요.';
+  }
+  if (heroFill) {
+    const pct = nextReward ? Math.max(0, Math.min(100, Math.round((points / nextReward.cost) * 100))) : 100;
+    heroFill.style.width = pct + '%';
+  }
+  if (heroLabel) {
+    heroLabel.textContent = nextReward
+      ? `${nextReward.cost}p까지 ${Math.max(0, nextReward.cost - points)}p 남았어요`
+      : '모든 보상 조건을 달성했어요';
+  }
+
+  function getRewardVisual(reward) {
+    const map = {
+      r1: {
+        svg: `<svg viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg"><rect width="72" height="72" rx="16" fill="#f7f3ee"/><ellipse cx="36" cy="59" rx="18" ry="4" fill="rgba(0,0,0,.08)"/><rect x="22" y="17" width="24" height="28" rx="4" fill="#ffffff"/><path d="M46 22h5a6 6 0 010 12h-5" fill="none" stroke="#d1d5db" stroke-width="3"/><rect x="25" y="20" width="18" height="10" rx="3" fill="#6f4e37"/><path d="M28 13c0 4-3 4-3 8M36 13c0 4-3 4-3 8M44 13c0 4-3 4-3 8" fill="none" stroke="#d1a054" stroke-linecap="round" stroke-width="2.2"/></svg>`
+      },
+      r2: {
+        svg: `<svg viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg"><rect width="72" height="72" rx="16" fill="#eef6ea"/><rect x="22" y="12" width="28" height="48" rx="5" fill="#ffffff" stroke="#d7e6d1"/><rect x="22" y="12" width="28" height="14" rx="5" fill="#6b9b52"/><text x="36" y="21" text-anchor="middle" font-family="Arial,sans-serif" font-size="5.5" font-weight="700" fill="#fff">ALMOND</text><text x="36" y="35" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" font-weight="700" fill="#6b9b52">BRZ</text><ellipse cx="31" cy="47" rx="5" ry="8" fill="#c98f54"/><ellipse cx="39" cy="47" rx="5" ry="8" fill="#d9a56a"/><path d="M47 14l4 5v12" fill="none" stroke="#d1d5db" stroke-width="2"/></svg>`
+      },
+      r3: {
+        svg: `<svg viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg"><rect width="72" height="72" rx="16" fill="#edf5ff"/><ellipse cx="36" cy="58" rx="16" ry="4" fill="rgba(0,0,0,.06)"/><rect x="28" y="14" width="16" height="10" rx="4" fill="#9ec5f8"/><rect x="24" y="21" width="24" height="32" rx="8" fill="#dbeafe" stroke="#9cc3f5"/><rect x="27" y="27" width="18" height="13" rx="4" fill="#ffffff" opacity=".95"/><path d="M31 45c3-4 7-4 10 0" fill="none" stroke="#7aa7e8" stroke-width="2.4" stroke-linecap="round"/></svg>`
+      },
+      r4: {
+        img: 'images/andar.png',
+        alt: '안다르 3만원 교환권'
+      },
+      r5: {
+        svg: SUPP_SVG.jelly_arg
+      },
+    };
+    return map[reward.id] || {
+      svg: `<svg viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg"><rect width="72" height="72" rx="16" fill="#f6f3ff"/><rect x="16" y="18" width="40" height="36" rx="10" fill="#fff" stroke="#ddd6fe"/><path d="M16 31h40" stroke="#ddd6fe" stroke-width="2"/><path d="M36 18v36" stroke="#ddd6fe" stroke-width="2"/><path d="M30 17c0-4 3-7 6-7s6 3 6 7c0 2-2 4-4 4h-4c-2 0-4-2-4-4z" fill="#c4b5fd"/></svg>`
+    };
+  }
 
   // Rewards list
   document.getElementById('reward-grid').innerHTML = REWARDS_DATA.map(r => {
     const done    = S.redeemedRewards.includes(r.id);
     const pending = !done && S.pendingRewards.includes(r.id);
     const can     = !done && !pending && S.user.points >= r.cost;
+    const shortfall = Math.max(0, r.cost - points);
+    const visual = getRewardVisual(r);
     let cardClass = 'reward-card';
     if (done)         cardClass += ' done';
     else if (pending) cardClass += ' pending';
@@ -11194,11 +11479,16 @@ function renderRewards() {
     const onclick = !done && !pending ? `onclick="redeemReward('${r.id}')"` : '';
     return `
       <div class="${cardClass}" ${onclick}>
+        <div class="reward-thumb">${visual.img ? `<img src="${visual.img}" alt="${visual.alt || r.name}">` : visual.svg}</div>
         <div class="reward-info">
-          <div class="reward-name">${r.name}</div>
-          <div class="reward-pts">${r.cost}p</div>
+          <div class="reward-top">
+            <div class="reward-name">${r.name}</div>
+            <div class="reward-pts">${r.cost}p</div>
+          </div>
+          <div class="reward-desc">${r.desc}</div>
+          <div class="reward-progress-label">${done ? '완료' : pending ? '처리중' : can ? '도전 가능' : `${shortfall}p 남음`}</div>
         </div>
-        <div>
+        <div class="reward-status-wrap">
           ${done
             ? `<span class="reward-cost reward-done-badge">교환완료</span>`
             : pending
@@ -11242,15 +11532,18 @@ function renderRewards() {
   }).join('');
 
   // Level guide
-  const myLv = getLevel(S.user.points);
-  document.getElementById('level-guide').innerHTML = LEVELS.map(l => `
-    <div class="lg-row ${l.lv === myLv.lv ? 'current-level' : ''}">
-      ${l.lv === myLv.lv ? `<div class="lg-current">현재</div>` : ''}
-      <div class="lg-icon">${l.icon}</div>
-      <div class="lg-name">Lv.${l.lv} ${l.name}</div>
-      <div class="lg-range">${l.min.toLocaleString()}p ~ ${l.max === Infinity ? '∞' : l.max.toLocaleString()+'p'}</div>
-    </div>
-  `).join('');
+  const levelGuideEl = document.getElementById('level-guide');
+  if (levelGuideEl) {
+    const myLv = getLevel(S.user.points);
+    levelGuideEl.innerHTML = LEVELS.map(l => `
+      <div class="lg-row ${l.lv === myLv.lv ? 'current-level' : ''}">
+        ${l.lv === myLv.lv ? `<div class="lg-current">현재</div>` : ''}
+        <div class="lg-icon">${l.icon}</div>
+        <div class="lg-name">Lv.${l.lv} ${l.name}</div>
+        <div class="lg-range">${l.min.toLocaleString()}p ~ ${l.max === Infinity ? '∞' : l.max.toLocaleString()+'p'}</div>
+      </div>
+    `).join('');
+  }
 
   // 교환이력
   const histEl = document.getElementById('reward-history');
@@ -12844,7 +13137,7 @@ function renderChallenge() {
           <div>
             <div class="ch-route-title">여의도 유람선터미널에서 선유도공원 입구까지 달려요</div>
             <div class="ch-route-kicker">RUN COURSE DETAIL</div>
-            <div class="ch-route-sub">한강변 기준 약 4.3km 코스입니다. 평지 위주라 초보 러너도 부담이 적고, 단체 운영에서는 사진 촬영과 보행 구간을 포함해 여유 있게 이동합니다.</div>
+            <div class="ch-route-sub">여의도에서 서쪽으로 서강대교를 지나 양화대교 남단 선유도공원 입구까지 약 4.3km 평지로 달리는 코스입니다.</div>
           </div>
           <button type="button" class="ch-route-toggle" id="ch-route-toggle" onclick="toggleChRouteDetail()" aria-expanded="${_chRouteExpanded ? 'true' : 'false'}">
             <span id="ch-route-toggle-label">${_chRouteExpanded ? '접기' : '자세히 보기'}</span>
@@ -12937,14 +13230,14 @@ function renderChallenge() {
               <div class="ch-route-point-desc">터미널 앞 집결 후 가벼운 스트레칭과 안내를 마치고 한강변 주로로 진입합니다.</div>
             </div>
             <div class="ch-route-point">
-              <div class="ch-route-point-dist">1.4KM</div>
-              <div class="ch-route-point-title">여의도한강공원 중간 포인트</div>
-              <div class="ch-route-point-desc">강변이 넓어지는 구간이라 페이스를 정리하기 좋고, 단체 운영 시 포토타임을 잡기 좋습니다.</div>
+              <div class="ch-route-point-dist">1.0KM</div>
+              <div class="ch-route-point-title">서강대교 부근</div>
+              <div class="ch-route-point-desc">출발 후 서쪽으로 직선 주로를 따라 달리면 서강대교가 가까워지는 지점으로, 초반 리듬을 안정적으로 잡기 좋은 구간입니다.</div>
             </div>
             <div class="ch-route-point">
-              <div class="ch-route-point-dist">3.3KM</div>
-              <div class="ch-route-point-title">양화대교 남단 구간</div>
-              <div class="ch-route-point-desc">보행자와 자전거가 겹치는 구간이 있어 2열 이하로 간격을 맞춰 이동합니다.</div>
+              <div class="ch-route-point-dist">2.2KM</div>
+              <div class="ch-route-point-title">보행로 진입 구간</div>
+              <div class="ch-route-point-desc">여의도 서울 마리나를 지나 작은 다리 밑으로 내려가면 양화공원 쪽으로 이어지는 보행로가 나타나며, 흐름을 유지해 부드럽게 이어 달리기 좋습니다.</div>
             </div>
             <div class="ch-route-point">
               <div class="ch-route-point-dist">4.3KM</div>
