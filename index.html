@@ -2841,6 +2841,26 @@
     }
     .rt-save-btn { width:100%; padding:16px; border-radius:16px; border:none; background:#1535c4; color:#fff; font-size:16px; font-weight:800; cursor:pointer; margin-bottom:12px; }
     .rt-discard-btn { background:none; border:none; color:rgba(255,255,255,0.35); font-size:13px; cursor:pointer; }
+    /* ── Family Cert Modal ── */
+    .fc-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:300; display:flex; align-items:flex-end; justify-content:center; }
+    .fc-overlay.pm-hidden { display:none !important; }
+    .fc-sheet { background:var(--bg); width:100%; max-width:480px; border-radius:var(--radius) var(--radius) 0 0; padding:20px 20px 36px; max-height:85vh; overflow-y:auto; animation:slideUp 0.28s ease; }
+    .fc-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:4px; }
+    .fc-title { font-size:16px; font-weight:800; }
+    .fc-sub { font-size:12px; color:var(--text-secondary); margin-bottom:14px; line-height:1.55; }
+    .fc-preview-wrap { margin-bottom:10px; border-radius:10px; overflow:hidden; display:none; }
+    .fc-media-preview { width:100%; display:block; border-radius:10px; }
+    .fc-file-label { display:flex; align-items:center; justify-content:center; gap:6px; width:100%; padding:10px; border-radius:10px; background:#f5f3ff; border:1px solid #ddd6fe; color:#6d28d9; font-size:13px; font-weight:700; cursor:pointer; margin-bottom:10px; }
+    .fc-file-label:active { background:#ede9fe; }
+    .fc-memo { width:100%; padding:9px 12px; border:1.5px solid var(--border); border-radius:10px; font-family:inherit; font-size:13px; outline:none; resize:none; margin-bottom:12px; background:var(--card); color:var(--text); box-sizing:border-box; }
+    .fc-memo:focus { border-color:#7c3aed; }
+    .fc-submit-btn { width:100%; padding:13px; border-radius:12px; border:none; background:linear-gradient(135deg,#6d28d9,#5b21b6); color:#fff; font-family:inherit; font-size:14px; font-weight:800; cursor:pointer; }
+    .fc-submit-btn:disabled { background:#d1d5db; cursor:not-allowed; }
+    .fc-done { text-align:center; padding:20px 0 8px; }
+    .fc-done-icon { font-size:36px; margin-bottom:8px; }
+    .fc-done-text { font-size:15px; font-weight:800; color:#5b21b6; }
+    .fc-done-sub { font-size:12px; color:var(--text-secondary); margin-top:4px; }
+
     /* ── Confirm Modal ── */
     .confirm-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:300; display:flex; align-items:center; justify-content:center; padding:24px; }
     .confirm-modal { background:var(--card); border-radius:var(--radius); padding:28px 24px 20px; width:100%; max-width:320px; text-align:center; }
@@ -14529,11 +14549,77 @@ function scrollToExerciseForm() {
 }
 
 function goToFamilyCert() {
-  navigate('challenge');
-  setTimeout(() => {
-    queueRundayMessage({ type: 'SCROLL_TO_CERT' });
-    flushRundayMessageQueue();
-  }, 400);
+  openFamilyCertModal();
+}
+
+function openFamilyCertModal() {
+  document.getElementById('fc-file-input').value = '';
+  document.getElementById('fc-memo').value = '';
+  document.getElementById('fc-img').style.display = 'none';
+  document.getElementById('fc-vid').style.display = 'none';
+  document.getElementById('fc-preview-wrap').style.display = 'none';
+  document.getElementById('fc-done').style.display = 'none';
+  const btn = document.getElementById('fc-submit-btn');
+  btn.style.display = ''; btn.disabled = false; btn.textContent = '관리자에게 제출하기';
+  document.getElementById('fc-overlay').classList.remove('pm-hidden');
+}
+
+function closeFamilyCertModal() {
+  document.getElementById('fc-overlay').classList.add('pm-hidden');
+}
+
+function handleFcFileSelect(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const imgEl = document.getElementById('fc-img');
+  const vidEl = document.getElementById('fc-vid');
+  const wrapEl = document.getElementById('fc-preview-wrap');
+  const objUrl = URL.createObjectURL(file);
+  if (file.type.startsWith('image/')) {
+    imgEl.src = objUrl; imgEl.style.display = 'block';
+    vidEl.style.display = 'none';
+  } else {
+    vidEl.src = objUrl; vidEl.style.display = 'block';
+    imgEl.style.display = 'none';
+  }
+  wrapEl.style.display = 'block';
+}
+
+async function submitFamilyCertFromIndex() {
+  const myReg = S.challengeRegistrations?.find?.(r => r.empId?.toUpperCase() === (S.user.empId || '').toUpperCase());
+  const regId = myReg?.id || ('reg_' + (S.user.empId || 'unknown'));
+  const empId = S.user.empId || '';
+  const name = S.user.name || '';
+  const fileInput = document.getElementById('fc-file-input');
+  const memoInput = document.getElementById('fc-memo');
+  const btn = document.getElementById('fc-submit-btn');
+  const file = fileInput?.files?.[0];
+  if (!file) { showToast('사진 또는 영상을 먼저 선택해주세요.'); return; }
+  btn.disabled = true; btn.textContent = '업로드 중...';
+  try {
+    const ext = (file.name.split('.').pop() || (file.type.startsWith('image/') ? 'jpg' : 'mp4')).toLowerCase();
+    const fileName = `${empId || 'unknown'}_${regId}_${Date.now()}.${ext}`;
+    const uploadRes = await fetch(`${SUPABASE_URL}/storage/v1/object/family-certifications/${encodeURIComponent(fileName)}`, {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY, 'Content-Type': file.type || 'application/octet-stream', 'x-upsert': 'true' },
+      body: file,
+    });
+    if (!uploadRes.ok) throw new Error((await uploadRes.text().catch(() => '')) || 'Storage 업로드 실패 (' + uploadRes.status + ')');
+    const mediaUrl = `${SUPABASE_URL}/storage/v1/object/public/family-certifications/${encodeURIComponent(fileName)}`;
+    const certId = 'cert_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+    const dbRes = await fetch(SUPABASE_URL + '/rest/v1/family_certifications', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY, 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ id: certId, reg_id: regId, emp_id: empId || null, name: name || null, media_url: mediaUrl, media_type: file.type.startsWith('image/') ? 'image' : 'video', memo: memoInput?.value?.trim() || null, submitted_at: new Date().toISOString(), status: 'pending' }),
+    });
+    if (!dbRes.ok) throw new Error((await dbRes.text().catch(() => '')) || 'DB 저장 실패 (' + dbRes.status + ')');
+    btn.style.display = 'none';
+    document.getElementById('fc-done').style.display = 'block';
+  } catch (err) {
+    console.error('[submitFamilyCertFromIndex]', err);
+    btn.disabled = false; btn.textContent = '관리자에게 제출하기';
+    showToast('제출 실패: ' + (err.message || String(err)));
+  }
 }
 
 function setChallengeSectionHtml(el, html, renderKey = html) {
@@ -16240,6 +16326,31 @@ async function init() {
   </div>
   <div class="rt-btns" id="rt-btns">
     <button class="rt-btn-main rt-btn-start" id="rt-btn-main" onclick="toggleRunTracker()"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg></button>
+  </div>
+</div>
+
+<div id="fc-overlay" class="fc-overlay pm-hidden" onclick="if(event.target===this)closeFamilyCertModal()">
+  <div class="fc-sheet">
+    <div class="fc-head">
+      <span class="fc-title">📸 가족 운동 인증</span>
+      <button type="button" onclick="closeFamilyCertModal()" style="background:none;border:none;font-size:20px;color:var(--text-secondary);cursor:pointer;padding:0">✕</button>
+    </div>
+    <div class="fc-sub">가족과 함께 운동하는 사진 또는 영상을 올려주세요.<br>관리자 확인 후 승인됩니다.</div>
+    <div id="fc-preview-wrap" class="fc-preview-wrap">
+      <img id="fc-img" class="fc-media-preview" style="display:none" alt="인증 미리보기">
+      <video id="fc-vid" class="fc-media-preview" controls style="display:none"></video>
+    </div>
+    <label class="fc-file-label" for="fc-file-input">
+      📁 사진 / 영상 선택
+      <input type="file" id="fc-file-input" accept="image/*,video/*" style="display:none" onchange="handleFcFileSelect(this)">
+    </label>
+    <textarea class="fc-memo" id="fc-memo" rows="2" placeholder="한 줄 메모 (선택사항)"></textarea>
+    <button type="button" class="fc-submit-btn" id="fc-submit-btn" onclick="submitFamilyCertFromIndex()">관리자에게 제출하기</button>
+    <div id="fc-done" class="fc-done" style="display:none">
+      <div class="fc-done-icon">✅</div>
+      <div class="fc-done-text">인증 제출 완료!</div>
+      <div class="fc-done-sub">관리자 확인 후 승인됩니다.</div>
+    </div>
   </div>
 </div>
 

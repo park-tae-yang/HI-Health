@@ -1120,41 +1120,6 @@
       color: #9ca3af; cursor: pointer;
     }
 
-    /* ─── FAMILY CERT UPLOAD ─────────────────── */
-    .cert-card {
-      background: linear-gradient(180deg, #fefce8 0%, #fdf9ee 100%);
-      border: 1.5px dashed #c4b5fd;
-      border-radius: 16px; padding: 16px; margin-bottom: 18px;
-    }
-    .cert-card-header { display:flex; align-items:center; gap:8px; margin-bottom:4px; }
-    .cert-card-title { font-size:14px; font-weight:800; color:#5b21b6; }
-    .cert-card-sub { font-size:12px; color:var(--sub); margin-bottom:12px; line-height:1.55; }
-    .cert-preview-wrap { margin-bottom:10px; border-radius:10px; overflow:hidden; }
-    .cert-media-preview { width:100%; display:block; border-radius:10px; }
-    .cert-file-label {
-      display:flex; align-items:center; justify-content:center; gap:6px;
-      width:100%; padding:10px; border-radius:10px;
-      background:#f5f3ff; border:1px solid #ddd6fe;
-      color:#6d28d9; font-size:13px; font-weight:700; cursor:pointer; margin-bottom:10px;
-    }
-    .cert-file-label:active { background:#ede9fe; }
-    .cert-memo-inp {
-      width:100%; padding:9px 12px; border:1.5px solid #e5e7eb;
-      border-radius:10px; font-family:inherit; font-size:13px;
-      outline:none; resize:none; margin-bottom:10px; background:#fff;
-    }
-    .cert-memo-inp:focus { border-color:#7c3aed; }
-    .cert-submit-btn {
-      width:100%; padding:12px; border-radius:12px; border:none;
-      background:linear-gradient(135deg,#6d28d9,#5b21b6); color:#fff;
-      font-family:inherit; font-size:14px; font-weight:800; cursor:pointer;
-    }
-    .cert-submit-btn:disabled { background:#d1d5db; cursor:not-allowed; }
-    .cert-done-msg { text-align:center; padding:12px 0; }
-    .cert-done-icon { font-size:32px; margin-bottom:6px; }
-    .cert-done-text { font-size:14px; font-weight:800; color:#5b21b6; }
-    .cert-done-sub { font-size:12px; color:var(--sub); margin-top:3px; }
-
     /* ─── CTA BUTTON ─────────────────────────── */
     .btn-app {
       display: flex; align-items: center; gap: 10px;
@@ -3195,11 +3160,6 @@
       document.documentElement.scrollTop = 0;
       document.body.scrollTop = 0;
     }
-    if (e.data?.type === 'SCROLL_TO_CERT') {
-      const certCard = document.querySelector('.cert-card');
-      if (certCard) certCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      return;
-    }
     if (e.data?.type === 'PAGE_VISIBILITY') {
       setRundayPageActive(e.data.active !== false, { reason: 'page-visibility-message' });
       return;
@@ -3772,27 +3732,6 @@
           </div>` : ''}
         </div>
       </div>
-      ${reg.familyParticipation ? `<div class="cert-card" id="cert-card-${escAttr(reg.id)}">
-        <div class="cert-card-header">
-          <span style="font-size:20px">📸</span>
-          <div class="cert-card-title">가족 운동 인증</div>
-        </div>
-        <div class="cert-card-sub">가족과 함께 운동하는 사진 또는 영상을 올려주세요.<br>관리자 확인 후 승인됩니다.</div>
-        <div id="cert-preview-wrap-${escAttr(reg.id)}" class="cert-preview-wrap" style="display:none">
-          <img id="cert-img-${escAttr(reg.id)}" class="cert-media-preview" style="display:none" alt="인증 미리보기">
-          <video id="cert-vid-${escAttr(reg.id)}" class="cert-media-preview" controls style="display:none"></video>
-        </div>
-        <label class="cert-file-label" for="cert-file-${escAttr(reg.id)}">
-          📁 사진 / 영상 선택
-          <input type="file" id="cert-file-${escAttr(reg.id)}" accept="image/*,video/*" style="display:none"
-            onchange="handleCertFileSelect(this,'${escAttr(reg.id)}')">
-        </label>
-        <textarea class="cert-memo-inp" id="cert-memo-${escAttr(reg.id)}" rows="2" placeholder="한 줄 메모 (선택사항)"></textarea>
-        <button type="button" class="cert-submit-btn" id="cert-btn-${escAttr(reg.id)}"
-          onclick="submitFamilyCert('${escAttr(reg.id)}','${escAttr(reg.empId || '')}','${escAttr(reg.name || '')}')">
-          관리자에게 제출하기
-        </button>
-      </div>` : ''}
       <div class="succ-actions">
         <button type="button" class="btn-app" onclick="if(window.parent&&window.parent.navigate){window.parent.navigate('exercise')}else{window.parent.location.href='index.html'}">
           <div class="btn-app-icon"><img id="success-app-avatar-img" src="${appAvatarSrc}" alt="운동 기록 아바타" onerror="if(this.dataset.err)return;this.dataset.err=1;this.src='${LIVE_AVATAR_FALLBACK}'"></div>
@@ -3806,86 +3745,6 @@
     updateSuccessActionAvatar(appAvatarSrc);
   }
 
-  function handleCertFileSelect(input, regId) {
-    const file = input.files[0];
-    if (!file) return;
-    const imgEl = document.getElementById('cert-img-' + regId);
-    const vidEl = document.getElementById('cert-vid-' + regId);
-    const wrapEl = document.getElementById('cert-preview-wrap-' + regId);
-    const objUrl = URL.createObjectURL(file);
-    if (file.type.startsWith('image/')) {
-      imgEl.src = objUrl; imgEl.style.display = 'block';
-      vidEl.style.display = 'none';
-    } else {
-      vidEl.src = objUrl; vidEl.style.display = 'block';
-      imgEl.style.display = 'none';
-    }
-    wrapEl.style.display = 'block';
-  }
-
-  async function submitFamilyCert(regId, empId, name) {
-    const fileInput = document.getElementById('cert-file-' + regId);
-    const memoInput = document.getElementById('cert-memo-' + regId);
-    const btn = document.getElementById('cert-btn-' + regId);
-    const card = document.getElementById('cert-card-' + regId);
-    const file = fileInput?.files?.[0];
-    if (!file) { alert('사진 또는 영상을 먼저 선택해주세요.'); return; }
-    btn.disabled = true;
-    btn.textContent = '업로드 중...';
-    try {
-      const ext = (file.name.split('.').pop() || (file.type.startsWith('image/') ? 'jpg' : 'mp4')).toLowerCase();
-      const fileName = `${empId || 'unknown'}_${regId}_${Date.now()}.${ext}`;
-      const uploadRes = await fetch(`${SB_URL}/storage/v1/object/family-certifications/${encodeURIComponent(fileName)}`, {
-        method: 'POST',
-        headers: {
-          'Authorization': 'Bearer ' + SB_KEY,
-          'Content-Type': file.type || 'application/octet-stream',
-          'x-upsert': 'true',
-        },
-        body: file,
-      });
-      if (!uploadRes.ok) {
-        const errText = await uploadRes.text().catch(() => '');
-        throw new Error(errText || 'Storage 업로드 실패 (' + uploadRes.status + ')');
-      }
-      const mediaUrl = `${SB_URL}/storage/v1/object/public/family-certifications/${encodeURIComponent(fileName)}`;
-      const certId = 'cert_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
-      const dbRes = await fetch(SB_URL + '/rest/v1/family_certifications', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': SB_KEY,
-          'Authorization': 'Bearer ' + SB_KEY,
-          'Prefer': 'return=minimal',
-        },
-        body: JSON.stringify({
-          id: certId,
-          reg_id: regId,
-          emp_id: empId || null,
-          name: name || null,
-          media_url: mediaUrl,
-          media_type: file.type.startsWith('image/') ? 'image' : 'video',
-          memo: memoInput?.value?.trim() || null,
-          submitted_at: new Date().toISOString(),
-          status: 'pending',
-        }),
-      });
-      if (!dbRes.ok) {
-        const errText = await dbRes.text().catch(() => '');
-        throw new Error(errText || 'DB 저장 실패 (' + dbRes.status + ')');
-      }
-      if (card) card.innerHTML = `
-        <div class="cert-done-msg">
-          <div class="cert-done-icon">✅</div>
-          <div class="cert-done-text">인증 제출 완료!</div>
-          <div class="cert-done-sub">관리자 확인 후 승인됩니다.</div>
-        </div>`;
-    } catch (err) {
-      console.error('[submitFamilyCert]', err);
-      if (btn) { btn.disabled = false; btn.textContent = '관리자에게 제출하기'; }
-      alert('제출 실패: ' + (err.message || String(err)));
-    }
-  }
 
   async function editReg(regId) {
     if (!ensureChallengeRegistrationEditable()) return;
