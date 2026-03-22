@@ -1390,12 +1390,12 @@
       display: flex; flex-direction: row; align-items: center;
       gap: 5px; padding: 6px 22px 6px 12px; border-radius: 999px;
       border: 1.5px solid var(--border); background: #fff;
-      cursor: pointer; transition: all 0.18s; font-family: inherit; font-size: 13px;
+      cursor: pointer; transition: border-color 0.18s, background-color 0.18s, color 0.18s; font-family: inherit; font-size: 13px;
       flex-shrink: 0; white-space: nowrap;
     }
     .ex-type-btn.selected {
-      border-color: var(--primary); background: #EEF2FF;
-      box-shadow: 0 2px 10px rgba(79,70,229,0.18);
+      border-color: rgba(79,70,229,0.32);
+      background: #f5f7ff;
     }
     .ex-type-icon { font-size: 13px; line-height: 1; display:inline-flex; align-items:center; justify-content:center; }
     .ex-type-icon .ui-svg-icon { --ui-icon-size: 15px; }
@@ -1409,7 +1409,7 @@
       font-size: 13px; color: var(--text-secondary); cursor: pointer;
       font-family: inherit; white-space: nowrap;
     }
-    .custom-ex-link.selected { border-color: var(--primary); color: var(--primary); font-weight: 600; background: #EEF2FF; border-style: solid; }
+    .custom-ex-link.selected { border-color: rgba(79,70,229,0.32); color: var(--primary); font-weight: 600; background: #f5f7ff; border-style: solid; }
     .chip-direct-btn {
       display: flex; align-items: center; gap: 5px;
       flex-shrink: 0; padding: 7px 14px; border-radius: 999px;
@@ -1417,7 +1417,7 @@
       font-size: 13px; color: var(--text-secondary); cursor: pointer;
       font-family: inherit; white-space: nowrap;
     }
-    .chip-direct-btn.selected { border-color: var(--primary); color: var(--primary); font-weight: 600; background: #EEF2FF; border-style: solid; }
+    .chip-direct-btn.selected { border-color: rgba(79,70,229,0.32); color: var(--primary); font-weight: 600; background: #f5f7ff; border-style: solid; }
     #custom-ex-name, #meal-direct-input, #supp-direct-input { font-size: 11px; padding: 8px 11px; }
 
     /* ── Duration Control ── */
@@ -1472,6 +1472,7 @@
       cursor: pointer; white-space: nowrap; flex-shrink: 0;
     }
     .wo-item-wrap { border-bottom: 1px solid var(--border); }
+    .wo-item-wrap:last-child { border-bottom: none; }
     .wo-item-wrap .workout-item { border-bottom: none; }
     .wo-inline-route { width: 100%; margin: 4px 0 10px; border-radius: 14px; overflow: hidden; min-height: 130px; }
     .wo-photo { width:36px; height:36px; object-fit:cover; border-radius:6px; flex-shrink:0; cursor:pointer; border:1.5px solid var(--border); }
@@ -1698,9 +1699,9 @@
       position:relative;
       padding:6px 22px 6px 12px; border-radius:999px; border:1.5px solid var(--border);
       background:#fff; font-size:13px; font-family:inherit; cursor:pointer;
-      white-space:nowrap; flex-shrink:0; transition:all 0.18s;
+      white-space:nowrap; flex-shrink:0; transition:border-color 0.18s, background-color 0.18s, color 0.18s;
     }
-    .hc-sub-chip.on { border-color:var(--primary); background:#EEF2FF; color:var(--primary); }
+    .hc-sub-chip.on { border-color:rgba(79,70,229,0.32); background:#f5f7ff; color:var(--primary); }
     .hc-chip-remove {
       display:inline-flex;
       align-items:center;
@@ -1848,8 +1849,16 @@
       font-size:13px; color:var(--text-secondary); cursor:pointer; transition:all 0.15s;
     }
     .load-more-btn:hover { border-color:var(--primary); color:var(--primary); background:var(--primary-light); }
-    .glucose-history-list { margin-top:12px; }
-    .wo-empty { text-align:center; font-size:13px; color:var(--text-secondary); padding:20px 0 8px; }
+    .glucose-history-list { margin-top:14px; }
+    #wo-history,
+    .glucose-history-list {
+      margin-top: 14px;
+      padding: 6px 14px 18px;
+      border: 1px solid rgba(241,245,249,0.95);
+      border-radius: 18px;
+      background: linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%);
+    }
+    .wo-empty { text-align:center; font-size:13px; color:var(--text-secondary); padding:24px 0 14px; }
     .glucose-item {
       display:flex; align-items:flex-start; gap:8px;
       padding:7px 0; border-bottom:1px solid var(--border);
@@ -1896,8 +1905,7 @@
     .ex-hero-tab.active {
       color:#0f172a;
       background:#fff;
-      border-color:rgba(226,232,240,0.95);
-      box-shadow:0 4px 12px rgba(15,23,42,0.05);
+      border-color:rgba(79,70,229,0.2);
     }
     .rec-switch-btn {
       flex:1; padding:13px 8px; border-radius:14px; border:2px solid var(--border);
@@ -1971,7 +1979,7 @@
     }
     .record-content-card .ex-hero-tabs { margin:18px 18px 14px; }
     .record-content-card #rec-panel-exercise,
-    .record-content-card #rec-panel-glucose { padding:0 18px 18px; }
+    .record-content-card #rec-panel-glucose { padding:0 18px 26px; }
     .today-log-card {
       margin-left:-18px !important;
       margin-right:-18px !important;
@@ -2018,7 +2026,7 @@
     .card-header-right { display:flex; align-items:center; gap:8px; }
     .wo-view-tabs { display:flex; gap:2px; background:var(--bg); border-radius:8px; padding:3px; }
     .wo-view-tab { padding:4px 10px; border-radius:6px; border:none; font-family:inherit; font-size:11px; font-weight:600; cursor:pointer; background:transparent; color:var(--text-secondary); transition:all 0.18s; }
-    .wo-view-tab.active { background:#fff; color:var(--primary); box-shadow:0 1px 4px rgba(0,0,0,0.1); }
+    .wo-view-tab.active { background:#fff; color:var(--primary); }
     /* ── Exercise Type Filter ── */
     .wo-type-filter { display:flex; gap:6px; overflow-x:auto; padding:10px 0 6px; scrollbar-width:none; -ms-overflow-style:none; }
     .wo-type-filter::-webkit-scrollbar { display:none; }
@@ -4386,9 +4394,15 @@
         <div id="rec-panel-glucose" style="display:none">
           <p class="ex-section-label">측정 시점</p>
           <div class="ex-type-grid" id="glucose-timing-grid"></div>
+          <div class="custom-ex-wrap" id="sa-glucose-timing-wrap">
+            <input type="text" id="sa-glucose-timing" class="glucose-time-input"
+                   placeholder="측정 시점을 입력하세요 (예: 운동 후, 야간)"
+                   maxlength="12"
+                   oninput="setCustomGlucoseTiming(this.value)">
+          </div>
           <div class="custom-ex-wrap" id="sa-glucose-time-wrap">
             <input type="time" id="sa-glucose-time" class="glucose-time-input"
-                   oninput="_glucoseTime=this.value;_glucoseValTouched=false;document.getElementById('sa-glucose-num')?.classList.remove('active');updateRecordBtnStates()">
+                   oninput="_glucoseTime=this.value;updateRecordBtnStates();syncGlucoseUI()">
           </div>
         <p class="ex-section-label">혈당 수치</p>
         <div class="glucose-input-wrap-sa" style="margin-top:6px">
@@ -5295,18 +5309,13 @@ const EX_TYPES = [
   { id:'running',   name:'달리기',  icon:'🏃', ppm:1.0,  bg:'#FFE4E6' },
   { id:'swimming',  name:'수영',    icon:'🏊', ppm:1.2,  bg:'#DBEAFE' },
   { id:'cycling',   name:'자전거',  icon:'🚴', ppm:0.8,  bg:'#FEF3C7' },
+  { id:'pilates',   name:'필라테스',icon:'🧎', ppm:0.8,  bg:'#FAF5FF' },
   { id:'yoga',      name:'요가',    icon:'🧘', ppm:0.7,  bg:'#F3E8FF' },
+  { id:'hiking',    name:'등산',    icon:'🥾', ppm:0.9,  bg:'#D1FAE5' },
+  { id:'tennis',    name:'테니스',  icon:'🎾', ppm:0.9,  bg:'#ECFCCB' },
   { id:'strength',  name:'근력운동',icon:'💪', ppm:1.0,  bg:'#FCE7F3' },
-  { id:'stretching',  name:'스트레칭',   icon:'🤸', ppm:0.4,  bg:'#CFFAFE' },
-  { id:'hiking',      name:'등산',       icon:'🥾', ppm:0.9,  bg:'#D1FAE5' },
-  { id:'tennis',      name:'테니스',     icon:'🎾', ppm:0.9,  bg:'#ECFCCB' },
-  { id:'pilates',     name:'필라테스',  icon:'🧎', ppm:0.8,  bg:'#FAF5FF' },
-  { id:'aerial-yoga', name:'플라잉요가', icon:'🪢', ppm:0.8,  bg:'#FDF4FF' },
-  { id:'climbing',    name:'클라이밍',   icon:'🧗', ppm:1.1,  bg:'#FFF7ED' },
-  { id:'kendo',       name:'검도',       icon:'🥋', ppm:1.0,  bg:'#FEF9C3' },
-  { id:'soccer',      name:'축구',       icon:'⚽', ppm:1.1,  bg:'#DCFCE7' },
-  { id:'boxing',      name:'복싱',       icon:'🥊', ppm:1.2,  bg:'#FFE4E6' },
-  { id:'badminton',   name:'배드민턴',   icon:'🏸', ppm:0.9,  bg:'#E0F2FE' },
+  { id:'kendo',      name:'검도',    icon:'🥋', ppm:1.0,  bg:'#FEF9C3' },
+  { id:'climbing',   name:'클라이밍',icon:'🧗', ppm:1.1,  bg:'#FFF7ED' },
   { id:'custom',      name:'기타',       icon:'',   ppm:0.8,  bg:'#F3F4F6' },
 ];
 
@@ -7151,6 +7160,15 @@ function scheduleMidnightReset() {
 function getLevel(pts) {
   return LEVELS.slice().reverse().find(l => pts >= l.min) || LEVELS[0];
 }
+function confirmRemoveCustomExType(name) {
+  const custom = parseCustomExerciseName(name);
+  showConfirm({
+    title: '운동 종목을 숨길까요?',
+    msg: `${custom.label || name} 항목을 이 기기에서 목록에서 숨깁니다.`,
+    okLabel: '숨기기',
+    onOk: () => removeCustomExType(name),
+  });
+}
 function removeCustomExType(name) {
   haptic('light');
   _customExTypes = _customExTypes.filter(n => n !== name);
@@ -8346,7 +8364,7 @@ function renderExercise() {
     return `<button class="ex-type-btn ${selected ? 'selected' : ''}" data-ex-id="${escHtmlComm(id)}" onclick="selectEx(this.dataset.exId)">
       <span class="ex-type-icon">${renderExerciseIcon(id, { size:'15px' })}</span>
       <span class="ex-type-name">${escHtmlComm(custom.label || name)}</span>
-      <span class="hc-chip-remove" data-ex-name="${escHtmlComm(name)}" onclick="event.stopPropagation();removeCustomExType(this.dataset.exName)">×</span>
+      <span class="hc-chip-remove" data-ex-name="${escHtmlComm(name)}" onclick="event.stopPropagation();confirmRemoveCustomExType(this.dataset.exName)">×</span>
     </button>`;
   }).join('');
   document.getElementById('ex-type-grid').innerHTML =
@@ -8385,7 +8403,7 @@ function updateMemoPlaceholder() {
 function updateRecordBtnStates() {
   const canLogExercise = !!S.selectedEx && !!S.durationTouched;
   document.getElementById('log-exercise-btn')?.classList.toggle('btn-inactive', !canLogExercise);
-  const canLogGlucose = !!_glucoseValTouched && (!!_glucoseTiming || !!_glucoseTime);
+  const canLogGlucose = !!_glucoseValTouched && !!_glucoseTiming;
   document.getElementById('log-glucose-btn')?.classList.toggle('btn-inactive', !canLogGlucose);
   const durHint = document.getElementById('dur-hint');
   if (durHint) durHint.style.display = canLogExercise ? 'none' : '';
@@ -9475,9 +9493,14 @@ let _glucoseTime   = '';
 
 const GLUCOSE_TIMINGS = ['공복','식후','식후2h','식전','취침전'];
 const TIMING_ID_MAP = { '공복':'fasting', '식후':'after', '식후2h':'after2h', '식전':'before', '취침전':'bedtime' };
+function isCustomGlucoseTiming(value = _glucoseTiming) {
+  return !!value && !GLUCOSE_TIMINGS.includes(value);
+}
 function renderGlucoseTimingButtons() {
   const row = document.getElementById('glucose-timing-grid');
   if (!row) return;
+  const customTimingOpen = document.getElementById('sa-glucose-timing-wrap')?.classList.contains('show');
+  const timeInputOpen = document.getElementById('sa-glucose-time-wrap')?.classList.contains('show');
   const timingBtns = GLUCOSE_TIMINGS
     .filter(timing => !_hiddenGlucoseTimingTypes.includes(timing))
     .map(timing => `
@@ -9486,23 +9509,51 @@ function renderGlucoseTimingButtons() {
         <span class="hc-chip-remove" onclick="event.stopPropagation();confirmRemoveGlucoseTimingType('${timing}')">×</span>
       </button>
     `).join('');
-  const directBtn = `<button type="button" class="custom-ex-link" id="sa-gt-time" onclick="toggleGlucoseTimeInput()"><span data-svg-icon="pencil" data-svg-size="14px"></span><span>측정시간 직접입력</span></button>`;
-  row.innerHTML = timingBtns + directBtn;
+  const timingDirectBtn = `<button type="button" class="custom-ex-link${customTimingOpen || isCustomGlucoseTiming() ? ' selected' : ''}" id="sa-gt-custom" onclick="toggleGlucoseTimingInput()"><span data-svg-icon="pencil" data-svg-size="14px"></span><span>시점 직접입력</span></button>`;
+  const timeDirectBtn = `<button type="button" class="custom-ex-link${timeInputOpen || !!_glucoseTime ? ' selected' : ''}" id="sa-gt-time" onclick="toggleGlucoseTimeInput()"><span data-svg-icon="pencil" data-svg-size="14px"></span><span>측정시간 입력</span></button>`;
+  row.innerHTML = timingBtns + timingDirectBtn + timeDirectBtn;
   hydrateStaticSvgIcons(row);
+}
+function toggleGlucoseTimingInput() {
+  haptic('light');
+  const wrap = document.getElementById('sa-glucose-timing-wrap');
+  const input = document.getElementById('sa-glucose-timing');
+  if (!wrap || !input) return;
+  const isOpen = wrap.classList.toggle('show');
+  if (!isOpen) {
+    input.value = '';
+    if (isCustomGlucoseTiming()) _glucoseTiming = null;
+    updateRecordBtnStates();
+    syncGlucoseUI();
+    return;
+  }
+  input.focus();
+  syncGlucoseUI();
+}
+function setCustomGlucoseTiming(value) {
+  const next = String(value || '').trim();
+  if (_glucoseTiming !== next) {
+    _glucoseValTouched = false;
+    document.getElementById('sa-glucose-num')?.classList.remove('active');
+  }
+  _glucoseTiming = next || null;
+  syncGlucoseUI();
+  updateRecordBtnStates();
 }
 function toggleGlucoseTimeInput() {
   haptic('light');
   const wrap = document.getElementById('sa-glucose-time-wrap');
-  const btn  = document.getElementById('sa-gt-time');
+  if (!wrap) return;
   const isOpen = wrap.classList.toggle('show');
-  btn.classList.toggle('selected', isOpen);
   if (!isOpen) {
     _glucoseTime = '';
     const el = document.getElementById('sa-glucose-time');
     if (el) el.value = '';
     updateRecordBtnStates();
+    syncGlucoseUI();
   } else {
     document.getElementById('sa-glucose-time')?.focus();
+    syncGlucoseUI();
   }
 }
 
@@ -9534,6 +9585,8 @@ function syncGlucoseUI() {
     numEl.textContent = _glucoseVal;
     numEl.classList.toggle('active', active);
   }
+  const customTimingInput = document.getElementById('sa-glucose-timing');
+  if (customTimingInput && isCustomGlucoseTiming()) customTimingInput.value = _glucoseTiming;
   renderGlucoseTimingButtons();
   GLUCOSE_TIMINGS.forEach(t => {
     const el = document.getElementById('sa-gt-' + TIMING_ID_MAP[t]);
@@ -9556,6 +9609,9 @@ function setGlucoseTiming(timing) {
   _glucoseTiming = _glucoseTiming === timing ? null : timing;
   _glucoseValTouched = false;
   document.getElementById('sa-glucose-num')?.classList.remove('active');
+  const customTimingInput = document.getElementById('sa-glucose-timing');
+  if (customTimingInput) customTimingInput.value = '';
+  document.getElementById('sa-glucose-timing-wrap')?.classList.remove('show');
   syncGlucoseUI();
   updateRecordBtnStates();
 }
@@ -9587,12 +9643,12 @@ function todayGlucoseRecords() {
 
 function logGlucoseStandalone() {
   if (IS_GUEST) { flashGuestBanner(); return; }
-  if (!_glucoseValTouched || (!_glucoseTiming && !_glucoseTime)) {
+  if (!_glucoseValTouched || !_glucoseTiming) {
     haptic('error');
     const hint = document.getElementById('log-glucose-hint');
     if (hint) {
-      hint.textContent = !_glucoseTiming && !_glucoseTime
-        ? '혈당 시점을 선택하거나 시간을 입력해주세요'
+      hint.textContent = !_glucoseTiming
+        ? '혈당 시점을 선택하거나 입력해주세요'
         : '혈당 수치를 입력해주세요';
       hint.style.display = 'block';
       clearTimeout(hint._t);
@@ -9634,10 +9690,12 @@ function logGlucoseStandalone() {
   _glucoseVal = 100; _glucoseTiming = null; _glucoseTime = ''; _glucoseValTouched = false;
   const timeEl = document.getElementById('sa-glucose-time');
   if (timeEl) timeEl.value = '';
+  const timingEl = document.getElementById('sa-glucose-timing');
+  if (timingEl) timingEl.value = '';
   const memoEl = document.getElementById('glucose-memo');
   if (memoEl) memoEl.value = '';
+  document.getElementById('sa-glucose-timing-wrap')?.classList.remove('show');
   document.getElementById('sa-glucose-time-wrap')?.classList.remove('show');
-  document.getElementById('sa-gt-time')?.classList.remove('selected');
   const gh = document.getElementById('glucose-hint');
   if (gh) gh.style.display = '';
   syncGlucoseUI();
@@ -10451,6 +10509,12 @@ function resetToLoggedOutState() {
   if (sleepNoteEl) sleepNoteEl.value = '';
   const suppMemoEl = document.getElementById('supp-memo-input');
   if (suppMemoEl) suppMemoEl.value = '';
+  const glucoseTimingEl = document.getElementById('sa-glucose-timing');
+  if (glucoseTimingEl) glucoseTimingEl.value = '';
+  const glucoseTimeEl = document.getElementById('sa-glucose-time');
+  if (glucoseTimeEl) glucoseTimeEl.value = '';
+  document.getElementById('sa-glucose-timing-wrap')?.classList.remove('show');
+  document.getElementById('sa-glucose-time-wrap')?.classList.remove('show');
 
   const pmNick = document.getElementById('pm-nickname');
   if (pmNick) pmNick.value = '';
@@ -14063,6 +14127,12 @@ function applyGuestSampleState() {
   _glucoseValTouched = false;
   _glucoseTiming = null;
   _glucoseTime = '';
+  const glucoseTimingEl = document.getElementById('sa-glucose-timing');
+  if (glucoseTimingEl) glucoseTimingEl.value = '';
+  const glucoseTimeEl = document.getElementById('sa-glucose-time');
+  if (glucoseTimeEl) glucoseTimeEl.value = '';
+  document.getElementById('sa-glucose-timing-wrap')?.classList.remove('show');
+  document.getElementById('sa-glucose-time-wrap')?.classList.remove('show');
   const exMemo = document.getElementById('ex-memo');
   if (exMemo) {
     exMemo.value = '';
