@@ -564,7 +564,7 @@
       width: 38px; height: 38px;
       display:flex; align-items:center; justify-content:center;
       gap:0; cursor:pointer; flex-shrink:0;
-      margin-left:6px;
+      margin-left:10px;
     }
     .header-profile-label {
       display:none;
@@ -2456,16 +2456,17 @@
       justify-content:center;
       padding:4px 10px;
       border-radius:999px;
-      background:linear-gradient(135deg, #6D28D9 0%, #7C3AED 100%);
+      background:var(--purple);
       color:#fff;
       font-size:10px;
-      font-weight:800;
+      font-weight:600;
       letter-spacing:0.02em;
-      line-height:1;
+      line-height:1.1;
       flex-shrink:0;
       white-space:nowrap;
-      box-shadow:0 4px 10px rgba(124,58,237,0.18);
+      border:1px solid rgba(124,58,237,0.12);
       text-transform:none;
+      gap:4px;
     }
     .pm-summary-name {
       font-size:16px; font-weight:800; color:#0F172A;
@@ -3052,14 +3053,95 @@
       border: 1px solid var(--border); background: var(--bg);
       cursor: pointer; font-size: 11px; font-family: inherit; font-weight: 500;
       transition: all 0.2s;
+      position: relative;
+      overflow: hidden;
+      transform-origin: center;
     }
     .sticker-btn:active { transform: scale(0.93); }
     .sticker-btn.on { border-color: var(--primary); background: var(--primary-light); color: var(--primary); }
+    .sticker-btn.fx-pop {
+      animation: stickerBtnPop 240ms cubic-bezier(.2,.8,.2,1);
+    }
+    .sticker-btn.fx-pop::after {
+      content: '';
+      position: absolute;
+      inset: -20% auto -20% -32%;
+      width: 42%;
+      background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,0.65), rgba(255,255,255,0));
+      transform: skewX(-20deg);
+      animation: stickerBtnShine 320ms ease-out forwards;
+      pointer-events: none;
+    }
+    .sticker-btn.fx-pop .sticker-emoji {
+      animation: stickerBtnIconPop 240ms cubic-bezier(.2,.8,.2,1);
+    }
     .sticker-emoji { display:inline-flex; align-items:center; color: #9CA3AF; }
     .sticker-emoji svg { width:13px; height:13px; }
     .sticker-btn.on .sticker-emoji { color: var(--primary); }
     .sticker-cnt { color: var(--text-secondary); font-size: 11px; }
     .sticker-btn.on .sticker-cnt { color: var(--primary); }
+    @keyframes stickerBtnPop {
+      0% { transform: scale(1); box-shadow: 0 0 0 rgba(79,70,229,0); }
+      45% { transform: scale(1.11); box-shadow: 0 8px 18px rgba(79,70,229,0.16); }
+      100% { transform: scale(1); box-shadow: 0 0 0 rgba(79,70,229,0); }
+    }
+    @keyframes stickerBtnIconPop {
+      0% { transform: scale(1); }
+      45% { transform: scale(1.18); }
+      100% { transform: scale(1); }
+    }
+    @keyframes stickerBtnShine {
+      0% { opacity: 0; transform: translateX(-8px) skewX(-20deg); }
+      25% { opacity: 0.9; }
+      100% { opacity: 0; transform: translateX(170%) skewX(-20deg); }
+    }
+    .sticker-burst {
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 18px;
+      height: 18px;
+      margin-left: -9px;
+      margin-top: -9px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(79,70,229,0.72);
+      pointer-events: none;
+      z-index: 1400;
+      opacity: 0;
+      filter: drop-shadow(0 3px 8px rgba(79,70,229,0.05));
+      animation: stickerBurstFloat 1460ms cubic-bezier(.12,.58,.18,1) forwards;
+      animation-delay: var(--burst-delay, 0ms);
+      transform-origin: center;
+      will-change: transform, opacity, filter;
+    }
+    .sticker-burst svg {
+      width: 15px;
+      height: 15px;
+    }
+    @keyframes stickerBurstFloat {
+      0% {
+        opacity: 0;
+        filter: drop-shadow(0 2px 5px rgba(79,70,229,0.04));
+        transform: translate3d(0,0,0) scale(0.78) rotate(0deg);
+      }
+      12% {
+        opacity: 1;
+        filter: drop-shadow(0 3px 8px rgba(79,70,229,0.05));
+        transform: translate3d(calc(var(--burst-x, 0px) * 0.1), calc(var(--burst-y, -56px) * 0.12), 0) scale(0.86) rotate(calc(var(--burst-rotate, 0deg) * 0.18));
+      }
+      58% {
+        opacity: 0.78;
+        filter: drop-shadow(0 2px 6px rgba(79,70,229,0.04));
+        transform: translate3d(calc(var(--burst-x, 0px) * 0.48 + var(--burst-sway, 0px)), calc(var(--burst-y, -56px) * 0.58), 0) scale(calc(var(--burst-scale, 1.04) * 0.98)) rotate(calc(var(--burst-rotate, 0deg) * 0.52));
+      }
+      100% {
+        opacity: 0;
+        filter: drop-shadow(0 1px 3px rgba(79,70,229,0.01));
+        transform: translate3d(calc(var(--burst-x, 0px) + var(--burst-sway, 0px) * 1.2), var(--burst-y, -56px), 0) scale(calc(var(--burst-scale, 1.04) * 1.06)) rotate(var(--burst-rotate, 0deg));
+      }
+    }
     .comment-btn {
       display: flex; align-items: center; gap: 5px;
       background: none; border: none; cursor: pointer;
@@ -3119,11 +3201,49 @@
       justify-content: space-between;
     }
     .bal-left { flex: 1; }
+    .bal-head {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: nowrap;
+    }
     .bal-label {
       font-size: 12px;
       color: var(--text-secondary);
       font-weight: 600;
       margin-bottom: 4px;
+    }
+    .bal-head .bal-label {
+      margin-bottom: 0;
+      line-height: 1;
+    }
+    .bal-challenge-badge {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      margin: 0;
+      line-height: 1.1;
+      flex-shrink: 0;
+      background: var(--purple);
+      color: #fff;
+      border: 1px solid rgba(124,58,237,0.12);
+      padding: 4px 10px;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      gap: 4px;
+    }
+    .bal-challenge-badge span,
+    #pm-challenge-tag span {
+      display: inline-flex;
+      align-items: center;
+      line-height: 1;
+    }
+    .bal-challenge-badge .ui-svg-icon,
+    #pm-challenge-tag .ui-svg-icon {
+      flex-shrink: 0;
+      align-self: center;
+      transform: translateY(-0.5px);
     }
     .bal-amt { font-size: 36px; font-weight: 900; color: var(--text-primary); line-height: 1; }
     .bal-unit { font-size: 16px; font-weight: 700; color: var(--text-secondary); margin-left: 2px; }
@@ -3260,17 +3380,46 @@
     .reward-card.can { border-color: rgba(22,163,74,0.26); background:#f8fff9; }
     .reward-card.pending { border-color: rgba(245,158,11,0.35); background:#fffdf7; cursor: default; }
     .reward-card.done { opacity: 0.5; cursor: default; }
+    .reward-thumb-wrap {
+      position: relative;
+      width: 64px;
+      min-height: 76px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+    }
     .reward-thumb {
       width:64px;
       height:64px;
       border-radius:16px;
-      flex-shrink:0;
       overflow:hidden;
       display:flex;
       align-items:center;
       justify-content:center;
       background:#fff;
       border:1px solid rgba(15,23,42,0.06);
+    }
+    .reward-thumb-cost {
+      position: absolute;
+      left: 50%;
+      bottom: 0;
+      transform: translateX(-50%);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 40px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+      color: #1d4ed8;
+      font-size: 10px;
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: 0.01em;
+      border: 1px solid rgba(59,130,246,0.18);
+      box-shadow: 0 4px 10px rgba(59,130,246,0.12);
+      white-space: nowrap;
     }
     .reward-thumb img,
     .reward-thumb svg {
@@ -3318,6 +3467,12 @@
       font-size: 11px; font-weight: 700; color: var(--text-secondary);
       background: var(--bg-secondary); padding: 3px 10px; border-radius: 20px;
       border: 1px solid var(--border);
+    }
+    .reward-apply-badge {
+      color: #fff;
+      background: #2563eb;
+      border-color: #2563eb;
+      box-shadow: 0 4px 10px rgba(37,99,235,0.18);
     }
     .reward-pending-badge { color: #b45309; background: #fff7ed; border-color:#fed7aa; }
     .reward-done-badge    { color: #6b7280; background: #f8fafc; }
@@ -4671,12 +4826,12 @@
           </div>
         <p class="ex-section-label">혈당 수치</p>
         <div class="glucose-input-wrap-sa" style="margin-top:6px">
-          <button type="button" class="dur-btn" onclick="changeGlucoseVal(-5)">−</button>
+          <button type="button" class="dur-btn" onclick="changeGlucoseVal(-1)">−</button>
           <div class="glucose-val-display">
             <span class="glucose-val-num" id="sa-glucose-num">100</span>
             <span class="glucose-val-unit">mg/dL</span>
           </div>
-          <button type="button" class="dur-btn" onclick="changeGlucoseVal(5)">+</button>
+          <button type="button" class="dur-btn" onclick="changeGlucoseVal(1)">+</button>
         </div>
         <p id="glucose-hint" style="text-align:center;font-size:12px;color:#B0B4BC;margin:0 0 4px">버튼을 눌러 혈당수치를 기록해주세요</p>
         <p class="ex-section-label">메모</p>
@@ -5191,18 +5346,19 @@
     <div id="rew-rewards-panel">
     <div class="balance-card">
       <div class="bal-left">
-        <p class="bal-label">보유 포인트</p>
+        <div class="bal-head">
+          <p class="bal-label">보유 포인트</p>
+          <span class="hero-tag bal-challenge-badge" id="bal-challenge-badge">챌린지 운영중</span>
+        </div>
         <p class="bal-amt"><span id="bal-display">0</span><span class="bal-unit">p</span></p>
         <p class="bal-sub" id="bal-sub">포인트로 다양한 혜택을 누리세요</p>
       </div>
-      <img src="icons/HI_icon_29.png" style="width:48px;height:48px;object-fit:contain;opacity:0.18" alt="">
     </div>
 
     <div class="reward-section-head">
       <div class="reward-section-copy">
         <p class="section-title">교환 가능한 보상</p>
       </div>
-      <span class="badge badge-warning">챌린지 운영중</span>
     </div>
     <div class="reward-grid" id="reward-grid"></div>
     <div class="reward-history" id="reward-history"></div>
@@ -5577,7 +5733,7 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const PUSH_PUBLIC_KEY   = 'BEaMexe-bw1jM31PgeQdkkZeqs29Ls1KIMY-TViYgH2dPqg_v7tRRObOpRUTGu5-ZgH13qR_ZTtxeOWh9_vnhTk';
 const PUSH_TABLE        = 'push_subscriptions';
 const PUSH_DEFAULT_URL  = './index.html#community';
-const SW_VERSION        = '20260321-87';
+const SW_VERSION        = '20260322-88';
 const CHALLENGE_PEOPLE_CACHE_KEY = 'hi_health_people_cache_v1';
 let _db = null; // Supabase 클라이언트
 let _realLeagueUsers = null; // Supabase에서 가져온 실제 유저 목록
@@ -5617,7 +5773,7 @@ const STICKERS = [
 
 const REWARDS_DATA = [
   { id:'r1', name:'스타벅스 교환권',   cost:300,  desc:'스타벅스 아메리카노 1잔 교환권' },
-  { id:'r2', name:'아몬드브리즈 24팩', cost:500,  desc:'아몬드브리즈 무가당 오트 24팩 세트' },
+  { id:'r2', name:'아몬드브리즈',      cost:500,  desc:'아몬드브리즈 무가당 오트 24팩 세트' },
   { id:'r3', name:'킨토 물병',         cost:800,  desc:'킨토 워터보틀 500ml' },
   { id:'r4', name:'안다르 교환권',     cost:1200, desc:'안다르 3만원 상품권' },
   { id:'r5', name:'아르기닌 젤리',     cost:1500, desc:'아르기닌 젤리 1박스' },
@@ -5725,6 +5881,11 @@ async function loadAppConfig() {
     if (challengeConfigChanged) {
       renderHeader();
       if (document.getElementById('page-challenge')?.classList.contains('active')) renderChallenge();
+    }
+    if (document.getElementById('page-rewards')?.classList.contains('active')) {
+      const currentRewardsTab = document.getElementById('rew-toggle')?.dataset.tab || 'rewards';
+      if (currentRewardsTab === 'shop') renderShop();
+      else renderRewards();
     }
     syncChallengeConfigToRunday();
   } catch(e) { /* app_config 테이블 없으면 기본값 유지 */ }
@@ -5977,6 +6138,8 @@ function renderPdCartRow(id) {
 // ── 알림 패널 ──────────────────────────────────────────
 const NOTIF_READ_KEY = 'hi_notif_read_ids';
 const NOTIF_DELETED_KEY = 'hi_notif_deleted_ids';
+const LOCAL_NOTIF_ITEMS_KEY = 'hi_local_notif_items';
+const MY_POST_COMMENT_SEEN_KEY = 'hi_my_post_comment_seen_ids';
 function getNotifStorageKey(baseKey) {
   const identity = getPushIdentity();
   const scope = String(identity.empId || identity.deviceId || 'guest').trim().toUpperCase() || 'guest';
@@ -6006,6 +6169,65 @@ function markNotifRead(ids) {
 function getDeletedNotifIds() {
   return getNotifIdSet(NOTIF_DELETED_KEY);
 }
+function getSeenMyPostCommentIds(empId = ACTIVE_EMPID || S.user?.empId || '') {
+  try {
+    const raw = localStorage.getItem(getAccountScopedStorageKey(MY_POST_COMMENT_SEEN_KEY, empId));
+    return new Set(JSON.parse(raw || '[]'));
+  } catch {
+    return new Set();
+  }
+}
+function hasSeenMyPostCommentState(empId = ACTIVE_EMPID || S.user?.empId || '') {
+  return localStorage.getItem(getAccountScopedStorageKey(MY_POST_COMMENT_SEEN_KEY, empId)) != null;
+}
+function saveSeenMyPostCommentIds(ids, empId = ACTIVE_EMPID || S.user?.empId || '') {
+  localStorage.setItem(
+    getAccountScopedStorageKey(MY_POST_COMMENT_SEEN_KEY, empId),
+    JSON.stringify([...new Set(ids)].slice(-400))
+  );
+  markAccountSettingsDirty();
+}
+function getLocalNotifItems(empId = ACTIVE_EMPID || S.user?.empId || '') {
+  try {
+    const raw = localStorage.getItem(getAccountScopedStorageKey(LOCAL_NOTIF_ITEMS_KEY, empId));
+    const items = JSON.parse(raw || '[]');
+    return Array.isArray(items) ? items : [];
+  } catch {
+    return [];
+  }
+}
+function saveLocalNotifItems(items, empId = ACTIVE_EMPID || S.user?.empId || '') {
+  localStorage.setItem(
+    getAccountScopedStorageKey(LOCAL_NOTIF_ITEMS_KEY, empId),
+    JSON.stringify((Array.isArray(items) ? items : []).slice(0, 80))
+  );
+  markAccountSettingsDirty();
+}
+function addLocalNotifItem(item, empId = ACTIVE_EMPID || S.user?.empId || '') {
+  if (!item || !item.id) return false;
+  const items = getLocalNotifItems(empId);
+  if (items.some(existing => String(existing.id) === String(item.id))) return false;
+  items.unshift(item);
+  saveLocalNotifItems(items, empId);
+  return true;
+}
+function notifyCommentOnMyPost(post, comment, opts = {}) {
+  if (!post || !comment || !comment.id) return false;
+  const normalizedEmpId = normalizeEmpIdValue(opts.empId || ACTIVE_EMPID || S.user?.empId || '');
+  if (!normalizedEmpId) return false;
+  const bodyText = String(comment.body || '').trim();
+  const snippet = bodyText.length > 44 ? `${bodyText.slice(0, 44)}...` : bodyText;
+  return addLocalNotifItem({
+    id: `comment_${post.id}_${comment.id}`,
+    title: '내 글에 새 댓글',
+    body: `${comment.name || '익명'}: ${snippet || '댓글이 도착했어요.'}`,
+    url: './index.html#community',
+    sent_at: new Date(Number(comment.ts) || Date.now()).toISOString(),
+    type: 'comment_reply',
+    postId: String(post.id),
+    commentId: String(comment.id),
+  }, normalizedEmpId);
+}
 
 function buildAccountSettingsSnapshot(empId = ACTIVE_EMPID || S.user?.empId || '') {
   const normalizedEmpId = normalizeEmpIdValue(empId);
@@ -6030,6 +6252,8 @@ function buildAccountSettingsSnapshot(empId = ACTIVE_EMPID || S.user?.empId || '
     notifications: {
       readIds: [...getReadNotifIds()],
       deletedIds: [...getDeletedNotifIds()],
+      localItems: getLocalNotifItems(normalizedEmpId),
+      commentSeenIds: [...getSeenMyPostCommentIds(normalizedEmpId)],
     },
     communitySeenTs: Number(localStorage.getItem(getAccountScopedStorageKey(COMM_SEEN_KEY, normalizedEmpId)) || '0'),
     introSeen: !!localStorage.getItem(getAccountScopedStorageKey('hi_intro_seen', normalizedEmpId)),
@@ -6098,6 +6322,8 @@ function applyAccountSettingsSnapshot(snapshot, empId = ACTIVE_EMPID || S.user?.
     writeScopedArray('hi_custom_glucose_timings', chips.customGlucoseTimingTypes);
     localStorage.setItem(getAccountScopedStorageKey(NOTIF_READ_KEY, normalizedEmpId), JSON.stringify(Array.isArray(notifications.readIds) ? notifications.readIds : []));
     localStorage.setItem(getAccountScopedStorageKey(NOTIF_DELETED_KEY, normalizedEmpId), JSON.stringify(Array.isArray(notifications.deletedIds) ? notifications.deletedIds : []));
+    localStorage.setItem(getAccountScopedStorageKey(LOCAL_NOTIF_ITEMS_KEY, normalizedEmpId), JSON.stringify(Array.isArray(notifications.localItems) ? notifications.localItems.slice(0, 80) : []));
+    localStorage.setItem(getAccountScopedStorageKey(MY_POST_COMMENT_SEEN_KEY, normalizedEmpId), JSON.stringify(Array.isArray(notifications.commentSeenIds) ? notifications.commentSeenIds.slice(-400) : []));
     localStorage.setItem(getAccountScopedStorageKey(COMM_SEEN_KEY, normalizedEmpId), String(Number(snapshot.communitySeenTs) || 0));
     if (snapshot.introSeen) localStorage.setItem(getAccountScopedStorageKey('hi_intro_seen', normalizedEmpId), '1');
     else localStorage.removeItem(getAccountScopedStorageKey('hi_intro_seen', normalizedEmpId));
@@ -6189,18 +6415,24 @@ function markNotifDeleted(ids) {
 }
 
 async function loadNotifList() {
-  if (!_db) return;
   const identity = getPushIdentity();
   const listEl = document.getElementById('notif-list');
   if (!listEl) return;
   try {
-    let query = _db.from('push_logs').select('*').order('sent_at', { ascending: false }).limit(30);
-    // 전체 발송 OR 나에게 온 것 (빈 값은 필터에서 제외)
-    const orParts = ['target_type.eq.all'];
-    if (identity.deviceId) orParts.push(`target_device_id.eq.${identity.deviceId}`);
-    if (identity.empId) orParts.push(`target_emp_id.eq.${identity.empId.toUpperCase()}`);
-    query = query.or(orParts.join(','));
-    const { data } = await query;
+    let remoteData = [];
+    if (_db) {
+      let query = _db.from('push_logs').select('*').order('sent_at', { ascending: false }).limit(30);
+      // 전체 발송 OR 나에게 온 것 (빈 값은 필터에서 제외)
+      const orParts = ['target_type.eq.all'];
+      if (identity.deviceId) orParts.push(`target_device_id.eq.${identity.deviceId}`);
+      if (identity.empId) orParts.push(`target_emp_id.eq.${identity.empId.toUpperCase()}`);
+      query = query.or(orParts.join(','));
+      const { data } = await query;
+      remoteData = data || [];
+    }
+    const localData = getLocalNotifItems(identity.empId || ACTIVE_EMPID || S.user?.empId || '')
+      .map(item => ({ ...item, _source: 'local' }));
+    const data = [...localData, ...remoteData];
     const deletedIds = getDeletedNotifIds();
     const visibleData = (data || []).filter(n => !deletedIds.has(n.id));
     if (!visibleData.length) {
@@ -6209,7 +6441,9 @@ async function loadNotifList() {
       return;
     }
     const readIds = getReadNotifIds();
-    const rows = visibleData.map(n => {
+    const rows = visibleData
+      .sort((a, b) => new Date(b.sent_at || 0).getTime() - new Date(a.sent_at || 0).getTime())
+      .map(n => {
       const isUnread = !readIds.has(n.id);
       const dt = new Date(n.sent_at);
       const now = new Date();
@@ -6264,7 +6498,7 @@ function openNotifPanel() {
   if (!panel) return;
   panel.classList.remove('hidden');
   if (backdrop) backdrop.classList.remove('hidden');
-  loadNotifList().then(() => {
+  Promise.resolve(_db ? fetchCommunityPosts() : null).then(() => loadNotifList()).then(() => {
     // 패널 열면 모두 읽음 처리
     const listEl = document.getElementById('notif-list');
     if (!listEl) return;
@@ -8533,7 +8767,11 @@ function navigate(page) {
   if (page === 'home')      renderHome();
   if (page === 'exercise')  renderExercise();
   if (page === 'community') { setCommunityTab('feed'); renderCommunity(); fetchAdminPosts(); fetchCommunityPosts(); markCommunityAsSeen(); }
-  if (page === 'rewards')   { setRewardsTab('rewards'); renderRewards(); }
+  if (page === 'rewards')   {
+    setRewardsTab('rewards');
+    renderRewards();
+    loadAppConfig();
+  }
   if (!isChallenge && _rundayIframeLoadStarted) {
     postToRunday({ type: 'PAGE_VISIBILITY', active: false });
   }
@@ -11049,7 +11287,10 @@ function openProfileModal(onboarding = false) {
   const chEl = document.getElementById('pm-challenge-section');
   if (chEl) { chEl.innerHTML = ''; chEl.style.display = 'none'; }
   const pmChallengeTag = document.getElementById('pm-challenge-tag');
-  if (pmChallengeTag) pmChallengeTag.style.display = hasActiveChallengeRegistration() ? 'inline-flex' : 'none';
+  if (pmChallengeTag) {
+    pmChallengeTag.style.display = hasActiveChallengeRegistration() ? 'inline-flex' : 'none';
+    pmChallengeTag.innerHTML = `${renderNamedSvgIcon('medal', { size:'11px', color:'#fff' })}<span>챌린지 참여중</span>`;
+  }
   refreshPushPreferenceUI();
 
   // 관리자 버튼 표시 여부
@@ -12018,7 +12259,7 @@ function renderCommunity() {
     const stickersHtml = STICKERS.map(s => {
       const cnt = p.stickers[s.id] || 0;
       const on  = myR.includes(s.id);
-      return `<button type="button" class="sticker-btn ${on?'on':''}" onclick="react(${p.id},'${s.id}')">
+      return `<button type="button" class="sticker-btn ${on?'on':''}" onclick="react(this,${p.id},'${s.id}')">
         <span class="sticker-emoji">${s.emoji}</span>${cnt > 0 ? `<span class="sticker-cnt">${cnt}</span>` : ''}
       </button>`;
     }).join('');
@@ -12119,8 +12360,36 @@ async function fetchCommunityPosts() {
           lv: 1,
           body: c.body || '',
           time: c.ts ? new Date(Number(c.ts)).toLocaleDateString('ko-KR') : '',
+          ts: c.ts ? Number(c.ts) : Date.now(),
+          deviceId: c.deviceId || '',
         });
     });
+
+    // 내 글에 달린 새 댓글은 로컬 알림으로 저장
+    let notifAdded = false;
+    const seenCommentIds = getSeenMyPostCommentIds();
+    const hasSeenState = hasSeenMyPostCommentState();
+    let seenChanged = false;
+    S.posts.forEach(p => {
+      const pid = String(p.id);
+      if (!targetPostIdSet.has(pid)) return;
+      const prevIds = new Set((p.commentList || []).map(c => String(c.id)));
+      const nextComments = commentMap[pid] || [];
+      nextComments.forEach(comment => {
+        const commentId = String(comment.id);
+        const isNew = !prevIds.has(commentId) && !seenCommentIds.has(commentId);
+        const isMine = (comment.deviceId && S.deviceId && comment.deviceId === S.deviceId)
+          || (!!S.user.name && comment.name === S.user.name);
+        if (hasSeenState && isNew && !isMine) {
+          notifAdded = notifyCommentOnMyPost(p, comment) || notifAdded;
+        }
+        if (!seenCommentIds.has(commentId)) {
+          seenCommentIds.add(commentId);
+          seenChanged = true;
+        }
+      });
+    });
+    if (seenChanged || !hasSeenState) saveSeenMyPostCommentIds(seenCommentIds);
 
     // 동기화 대상 포스트만 최신 스티커/댓글/내 리액션 상태로 덮어쓴다.
     targetPostIds.forEach(pid => {
@@ -12164,6 +12433,7 @@ async function fetchCommunityPosts() {
 
     renderCommunity();
     updateCommunityDot();
+    if (notifAdded) loadNotifList();
   } catch(e) { console.error('[fetchCommunityPosts]', e); }
 }
 
@@ -12264,10 +12534,45 @@ function submitComment() {
   renderCommunity();
 }
 
-function react(postId, stickerId) {
+function playStickerBurst(buttonEl, stickerId) {
+  if (!buttonEl) return;
+  const icon = STICKERS.find(s => s.id === stickerId)?.emoji;
+  if (!icon) return;
+  const rect = buttonEl.getBoundingClientRect();
+  const originX = rect.left + rect.width / 2;
+  const originY = rect.top + rect.height / 2;
+  const burstCount = 5;
+  for (let i = 0; i < burstCount; i++) {
+    const particle = document.createElement('span');
+    particle.className = 'sticker-burst';
+    particle.innerHTML = icon;
+    particle.style.left = `${originX}px`;
+    particle.style.top = `${originY}px`;
+    particle.style.setProperty('--burst-x', `${Math.round((Math.random() - 0.5) * 36)}px`);
+    particle.style.setProperty('--burst-y', `${-44 - Math.round(Math.random() * 20)}px`);
+    particle.style.setProperty('--burst-sway', `${Math.round((Math.random() - 0.5) * 16)}px`);
+    particle.style.setProperty('--burst-scale', String(0.96 + Math.random() * 0.12));
+    particle.style.setProperty('--burst-rotate', `${Math.round((Math.random() - 0.5) * 10)}deg`);
+    particle.style.setProperty('--burst-delay', `${i * 38 + Math.round(Math.random() * 10)}ms`);
+    document.body.appendChild(particle);
+    setTimeout(() => particle.remove(), 1500);
+  }
+}
+
+function playStickerButtonFeedback(buttonEl) {
+  if (!buttonEl) return 0;
+  buttonEl.classList.remove('fx-pop');
+  void buttonEl.offsetWidth;
+  buttonEl.classList.add('fx-pop');
+  setTimeout(() => buttonEl.classList.remove('fx-pop'), 280);
+  return 180;
+}
+
+function react(buttonEl, postId, stickerId) {
   haptic('light');
   const post = S.posts.find(p => p.id === postId) || (S.communityPosts || []).find(p => p.id === postId);
   if (!post) return;
+  const feedbackDelay = playStickerButtonFeedback(buttonEl);
   if (!S.myReactions[postId]) S.myReactions[postId] = [];
   const myR = S.myReactions[postId];
   const idx = myR.indexOf(stickerId);
@@ -12280,6 +12585,7 @@ function react(postId, stickerId) {
   } else {
     myR.push(stickerId);
     post.stickers[stickerId] = (post.stickers[stickerId]||0) + 1;
+    playStickerBurst(buttonEl, stickerId);
     if (post.userId !== 0) S.user.stickersReceived++;
     if (_db) _db.from('reactions').upsert(
       { postId: String(postId), deviceId: S.deviceId, stickerId },
@@ -12287,7 +12593,7 @@ function react(postId, stickerId) {
     ).then(() => {});
   }
   save();
-  renderCommunity();
+  setTimeout(() => renderCommunity(), feedbackDelay);
 }
 
 const _trashSvgSm = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>`;
@@ -12715,9 +13021,14 @@ function renderRewards() {
   const points = Number(S.user.points || 0);
   document.getElementById('bal-display').textContent = points;
   const balSub = document.getElementById('bal-sub');
+  const balChallengeBadge = document.getElementById('bal-challenge-badge');
   if (balSub) balSub.textContent = _challengeRewardMode
-    ? '목표 포인트 달성 시 보상을 신청할 수 있어요'
+    ? '챌린지 운영중에는 교환된 포인트 차감없이 누적포인트로 보상가능합니다'
     : '포인트로 다양한 혜택을 누리세요';
+  if (balChallengeBadge) {
+    balChallengeBadge.style.display = _challengeRewardMode ? 'inline-flex' : 'none';
+    balChallengeBadge.innerHTML = `${renderNamedSvgIcon('medal', { size:'11px', color:'#fff' })}<span>챌린지 운영중</span>`;
+  }
   const availableCount = REWARDS_DATA.filter(r => !S.redeemedRewards.includes(r.id) && !S.pendingRewards.includes(r.id) && points >= r.cost).length;
   const doneCount = REWARDS_DATA.filter(r => S.redeemedRewards.includes(r.id)).length;
   const nextReward = [...REWARDS_DATA]
@@ -12765,7 +13076,8 @@ function renderRewards() {
         svg: `<svg viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg"><rect width="72" height="72" rx="16" fill="#f3f0fb"/><ellipse cx="36" cy="61" rx="17" ry="3.5" fill="rgba(0,0,0,.07)"/><path d="M28,21 Q36,15 44,21 L52,21 L60,30 L55,38 L50,32 L50,57 Q50,59 36,59 Q22,59 22,57 L22,32 L17,38 L12,30 L20,21 Z" fill="#fff" stroke="#cdbfec" stroke-width="1.5" stroke-linejoin="round"/><path d="M30,23 Q36,19 42,23" fill="none" stroke="#b8a2e0" stroke-width="2" stroke-linecap="round"/><rect x="29" y="38" width="14" height="2.5" rx="1.25" fill="#e0d4f8"/><rect x="31" y="43" width="10" height="2" rx="1" fill="#ecdcff"/></svg>`
       },
       r5: {
-        svg: SUPP_SVG.jelly_arg
+        svg: SUPP_SVG.jelly_arg,
+        thumbBg: '#FDF0EC'
       },
     };
     return map[reward.id] || {
@@ -12799,14 +13111,17 @@ function renderRewards() {
       ? `<span class="reward-cost reward-pending-badge">처리중</span>
          <button class="reward-confirm-btn" style="margin-left:6px" onclick="event.stopPropagation();confirmReward('${r.id}')">직원 확인</button>`
       : can
-      ? `<span class="reward-cost">${_challengeRewardMode ? '달성 · 신청 가능' : `${r.cost}p · 교환 가능`}</span>`
-      : `<span class="reward-cost" style="background:#f3f4f6;color:#9ca3af">${r.cost}p · ${shortfall}p 남음</span>`;
+      ? `<span class="reward-cost reward-apply-badge">교환 신청하기</span>`
+      : `<span class="reward-cost" style="background:#f3f4f6;color:#9ca3af">${shortfall}p 남음</span>`;
     return `
       <div class="${cardClass}" ${onclick}>
-        <div class="reward-thumb">${visual.img ? `<img src="${visual.img}" alt="${visual.alt || r.name}">` : visual.svg}</div>
+        <div class="reward-thumb-wrap">
+          <div class="reward-thumb" style="${visual.thumbBg ? `background:${visual.thumbBg};` : ''}">${visual.img ? `<img src="${visual.img}" alt="${visual.alt || r.name}">` : visual.svg}</div>
+          <span class="reward-thumb-cost">${r.cost}P</span>
+        </div>
         <div class="reward-info">
           <div class="reward-name">${r.name}</div>
-          <div class="reward-desc">${_challengeRewardMode ? `${r.cost}p 달성 시 신청` : r.desc}</div>
+          <div class="reward-desc">${r.desc}</div>
         </div>
         <div class="reward-status-wrap">
           ${badge}
@@ -14887,6 +15202,49 @@ function buildGuestSampleState() {
     '잠은 6.5시간 정도로 조금 아쉬웠어요.',
     '내일은 출근 전 걷기 인증까지 이어가보려고요.',
   ].join('\n');
+  const guestLv = getLevel(totalPoints).lv;
+  const samplePosts = [
+    {
+      id: guestSampleDate(0, 21, 5).getTime(),
+      userId: 0,
+      name: '박하이',
+      avatar: 'images/avatars/av14.png',
+      lv: guestLv,
+      isChallenger: true,
+      body: '퇴근 후 한강변 걷기까지 마무리하고 커뮤니티 구경 중이에요. 다들 워밍업부터 분위기가 좋아서 이번 챌린지는 진짜 꾸준히 갈 수 있을 것 같아요.',
+      exTag: null,
+      userTags: ['함께 달려요', '훈련 중', 'HI RUN DAY 화이팅'],
+      time: '방금 전',
+      stickers: { cheer:6, love:4, cool:1, congrats:2, together:5 },
+      myReactions: [],
+      commentList: [
+        { id: 9071, name:'서윤아', avatar:'images/avatars/av2.png', lv:6, body:'한강변 걷기 코스 좋죠. 워밍업 때 꾸준히 쌓기 딱 좋아요.', time:'방금 전' },
+        { id: 9072, name:'김하은', avatar:'images/avatars/av3.png', lv:5, body:'분위기 좋아서 저도 자꾸 들어오게 돼요. 같이 끝까지 가봐요!', time:'1분 전' },
+        { id: 9073, name:'강민정', avatar:'images/avatars/av9.png', lv:2, body:'걷기 인증 반가워요. 저도 오늘 저녁 산책 올렸어요 ㅎㅎ', time:'3분 전' },
+      ],
+    },
+    {
+      id: guestSampleDate(1, 21, 35).getTime(),
+      userId: 0,
+      name: '박하이',
+      avatar: 'images/avatars/av14.png',
+      lv: guestLv,
+      isChallenger: true,
+      body: '어제는 러닝 30분 하고 취침 전 혈당까지 기록했어요. 운동이랑 혈당을 같이 남기니까 컨디션 흐름이 보여서 생각보다 재밌네요.',
+      exTag: null,
+      userTags: ['훈련 중', 'HI RUN DAY 화이팅'],
+      time: '어제',
+      stickers: { cheer:8, love:6, cool:3, congrats:4, together:7 },
+      myReactions: [],
+      commentList: [
+        { id: 9081, name:'최유진', avatar:'images/avatars/av6.png', lv:4, body:'맞아요. 같이 기록하면 패턴 보이는 게 생각보다 도움 많이 돼요.', time:'어제' },
+        { id: 9082, name:'정다은', avatar:'images/avatars/av7.png', lv:3, body:'저도 운동 후 혈당 기록 시작했는데 루틴 잡히는 느낌이라 좋더라고요.', time:'어제' },
+      ],
+    },
+  ].map(post => ({
+    ...post,
+    comments: post.commentList.length,
+  }));
   return {
     user: {
       name: '박하이',
@@ -14903,6 +15261,7 @@ function buildGuestSampleState() {
       tags: ['함께 달려요', '훈련 중', 'HI RUN DAY 화이팅'],
     },
     challengeRegs: [sampleRegistration],
+    posts: samplePosts,
     workouts,
     glucoseRecords,
     todayLog: {
@@ -14938,7 +15297,10 @@ function applyGuestSampleState() {
     ...sample.user,
   };
   S.workouts = mapWorkoutRecords(sample.workouts, S.workouts);
-  S.posts = JSON.parse(JSON.stringify(MOCK_POSTS_SEED));
+  S.posts = [
+    ...JSON.parse(JSON.stringify(sample.posts || [])),
+    ...JSON.parse(JSON.stringify(MOCK_POSTS_SEED)),
+  ];
   S.redeemedRewards = [];
   S.pendingRewards = [];
   S.rewardHistory = [];
