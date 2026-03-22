@@ -3982,8 +3982,41 @@
     .ch-shoe-model-card.selected { border-color:rgba(79,70,229,0.35); box-shadow:0 8px 18px rgba(79,70,229,0.12); }
     .ch-shoe-model-card.disabled { opacity:0.6; cursor:not-allowed; }
     .ch-shoe-model-card.disabled:hover { transform:none; box-shadow:0 4px 14px rgba(15,23,42,0.04); }
-    .ch-shoe-model-photo { position:relative; aspect-ratio:5/4; background:#f8fafc; display:flex; align-items:center; justify-content:center; overflow:hidden; }
+    .ch-shoe-model-photo {
+      position:relative;
+      aspect-ratio:5/4;
+      background:#f8fafc;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+    }
     .ch-shoe-model-photo img { width:100%; height:100%; object-fit:cover; display:block; transform-origin:center; cursor:zoom-in; }
+    .ch-shoe-model-photo.img-fallback {
+      background:
+        radial-gradient(circle at top left, rgba(255,255,255,0.95), transparent 42%),
+        linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
+      padding: 18px;
+    }
+    .ch-shoe-model-photo.img-fallback::before {
+      content: attr(data-fallback-label);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      width:100%;
+      height:100%;
+      border-radius:14px;
+      border:1px solid rgba(109,40,217,0.12);
+      background:rgba(255,255,255,0.78);
+      color:#4c1d95;
+      font-size:13px;
+      font-weight:800;
+      letter-spacing:-0.02em;
+      text-align:center;
+      padding:12px;
+      line-height:1.35;
+      white-space:pre-line;
+    }
     .ch-shoe-gender-tag { position:absolute; top:8px; right:8px; z-index:1; display:inline-flex; align-items:center; justify-content:center; padding:2px 6px; border-radius:6px; border:1px solid transparent; font-size:8px; font-weight:800; letter-spacing:.1px; line-height:1.4; box-shadow:0 3px 8px rgba(15,23,42,.08); }
     .ch-shoe-gender-tag[data-gender="여성"] { background:#fbcfe8; color:#9d174d; border-color:#f9a8d4; }
     .ch-shoe-gender-tag[data-gender="남성"] { background:#bfdbfe; color:#1d4ed8; border-color:#93c5fd; }
@@ -8492,6 +8525,64 @@ function scopeRundayCss(css, scope = '#page-challenge') {
   return scoped + (keyframes.length ? '\n' + keyframes.join('\n') : '');
 }
 
+function resolveInlineChallengeAssetUrl(value, baseUrl = RUNDAY_IFRAME_SRC) {
+  const raw = String(value || '').trim();
+  if (!raw) return raw;
+  if (/^(?:[a-z]+:|\/\/|#)/i.test(raw)) return raw;
+  try {
+    return new URL(raw, new URL(baseUrl, window.location.href)).toString();
+  } catch (e) {
+    return raw;
+  }
+}
+
+function rewriteInlineChallengeSrcset(srcset = '', baseUrl = RUNDAY_IFRAME_SRC) {
+  return String(srcset || '')
+    .split(',')
+    .map(part => {
+      const trimmed = part.trim();
+      if (!trimmed) return '';
+      const [url, ...rest] = trimmed.split(/\s+/);
+      return [resolveInlineChallengeAssetUrl(url, baseUrl), ...rest].filter(Boolean).join(' ');
+    })
+    .filter(Boolean)
+    .join(', ');
+}
+
+function rewriteInlineChallengeCssUrls(css = '', baseUrl = RUNDAY_IFRAME_SRC) {
+  return String(css || '').replace(/url\((['"]?)(.*?)\1\)/g, (match, quote, url) => {
+    const absolute = resolveInlineChallengeAssetUrl(url, baseUrl);
+    return absolute === url ? match : `url(${quote}${absolute}${quote})`;
+  });
+}
+
+function rewriteInlineChallengeAssetAttributes(root, baseUrl = RUNDAY_IFRAME_SRC) {
+  if (!root) return;
+  root.querySelectorAll('[src]').forEach(el => {
+    const next = resolveInlineChallengeAssetUrl(el.getAttribute('src'), baseUrl);
+    if (next) el.setAttribute('src', next);
+  });
+  root.querySelectorAll('[poster]').forEach(el => {
+    const next = resolveInlineChallengeAssetUrl(el.getAttribute('poster'), baseUrl);
+    if (next) el.setAttribute('poster', next);
+  });
+  root.querySelectorAll('[srcset]').forEach(el => {
+    const next = rewriteInlineChallengeSrcset(el.getAttribute('srcset'), baseUrl);
+    if (next) el.setAttribute('srcset', next);
+  });
+  root.querySelectorAll('image[href], use[href], a[href], link[href]').forEach(el => {
+    const next = resolveInlineChallengeAssetUrl(el.getAttribute('href'), baseUrl);
+    if (next) el.setAttribute('href', next);
+  });
+  root.querySelectorAll('[xlink\\:href]').forEach(el => {
+    const next = resolveInlineChallengeAssetUrl(el.getAttribute('xlink:href'), baseUrl);
+    if (next) el.setAttribute('xlink:href', next);
+  });
+  root.querySelectorAll('[style*="url("]').forEach(el => {
+    el.setAttribute('style', rewriteInlineChallengeCssUrls(el.getAttribute('style'), baseUrl));
+  });
+}
+
 function rewriteInlineRundayHandlers(html) {
   const handlerNames = [
     'openRundayProfile',
@@ -8543,8 +8634,11 @@ function buildInlineRundayScript(source = '') {
 
 function mountInlineChallengeHtml(page, html) {
   const parsed = new DOMParser().parseFromString(String(html || ''), 'text/html');
-  const styleText = [...parsed.querySelectorAll('style')].map(el => el.textContent || '').join('\n');
+  const styleText = rewriteInlineChallengeCssUrls(
+    [...parsed.querySelectorAll('style')].map(el => el.textContent || '').join('\n')
+  );
   const bodyClone = parsed.body.cloneNode(true);
+  rewriteInlineChallengeAssetAttributes(bodyClone);
   const scriptNodes = [...bodyClone.querySelectorAll('script')];
   const scriptSource = scriptNodes.map(node => node.textContent || '').join('\n');
   scriptNodes.forEach(node => node.remove());
@@ -13715,7 +13809,14 @@ function renderChShoePrefSection() {
         : '이 브랜드로 신청하기';
     return `
       <div class="ch-shoe-model-card${selected ? ' selected' : ''}${!shoeSize ? ' disabled' : ''}" onclick="quickPickChShoePref('${brand.id}')">
-        <div class="ch-shoe-model-photo"><img src="${brand.image}" alt="${brand.label}" onclick="event.stopPropagation();openShoeLightbox('${brand.image}','${brand.label}')" style="object-position:center center;transform:scale(1.04)"></div>
+        <div class="ch-shoe-model-photo" data-fallback-label="${brand.label}">
+            <img
+            src="${brand.image}"
+            alt="${brand.label}"
+            onclick="event.stopPropagation();openShoeLightbox('${brand.image}','${brand.label}')"
+            onerror="this.onerror=null;var card=this.closest('.ch-shoe-model-photo');if(card)card.classList.add('img-fallback');this.remove();"
+            style="object-position:center center;transform:scale(1.04)">
+        </div>
         <div class="ch-shoe-model-body">
           <div class="ch-shoe-model-name">${brand.label}</div>
           <div class="ch-shoe-model-tip">${brand.desc}</div>
