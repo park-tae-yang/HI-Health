@@ -549,7 +549,7 @@
     .logo-img-white { height: 28px; width: auto; display: none; }
     .app-header:not(.solid) .logo-img       { display: none; }
     .app-header:not(.solid) .logo-img-white { display: block; }
-    .header-right { display: flex; align-items: center; gap: 12px; }
+    .header-right { display: flex; align-items: center; gap: 6px; }
     .header-profile-trigger { display:flex; align-items:center; gap:6px; cursor:pointer; }
     .header-profile-label {
       display:none;
@@ -621,21 +621,18 @@
       background: transparent;
     }
     .header-cart-btn {
-      position: relative; background: none;
-      border: 1.5px solid var(--primary); border-radius: 50%;
-      cursor: pointer; width: 28px; height: 28px; padding: 0;
+      position: relative; background: none; border: none;
+      cursor: pointer; width: 34px; height: 34px; padding: 0;
       display: flex; align-items: center; justify-content: center;
-      transition: all 0.2s;
+      border-radius: 50%; transition: background 0.18s;
     }
+    .header-cart-btn:hover { background: rgba(0,0,0,0.06); }
     .header-cart-btn.is-disabled { opacity: 0.55; }
-    .header-cart-btn svg { width: 17px; height: 17px; stroke: var(--text-secondary); transition: stroke 0.28s; }
-    .app-header:not(.solid) .header-cart-btn {
-      border-color: rgba(255,255,255,0.75);
-      background: rgba(255,255,255,0.15);
-    }
-    .app-header:not(.solid) .header-cart-btn svg { stroke: #fff; }
+    .header-cart-btn svg { width: 19px; height: 19px; stroke: var(--text-secondary); transition: stroke 0.28s; }
+    .app-header:not(.solid) .header-cart-btn:hover { background: rgba(255,255,255,0.15); }
+    .app-header:not(.solid) .header-cart-btn svg { stroke: rgba(255,255,255,0.9); }
     .header-cart-badge {
-      position: absolute; top: -5px; right: -5px;
+      position: absolute; top: -2px; right: -2px;
       background: var(--primary); color: #fff;
       font-size: 9px; font-weight: 700; min-width: 16px; height: 16px;
       border-radius: 8px; display: flex; align-items: center; justify-content: center;
@@ -644,18 +641,15 @@
     .header-cart-badge.hidden { display: none; }
     .app-header:not(.solid) .header-logout { border-color: rgba(255,255,255,0.5); color: rgba(255,255,255,0.85); }
     .header-bell-btn {
-      position: relative; background: none;
-      border: 1.5px solid var(--primary); border-radius: 50%;
-      cursor: pointer; width: 28px; height: 28px; padding: 0;
+      position: relative; background: none; border: none;
+      cursor: pointer; width: 34px; height: 34px; padding: 0;
       display: flex; align-items: center; justify-content: center;
-      transition: all 0.2s;
+      border-radius: 50%; transition: background 0.18s;
     }
-    .header-bell-btn svg { width: 16px; height: 16px; stroke: var(--text-secondary); transition: stroke 0.28s; }
-    .app-header:not(.solid) .header-bell-btn {
-      border-color: rgba(255,255,255,0.75);
-      background: rgba(255,255,255,0.15);
-    }
-    .app-header:not(.solid) .header-bell-btn svg { stroke: #fff; }
+    .header-bell-btn:hover { background: rgba(0,0,0,0.06); }
+    .header-bell-btn svg { width: 18px; height: 18px; stroke: var(--text-secondary); transition: stroke 0.28s; }
+    .app-header:not(.solid) .header-bell-btn:hover { background: rgba(255,255,255,0.15); }
+    .app-header:not(.solid) .header-bell-btn svg { stroke: rgba(255,255,255,0.9); }
     .header-bell-badge {
       position: absolute; top: -5px; right: -5px;
       background: #EF4444; color: #fff;
@@ -1136,13 +1130,13 @@
     .home-logo-wrap { text-align: center; padding: 18px 0 10px; }
     .home-logo-img  { height: 72px; width: auto; display: inline-block; }
 
-    .hc-body { padding: 16px 20px 0; display: flex; flex-direction: column; }
+    .hc-body { padding: 22px 20px 0; display: flex; flex-direction: column; }
     .hero-greeting { font-size: 14px; opacity: 0.85; margin-bottom: 6px; }
     .hero-stats {
       display: flex; gap: 0;
       background: rgba(0,0,0,0.18);
       border-top: 1px solid rgba(255,255,255,0.12);
-      margin: 10px -20px 0; padding: 11px 20px;
+      margin: 16px -20px 0; padding: 14px 20px;
       position: relative; z-index: 1;
     }
     .hero-stat { flex: 1; text-align: center; position: relative; }
@@ -4348,7 +4342,7 @@
           <div id="custom-ex-wrap" class="custom-ex-wrap">
             <div style="display:flex;gap:6px">
               <input type="text" class="ch-form-input dashed" id="custom-ex-name"
-                     placeholder="운동 이름을 입력하세요 (예: 🏓 탁구, ⛷️ 스키...)"
+                     placeholder="운동 이름을 입력하세요 (예: 탁구, 스키...)"
                      maxlength="20" oninput="updatePtsPreview();updateMemoPlaceholder();updateSharePreview()"
                      onkeydown="if(event.key==='Enter')addCustomExType()">
               <button type="button" onclick="addCustomExType()" style="padding:8px 14px;border-radius:var(--radius-sm);border:none;background:var(--primary);color:#fff;font-size:13px;cursor:pointer;white-space:nowrap">추가</button>
@@ -4395,10 +4389,13 @@
           <p class="ex-section-label">측정 시점</p>
           <div class="ex-type-grid" id="glucose-timing-grid"></div>
           <div class="custom-ex-wrap" id="sa-glucose-timing-wrap">
-            <input type="text" id="sa-glucose-timing" class="glucose-time-input"
-                   placeholder="측정 시점을 입력하세요 (예: 운동 후, 야간)"
-                   maxlength="12"
-                   oninput="setCustomGlucoseTiming(this.value)">
+            <div style="display:flex;gap:6px">
+              <input type="text" id="sa-glucose-timing" class="glucose-time-input"
+                     placeholder="측정 시점을 입력하세요 (예: 운동 후, 야간)"
+                     maxlength="12"
+                     onkeydown="if(event.key==='Enter')addCustomGlucoseTiming()">
+              <button type="button" onclick="addCustomGlucoseTiming()" style="padding:8px 14px;border-radius:var(--radius-sm);border:none;background:var(--primary);color:#fff;font-size:13px;cursor:pointer;white-space:nowrap">추가</button>
+            </div>
           </div>
           <div class="custom-ex-wrap" id="sa-glucose-time-wrap">
             <input type="time" id="sa-glucose-time" class="glucose-time-input"
@@ -5705,6 +5702,7 @@ function getNotifIdSet(baseKey, allowLegacy = false) {
 }
 function saveNotifIdSet(baseKey, ids) {
   localStorage.setItem(getNotifStorageKey(baseKey), JSON.stringify([...new Set(ids)].slice(-200)));
+  markAccountSettingsDirty();
 }
 function getReadNotifIds() {
   return getNotifIdSet(NOTIF_READ_KEY, true);
@@ -5716,6 +5714,179 @@ function markNotifRead(ids) {
 }
 function getDeletedNotifIds() {
   return getNotifIdSet(NOTIF_DELETED_KEY);
+}
+
+function buildAccountSettingsSnapshot(empId = ACTIVE_EMPID || S.user?.empId || '') {
+  const normalizedEmpId = normalizeEmpIdValue(empId);
+  if (!normalizedEmpId) return null;
+  const meta = readAccountSettingsMeta(normalizedEmpId);
+  const modifiedAt = Number(meta.modifiedAt) || 0;
+  const todayPhoto = readTodayPhotoState(normalizedEmpId);
+  const dayNotes = readDayNotesState(normalizedEmpId);
+  return {
+    version: 2,
+    modifiedAt,
+    chips: {
+      customExTypes: Array.isArray(_customExTypes) ? [..._customExTypes] : [],
+      hiddenExPresetTypes: Array.isArray(_hiddenExPresetTypes) ? [..._hiddenExPresetTypes] : [],
+      hiddenMealPresetTypes: Array.isArray(_hiddenMealPresetTypes) ? [..._hiddenMealPresetTypes] : [],
+      hiddenSuppPresetTypes: Array.isArray(_hiddenSuppPresetTypes) ? [..._hiddenSuppPresetTypes] : [],
+      customMealTypes: Array.isArray(_customMealTypes) ? [..._customMealTypes] : [],
+      customSuppTypes: Array.isArray(_customSuppTypes) ? [..._customSuppTypes] : [],
+      hiddenGlucoseTimingTypes: Array.isArray(_hiddenGlucoseTimingTypes) ? [..._hiddenGlucoseTimingTypes] : [],
+      customGlucoseTimingTypes: Array.isArray(_customGlucoseTimingTypes) ? [..._customGlucoseTimingTypes] : [],
+    },
+    notifications: {
+      readIds: [...getReadNotifIds()],
+      deletedIds: [...getDeletedNotifIds()],
+    },
+    communitySeenTs: Number(localStorage.getItem(getAccountScopedStorageKey(COMM_SEEN_KEY, normalizedEmpId)) || '0'),
+    introSeen: !!localStorage.getItem(getAccountScopedStorageKey('hi_intro_seen', normalizedEmpId)),
+    installDismissed: !!localStorage.getItem(getAccountScopedStorageKey('hi_install_dismissed', normalizedEmpId)),
+    todayPhoto: todayPhoto && typeof todayPhoto === 'object' ? todayPhoto : null,
+    dayNotes: dayNotes && typeof dayNotes === 'object' ? dayNotes : {},
+  };
+}
+
+function hasAccountSettingsContent(snapshot) {
+  if (!snapshot) return false;
+  const chips = snapshot.chips || {};
+  const notifications = snapshot.notifications || {};
+  return (
+    Number(snapshot.modifiedAt) > 0 ||
+    Number(snapshot.communitySeenTs) > 0 ||
+    !!snapshot.introSeen ||
+    !!snapshot.installDismissed ||
+    !!snapshot.todayPhoto?.data ||
+    Object.keys(snapshot.dayNotes || {}).length > 0 ||
+    Object.values(chips).some(value => Array.isArray(value) && value.length > 0) ||
+    Object.values(notifications).some(value => Array.isArray(value) && value.length > 0)
+  );
+}
+
+function mergeAccountSettingsSnapshots(localSnapshot, remoteSnapshot) {
+  if (!remoteSnapshot || typeof remoteSnapshot !== 'object') return localSnapshot || null;
+  return {
+    ...(localSnapshot || {}),
+    ...remoteSnapshot,
+    chips: {
+      ...((localSnapshot && localSnapshot.chips) || {}),
+      ...((remoteSnapshot && remoteSnapshot.chips) || {}),
+    },
+    notifications: {
+      ...((localSnapshot && localSnapshot.notifications) || {}),
+      ...((remoteSnapshot && remoteSnapshot.notifications) || {}),
+    },
+    todayPhoto: Object.prototype.hasOwnProperty.call(remoteSnapshot, 'todayPhoto')
+      ? remoteSnapshot.todayPhoto
+      : (localSnapshot?.todayPhoto || null),
+    dayNotes: Object.prototype.hasOwnProperty.call(remoteSnapshot, 'dayNotes')
+      ? remoteSnapshot.dayNotes
+      : (localSnapshot?.dayNotes || {}),
+  };
+}
+
+function applyAccountSettingsSnapshot(snapshot, empId = ACTIVE_EMPID || S.user?.empId || '') {
+  const normalizedEmpId = normalizeEmpIdValue(empId);
+  if (!snapshot || !normalizedEmpId) return;
+  const chips = snapshot.chips || {};
+  const notifications = snapshot.notifications || {};
+  const isActiveAccount = normalizedEmpId === normalizeEmpIdValue(ACTIVE_EMPID || S.user?.empId || '');
+  _accountSettingsApplyingRemote = true;
+  try {
+    const writeScopedArray = (baseKey, value) => {
+      localStorage.setItem(getAccountScopedStorageKey(baseKey, normalizedEmpId), JSON.stringify(Array.isArray(value) ? value : []));
+    };
+    writeScopedArray('hi_custom_ex_types', chips.customExTypes);
+    writeScopedArray('hi_hidden_ex_presets', chips.hiddenExPresetTypes);
+    writeScopedArray('hi_hidden_meal_presets', chips.hiddenMealPresetTypes);
+    writeScopedArray('hi_hidden_supp_presets', chips.hiddenSuppPresetTypes);
+    writeScopedArray('hi_custom_meal_types', chips.customMealTypes);
+    writeScopedArray('hi_custom_supp_types', chips.customSuppTypes);
+    writeScopedArray('hi_hidden_glucose_timings', chips.hiddenGlucoseTimingTypes);
+    writeScopedArray('hi_custom_glucose_timings', chips.customGlucoseTimingTypes);
+    localStorage.setItem(getAccountScopedStorageKey(NOTIF_READ_KEY, normalizedEmpId), JSON.stringify(Array.isArray(notifications.readIds) ? notifications.readIds : []));
+    localStorage.setItem(getAccountScopedStorageKey(NOTIF_DELETED_KEY, normalizedEmpId), JSON.stringify(Array.isArray(notifications.deletedIds) ? notifications.deletedIds : []));
+    localStorage.setItem(getAccountScopedStorageKey(COMM_SEEN_KEY, normalizedEmpId), String(Number(snapshot.communitySeenTs) || 0));
+    if (snapshot.introSeen) localStorage.setItem(getAccountScopedStorageKey('hi_intro_seen', normalizedEmpId), '1');
+    else localStorage.removeItem(getAccountScopedStorageKey('hi_intro_seen', normalizedEmpId));
+    if (snapshot.installDismissed) localStorage.setItem(getAccountScopedStorageKey('hi_install_dismissed', normalizedEmpId), '1');
+    else localStorage.removeItem(getAccountScopedStorageKey('hi_install_dismissed', normalizedEmpId));
+    writeTodayPhotoState(snapshot.todayPhoto && typeof snapshot.todayPhoto === 'object' ? snapshot.todayPhoto : null, normalizedEmpId);
+    writeDayNotesState(snapshot.dayNotes, normalizedEmpId);
+    writeAccountSettingsMeta({ modifiedAt: Number(snapshot.modifiedAt) || Date.now() }, normalizedEmpId);
+    if (normalizedEmpId === getRecordChipScope()) hydrateRecordChipState(true);
+    if (isActiveAccount) {
+      loadDayNotes();
+      applyTodayPhotoState(normalizedEmpId);
+    }
+  } finally {
+    _accountSettingsApplyingRemote = false;
+  }
+  updateCommunityDot();
+  if (document.getElementById('ex-type-grid')) renderExercise();
+  if (document.getElementById('meal-chips-row')) renderMealChips();
+  if (document.getElementById('supp-chips-row')) renderSuppChips();
+  if (document.getElementById('glucose-timing-grid')) renderGlucoseTimingButtons();
+  if (document.getElementById('day-notes-section')) renderDayNotes();
+  renderMyDaySave();
+}
+
+function markAccountSettingsDirty() {
+  if (_accountSettingsApplyingRemote) return;
+  const normalizedEmpId = normalizeEmpIdValue(ACTIVE_EMPID || S.user?.empId || '');
+  if (!normalizedEmpId) return;
+  writeAccountSettingsMeta({ modifiedAt: Date.now() }, normalizedEmpId);
+  queueAccountSettingsSync();
+}
+
+function queueAccountSettingsSync(delay = 400) {
+  if (_accountSettingsApplyingRemote || !_db) return;
+  const normalizedEmpId = normalizeEmpIdValue(ACTIVE_EMPID || S.user?.empId || '');
+  if (!normalizedEmpId) return;
+  clearTimeout(_accountSettingsSyncTimer);
+  _accountSettingsSyncTimer = setTimeout(() => {
+    _accountSettingsSyncTimer = null;
+    syncAccountSettingsToRemote();
+  }, delay);
+}
+
+async function syncAccountSettingsToRemote(force = false) {
+  const normalizedEmpId = normalizeEmpIdValue(ACTIVE_EMPID || S.user?.empId || '');
+  if (!_db || !normalizedEmpId) return;
+  const snapshot = buildAccountSettingsSnapshot(normalizedEmpId);
+  if (!snapshot || (!force && !hasAccountSettingsContent(snapshot))) return;
+  const { error } = await _db.from(ACCOUNT_SETTINGS_TABLE).upsert({
+    emp_id: normalizedEmpId,
+    settings: snapshot,
+    last_device_id: S.deviceId || null,
+    updated_at: new Date(Number(snapshot.modifiedAt) || Date.now()).toISOString(),
+  }, { onConflict: 'emp_id' });
+  if (error) console.error('[syncAccountSettingsToRemote]', error);
+}
+
+async function syncAccountSettingsWithRemote(empId = ACTIVE_EMPID || S.user?.empId || '') {
+  const normalizedEmpId = normalizeEmpIdValue(empId);
+  if (!_db || !normalizedEmpId) return;
+  const localSnapshot = buildAccountSettingsSnapshot(normalizedEmpId);
+  const localModifiedAt = Number(localSnapshot?.modifiedAt) || 0;
+  const { data, error } = await _db.from(ACCOUNT_SETTINGS_TABLE)
+    .select('settings,updated_at')
+    .eq('emp_id', normalizedEmpId)
+    .maybeSingle();
+  if (error) {
+    console.error('[syncAccountSettingsWithRemote]', error);
+    return;
+  }
+  const remoteSnapshot = data?.settings && typeof data.settings === 'object' ? data.settings : null;
+  const remoteModifiedAt = Number(remoteSnapshot?.modifiedAt) || (data?.updated_at ? new Date(data.updated_at).getTime() : 0);
+  if (remoteSnapshot && remoteModifiedAt > localModifiedAt) {
+    applyAccountSettingsSnapshot(mergeAccountSettingsSnapshots(localSnapshot, remoteSnapshot), normalizedEmpId);
+    return;
+  }
+  if (localSnapshot && (localModifiedAt > remoteModifiedAt || (hasAccountSettingsContent(localSnapshot) && !remoteSnapshot))) {
+    await syncAccountSettingsToRemote(true);
+  }
 }
 function markNotifDeleted(ids) {
   const deleted = getDeletedNotifIds();
@@ -6584,6 +6755,95 @@ function normalizeEmpIdValue(empId) {
   return String(empId || '').trim().toUpperCase();
 }
 
+function getAccountScopedStorageKey(baseKey, empId = ACTIVE_EMPID || S.user?.empId || '') {
+  const normalized = normalizeEmpIdValue(empId) || 'guest';
+  return `${baseKey}_${normalized}`;
+}
+
+const ACCOUNT_SETTINGS_TABLE = 'user_client_settings';
+const ACCOUNT_SETTINGS_META_KEY = 'hi_account_settings_meta';
+let _accountSettingsSyncTimer = null;
+let _accountSettingsApplyingRemote = false;
+
+function getAccountSettingsMetaKey(empId = ACTIVE_EMPID || S.user?.empId || '') {
+  return getAccountScopedStorageKey(ACCOUNT_SETTINGS_META_KEY, empId);
+}
+
+function readAccountSettingsMeta(empId = ACTIVE_EMPID || S.user?.empId || '') {
+  try {
+    return JSON.parse(localStorage.getItem(getAccountSettingsMetaKey(empId)) || '{}');
+  } catch (e) {
+    return {};
+  }
+}
+
+function writeAccountSettingsMeta(meta, empId = ACTIVE_EMPID || S.user?.empId || '') {
+  try {
+    localStorage.setItem(getAccountSettingsMetaKey(empId), JSON.stringify(meta || {}));
+  } catch (e) {}
+}
+
+function getTodayPhotoStorageKey(empId = ACTIVE_EMPID || S.user?.empId || '') {
+  return 'hi_today_photo_' + (normalizeEmpIdValue(empId) || 'x');
+}
+
+function readTodayPhotoState(empId = ACTIVE_EMPID || S.user?.empId || '') {
+  try {
+    return JSON.parse(localStorage.getItem(getTodayPhotoStorageKey(empId)) || 'null');
+  } catch (e) {
+    return null;
+  }
+}
+
+function writeTodayPhotoState(payload, empId = ACTIVE_EMPID || S.user?.empId || '') {
+  try {
+    const key = getTodayPhotoStorageKey(empId);
+    if (payload && typeof payload === 'object') localStorage.setItem(key, JSON.stringify(payload));
+    else localStorage.removeItem(key);
+  } catch (e) {}
+}
+
+function applyTodayPhotoState(empId = ACTIVE_EMPID || S.user?.empId || '') {
+  const today = new Date().toDateString();
+  const payload = readTodayPhotoState(empId);
+  const photoData = payload && payload.date === today && payload.data ? payload.data : null;
+  _photoData = photoData;
+  const previewImg = document.getElementById('photo-preview-img');
+  const placeholder = document.getElementById('photo-placeholder');
+  const deleteWrap = document.getElementById('photo-del-wrap');
+  const uploadArea = document.getElementById('photo-upload-area');
+  if (previewImg) {
+    previewImg.src = photoData || '';
+    previewImg.style.display = photoData ? 'block' : 'none';
+  }
+  if (placeholder) placeholder.style.display = photoData ? 'none' : 'block';
+  if (deleteWrap) deleteWrap.style.display = photoData ? 'block' : 'none';
+  if (uploadArea) uploadArea.classList.toggle('has-photo', !!photoData);
+  renderTodayTabDots();
+  updateSharePreview();
+  if (_shareOn) renderShareOptions();
+}
+
+function getDayNotesStorageKey(empId = ACTIVE_EMPID || S.user?.empId || '') {
+  return 'hi_health_day_notes_' + (normalizeEmpIdValue(empId) || '');
+}
+
+function readDayNotesState(empId = ACTIVE_EMPID || S.user?.empId || '') {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(getDayNotesStorageKey(empId)) || '{}');
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+  } catch (e) {
+    return {};
+  }
+}
+
+function writeDayNotesState(notes, empId = ACTIVE_EMPID || S.user?.empId || '') {
+  try {
+    const safeNotes = notes && typeof notes === 'object' && !Array.isArray(notes) ? notes : {};
+    localStorage.setItem(getDayNotesStorageKey(empId), JSON.stringify(safeNotes));
+  } catch (e) {}
+}
+
 function getDeviceStorageKey(empId = ACTIVE_EMPID) {
   const normalized = normalizeEmpIdValue(empId);
   return normalized ? 'hi_device_id_' + normalized : 'hi_device_id';
@@ -6794,19 +7054,7 @@ function loadTodayLog() {
   const suppMemoEl = document.getElementById('supp-memo-input');
   if (suppMemoEl) suppMemoEl.value = _suppMemo;
   // 사진 복원
-  try {
-    const p = JSON.parse(localStorage.getItem('hi_today_photo_' + (ACTIVE_EMPID||'x')) || 'null');
-    if (p && p.date === today && p.data) {
-      _photoData = p.data;
-      const pi = document.getElementById('photo-preview-img');
-      if (pi) { pi.src = p.data; pi.style.display = 'block'; }
-      const ph = document.getElementById('photo-placeholder');
-      if (ph) ph.style.display = 'none';
-      const dw = document.getElementById('photo-del-wrap');
-      if (dw) dw.style.display = 'block';
-      document.getElementById('photo-upload-area')?.classList.add('has-photo');
-    }
-  } catch(e) {}
+  applyTodayPhotoState();
   renderTodayTabDots();
   updateSharePreview();
 }
@@ -7172,7 +7420,7 @@ function confirmRemoveCustomExType(name) {
 function removeCustomExType(name) {
   haptic('light');
   _customExTypes = _customExTypes.filter(n => n !== name);
-  localStorage.setItem('hi_custom_ex_types', JSON.stringify(_customExTypes));
+  writeRecordChipState('hi_custom_ex_types', _customExTypes);
   if (S.selectedEx === 'custom_' + name) { S.selectedEx = null; updateRecordBtnStates(); }
   renderExercise();
 }
@@ -7190,7 +7438,7 @@ function removeExPresetType(id) {
   haptic('light');
   if (!_hiddenExPresetTypes.includes(id)) {
     _hiddenExPresetTypes.push(id);
-    localStorage.setItem('hi_hidden_ex_presets', JSON.stringify(_hiddenExPresetTypes));
+    writeRecordChipState('hi_hidden_ex_presets', _hiddenExPresetTypes);
   }
   if (S.selectedEx === id) {
     S.selectedEx = null;
@@ -8043,18 +8291,53 @@ function renderHome() {
 /* ════════════════════════════════════════
    RENDER: EXERCISE
 ════════════════════════════════════════ */
-/* ── Custom exercise types (user-added) ── */
-let _customExTypes  = JSON.parse(localStorage.getItem('hi_custom_ex_types')  || '[]');
-let _hiddenExPresetTypes = JSON.parse(localStorage.getItem('hi_hidden_ex_presets') || '[]');
-
 const MEAL_PRESET_TYPES = ['아침','점심','저녁','간식','야식'];
-const SUPP_PRESET_TYPES = ['종합비타민','아르기닌','코큐텐','엽산'];
-let _hiddenMealPresetTypes = JSON.parse(localStorage.getItem('hi_hidden_meal_presets') || '[]');
-let _hiddenSuppPresetTypes = JSON.parse(localStorage.getItem('hi_hidden_supp_presets') || '[]');
-let _customMealTypes = JSON.parse(localStorage.getItem('hi_custom_meal_types') || '[]');
-let _customSuppTypes = JSON.parse(localStorage.getItem('hi_custom_supp_types') || '[]');
+const SUPP_PRESET_TYPES = ['비타민','엽산','오메가','아르기닌'];
+/* ── Custom exercise/health chip state (account-scoped) ── */
+let _recordChipScope = '';
+let _customExTypes = [];
+let _hiddenExPresetTypes = [];
+let _hiddenMealPresetTypes = [];
+let _hiddenSuppPresetTypes = [];
+let _customMealTypes = [];
+let _customSuppTypes = [];
+let _hiddenGlucoseTimingTypes = [];
+let _customGlucoseTimingTypes = [];
+
+function getRecordChipScope() {
+  return normalizeEmpIdValue(ACTIVE_EMPID || S.user?.empId || '') || 'guest';
+}
+function getRecordChipStorageKey(baseKey) {
+  return `${baseKey}_${getRecordChipScope()}`;
+}
+function readRecordChipState(baseKey) {
+  try {
+    const raw = localStorage.getItem(getRecordChipStorageKey(baseKey));
+    return raw ? JSON.parse(raw) : [];
+  } catch (e) {
+    return [];
+  }
+}
+function writeRecordChipState(baseKey, value) {
+  localStorage.setItem(getRecordChipStorageKey(baseKey), JSON.stringify(value));
+  markAccountSettingsDirty();
+}
+function hydrateRecordChipState(force = false) {
+  const nextScope = getRecordChipScope();
+  if (!force && _recordChipScope === nextScope) return;
+  _recordChipScope = nextScope;
+  _customExTypes = readRecordChipState('hi_custom_ex_types');
+  _hiddenExPresetTypes = readRecordChipState('hi_hidden_ex_presets');
+  _hiddenMealPresetTypes = readRecordChipState('hi_hidden_meal_presets');
+  _hiddenSuppPresetTypes = readRecordChipState('hi_hidden_supp_presets');
+  _customMealTypes = readRecordChipState('hi_custom_meal_types');
+  _customSuppTypes = readRecordChipState('hi_custom_supp_types');
+  _hiddenGlucoseTimingTypes = readRecordChipState('hi_hidden_glucose_timings');
+  _customGlucoseTimingTypes = readRecordChipState('hi_custom_glucose_timings');
+}
 
 function addCustomExType() {
+  hydrateRecordChipState();
   const input = document.getElementById('custom-ex-name');
   const name = input.value.trim();
   if (!name) return;
@@ -8069,7 +8352,7 @@ function addCustomExType() {
   }
   haptic('light');
   _customExTypes.push(name);
-  localStorage.setItem('hi_custom_ex_types', JSON.stringify(_customExTypes));
+  writeRecordChipState('hi_custom_ex_types', _customExTypes);
   input.value = '';
   S.selectedEx = 'custom_' + name;
   document.getElementById('custom-ex-wrap')?.classList.remove('show');
@@ -8342,6 +8625,7 @@ function renderRecordEntryGuide() {
 }
 
 function renderExercise() {
+  hydrateRecordChipState();
   renderRecordEntryGuide();
   // Today stats strip
   const todayW = todayWorkouts();
@@ -8449,15 +8733,14 @@ function getLocalDateKey(d = new Date()) {
 }
 
 function loadDayNotes() {
-  try { _dayNotes = JSON.parse(localStorage.getItem('hi_health_day_notes_' + (ACTIVE_EMPID || '')) || '{}'); }
-  catch(e) { _dayNotes = {}; }
+  _dayNotes = readDayNotesState();
   _dnFilterDate = null;
   _dnView = 'list';
   _dnSlideIndex = 0;
 }
 function persistDayNotes() {
-  try { localStorage.setItem('hi_health_day_notes_' + (ACTIVE_EMPID || ''), JSON.stringify(_dayNotes)); }
-  catch(e) {}
+  writeDayNotesState(_dayNotes);
+  markAccountSettingsDirty();
 }
 function deleteDayNote(dk) {
   const key = String(dk || '').trim();
@@ -8473,7 +8756,7 @@ function deleteDayNote(dk) {
       persistDayNotes();
       if (key === getLocalDateKey() && S.todayLog) {
         S.todayLog = { ...S.todayLog, myDayNote: null, myDayNoteTs: null };
-        save({ skipRemote: true });
+        save();
       }
       renderMyDaySave();
       renderDayNotes();
@@ -9154,8 +9437,6 @@ let _sleepNote  = '';
 let _suppTaken  = null;
 let _suppList   = [];
 let _suppMemo   = '';
-let _hiddenGlucoseTimingTypes = JSON.parse(localStorage.getItem('hi_hidden_glucose_timings') || '[]');
-
 function toggleHC(type) {
   haptic('light');
   const sec = document.getElementById('hc-' + type + '-sec');
@@ -9316,6 +9597,7 @@ function clearSuppSection() {
 
 /* ── Meal / Supplement chip renderers ── */
 function renderMealChips() {
+  hydrateRecordChipState();
   const row = document.getElementById('meal-chips-row');
   if (!row) return;
   const isDirectOpen = document.getElementById('meal-direct-wrap')?.classList.contains('show');
@@ -9331,6 +9613,7 @@ function renderMealChips() {
   row.innerHTML = presetBtns + customBtns + directBtn;
 }
 function renderSuppChips() {
+  hydrateRecordChipState();
   const row = document.getElementById('supp-chips-row');
   if (!row) return;
   const isDirectOpen = document.getElementById('supp-direct-wrap')?.classList.contains('show');
@@ -9340,7 +9623,7 @@ function renderSuppChips() {
   }).join('');
   const customBtns = _customSuppTypes.map(name => {
     const on = _suppList.includes(name);
-    return `<button type="button" class="hc-sub-chip hc-supp-preset${on?' on':''}" data-name="${name}" onclick="toggleSuppItem('${name}')">${name}<span class="hc-chip-remove" onclick="event.stopPropagation();removeCustomSuppType('${name}')">×</span></button>`;
+    return `<button type="button" class="hc-sub-chip hc-supp-preset${on?' on':''}" data-name="${name}" onclick="toggleSuppItem('${name}')">${name}<span class="hc-chip-remove" onclick="event.stopPropagation();confirmRemoveCustomSuppType('${name}')">×</span></button>`;
   }).join('');
   const directBtn = `<button type="button" id="supp-direct-btn" class="chip-direct-btn${isDirectOpen?' selected':''}" onclick="toggleSuppDirect()">${renderNamedSvgIcon('pencil', { size:'14px', color:'currentColor' })}<span>직접 입력</span></button>`;
   row.innerHTML = presetBtns + customBtns + directBtn;
@@ -9357,7 +9640,7 @@ function removeMealPresetType(name) {
   haptic('light');
   if (!_hiddenMealPresetTypes.includes(name)) {
     _hiddenMealPresetTypes.push(name);
-    localStorage.setItem('hi_hidden_meal_presets', JSON.stringify(_hiddenMealPresetTypes));
+    writeRecordChipState('hi_hidden_meal_presets', _hiddenMealPresetTypes);
   }
   if (_mealTypes.includes(name)) {
     _mealTypes = _mealTypes.filter(n => n !== name);
@@ -9379,7 +9662,7 @@ function removeSuppPresetType(name) {
   haptic('light');
   if (!_hiddenSuppPresetTypes.includes(name)) {
     _hiddenSuppPresetTypes.push(name);
-    localStorage.setItem('hi_hidden_supp_presets', JSON.stringify(_hiddenSuppPresetTypes));
+    writeRecordChipState('hi_hidden_supp_presets', _hiddenSuppPresetTypes);
   }
   if (_suppList.includes(name)) {
     _suppList = _suppList.filter(n => n !== name);
@@ -9388,17 +9671,25 @@ function removeSuppPresetType(name) {
   }
   renderSuppChips();
 }
+function confirmRemoveCustomSuppType(name) {
+  showConfirm({
+    title: '영양제 종류를 숨길까요?',
+    msg: `${name} 항목을 이 기기에서 목록에서 숨깁니다.`,
+    okLabel: '숨기기',
+    onOk: () => removeCustomSuppType(name),
+  });
+}
 function removeCustomMealType(name) {
   haptic('light');
   _customMealTypes = _customMealTypes.filter(n => n !== name);
-  localStorage.setItem('hi_custom_meal_types', JSON.stringify(_customMealTypes));
+  writeRecordChipState('hi_custom_meal_types', _customMealTypes);
   if (_mealTypes.includes(name)) { _mealTypes = _mealTypes.filter(n => n !== name); renderTodayTabDots(); saveTodayLog(); }
   renderMealChips();
 }
 function removeCustomSuppType(name) {
   haptic('light');
   _customSuppTypes = _customSuppTypes.filter(n => n !== name);
-  localStorage.setItem('hi_custom_supp_types', JSON.stringify(_customSuppTypes));
+  writeRecordChipState('hi_custom_supp_types', _customSuppTypes);
   if (_suppList.includes(name)) { _suppList = _suppList.filter(n => n !== name); saveTodayLog(); }
   renderSuppChips();
 }
@@ -9445,13 +9736,14 @@ function toggleMealDirect() {
   if (open) document.getElementById('meal-direct-input').focus();
 }
 function addMealDirect() {
+  hydrateRecordChipState();
   const input = document.getElementById('meal-direct-input');
   const val = input.value.trim();
   if (!val) return;
   haptic('light');
   if (!_customMealTypes.includes(val)) {
     _customMealTypes.push(val);
-    localStorage.setItem('hi_custom_meal_types', JSON.stringify(_customMealTypes));
+    writeRecordChipState('hi_custom_meal_types', _customMealTypes);
   }
   if (!_mealTypes.includes(val)) _mealTypes.push(val);
   input.value = '';
@@ -9469,13 +9761,14 @@ function toggleSuppDirect() {
   if (open) document.getElementById('supp-direct-input').focus();
 }
 function addSuppDirect() {
+  hydrateRecordChipState();
   const input = document.getElementById('supp-direct-input');
   const val = input.value.trim();
   if (!val) return;
   haptic('light');
   if (!_customSuppTypes.includes(val)) {
     _customSuppTypes.push(val);
-    localStorage.setItem('hi_custom_supp_types', JSON.stringify(_customSuppTypes));
+    writeRecordChipState('hi_custom_supp_types', _customSuppTypes);
   }
   if (!_suppList.includes(val)) _suppList.push(val);
   input.value = '';
@@ -9493,10 +9786,46 @@ let _glucoseTime   = '';
 
 const GLUCOSE_TIMINGS = ['공복','식후','식후2h','식전','취침전'];
 const TIMING_ID_MAP = { '공복':'fasting', '식후':'after', '식후2h':'after2h', '식전':'before', '취침전':'bedtime' };
-function isCustomGlucoseTiming(value = _glucoseTiming) {
-  return !!value && !GLUCOSE_TIMINGS.includes(value);
+function addCustomGlucoseTiming() {
+  hydrateRecordChipState();
+  const input = document.getElementById('sa-glucose-timing');
+  const value = String(input?.value || '').trim();
+  if (!value) return;
+  haptic('light');
+  const existingPreset = GLUCOSE_TIMINGS.find(timing => timing === value);
+  if (existingPreset) {
+    setGlucoseTiming(existingPreset);
+    if (input) input.value = '';
+    document.getElementById('sa-glucose-timing-wrap')?.classList.remove('show');
+    syncGlucoseUI();
+    return;
+  }
+  if (!_customGlucoseTimingTypes.includes(value)) {
+    _customGlucoseTimingTypes.push(value);
+    writeRecordChipState('hi_custom_glucose_timings', _customGlucoseTimingTypes);
+  }
+  if (_glucoseTiming !== value) {
+    _glucoseValTouched = false;
+    document.getElementById('sa-glucose-num')?.classList.remove('active');
+  }
+  _glucoseTiming = value;
+  if (input) input.value = '';
+  document.getElementById('sa-glucose-timing-wrap')?.classList.remove('show');
+  syncGlucoseUI();
+  updateRecordBtnStates();
+}
+function removeCustomGlucoseTiming(value) {
+  haptic('light');
+  _customGlucoseTimingTypes = _customGlucoseTimingTypes.filter(item => item !== value);
+  writeRecordChipState('hi_custom_glucose_timings', _customGlucoseTimingTypes);
+  if (_glucoseTiming === value) {
+    _glucoseTiming = null;
+    updateRecordBtnStates();
+  }
+  renderGlucoseTimingButtons();
 }
 function renderGlucoseTimingButtons() {
+  hydrateRecordChipState();
   const row = document.getElementById('glucose-timing-grid');
   if (!row) return;
   const customTimingOpen = document.getElementById('sa-glucose-timing-wrap')?.classList.contains('show');
@@ -9509,9 +9838,15 @@ function renderGlucoseTimingButtons() {
         <span class="hc-chip-remove" onclick="event.stopPropagation();confirmRemoveGlucoseTimingType('${timing}')">×</span>
       </button>
     `).join('');
-  const timingDirectBtn = `<button type="button" class="custom-ex-link${customTimingOpen || isCustomGlucoseTiming() ? ' selected' : ''}" id="sa-gt-custom" onclick="toggleGlucoseTimingInput()"><span data-svg-icon="pencil" data-svg-size="14px"></span><span>시점 직접입력</span></button>`;
+  const customTimingBtns = _customGlucoseTimingTypes.map(timing => `
+      <button type="button" class="ex-type-btn ${_glucoseTiming === timing ? 'selected' : ''}" data-timing="${escHtmlComm(timing)}" onclick="setGlucoseTiming(this.dataset.timing)">
+        <span class="ex-type-name">${escHtmlComm(timing)}</span>
+        <span class="hc-chip-remove" data-timing="${escHtmlComm(timing)}" onclick="event.stopPropagation();removeCustomGlucoseTiming(this.dataset.timing)">×</span>
+      </button>
+    `).join('');
+  const timingDirectBtn = `<button type="button" class="custom-ex-link${customTimingOpen ? ' selected' : ''}" id="sa-gt-custom" onclick="toggleGlucoseTimingInput()"><span data-svg-icon="pencil" data-svg-size="14px"></span><span>직접입력</span></button>`;
   const timeDirectBtn = `<button type="button" class="custom-ex-link${timeInputOpen || !!_glucoseTime ? ' selected' : ''}" id="sa-gt-time" onclick="toggleGlucoseTimeInput()"><span data-svg-icon="pencil" data-svg-size="14px"></span><span>측정시간 입력</span></button>`;
-  row.innerHTML = timingBtns + timingDirectBtn + timeDirectBtn;
+  row.innerHTML = timingBtns + customTimingBtns + timingDirectBtn + timeDirectBtn;
   hydrateStaticSvgIcons(row);
 }
 function toggleGlucoseTimingInput() {
@@ -9522,23 +9857,11 @@ function toggleGlucoseTimingInput() {
   const isOpen = wrap.classList.toggle('show');
   if (!isOpen) {
     input.value = '';
-    if (isCustomGlucoseTiming()) _glucoseTiming = null;
-    updateRecordBtnStates();
     syncGlucoseUI();
     return;
   }
   input.focus();
   syncGlucoseUI();
-}
-function setCustomGlucoseTiming(value) {
-  const next = String(value || '').trim();
-  if (_glucoseTiming !== next) {
-    _glucoseValTouched = false;
-    document.getElementById('sa-glucose-num')?.classList.remove('active');
-  }
-  _glucoseTiming = next || null;
-  syncGlucoseUI();
-  updateRecordBtnStates();
 }
 function toggleGlucoseTimeInput() {
   haptic('light');
@@ -9585,8 +9908,6 @@ function syncGlucoseUI() {
     numEl.textContent = _glucoseVal;
     numEl.classList.toggle('active', active);
   }
-  const customTimingInput = document.getElementById('sa-glucose-timing');
-  if (customTimingInput && isCustomGlucoseTiming()) customTimingInput.value = _glucoseTiming;
   renderGlucoseTimingButtons();
   GLUCOSE_TIMINGS.forEach(t => {
     const el = document.getElementById('sa-gt-' + TIMING_ID_MAP[t]);
@@ -9627,7 +9948,7 @@ function removeGlucoseTimingType(timing) {
   haptic('light');
   if (!_hiddenGlucoseTimingTypes.includes(timing)) {
     _hiddenGlucoseTimingTypes.push(timing);
-    localStorage.setItem('hi_hidden_glucose_timings', JSON.stringify(_hiddenGlucoseTimingTypes));
+    writeRecordChipState('hi_hidden_glucose_timings', _hiddenGlucoseTimingTypes);
   }
   if (_glucoseTiming === timing) {
     _glucoseTiming = null;
@@ -9883,14 +10204,9 @@ function handlePhotoInput(input) {
   if (!input.files || !input.files[0]) return;
   const reader = new FileReader();
   reader.onload = e => compressImage(e.target.result, data => {
-    _photoData = data;
-    try { localStorage.setItem('hi_today_photo_' + (ACTIVE_EMPID||'x'), JSON.stringify({ date: new Date().toDateString(), data })); } catch(e) {}
-    document.getElementById('photo-preview-img').src = data;
-    document.getElementById('photo-preview-img').style.display = 'block';
-    document.getElementById('photo-placeholder').style.display = 'none';
-    document.getElementById('photo-del-wrap').style.display = 'block';
-    document.getElementById('photo-upload-area').classList.add('has-photo');
-    if (_shareOn) renderShareOptions();
+    writeTodayPhotoState({ date: new Date().toDateString(), data });
+    markAccountSettingsDirty();
+    applyTodayPhotoState();
   });
   reader.readAsDataURL(input.files[0]);
 }
@@ -9909,15 +10225,11 @@ function compressImage(dataUrl, cb) {
 function clearPhoto(e) {
   if (e) e.stopPropagation();
   _photoData = null;
-  try { localStorage.removeItem('hi_today_photo_' + (ACTIVE_EMPID||'x')); } catch(e) {}
-  const pi = document.getElementById('photo-preview-img');
-  pi.src = ''; pi.style.display = 'none';
-  document.getElementById('photo-placeholder').style.display = 'block';
-  document.getElementById('photo-del-wrap').style.display = 'none';
-  document.getElementById('photo-upload-area').classList.remove('has-photo');
+  writeTodayPhotoState(null);
+  markAccountSettingsDirty();
+  applyTodayPhotoState();
   document.getElementById('photo-input').value = '';
   _sharePhoto = false;
-  if (_shareOn) renderShareOptions();
 }
 function viewPhoto(id) {
   const w = S.workouts.find(w => w.id === id);
@@ -10446,6 +10758,24 @@ function cleanupLocalUserKeys({ empIds = [], deviceIds = [], registrationIds = [
     localStorage.removeItem('hi_health_day_notes_' + empId);
     localStorage.removeItem('hi_today_photo_' + empId);
     localStorage.removeItem('hi_device_id_' + empId);
+    [
+      'hi_custom_ex_types',
+      'hi_hidden_ex_presets',
+      'hi_hidden_meal_presets',
+      'hi_hidden_supp_presets',
+      'hi_custom_meal_types',
+      'hi_custom_supp_types',
+      'hi_hidden_glucose_timings',
+      'hi_custom_glucose_timings',
+      ACCOUNT_SETTINGS_META_KEY,
+      NOTIF_READ_KEY,
+      NOTIF_DELETED_KEY,
+      COMM_SEEN_KEY,
+      'hi_intro_seen',
+      'hi_install_dismissed',
+      'dexcom_user',
+      'dexcom_pass',
+    ].forEach(prefix => localStorage.removeItem(`${prefix}_${empId}`));
   });
   allStorageKeys.forEach(key => localStorage.removeItem(key));
   normDeviceIds.forEach(deviceId => localStorage.removeItem('hi_synced_' + deviceId));
@@ -10453,7 +10783,6 @@ function cleanupLocalUserKeys({ empIds = [], deviceIds = [], registrationIds = [
   sessionStorage.removeItem('hi_session_empid');
   localStorage.removeItem('hi_keep_login_id');
   localStorage.removeItem('hi_keep_login_name');
-  localStorage.removeItem(COMM_SEEN_KEY);
 
   try {
     const regs = JSON.parse(localStorage.getItem(CH_REG_KEY) || '[]');
@@ -10471,6 +10800,10 @@ function cleanupLocalUserKeys({ empIds = [], deviceIds = [], registrationIds = [
 }
 
 function resetToLoggedOutState() {
+  if (_accountSettingsSyncTimer) {
+    clearTimeout(_accountSettingsSyncTimer);
+    _accountSettingsSyncTimer = null;
+  }
   IS_GUEST = false;
   _guestChallengeRegs = [];
   _pendingTrackedRun = null;
@@ -10478,6 +10811,7 @@ function resetToLoggedOutState() {
   STORAGE_KEY  = 'hi_health_v2';
   SHOP_ORDERS_KEY = 'hi_health_shop_orders';
   SHOP_CART_KEY   = 'hi_health_cart';
+  _recordChipScope = '';
   _realLeagueUsers = null;
   _leagueFetching = false;
   resetLeagueCache();
@@ -10515,6 +10849,7 @@ function resetToLoggedOutState() {
   if (glucoseTimeEl) glucoseTimeEl.value = '';
   document.getElementById('sa-glucose-timing-wrap')?.classList.remove('show');
   document.getElementById('sa-glucose-time-wrap')?.classList.remove('show');
+  hydrateRecordChipState(true);
 
   const pmNick = document.getElementById('pm-nickname');
   if (pmNick) pmNick.value = '';
@@ -10673,6 +11008,7 @@ async function deleteMyDeviceAndServerData() {
       await runDeleteByIds('registrations(id)', 'registrations', 'id', registrationIdList);
     }
     if (empIds.length || lowerEmpIds.length) {
+      await runDeleteByIds('user_client_settings(emp_id)', ACCOUNT_SETTINGS_TABLE, 'emp_id', [...empIds, ...lowerEmpIds]);
       const empDeleteFilters = [...new Set([
         ...empIds.map(empId => `empId.eq.${empId}`),
         ...lowerEmpIds.map(empId => `empId.eq.${empId}`),
@@ -11375,14 +11711,15 @@ function getLatestPostTs() {
 }
 
 function updateCommunityDot() {
-  const lastSeen = Number(localStorage.getItem(COMM_SEEN_KEY) || '0');
+  const lastSeen = Number(localStorage.getItem(getAccountScopedStorageKey(COMM_SEEN_KEY)) || '0');
   const latest   = getLatestPostTs();
   const dot = document.getElementById('comm-nav-dot');
   if (dot) dot.classList.toggle('hidden', latest <= lastSeen);
 }
 
 function markCommunityAsSeen() {
-  localStorage.setItem(COMM_SEEN_KEY, String(getLatestPostTs()));
+  localStorage.setItem(getAccountScopedStorageKey(COMM_SEEN_KEY), String(getLatestPostTs()));
+  markAccountSettingsDirty();
   const dot = document.getElementById('comm-nav-dot');
   if (dot) dot.classList.add('hidden');
 }
@@ -13891,7 +14228,7 @@ function syncLoginFieldOverlays() {
 
 function showIntroIfNeeded() {
   if (IS_RUN_MODE) return;
-  if (localStorage.getItem('hi_intro_seen')) return;
+  if (localStorage.getItem(getAccountScopedStorageKey('hi_intro_seen'))) return;
   showIntro();
 }
 
@@ -13919,7 +14256,8 @@ function introNext() {
 }
 
 function introSkip() {
-  localStorage.setItem('hi_intro_seen', '1');
+  localStorage.setItem(getAccountScopedStorageKey('hi_intro_seen'), '1');
+  markAccountSettingsDirty();
   document.getElementById('app-intro').classList.add('hidden');
 }
 
@@ -14244,6 +14582,7 @@ async function doAppLogin() {
   STORAGE_KEY  = 'hi_health_v2_' + regId;
   SHOP_ORDERS_KEY = 'hi_health_shop_orders_' + regId;
   SHOP_CART_KEY   = 'hi_health_cart_' + regId;
+  hydrateRecordChipState(true);
   S.user.tags = []; // 이전 계정 태그 잔류 방지
   load();
   loadTodayLog();
@@ -14261,6 +14600,7 @@ async function doAppLogin() {
   S.user.empId = S.user.empId || ACTIVE_EMPID;
   if (!S.user.name) S.user.name = inputName;
   await hydrateAccountFromRemote(ACTIVE_EMPID, inputName);
+  await syncAccountSettingsWithRemote(ACTIVE_EMPID);
   await syncMyChallengeRegistration();
   repairChRegNote();
   save();
@@ -14430,6 +14770,7 @@ async function init() {
     STORAGE_KEY  = 'hi_health_v2_' + savedEmpId;
     SHOP_ORDERS_KEY = 'hi_health_shop_orders_' + savedEmpId;
     SHOP_CART_KEY   = 'hi_health_cart_' + savedEmpId;
+    hydrateRecordChipState(true);
     load();
     loadTodayLog();
     loadDayNotes();
@@ -14445,6 +14786,7 @@ async function init() {
     const autoLoadEl = document.getElementById('login-loading');
     if (autoLoadEl) autoLoadEl.style.display = 'block';
     await hydrateAccountFromRemote(savedEmpId, keepName || S.user.name || '');
+    await syncAccountSettingsWithRemote(savedEmpId);
     await syncMyChallengeRegistration();
     save();
     renderHeader();
@@ -15017,7 +15359,7 @@ async function init() {
   function openDexcomSetup() {
     const m = document.getElementById('dexcom-modal');
     m.style.display = 'flex';
-    const saved = localStorage.getItem('dexcom_user') || '';
+    const saved = localStorage.getItem(getAccountScopedStorageKey('dexcom_user')) || '';
     document.getElementById('dexcom-username').value = saved;
     document.getElementById('dexcom-password').value = '';
     document.getElementById('dexcom-modal-err').style.display = 'none';
@@ -15041,8 +15383,8 @@ async function init() {
       const data = await res.json();
       if (data.error) { err.textContent = data.error + (data.debug ? ' | ' + data.debug : ''); err.style.display = ''; return; }
       if (data.debug) console.log('[dexcom debug]', data.debug);
-      localStorage.setItem('dexcom_user', u);
-      localStorage.setItem('dexcom_pass', btoa(p));
+      localStorage.setItem(getAccountScopedStorageKey('dexcom_user'), u);
+      localStorage.setItem(getAccountScopedStorageKey('dexcom_pass'), btoa(p));
       closeDexcomSetup();
       if (data.readings?.length) {
         _dexRenderReading(data.readings[0]);
@@ -15061,8 +15403,8 @@ async function init() {
     } finally { btn.textContent = '연동하기'; btn.disabled = false; }
   }
   async function fetchDexcom() {
-    const u = localStorage.getItem('dexcom_user');
-    const p = localStorage.getItem('dexcom_pass');
+    const u = localStorage.getItem(getAccountScopedStorageKey('dexcom_user'));
+    const p = localStorage.getItem(getAccountScopedStorageKey('dexcom_pass'));
     if (!u || !p) return;
     try {
       const res = await fetch(DEXCOM_FN, {
@@ -15090,7 +15432,8 @@ async function init() {
   }
   function disconnectDexcom() {
     if (!confirm('덱스콤 연동을 해제할까요?')) return;
-    localStorage.removeItem('dexcom_user'); localStorage.removeItem('dexcom_pass');
+    localStorage.removeItem(getAccountScopedStorageKey('dexcom_user'));
+    localStorage.removeItem(getAccountScopedStorageKey('dexcom_pass'));
     clearInterval(_dexTimer); _dexTimer = null;
     document.getElementById('dexcom-live').style.display = 'none';
     document.getElementById('dexcom-idle').style.display = '';
@@ -15098,7 +15441,7 @@ async function init() {
   }
   // 앱 시작 시 저장된 계정 있으면 자동 연동
   window.addEventListener('hi:loggedin', () => {
-    if (localStorage.getItem('dexcom_user') && localStorage.getItem('dexcom_pass')) {
+    if (localStorage.getItem(getAccountScopedStorageKey('dexcom_user')) && localStorage.getItem(getAccountScopedStorageKey('dexcom_pass'))) {
       fetchDexcom(); _dexStartTimer();
     }
   });
@@ -15133,7 +15476,7 @@ async function init() {
   function showInstallGuide() {
     const isStandalone = window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
     if (isStandalone) return;
-    if (localStorage.getItem('hi_install_dismissed')) return;
+    if (localStorage.getItem(getAccountScopedStorageKey('hi_install_dismissed'))) return;
     const ua = navigator.userAgent;
     const isIOS = /iphone|ipad|ipod/i.test(ua);
     const isAndroid = /android/i.test(ua);
@@ -15143,7 +15486,8 @@ async function init() {
       document.getElementById(isIOS ? 'install-kakao-ios' : 'install-kakao-android').style.display = '';
     }
     document.getElementById(isIOS ? 'install-steps-ios' : 'install-steps-android').style.display = '';
-    localStorage.setItem('hi_install_dismissed', '1');
+    localStorage.setItem(getAccountScopedStorageKey('hi_install_dismissed'), '1');
+    markAccountSettingsDirty();
     document.getElementById('install-overlay').classList.remove('pm-hidden');
     setTimeout(closeInstallGuide, 30000);
   }
