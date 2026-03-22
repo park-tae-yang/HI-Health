@@ -55,6 +55,7 @@
       --radius:         14px;
       --radius-sm:      10px;
       --radius-lg:      20px;
+      --page-pad:       18px;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html { scroll-behavior: smooth; }
@@ -81,8 +82,9 @@
       :root {
         --nav-height: 70px;
         --header-height: 50px;
+        --page-pad: 14px;
       }
-      .page { padding: 14px; }
+      .page { padding: var(--page-pad); }
       .card { padding: 14px; }
       .hero-stat-value { font-size: 17px; }
       .hero-greeting { font-size: 12px; }
@@ -107,8 +109,9 @@
       :root {
         --nav-height: 66px;
         --header-height: 48px;
+        --page-pad: 12px;
       }
-      .page { padding: 12px; }
+      .page { padding: var(--page-pad); }
       .card { padding: 12px; }
       .hero-stat-value { font-size: 15px; }
       .ch-hero-title { font-size: 26px; }
@@ -131,8 +134,9 @@
     }
     /* 대형 기기 (iPhone Plus, Pro Max, 대형 Android 414px 이상) */
     @media (min-width: 414px) and (max-width: 480px) {
+      :root { --page-pad: 20px; }
       .card { padding: 20px; }
-      .page { padding: 20px; }
+      .page { padding: var(--page-pad); }
       .hero-stat-value { font-size: 22px; }
       .ch-hero-title { font-size: 44px; }
     }
@@ -772,7 +776,7 @@
     }
     .app-content.white-page-bg { background: #fff; }
     .page {
-      display: none; padding: 18px;
+      display: none; padding: var(--page-pad);
       animation: pageIn 0.3s cubic-bezier(0.22,1,0.36,1);
     }
     .page.active { display: block; }
@@ -1342,6 +1346,13 @@
     /* Achievement strip */
     .ach-strip { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 6px; scrollbar-width: none; }
     .ach-strip::-webkit-scrollbar { display: none; }
+    .ach-strip-empty {
+      width: 100%;
+      padding: 8px 2px 2px;
+      font-size: 12px;
+      color: var(--text-secondary);
+      text-align: center;
+    }
     .ach-chip { flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 3px; }
     .ach-circle {
       width: 56px; height: 56px; border-radius: 50%;
@@ -1382,7 +1393,7 @@
     .ex-type-btn {
       position: relative;
       display: flex; flex-direction: row; align-items: center;
-      gap: 5px; padding: 6px 22px 6px 12px; border-radius: 999px;
+      gap: 5px; padding: 6px 12px; border-radius: 999px;
       border: 1.5px solid var(--border); background: #fff;
       cursor: pointer; transition: border-color 0.18s, background-color 0.18s, color 0.18s; font-family: inherit; font-size: 13px;
       flex-shrink: 0; white-space: nowrap;
@@ -1691,11 +1702,24 @@
     .hc-sub-chip {
       display:flex; align-items:center;
       position:relative;
-      padding:6px 22px 6px 12px; border-radius:999px; border:1.5px solid var(--border);
+      padding:6px 12px; border-radius:999px; border:1.5px solid var(--border);
       background:#fff; font-size:13px; font-family:inherit; cursor:pointer;
       white-space:nowrap; flex-shrink:0; transition:border-color 0.18s, background-color 0.18s, color 0.18s;
     }
     .hc-sub-chip.on { border-color:rgba(79,70,229,0.32); background:#f5f7ff; color:var(--primary); }
+    [data-chip-delete-action] {
+      -webkit-touch-callout: none;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+    }
+    .chip-hold-delete-armed {
+      transform: scale(0.985);
+      filter: saturate(0.98);
+    }
+    .chip-hold-delete-active {
+      box-shadow: inset 0 0 0 1px rgba(79,70,229,0.18);
+    }
     .hc-chip-remove {
       display:inline-flex;
       align-items:center;
@@ -1732,11 +1756,17 @@
 
     /* ── Community Share ── */
     .share-section {
+      --share-side-bleed: var(--page-pad);
+      margin-top:32px;
       margin-bottom:14px;
+      margin-left: calc(-1 * var(--share-side-bleed));
+      margin-right: calc(-1 * var(--share-side-bleed));
+      width: calc(100% + (var(--share-side-bleed) * 2));
+      max-width: none;
       background:
         radial-gradient(circle at top right, rgba(14,165,233,0.16), transparent 34%),
         linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
-      border-radius:24px;
+      border-radius:28px 28px 0 0;
       box-shadow:0 18px 40px rgba(15,23,42,0.08);
       overflow:hidden;
       padding:0;
@@ -1765,11 +1795,11 @@
     .share-expand.show { display:block; }
     .share-expand-inner {
       margin:10px 14px 14px;
-      background:rgba(255,255,255,0.82);
+      background:transparent;
       border:none;
       border-radius:18px;
       padding:14px;
-      box-shadow:inset 0 1px 0 rgba(255,255,255,0.9);
+      box-shadow:none;
     }
     .share-ex-tag-wrap { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
     .share-expand-label { font-size:11px; font-weight:600; color:var(--text-secondary); }
@@ -1884,22 +1914,43 @@
     #page-exercise { padding-top: 0; }
     .ex-hero-tabs {
       display:flex;
-      gap:8px;
-      padding:0;
-      background:none;
-      border:none;
-      border-radius:0;
+      gap:4px;
+      padding:4px;
+      background:rgba(248,250,252,0.92);
+      border:1px solid rgba(226,232,240,0.95);
+      border-radius:14px;
+      overflow-x:auto;
+      -webkit-overflow-scrolling:touch;
+      scrollbar-width:none;
     }
+    .ex-hero-tabs::-webkit-scrollbar { display:none; }
     .ex-hero-tab {
-      flex:1; padding:10px 0; background:#f8fafc; border:1px solid transparent;
-      border-radius:12px;
-      color:#64748b; font-size:14px; font-weight:600;
-      cursor:pointer; font-family:inherit; transition:all 0.18s;
+      flex:1 1 0;
+      min-width:0;
+      padding:10px 12px;
+      background:transparent;
+      border:none;
+      border-radius:10px;
+      color:#64748b;
+      font-size:13px;
+      font-weight:700;
+      cursor:pointer;
+      font-family:inherit;
+      transition:all 0.18s;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:0;
+      line-height:1;
+      white-space:nowrap;
     }
     .ex-hero-tab.active {
-      color:#0f172a;
+      color:var(--primary);
       background:#fff;
-      border-color:rgba(79,70,229,0.2);
+      box-shadow:0 1px 3px rgba(15,23,42,0.08);
+    }
+    .ex-hero-tab:not(.active) {
+      color:#475569;
     }
     .rec-switch-btn {
       flex:1; padding:13px 8px; border-radius:14px; border:2px solid var(--border);
@@ -1908,7 +1959,18 @@
       gap:6px; transition:all 0.18s; font-family:inherit; line-height:1.2;
     }
     .rec-switch-btn.active { border-color:var(--primary); background:var(--primary-light); color:var(--primary); }
-    .today-tab-dot { display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--primary); margin-left:3px; vertical-align:middle; flex-shrink:0; }
+    .today-tab-dot {
+      display:inline-block;
+      width:4px;
+      height:4px;
+      border-radius:50%;
+      background:var(--primary);
+      margin-left:8px;
+      vertical-align:middle;
+      flex-shrink:0;
+      box-shadow:none;
+      opacity:0.95;
+    }
     .exercise-section-shell {
       margin-top: 24px;
       padding: 0;
@@ -1969,7 +2031,7 @@
       margin:0 -18px 28px !important;
       padding:0 !important;
       box-shadow:none !important;
-      border:1px solid rgba(241,245,249,0.9);
+      border:1px solid rgba(226,232,240,0.92);
     }
     .record-content-card .ex-hero-tabs { margin:18px 18px 14px; }
     .record-content-card #rec-panel-exercise,
@@ -1977,10 +2039,11 @@
     .today-log-card {
       margin-left:-18px !important;
       margin-right:-18px !important;
+      margin-top:12px !important;
       border-radius:20px !important;
       padding:0 !important;
       box-shadow:none !important;
-      border:1px solid rgba(241,245,249,0.9);
+      border:1px solid rgba(226,232,240,0.92);
     }
     .today-log-card .ex-hero-tabs { margin:18px 18px 14px; }
     .today-log-card .hc-section { padding-left:18px; padding-right:18px; padding-top:18px; }
@@ -1993,6 +2056,20 @@
       margin: 16px 0 6px; letter-spacing: -0.01em;
     }
     .ex-section-label:first-child { margin-top: 2px; }
+    .chip-hold-tip {
+      margin:-2px 0 8px;
+      font-size:11px;
+      color:var(--text-muted);
+      letter-spacing:-0.01em;
+    }
+    .ex-section-tip {
+      display:inline-block;
+      margin-left:6px;
+      font-size:10px;
+      font-weight:500;
+      color:var(--text-muted);
+      letter-spacing:-0.01em;
+    }
     .ex-section-opt { font-size: 11px; font-weight: 500; color: var(--text-muted); margin-left: 4px; }
     .exercise-memo-inline #ex-memo {
       width:100%; min-height:44px; padding:10px 12px;
@@ -2018,6 +2095,49 @@
 
     /* ── View Tabs (월별/목록/그래프) ── */
     .card-header-right { display:flex; align-items:center; gap:8px; }
+    .record-history-head {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:2px 0 4px;
+    }
+    .record-history-count {
+      font-size:13px;
+      font-weight:700;
+      color:var(--text);
+      letter-spacing:-0.01em;
+      white-space:nowrap;
+    }
+    .record-view-tabs {
+      display:inline-flex;
+      align-items:center;
+      gap:3px;
+      padding:3px;
+      border-radius:999px;
+      background:rgba(248,250,252,0.94);
+      border:1px solid rgba(226,232,240,0.95);
+      flex-shrink:0;
+    }
+    .record-view-tab {
+      min-width:50px;
+      padding:6px 12px;
+      border:none;
+      border-radius:999px;
+      font-family:inherit;
+      font-size:11px;
+      font-weight:700;
+      line-height:1;
+      cursor:pointer;
+      background:transparent;
+      color:var(--text-secondary);
+      transition:background-color 0.18s ease, color 0.18s ease;
+    }
+    .record-view-tab.active {
+      background:#fff;
+      color:var(--text);
+    }
+    .record-view-tab:active { transform:scale(0.98); }
     .wo-view-tabs { display:flex; gap:2px; background:var(--bg); border-radius:8px; padding:3px; }
     .wo-view-tab { padding:4px 10px; border-radius:6px; border:none; font-family:inherit; font-size:11px; font-weight:600; cursor:pointer; background:transparent; color:var(--text-secondary); transition:all 0.18s; }
     .wo-view-tab.active { background:#fff; color:var(--primary); }
@@ -4334,7 +4454,7 @@
           <button class="ex-hero-tab" id="rec-tab-glucose" onclick="setRecordTab('glucose')">혈당<span class="today-tab-dot" id="dot-glucose" style="display:none"></span></button>
         </div>
         <div id="rec-panel-exercise">
-          <p class="ex-section-label">운동 종류</p>
+          <p class="ex-section-label">운동 종류<span class="ex-section-tip">직접입력으로 추가하거나 길게 눌러 숨길 수 있어요</span></p>
           <div class="ex-type-grid" id="ex-type-grid"></div>
           <div id="custom-ex-wrap" class="custom-ex-wrap">
             <div style="display:flex;gap:6px">
@@ -4365,13 +4485,11 @@
           <div id="log-exercise-hint" style="display:none;text-align:center;font-size:12px;color:var(--primary);margin-top:6px;animation:fadeIn 0.15s ease"></div>
           <div id="daily-limit-info" class="daily-limit-info daily-limit-info--center" style="margin-top:6px;margin-bottom:8px"></div>
           <hr style="border:none;border-top:1px solid var(--border);margin:14px 0 10px">
-          <div class="card-header" style="padding-top:0;justify-content:center">
-            <div class="card-header-right">
-              <span class="badge badge-success" id="wo-total-badge">총 0회</span>
-              <div class="wo-view-tabs">
-                <button type="button" class="wo-view-tab active" id="wo-tab-recent" onclick="setWoView('recent')">최근</button>
-                <button type="button" class="wo-view-tab" id="wo-tab-monthly" onclick="setWoView('monthly')">월별</button>
-              </div>
+          <div class="record-history-head">
+            <span class="record-history-count" id="wo-total-badge">총 0회</span>
+            <div class="record-view-tabs" aria-label="운동 기록 보기 전환">
+              <button type="button" class="record-view-tab active" id="wo-tab-recent" onclick="setWoView('recent')">최근</button>
+              <button type="button" class="record-view-tab" id="wo-tab-monthly" onclick="setWoView('monthly')">월별</button>
             </div>
           </div>
           <div class="wo-month-nav" id="wo-month-nav">
@@ -4383,7 +4501,7 @@
         </div>
 
         <div id="rec-panel-glucose" style="display:none">
-          <p class="ex-section-label">측정 시점</p>
+          <p class="ex-section-label">측정 시점<span class="ex-section-tip">직접입력으로 추가하거나 길게 눌러 숨길 수 있어요</span></p>
           <div class="ex-type-grid" id="glucose-timing-grid"></div>
           <div class="custom-ex-wrap" id="sa-glucose-timing-wrap">
             <div style="display:flex;gap:6px">
@@ -4416,13 +4534,11 @@
         <div id="log-glucose-hint" style="display:none;text-align:center;font-size:12px;color:var(--primary);margin-top:6px;animation:fadeIn 0.15s ease"></div>
         <div id="glucose-daily-info" class="daily-limit-info daily-limit-info--center" style="margin-top:6px;margin-bottom:8px"></div>
         <hr style="border:none;border-top:1px solid var(--border);margin:14px 0 10px">
-        <div class="card-header" style="padding-top:0;justify-content:center">
-          <div class="card-header-right">
-            <span class="badge glucose-badge-red" id="glucose-total-badge">총 0회</span>
-            <div class="wo-view-tabs">
-              <button type="button" class="wo-view-tab active" id="gl-tab-list" onclick="setGlucoseView('list')">목록</button>
-              <button type="button" class="wo-view-tab" id="gl-tab-graph" onclick="setGlucoseView('graph')">그래프</button>
-            </div>
+        <div class="record-history-head">
+          <span class="record-history-count" id="glucose-total-badge">총 0회</span>
+          <div class="record-view-tabs" aria-label="혈당 기록 보기 전환">
+            <button type="button" class="record-view-tab active" id="gl-tab-list" onclick="setGlucoseView('list')">목록</button>
+            <button type="button" class="record-view-tab" id="gl-tab-graph" onclick="setGlucoseView('graph')">그래프</button>
           </div>
         </div>
         <div class="glucose-history-list" id="glucose-history"></div>
@@ -4469,7 +4585,7 @@
       </div>
       <div class="record-entry-guide">
         <div class="record-entry-guide-copy">
-          <div class="record-entry-guide-text">식사, 수면, 영양제 기록은 자정에 초기화돼요</div>
+          <div class="record-entry-guide-text">식사, 수면, 영양제는 오늘 기록이 누적 반영되고 자정에 초기화돼요</div>
         </div>
         <button type="button" class="reg-reset-btn" onclick="resetTodayLogNow()">지금 초기화</button>
       </div>
@@ -4484,6 +4600,7 @@
       <!-- 식사 panel -->
       <div id="today-panel-diet">
         <div class="hc-section" id="hc-diet-sec" style="border-top:none">
+          <p class="chip-hold-tip">직접입력으로 추가하거나 길게 눌러 숨길 수 있어요</p>
           <div id="meal-chips-row" class="hc-sub-chips" style="margin-bottom:10px; flex-wrap:nowrap; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; padding-bottom:2px"></div>
           <div class="custom-ex-wrap" id="meal-direct-wrap">
             <div style="display:flex;gap:6px">
@@ -4583,6 +4700,7 @@
       <!-- 영양제 panel -->
       <div id="today-panel-supp" style="display:none">
         <div class="hc-section" id="hc-supp-sec" style="border-top:none">
+          <p class="chip-hold-tip">직접입력으로 추가하거나 길게 눌러 숨길 수 있어요</p>
           <div id="supp-chips-row" class="hc-sub-chips" style="flex-wrap:nowrap; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; padding-bottom:2px; margin-bottom:12px"></div>
           <div class="custom-ex-wrap" id="supp-direct-wrap">
             <div style="display:flex;gap:6px">
@@ -7448,6 +7566,105 @@ function removeExPresetType(id) {
   }
   renderExercise();
 }
+function confirmRemoveCustomMealType(name) {
+  showConfirm({
+    title: '식사 종류를 숨길까요?',
+    msg: `${name} 항목을 이 기기에서 목록에서 숨깁니다.`,
+    okLabel: '숨기기',
+    onOk: () => removeCustomMealType(name),
+  });
+}
+function confirmRemoveCustomGlucoseTiming(value) {
+  showConfirm({
+    title: '측정 시점을 숨길까요?',
+    msg: `${value} 항목을 이 기기에서 목록에서 숨깁니다.`,
+    okLabel: '숨기기',
+    onOk: () => removeCustomGlucoseTiming(value),
+  });
+}
+let _chipHoldDeleteTimer = null;
+let _chipHoldDeleteTarget = null;
+const CHIP_HOLD_DELETE_DELAY = 520;
+
+function runChipHoldDeleteAction(btn) {
+  if (!btn) return;
+  const action = String(btn.dataset.chipDeleteAction || '').trim();
+  const value = String(btn.dataset.chipDeleteValue || '').trim();
+  if (!action || !value) return;
+  const map = {
+    'ex-preset': confirmRemoveExPresetType,
+    'ex-custom': confirmRemoveCustomExType,
+    'meal-preset': confirmRemoveMealPresetType,
+    'meal-custom': confirmRemoveCustomMealType,
+    'supp-preset': confirmRemoveSuppPresetType,
+    'supp-custom': confirmRemoveCustomSuppType,
+    'glucose-preset': confirmRemoveGlucoseTimingType,
+    'glucose-custom': confirmRemoveCustomGlucoseTiming,
+  };
+  const handler = map[action];
+  if (typeof handler !== 'function') return;
+  btn.dataset.holdDeleteFired = '1';
+  btn.classList.add('chip-hold-delete-active');
+  haptic('medium');
+  handler(value);
+}
+
+function clearChipHoldDeleteState(target = _chipHoldDeleteTarget) {
+  if (!target) return;
+  target.classList.remove('chip-hold-delete-armed');
+  target.classList.remove('chip-hold-delete-active');
+}
+
+function cancelChipHoldDelete() {
+  if (_chipHoldDeleteTimer) {
+    clearTimeout(_chipHoldDeleteTimer);
+    _chipHoldDeleteTimer = null;
+  }
+  clearChipHoldDeleteState();
+  _chipHoldDeleteTarget = null;
+}
+
+function startChipHoldDelete(btn) {
+  if (!btn) return;
+  cancelChipHoldDelete();
+  _chipHoldDeleteTarget = btn;
+  btn.classList.add('chip-hold-delete-armed');
+  _chipHoldDeleteTimer = setTimeout(() => {
+    _chipHoldDeleteTimer = null;
+    runChipHoldDeleteAction(btn);
+  }, CHIP_HOLD_DELETE_DELAY);
+}
+
+function bindChipHoldDeleteHandlers() {
+  if (!document.body) {
+    window.addEventListener('DOMContentLoaded', bindChipHoldDeleteHandlers, { once: true });
+    return;
+  }
+  if (document.body.dataset.chipHoldDeleteBound === '1') return;
+  document.body.dataset.chipHoldDeleteBound = '1';
+  document.addEventListener('pointerdown', (event) => {
+    if (event.button !== undefined && event.button !== 0) return;
+    const btn = event.target.closest('[data-chip-delete-action]');
+    if (!btn) return;
+    startChipHoldDelete(btn);
+  }, true);
+  document.addEventListener('pointerup', cancelChipHoldDelete, true);
+  document.addEventListener('pointercancel', cancelChipHoldDelete, true);
+  document.addEventListener('pointerleave', cancelChipHoldDelete, true);
+  document.addEventListener('touchmove', cancelChipHoldDelete, { capture: true, passive: true });
+  document.addEventListener('contextmenu', (event) => {
+    if (event.target.closest('[data-chip-delete-action]')) event.preventDefault();
+  }, true);
+  document.addEventListener('click', (event) => {
+    const btn = event.target.closest('[data-chip-delete-action]');
+    if (!btn || btn.dataset.holdDeleteFired !== '1') return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    delete btn.dataset.holdDeleteFired;
+    clearChipHoldDeleteState(btn);
+  }, true);
+}
+bindChipHoldDeleteHandlers();
 function inferCustomExerciseEmoji(value) {
   const raw = String(value || '').trim().toLowerCase();
   if (!raw) return '🏃';
@@ -8292,15 +8509,14 @@ function renderHome() {
   // Achievements strip
   const earned = earnedAchs();
   document.getElementById('ach-count-badge').textContent = earned.length + '개';
-  document.getElementById('ach-strip-home').innerHTML = ACHIEVEMENTS_DATA.map(a => {
-    const isEarned = earned.find(e => e.id === a.id);
-    return `
+  document.getElementById('ach-strip-home').innerHTML = earned.length
+    ? earned.map(a => `
       <div class="ach-chip">
-        <div class="ach-circle ${isEarned ? 'earned' : 'locked'}" ${isEarned ? `style="--ach-color:${a.color}"` : ''}><img src="${a.img}" alt="${a.name}"></div>
+        <div class="ach-circle earned" style="--ach-color:${a.color}"><img src="${a.img}" alt="${a.name}"></div>
         <div class="ach-label">${a.name}</div>
       </div>
-    `;
-  }).join('');
+    `).join('')
+    : '<div class="ach-strip-empty">아직 획득한 배지가 없어요</div>';
 
   // 홈 레이아웃 초기 계산 + ResizeObserver로 항상 동기화
   requestAnimationFrame(() => {
@@ -8674,16 +8890,15 @@ function renderExercise() {
     const id = 'custom_' + name;
     const selected = S.selectedEx === id;
     const custom = parseCustomExerciseName(name);
-    return `<button class="ex-type-btn ${selected ? 'selected' : ''}" data-ex-id="${escHtmlComm(id)}" onclick="selectEx(this.dataset.exId)">
+    return `<button class="ex-type-btn ${selected ? 'selected' : ''}" data-ex-id="${escHtmlComm(id)}" data-chip-delete-action="ex-custom" data-chip-delete-value="${escHtmlComm(name)}" onclick="selectEx(this.dataset.exId)">
       <span class="ex-type-icon">${renderExerciseIcon(id, { size:'15px' })}</span>
       <span class="ex-type-name">${escHtmlComm(custom.label || name)}</span>
-      <span class="hc-chip-remove" data-ex-name="${escHtmlComm(name)}" onclick="event.stopPropagation();confirmRemoveCustomExType(this.dataset.exName)">×</span>
     </button>`;
   }).join('');
   document.getElementById('ex-type-grid').innerHTML =
     EX_TYPES.filter(e => e.id !== 'custom' && !_hiddenExPresetTypes.includes(e.id)).map(e => `
-      <button class="ex-type-btn ${S.selectedEx === e.id ? 'selected' : ''}"
-              onclick="selectEx('${e.id}')"><span class="ex-type-icon">${renderExerciseIcon(e.id, { size:'15px' })}</span><span class="ex-type-name">${e.name}</span><span class="hc-chip-remove" onclick="event.stopPropagation();confirmRemoveExPresetType('${e.id}')">×</span></button>
+      <button class="ex-type-btn ${S.selectedEx === e.id ? 'selected' : ''}" data-chip-delete-action="ex-preset" data-chip-delete-value="${e.id}"
+              onclick="selectEx('${e.id}')"><span class="ex-type-icon">${renderExerciseIcon(e.id, { size:'15px' })}</span><span class="ex-type-name">${e.name}</span></button>
     `).join('')
     + customBtns
     + `<button class="custom-ex-link ${isCustomInput ? 'selected' : ''}" onclick="selectEx('custom')">${renderNamedSvgIcon('pencil', { size:'14px', color:'currentColor' })}<span>직접 입력</span></button>`;
@@ -9632,11 +9847,11 @@ function renderMealChips() {
   const isDirectOpen = document.getElementById('meal-direct-wrap')?.classList.contains('show');
   const presetBtns = MEAL_PRESET_TYPES.filter(name => !_hiddenMealPresetTypes.includes(name)).map(name => {
     const on = _mealTypes.includes(name);
-    return `<button type="button" class="hc-sub-chip hc-meal-chip${on?' on':''}" data-name="${name}" onclick="toggleMeal('${name}')">${name}<span class="hc-chip-remove" onclick="event.stopPropagation();confirmRemoveMealPresetType('${name}')">×</span></button>`;
+    return `<button type="button" class="hc-sub-chip hc-meal-chip${on?' on':''}" data-name="${name}" data-chip-delete-action="meal-preset" data-chip-delete-value="${escHtmlComm(name)}" onclick="toggleMeal('${name}')">${name}</button>`;
   }).join('');
   const customBtns = _customMealTypes.map(name => {
     const on = _mealTypes.includes(name);
-    return `<button type="button" class="hc-sub-chip hc-meal-chip${on?' on':''}" data-name="${name}" onclick="toggleMeal('${name}')">${name}<span class="hc-chip-remove" onclick="event.stopPropagation();removeCustomMealType('${name}')">×</span></button>`;
+    return `<button type="button" class="hc-sub-chip hc-meal-chip${on?' on':''}" data-name="${name}" data-chip-delete-action="meal-custom" data-chip-delete-value="${escHtmlComm(name)}" onclick="toggleMeal('${name}')">${name}</button>`;
   }).join('');
   const directBtn = `<button type="button" id="meal-direct-btn" class="chip-direct-btn${isDirectOpen?' selected':''}" onclick="toggleMealDirect()">${renderNamedSvgIcon('pencil', { size:'14px', color:'currentColor' })}<span>직접 입력</span></button>`;
   row.innerHTML = presetBtns + customBtns + directBtn;
@@ -9648,11 +9863,11 @@ function renderSuppChips() {
   const isDirectOpen = document.getElementById('supp-direct-wrap')?.classList.contains('show');
   const presetBtns = SUPP_PRESET_TYPES.filter(name => !_hiddenSuppPresetTypes.includes(name)).map(name => {
     const on = _suppList.includes(name);
-    return `<button type="button" class="hc-sub-chip hc-supp-preset${on?' on':''}" data-name="${name}" onclick="toggleSuppItem('${name}')">${name}<span class="hc-chip-remove" onclick="event.stopPropagation();confirmRemoveSuppPresetType('${name}')">×</span></button>`;
+    return `<button type="button" class="hc-sub-chip hc-supp-preset${on?' on':''}" data-name="${name}" data-chip-delete-action="supp-preset" data-chip-delete-value="${escHtmlComm(name)}" onclick="toggleSuppItem('${name}')">${name}</button>`;
   }).join('');
   const customBtns = _customSuppTypes.map(name => {
     const on = _suppList.includes(name);
-    return `<button type="button" class="hc-sub-chip hc-supp-preset${on?' on':''}" data-name="${name}" onclick="toggleSuppItem('${name}')">${name}<span class="hc-chip-remove" onclick="event.stopPropagation();confirmRemoveCustomSuppType('${name}')">×</span></button>`;
+    return `<button type="button" class="hc-sub-chip hc-supp-preset${on?' on':''}" data-name="${name}" data-chip-delete-action="supp-custom" data-chip-delete-value="${escHtmlComm(name)}" onclick="toggleSuppItem('${name}')">${name}</button>`;
   }).join('');
   const directBtn = `<button type="button" id="supp-direct-btn" class="chip-direct-btn${isDirectOpen?' selected':''}" onclick="toggleSuppDirect()">${renderNamedSvgIcon('pencil', { size:'14px', color:'currentColor' })}<span>직접 입력</span></button>`;
   row.innerHTML = presetBtns + customBtns + directBtn;
@@ -9862,15 +10077,13 @@ function renderGlucoseTimingButtons() {
   const timingBtns = GLUCOSE_TIMINGS
     .filter(timing => !_hiddenGlucoseTimingTypes.includes(timing))
     .map(timing => `
-      <button type="button" class="ex-type-btn ${_glucoseTiming === timing ? 'selected' : ''}" id="sa-gt-${TIMING_ID_MAP[timing]}" onclick="setGlucoseTiming('${timing}')">
+      <button type="button" class="ex-type-btn ${_glucoseTiming === timing ? 'selected' : ''}" id="sa-gt-${TIMING_ID_MAP[timing]}" data-chip-delete-action="glucose-preset" data-chip-delete-value="${escHtmlComm(timing)}" onclick="setGlucoseTiming('${timing}')">
         <span class="ex-type-name">${timing === '취침전' ? '취침 전' : timing}</span>
-        <span class="hc-chip-remove" onclick="event.stopPropagation();confirmRemoveGlucoseTimingType('${timing}')">×</span>
       </button>
     `).join('');
   const customTimingBtns = _customGlucoseTimingTypes.map(timing => `
-      <button type="button" class="ex-type-btn ${_glucoseTiming === timing ? 'selected' : ''}" data-timing="${escHtmlComm(timing)}" onclick="setGlucoseTiming(this.dataset.timing)">
+      <button type="button" class="ex-type-btn ${_glucoseTiming === timing ? 'selected' : ''}" data-timing="${escHtmlComm(timing)}" data-chip-delete-action="glucose-custom" data-chip-delete-value="${escHtmlComm(timing)}" onclick="setGlucoseTiming(this.dataset.timing)">
         <span class="ex-type-name">${escHtmlComm(timing)}</span>
-        <span class="hc-chip-remove" data-timing="${escHtmlComm(timing)}" onclick="event.stopPropagation();removeCustomGlucoseTiming(this.dataset.timing)">×</span>
       </button>
     `).join('');
   const timingDirectBtn = `<button type="button" class="custom-ex-link${customTimingOpen ? ' selected' : ''}" id="sa-gt-custom" onclick="toggleGlucoseTimingInput()"><span data-svg-icon="pencil" data-svg-size="14px"></span><span>직접입력</span></button>`;
