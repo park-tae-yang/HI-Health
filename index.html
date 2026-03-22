@@ -8144,7 +8144,7 @@ function placeGuestBanner(page = null) {
 }
 
 function renderHeader() {
-  document.getElementById('hpts-val').textContent = S.user.points;
+  const _hptsEl = document.getElementById('hpts-val'); if (_hptsEl) _hptsEl.textContent = S.user.points;
   renderHeaderAvatar(S.user.avatar);
   const activePage = document.querySelector('.page.active')?.id?.replace('page-', '') || 'home';
   placeGuestBanner(activePage);
