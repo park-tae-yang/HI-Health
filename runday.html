@@ -3437,10 +3437,10 @@
   }
 
   function bindSuccessScreenActions() {
-    if (window.__successScreenActionsBound) return;
-    window.__successScreenActionsBound = true;
     const successContent = document.getElementById('success-content');
     if (!successContent) return;
+    if (successContent.dataset.successActionsBound === '1') return;
+    successContent.dataset.successActionsBound = '1';
     successContent.addEventListener('click', e => {
       const actionBtn = e.target.closest('[data-success-action]');
       if (!actionBtn) return;
