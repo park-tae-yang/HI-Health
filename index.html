@@ -527,8 +527,11 @@
       stroke: rgba(30,16,71,0.82);
     }
     .app-header.challenge-mode .header-profile-trigger {
+      position: absolute;
+      right: 20px;
+      top: calc(max(env(safe-area-inset-top), 44px) + 6px);
       width: auto;
-      height: auto;
+      min-height: 38px;
       gap: 8px;
       margin-left: 0;
       padding: 5px 6px 5px 12px;
@@ -1399,6 +1402,43 @@
     .ex-type-grid::-webkit-scrollbar { display: none; }
     .custom-ex-wrap { display:none; margin-top:8px; width:100%; min-width:0; }
     .custom-ex-wrap.show { display:block; width:100%; }
+    .direct-entry-row {
+      display:flex;
+      gap:6px;
+      width:100%;
+      align-items:center;
+    }
+    .direct-entry-input {
+      flex:1;
+      width:100%;
+      min-width:0;
+      box-sizing:border-box;
+      padding:10px 12px;
+      border:1.5px dashed var(--border);
+      border-radius:var(--radius-sm);
+      background:var(--bg);
+      color:var(--text);
+      font-size:13px;
+      font-family:inherit;
+    }
+    .direct-entry-input:focus {
+      outline:none;
+      border-color:var(--primary);
+      border-style:dashed;
+    }
+    .direct-entry-add {
+      flex-shrink:0;
+      padding:10px 14px;
+      border-radius:var(--radius-sm);
+      border:none;
+      background:var(--primary);
+      color:#fff;
+      font-size:13px;
+      font-weight:700;
+      font-family:inherit;
+      cursor:pointer;
+      white-space:nowrap;
+    }
     .ex-type-btn {
       position: relative;
       display: flex; flex-direction: row; align-items: center;
@@ -1432,8 +1472,6 @@
       font-family: inherit; white-space: nowrap;
     }
     .chip-direct-btn.selected { border-color: rgba(79,70,229,0.32); color: var(--primary); font-weight: 600; background: #f5f7ff; border-style: solid; }
-    #custom-ex-name, #meal-direct-input, #supp-direct-input { font-size: 11px; padding: 8px 11px; }
-
     /* ── Duration Control ── */
     .duration-wrap { display: flex; align-items: center; justify-content: center; gap: 24px; margin: 16px 0 10px; }
     .dur-btn {
@@ -1970,12 +2008,14 @@
     .glucose-time-expand { display:none; margin-top:8px; }
     .glucose-time-expand.show { display:block; }
     .glucose-time-input {
-      display:block; width:100%; max-width:100%; min-width:0;
-      padding:7px 11px; border:1.5px dashed var(--border); border-radius:var(--radius-sm);
+      display:block; width:100%; max-width:100%; min-width:0; inline-size:100%;
+      padding:10px 12px; border:1.5px dashed var(--border); border-radius:var(--radius-sm);
       font-size:13px; font-family:inherit; background:var(--bg); color:var(--text); box-sizing:border-box;
+      appearance:none; -webkit-appearance:none;
     }
     #rec-panel-glucose { min-width:0; width:100%; box-sizing:border-box; overflow-x:hidden; }
     #sa-glucose-time-wrap { width:100%; max-width:100%; min-width:0; overflow:hidden; box-sizing:border-box; }
+    #sa-glucose-time { width:100%; max-width:100%; min-width:0; }
     .custom-ex-wrap { box-sizing:border-box; }
     .glucose-time-input:focus { outline:none; border-color:var(--primary); border-style:dashed; }
     .glucose-log-btn { margin-top:10px; }
@@ -4570,12 +4610,12 @@
           <p class="ex-section-label">운동 종류<span class="ex-section-tip" id="exercise-chip-tip">직접입력으로 추가, 길게눌러 숨김</span></p>
           <div class="ex-type-grid" id="ex-type-grid"></div>
           <div id="custom-ex-wrap" class="custom-ex-wrap">
-            <div style="display:flex;gap:6px">
-              <input type="text" class="ch-form-input dashed" id="custom-ex-name"
+            <div class="direct-entry-row">
+              <input type="text" class="direct-entry-input" id="custom-ex-name"
                      placeholder="운동 이름을 입력하세요 (예: 탁구, 스키...)"
                      maxlength="20" oninput="updatePtsPreview();updateMemoPlaceholder();updateSharePreview()"
                      onkeydown="if(event.key==='Enter')addCustomExType()">
-              <button type="button" onclick="addCustomExType()" style="padding:8px 14px;border-radius:var(--radius-sm);border:none;background:var(--primary);color:#fff;font-size:13px;cursor:pointer;white-space:nowrap">추가</button>
+              <button type="button" class="direct-entry-add" onclick="addCustomExType()">추가</button>
             </div>
           </div>
           <p class="ex-section-label">운동 시간</p>
@@ -4617,12 +4657,12 @@
           <p class="ex-section-label">측정 시점<span class="ex-section-tip">직접입력으로 추가, 길게눌러 숨김</span></p>
           <div class="ex-type-grid" id="glucose-timing-grid"></div>
           <div class="custom-ex-wrap" id="sa-glucose-timing-wrap">
-            <div style="display:flex;gap:6px">
-              <input type="text" id="sa-glucose-timing" class="glucose-time-input"
+            <div class="direct-entry-row">
+              <input type="text" id="sa-glucose-timing" class="direct-entry-input"
                      placeholder="측정 시점을 입력하세요 (예: 운동 후, 야간)"
                      maxlength="12"
                      onkeydown="if(event.key==='Enter')addCustomGlucoseTiming()">
-              <button type="button" onclick="addCustomGlucoseTiming()" style="padding:8px 14px;border-radius:var(--radius-sm);border:none;background:var(--primary);color:#fff;font-size:13px;cursor:pointer;white-space:nowrap">추가</button>
+              <button type="button" class="direct-entry-add" onclick="addCustomGlucoseTiming()">추가</button>
             </div>
           </div>
           <div class="custom-ex-wrap" id="sa-glucose-time-wrap">
@@ -4730,13 +4770,13 @@
       <!-- 식사 panel -->
       <div id="today-panel-diet">
         <div class="hc-section" id="hc-diet-sec" style="border-top:none">
-          <p class="chip-hold-tip">직접입력으로 추가, 길게눌러 숨김</p>
+          <p class="ex-section-label">식사 종류<span class="ex-section-tip">직접입력으로 추가, 길게눌러 숨김</span></p>
           <div id="meal-chips-row" class="hc-sub-chips" style="margin-bottom:10px; flex-wrap:nowrap; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; padding-bottom:2px"></div>
           <div class="custom-ex-wrap" id="meal-direct-wrap">
-            <div style="display:flex;gap:6px">
-              <input type="text" class="ch-form-input dashed" id="meal-direct-input" placeholder="식사 종류를 입력하세요 (예: 브런치, 배달음식, 술자리...)" maxlength="20" style="flex:1"
+            <div class="direct-entry-row">
+              <input type="text" class="direct-entry-input" id="meal-direct-input" placeholder="식사 종류를 입력하세요 (예: 브런치, 배달음식, 술자리...)" maxlength="20"
                      onkeydown="if(event.key==='Enter')addMealDirect()">
-              <button type="button" onclick="addMealDirect()" style="padding:8px 14px;border-radius:var(--radius-sm);border:none;background:var(--primary);color:#fff;font-size:13px;cursor:pointer;white-space:nowrap">추가</button>
+              <button type="button" class="direct-entry-add" onclick="addMealDirect()">추가</button>
             </div>
           </div>
           <div class="diet-card-grid" style="margin-top:18px">
@@ -4780,6 +4820,7 @@
       <!-- 수면 panel -->
       <div id="today-panel-sleep" style="display:none">
         <div class="hc-section" id="hc-sleep-sec" style="border-top:none">
+          <p class="ex-section-label">수면 시간</p>
           <div class="glucose-input-wrap-sa sleep-time-wrap">
             <button type="button" class="dur-btn" onclick="changeSleep(-0.5)">−</button>
             <div class="sleep-time-display">
@@ -4830,13 +4871,13 @@
       <!-- 영양제 panel -->
       <div id="today-panel-supp" style="display:none">
         <div class="hc-section" id="hc-supp-sec" style="border-top:none">
-          <p class="chip-hold-tip">직접입력으로 추가, 길게눌러 숨김</p>
+          <p class="ex-section-label">영양제 종류<span class="ex-section-tip">직접입력으로 추가, 길게눌러 숨김</span></p>
           <div id="supp-chips-row" class="hc-sub-chips" style="flex-wrap:nowrap; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; padding-bottom:2px; margin-bottom:12px"></div>
           <div class="custom-ex-wrap" id="supp-direct-wrap">
-            <div style="display:flex;gap:6px">
-              <input type="text" class="ch-form-input dashed" id="supp-direct-input" placeholder="영양제 이름을 입력하세요" maxlength="20" style="flex:1"
+            <div class="direct-entry-row">
+              <input type="text" class="direct-entry-input" id="supp-direct-input" placeholder="영양제 이름을 입력하세요" maxlength="20"
                      onkeydown="if(event.key==='Enter')addSuppDirect()">
-              <button type="button" onclick="addSuppDirect()" style="padding:8px 14px;border-radius:var(--radius-sm);border:none;background:var(--primary);color:#fff;font-size:13px;cursor:pointer;white-space:nowrap">추가</button>
+              <button type="button" class="direct-entry-add" onclick="addSuppDirect()">추가</button>
             </div>
           </div>
           <div class="diet-card-grid" style="grid-template-columns:repeat(3,1fr); margin-top:14px">
@@ -7837,25 +7878,72 @@ function inferCustomExerciseEmoji(value) {
   const found = rules.find(rule => rule.patterns.some(pattern => pattern.test(normalized)));
   return found ? found.emoji : '🏃';
 }
+function inferCustomExercisePpm(value, emoji = '') {
+  const raw = String(value || '').trim().toLowerCase();
+  const normalized = raw.replace(/\s+/g, '');
+  const icon = String(emoji || '').trim();
+  const emojiMap = {
+    '🚶': 0.5,
+    '🏃': 1.0,
+    '🏊': 1.2,
+    '🚴': 0.8,
+    '🧘': 0.7,
+    '🥾': 0.9,
+    '🎾': 0.9,
+    '🧎': 0.8,
+    '🧗': 1.1,
+    '🥋': 1.0,
+    '💪': 1.0,
+    '🤸': 0.7,
+    '🏸': 0.9,
+    '🏓': 0.9,
+    '🏀': 0.9,
+    '🏐': 0.9,
+    '⚽': 0.9,
+    '⚾': 0.9,
+    '⛳': 0.7,
+    '⛷️': 1.0,
+    '🛼': 0.8,
+    '🕺': 0.8,
+    '🤿': 1.1,
+    '🤺': 1.0,
+    '🏇': 0.8,
+    '🛶': 1.0,
+    '🏋️': 1.0,
+    '🪢': 0.8,
+  };
+  if (emojiMap[icon]) return emojiMap[icon];
+  const rules = [
+    { ppm: 1.2, patterns:[/수영/, /swim/, /아쿠아/, /다이빙/, /프리다이빙/, /diving/] },
+    { ppm: 1.1, patterns:[/클라이밍/, /암벽/, /볼더링/, /climbing/] },
+    { ppm: 1.0, patterns:[/러닝/, /달리기/, /런\b/, /run/, /조깅/, /근력/, /웨이트/, /헬스/, /pt/, /피티/, /weight/, /gym/, /보디빌딩/, /검도/, /유도/, /주짓수/, /태권도/, /무술/, /martial/, /복싱/, /킥복싱/, /boxing/, /무에타이/, /펜싱/, /fencing/, /크로스핏/, /deadlift/, /squat/, /벤치프레스/, /역도/] },
+    { ppm: 0.9, patterns:[/등산/, /트레킹/, /hiking/, /trail/, /테니스/, /tennis/, /배드민턴/, /badminton/, /탁구/, /pingpong/, /tabletennis/, /농구/, /basketball/, /배구/, /volleyball/, /축구/, /풋살/, /soccer/, /football/, /야구/, /baseball/, /캐치볼/, /카약/, /카누/, /조정/, /rowing/] },
+    { ppm: 0.8, patterns:[/자전거/, /사이클/, /cycling/, /bike/, /스피닝/, /필라테스/, /pilates/, /플라잉요가/, /aerial/, /인라인/, /롤러/, /스케이트/, /skate/, /댄스/, /춤/, /dance/, /줌바/, /승마/, /horse/, /스키/, /ski/, /보드/, /snowboard/] },
+    { ppm: 0.7, patterns:[/걷기/, /워킹/, /산책/, /walk/, /요가/, /yoga/, /명상/, /발레핏/, /barre/, /스트레칭/, /mobility/, /유연성/, /맨손체조/, /골프/, /golf/, /스크린골프/] },
+  ];
+  const found = rules.find(rule => rule.patterns.some(pattern => pattern.test(normalized)));
+  return found ? found.ppm : 0.8;
+}
 function parseCustomExerciseName(value) {
   const raw = String(value || '').trim();
-  if (!raw) return { raw: '', label: '', emoji: '🏃' };
+  if (!raw) return { raw: '', label: '', emoji: '🏃', ppm: 0.8 };
   if (typeof Intl !== 'undefined' && Intl.Segmenter) {
     const parts = Array.from(new Intl.Segmenter('ko', { granularity: 'grapheme' }).segment(raw));
     const first = parts[0]?.segment || '';
     const rest = raw.slice(first.length).trim();
     if (first && /\p{Extended_Pictographic}/u.test(first)) {
-      return { raw, label: rest || raw, emoji: first };
+      return { raw, label: rest || raw, emoji: first, ppm: inferCustomExercisePpm(rest || raw, first) };
     }
   }
   const match = raw.match(/^([\p{Extended_Pictographic}\uFE0F\u200D]+)\s*(.+)$/u);
-  if (match) return { raw, label: match[2].trim() || raw, emoji: match[1] };
-  return { raw, label: raw, emoji: inferCustomExerciseEmoji(raw) };
+  if (match) return { raw, label: match[2].trim() || raw, emoji: match[1], ppm: inferCustomExercisePpm(match[2].trim() || raw, match[1]) };
+  const inferredEmoji = inferCustomExerciseEmoji(raw);
+  return { raw, label: raw, emoji: inferredEmoji, ppm: inferCustomExercisePpm(raw, inferredEmoji) };
 }
 function getExType(id) {
   if (id && id.startsWith('custom_')) {
     const custom = parseCustomExerciseName(id.slice(7));
-    return { id, name: custom.label, icon: custom.emoji, ppm: 0.8, bg: '#F3F4F6' };
+    return { id, name: custom.label, icon: custom.emoji, ppm: custom.ppm || 0.8, bg: '#F3F4F6' };
   }
   return EX_TYPES.find(e => e.id === id) || EX_TYPES[0];
 }
@@ -10223,7 +10311,7 @@ function renderGlucoseTimingButtons() {
       </button>
     `).join('');
   const timingDirectBtn = `<button type="button" class="custom-ex-link${customTimingOpen ? ' selected' : ''}" id="sa-gt-custom" onclick="toggleGlucoseTimingInput()"><span data-svg-icon="pencil" data-svg-size="14px"></span><span>직접입력</span></button>`;
-  const timeDirectBtn = `<button type="button" class="custom-ex-link${timeInputOpen || !!_glucoseTime ? ' selected' : ''}" id="sa-gt-time" onclick="toggleGlucoseTimeInput()"><span data-svg-icon="pencil" data-svg-size="14px"></span><span>측정시간 입력</span></button>`;
+  const timeDirectBtn = `<button type="button" class="custom-ex-link${timeInputOpen || !!_glucoseTime ? ' selected' : ''}" id="sa-gt-time" onclick="toggleGlucoseTimeInput()"><span style="font-size:14px;line-height:1">🕒</span><span>측정시간 입력</span></button>`;
   row.innerHTML = timingBtns + customTimingBtns + timingDirectBtn + timeDirectBtn;
   hydrateStaticSvgIcons(row);
 }
