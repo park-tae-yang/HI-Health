@@ -2189,7 +2189,7 @@
     const label = formatChallengeDeadlineLabel();
     return isChallengeRegistrationEditable()
       ? `수정 및 취소는 ${label}까지 가능합니다.`
-      : `수정 및 취소 기간이 ${label}에 종료되었습니다.`;
+      : '신청이 정상 접수되었습니다. 변경이 필요하면 운영팀에 문의해주세요.';
   }
 
   const CHALLENGE_CONFIG_SYNC_KEY = 'hi_health_challenge_config_sync';
@@ -2219,6 +2219,45 @@
     lastSuccessRenderKey = '';
     document.getElementById('success-screen')?.classList.remove('show');
     document.getElementById('form-screen')?.classList.remove('hide');
+  }
+
+  function getGuestPreviewRegistration() {
+    if (!isGuestChallengeViewer()) return null;
+    let sourceWindow = window;
+    try {
+      if (window.parent && window.parent !== window) sourceWindow = window.parent;
+    } catch (e) {}
+    try {
+      if (typeof sourceWindow.getMyReg === 'function') {
+        const directReg = sourceWindow.getMyReg({ includeCancelled: true });
+        const normalized = normalizeStoredRegRow(directReg, String(directReg?.empId || '').trim().toUpperCase());
+        if (normalized && isActiveRegRow(normalized)) return normalized;
+      }
+    } catch (e) {}
+    try {
+      const rows = typeof sourceWindow.getStoredChallengeRegs === 'function'
+        ? sourceWindow.getStoredChallengeRegs()
+        : [];
+      const active = (Array.isArray(rows) ? rows : [])
+        .map(row => normalizeStoredRegRow(row, String(row?.empId || '').trim().toUpperCase()))
+        .filter(Boolean)
+        .filter(isActiveRegRow)
+        .sort((a, b) => registrationRowTs(b) - registrationRowTs(a));
+      return active[0] || null;
+    } catch (e) {}
+    return null;
+  }
+
+  function renderGuestChallengePreview() {
+    const previewReg = getGuestPreviewRegistration();
+    if (!previewReg) {
+      ensureGuestChallengeFormVisible();
+      return false;
+    }
+    renderSuccessScreen(previewReg);
+    document.getElementById('form-screen')?.classList.add('hide');
+    document.getElementById('success-screen')?.classList.add('show');
+    return true;
   }
 
   function readChallengeBackupRows(empId = getCurrentEmpId(), regId = '') {
@@ -2924,8 +2963,7 @@
 
   function applyParentChallengeRegistrationState(payload = {}) {
     if (isGuestChallengeViewer()) {
-      ensureGuestChallengeFormVisible();
-      return false;
+      return renderGuestChallengePreview();
     }
     const reg = payload?.registration && isActiveRegRow(payload.registration) ? payload.registration : null;
     const regId = String(payload?.registrationId || reg?.id || '').trim();
@@ -2998,8 +3036,7 @@
 
   function syncChallengeStateFromParent() {
     if (isGuestChallengeViewer()) {
-      ensureGuestChallengeFormVisible();
-      return false;
+      return renderGuestChallengePreview();
     }
     try {
       const sourceWindow = getChallengeSourceWindow();
@@ -3974,7 +4011,7 @@
 
   async function checkExisting(empId) {
     if (isGuestChallengeViewer()) {
-      ensureGuestChallengeFormVisible();
+      renderGuestChallengePreview();
       return;
     }
     if (String(editingRegId || '').trim()) {
