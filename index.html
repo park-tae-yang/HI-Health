@@ -13603,9 +13603,11 @@ let _challengePeopleSyncPromise = null;
 async function fetchChallengePeopleRows(options = {}) {
   if (_challengePeopleSyncPromise) return _challengePeopleSyncPromise;
   const run = async () => {
-    try {
+    const selectWithAvatar = 'id,deviceId,name,dept,empId,avatar,registeredAt,status';
+    const selectFallback = 'id,deviceId,name,dept,empId,registeredAt,status';
+    const fetchRows = async (selectClause) => {
       const res = await fetch(
-        SUPABASE_URL + '/rest/v1/registrations?select=id,deviceId,name,dept,empId,registeredAt,status&order=registeredAt.desc&_=' + Date.now(),
+        SUPABASE_URL + '/rest/v1/registrations?select=' + encodeURIComponent(selectClause) + '&order=registeredAt.desc&_=' + Date.now(),
         {
           cache: 'no-store',
           headers: {
@@ -13614,8 +13616,19 @@ async function fetchChallengePeopleRows(options = {}) {
           },
         }
       );
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      const data = await res.json();
+      if (res.ok) return { rows: await res.json(), missingAvatarColumn: false };
+      let errorPayload = null;
+      try { errorPayload = await res.json(); } catch (e) {}
+      return {
+        rows: null,
+        missingAvatarColumn: selectClause === selectWithAvatar && isChallengeRegistrationSchemaError(errorPayload),
+      };
+    };
+    try {
+      let result = await fetchRows(selectWithAvatar);
+      if (result.missingAvatarColumn) result = await fetchRows(selectFallback);
+      const data = result.rows;
+      if (!Array.isArray(data)) throw new Error('challenge people fetch failed');
       const rows = Array.isArray(data) ? data : [];
       writeChallengePeopleCache(rows);
       return rows;
@@ -14804,7 +14817,7 @@ function renderChallenge() {
           ${canCancelReg ? `<button type="button" class="ch-cancel-reg-btn" onclick="cancelRegistration('${myReg.id}')">신청 취소</button>` : ''}
         </div>
         <button type="button" class="btn btn-primary btn-full ch-workout-btn" style="margin-top:8px;padding:8px;font-size:11px" onclick="scrollToExerciseForm()">오늘 운동 기록하기</button>
-        ${myReg.familyParticipation ? `<button type="button" class="btn btn-primary btn-full ch-workout-btn" style="margin-top:8px;padding:8px;font-size:11px" onclick="goToFamilyCert()">가족 함께 운동 인증하기</button>` : ''}
+        <button type="button" class="btn btn-primary btn-full ch-workout-btn" style="margin-top:8px;padding:8px;font-size:11px" onclick="goToFamilyCert()">가족 함께 운동 인증하기</button>
       </div>
     `;
     formHtml = '';
