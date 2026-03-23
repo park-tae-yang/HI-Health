@@ -1706,8 +1706,8 @@
               <div class="souvenir-field">
                 <select class="fs" id="f-tshirt" title="티셔츠 사이즈" required>
                   <option value="">사이즈 선택</option>
-                  <option>XS</option><option>S</option><option>M</option><option>L</option>
-                  <option>XL</option><option value="남성 2XL">남성 2XL</option><option value="남성 3XL">남성 3XL</option>
+                  <option>XS</option><option>S</option><option>M</option><option>M(오버핏)</option><option>L</option><option>L(오버핏)</option>
+                  <option>XL</option><option>XL(오버핏)</option><option value="남성 2XL">남성 2XL</option><option value="남성 3XL">남성 3XL</option>
                 </select>
               </div>
             </div>
@@ -1888,6 +1888,13 @@
       badge: 'DETAIL 5',
       desc: '',
     },
+    {
+      id: 'andar-detail-6',
+      label: 'Andar 에어로코튼 스탠다드핏',
+      img: 'images/andar-6.png',
+      badge: 'DETAIL 6',
+      desc: '',
+    },
   ];
   const DEXCOM_PREVIEW_MODELS = [
     {
@@ -2019,8 +2026,8 @@
             <label class="lbl">티셔츠 사이즈</label>
             <select class="fs" onchange="updateFamilyMember(${idx}, 'tshirtSize', this.value)">
               <option value="">선택</option>
-              <option${member.tshirtSize === 'XS' ? ' selected' : ''}>XS</option><option${member.tshirtSize === 'S' ? ' selected' : ''}>S</option><option${member.tshirtSize === 'M' ? ' selected' : ''}>M</option><option${member.tshirtSize === 'L' ? ' selected' : ''}>L</option>
-              <option${member.tshirtSize === 'XL' ? ' selected' : ''}>XL</option><option value="남성 2XL"${member.tshirtSize === '남성 2XL' ? ' selected' : ''}>남성 2XL</option><option value="남성 3XL"${member.tshirtSize === '남성 3XL' ? ' selected' : ''}>남성 3XL</option>
+              <option${member.tshirtSize === 'XS' ? ' selected' : ''}>XS</option><option${member.tshirtSize === 'S' ? ' selected' : ''}>S</option><option${member.tshirtSize === 'M' ? ' selected' : ''}>M</option><option${member.tshirtSize === 'M(오버핏)' ? ' selected' : ''}>M(오버핏)</option><option${member.tshirtSize === 'L' ? ' selected' : ''}>L</option><option${member.tshirtSize === 'L(오버핏)' ? ' selected' : ''}>L(오버핏)</option>
+              <option${member.tshirtSize === 'XL' ? ' selected' : ''}>XL</option><option${member.tshirtSize === 'XL(오버핏)' ? ' selected' : ''}>XL(오버핏)</option><option value="남성 2XL"${member.tshirtSize === '남성 2XL' ? ' selected' : ''}>남성 2XL</option><option value="남성 3XL"${member.tshirtSize === '남성 3XL' ? ' selected' : ''}>남성 3XL</option>
             </select>
           </div>
         </div>

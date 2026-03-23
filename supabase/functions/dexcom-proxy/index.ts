@@ -1,8 +1,7 @@
 const DEXCOM_SERVERS = [
-  'https://shareous1.dexcom.com/ShareWebServices/Services',  // 미국/글로벌
-  'https://shareasia1.dexcom.com/ShareWebServices/Services', // 아시아/한국
+  { base: 'https://shareous1.dexcom.com/ShareWebServices/Services', appId: 'd8665ade-9673-4e27-9ff6-92db4ce13d13', name: 'us' },
+  { base: 'https://shareasia1.dexcom.com/ShareWebServices/Services', appId: 'd89443d2-327c-4a6f-89e5-496bbb0317db', name: 'asia' },
 ];
-const DEXCOM_APP_ID = 'd8665ade-9673-4e27-9ff6-92db4ce13d13';
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -15,12 +14,12 @@ const json = (data: unknown, status = 200) =>
     headers: { ...CORS, 'Content-Type': 'application/json' },
   });
 
-async function tryLogin(base: string, username: string, password: string): Promise<string | null> {
+async function tryLogin(base: string, appId: string, username: string, password: string): Promise<string | null> {
   try {
     const res = await fetch(`${base}/General/LoginPublisherAccountByName`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body: JSON.stringify({ accountName: username, password, applicationId: DEXCOM_APP_ID }),
+      body: JSON.stringify({ accountName: username, password, applicationId: appId }),
     });
     const text = await res.text();
     if (!text || text.trim() === '') return null;
@@ -78,30 +77,36 @@ Deno.serve(async (req: Request) => {
     const { username, password } = JSON.parse(bodyText);
     if (!username || !password) return json({ error: '아이디와 비밀번호를 입력해주세요.' }, 400);
 
-    // 미국 → 아시아 순서로 로그인 시도
-    let sessionId: string | null = null;
-    let successBase: string | null = null;
-    for (const base of DEXCOM_SERVERS) {
-      sessionId = await tryLogin(base, username, password);
-      if (sessionId) { successBase = base; break; }
+    // 모든 서버에서 로그인 후 혈당 데이터가 있는 서버 사용
+    let finalResult: { readings: unknown[]; server: string } | null = null;
+    let lastDebug = '';
+    let anyLogin = false;
+
+    for (const server of DEXCOM_SERVERS) {
+      const sessionId = await tryLogin(server.base, server.appId, username, password);
+      if (!sessionId) continue;
+      anyLogin = true;
+      const { data: readings, debug } = await fetchGlucose(server.base, sessionId);
+      lastDebug += `[${server.name}] ${debug} `;
+      if (readings && readings.length > 0) {
+        const result = (readings as Record<string, unknown>[]).map((r) => ({
+          value: r.Value,
+          trend: r.Trend,
+          trendArrow: trendArrow(r.Trend as number),
+          time: r.ST,
+        }));
+        finalResult = { readings: result, server: server.name };
+        break;
+      }
     }
 
-    if (!sessionId || !successBase) {
+    if (!anyLogin) {
       return json({ error: '로그인 실패. 덱스콤 아이디/비밀번호를 확인해주세요. (계정이 없거나 공유 기능이 비활성화됐을 수 있어요)' }, 401);
     }
-
-    // 최근 혈당값 가져오기
-    const { data: readings, debug } = await fetchGlucose(successBase, sessionId);
-    if (!readings) return json({ readings: [], server: successBase.includes('asia') ? 'asia' : 'us', debug });
-
-    const result = (readings as Record<string, unknown>[]).map((r) => ({
-      value: r.Value,
-      trend: r.Trend,
-      trendArrow: trendArrow(r.Trend as number),
-      time: r.ST,
-    }));
-
-    return json({ readings: result, server: successBase.includes('asia') ? 'asia' : 'us' });
+    if (!finalResult) {
+      return json({ readings: [], debug: lastDebug.trim() });
+    }
+    return json(finalResult);
   } catch (e) {
     return json({ error: (e as Error).message }, 500);
   }
