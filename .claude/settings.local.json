@@ -11,7 +11,7 @@
       "Bash(gh api repos/Yunjin0825/HI-Health/contents/challenge-promo.html --jq '.content')",
       "Bash(gh api repos/Yunjin0825/HI-Health/contents/challenge-admin.html --jq '.content')",
       "Bash(gh api repos/Yunjin0825/HI-Health/contents/health-challenge.html --jq '.content')",
-      "Bash(wc -l /Users/hicommunication/Desktop/HI-Health/*.html /Users/hicommunication/Desktop/HI-Health/*.js)"
+      "Bash(wc -l /Users/hicommunication/Desktop/HI-Health/*.html /Users/hicommunication/Desktop/HI-Health/*.js)",
       "WebSearch"
     ]
   }
