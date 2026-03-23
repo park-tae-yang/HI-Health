@@ -1526,7 +1526,6 @@
     .wo-item-wrap { border-bottom: 1px solid var(--border); }
     .wo-item-wrap:last-child { border-bottom: none; }
     .wo-item-wrap .workout-item { border-bottom: none; }
-    .wo-inline-route { width: 100%; margin: 4px 0 10px; border-radius: 14px; overflow: hidden; min-height: 130px; }
     .wo-photo { width:36px; height:36px; object-fit:cover; border-radius:6px; flex-shrink:0; cursor:pointer; border:1.5px solid var(--border); }
     .route-map-card {
       position: relative;
@@ -6953,7 +6952,7 @@ function save(opts = {}) {
     .replace(/\S+\.(png|jpg|jpeg|svg|gif|webp)/gi, '')
     .replace(/[\u{1F000}-\u{1FFFF}\u{2600}-\u{27FF}]/gu, '')
     .trim();
-  if (_db && S.deviceId) {
+  if (_db && S.deviceId && _cleanName) {
     const payload = {
       deviceId: S.deviceId,
       name: _cleanName,
@@ -7567,7 +7566,7 @@ async function hydrateAccountFromRemote(empId, fallbackName = '') {
 
     S.user = { ...S.user,
       name: u.name || S.user.name || fallbackName,
-      avatar: S.user.avatar?.includes('images/') ? S.user.avatar : (u.avatar || S.user.avatar),
+      avatar: normalizeAvatar(u.avatar || S.user.avatar),
       empId: u.empId || normalizedEmpId,
       dept: u.dept || S.user.dept || '',
       points: Number(u.points) || 0,
@@ -8471,7 +8470,7 @@ function earnedAchs() {
 }
 function myLeagueRank() {
   const tab = S.leagueTab;
-  const base = (_realLeagueUsers && _realLeagueUsers.length) ? _realLeagueUsers : MOCK_USERS;
+  const base = (_realLeagueUsers && _realLeagueUsers.length) ? _realLeagueUsers : [];
   if (tab === 'level') {
     const myLv = getLevel(S.user.totalPoints || S.user.points).lv;
     const myPtsVal = S.user.totalPoints || S.user.points;
@@ -9147,7 +9146,7 @@ function renderHome() {
     : '최고 레벨 달성';
 
   // Quick action subtitles
-  const _base = (_realLeagueUsers && _realLeagueUsers.length) ? _realLeagueUsers : MOCK_USERS;
+  const _base = (_realLeagueUsers && _realLeagueUsers.length) ? _realLeagueUsers : [];
   if (hasActiveChallengeRegistration()) {
     const chTotal = _base.filter(u => u.isChallenger).length + 1;
     const chRank  = _base.filter(u => u.isChallenger && u.pts > (S.user.totalPoints || S.user.points)).length + 1;
@@ -9349,29 +9348,19 @@ function workoutItemHTML(w) {
   const name = escHtmlComm(getWorkoutDisplayName(w));
   const memo = getWorkoutDisplayMemo(w);
   const hasRoute = compressRoutePath(w.routePath || [], 2).length > 1;
+  const workoutId = escHtmlComm(String(w?.id ?? ''));
   return `
     <div class="wo-item-wrap">
       <div class="workout-item">
         <span class="wo-icon">${renderExerciseIcon(w.exId, { size:'16px', customName: w.customName || ex?.name || '' })}</span>
         <span class="wo-name">${name}</span>
         <span class="wo-meta">${w.duration}분${memo ? ' · ' + escHtmlComm(memo) : ''} · ${fmtTime(w.ts)}</span>
-        ${hasRoute ? `<button type="button" class="wo-map-btn" onclick="openWorkoutRouteMap('${w.id}')">지도</button>` : ''}
+        ${hasRoute ? `<button type="button" class="wo-map-btn" data-workout-id="${workoutId}" onclick="openWorkoutRouteMap(this.dataset.workoutId)">지도</button>` : ''}
         <div class="wo-pts">+${w.points}p</div>
-        <button type="button" class="wo-del" onclick="deleteWorkout(${w.id})" title="삭제">${_trashSvgSm}</button>
+        <button type="button" class="wo-del" data-workout-id="${workoutId}" onclick="deleteWorkout(this.dataset.workoutId)" title="삭제">${_trashSvgSm}</button>
       </div>
-      ${hasRoute ? `<div class="wo-inline-route" id="wo-inline-route-${w.id}"></div>` : ''}
     </div>
   `;
-}
-
-function renderInlineRouteMaps(workouts) {
-  for (const w of (workouts || [])) {
-    const routePath = compressRoutePath(w.routePath || [], 120);
-    if (routePath.length < 2) continue;
-    const el = document.getElementById(`wo-inline-route-${w.id}`);
-    if (!el) continue;
-    renderRouteMapInto(el, routePath, { height: 130, badge: `${w.duration}분 러닝` });
-  }
 }
 
 function renderWoTypeFilter() {
@@ -9403,7 +9392,6 @@ function renderExerciseHistory() {
     const remain   = reversed.length - visible.length;
     wo.innerHTML = visible.map(w => workoutItemHTML(w)).join('')
       + (remain > 0 ? `<button type="button" class="wo-load-more-btn" onclick="_woShowCount+=5;renderExerciseHistory()">기록 ${remain}개 더보기</button>` : '');
-    renderInlineRouteMaps(visible);
     return;
   }
 
@@ -9447,7 +9435,6 @@ function renderExerciseHistory() {
       ${dws.map(w => workoutItemHTML(w)).join('')}
     `;
   }).join('');
-  renderInlineRouteMaps(monthWo);
 }
 
 const EX_NATIVE_ICONS = {
@@ -12170,7 +12157,7 @@ function renderLeague() {
       wPts: myWeekPts(), change:0, isMe: true, isChallenger: isRegistered,
       tags: S.user.tags || [],
     };
-    const baseUsers = (_realLeagueUsers && _realLeagueUsers.length) ? _realLeagueUsers : MOCK_USERS;
+    const baseUsers = (_realLeagueUsers && _realLeagueUsers.length) ? _realLeagueUsers : [];
     const challengers = [
       ...baseUsers.filter(u => u.isChallenger).map(u => ({ ...u, isMe: false })),
       ...(isRegistered && !LEAGUE_EXCLUDE_EMPIDS.includes((S.user.empId || ACTIVE_EMPID || '').trim().toUpperCase()) ? [me] : []),
@@ -13539,7 +13526,7 @@ function submitRewardForm() {
 ════════════════════════════════════════ */
 const CH = {
   announce:  new Date('2026-02-27T00:00:00'),
-  deadline:  new Date('2026-03-21T23:59:59'),
+  deadline:  new Date('2026-03-28T23:59:59'),
   confirm:   new Date('2026-03-22T00:00:00'),
   giftStart: new Date('2026-04-01T00:00:00'),
   preStart:  new Date('2026-03-25T00:00:00'),
@@ -13548,7 +13535,7 @@ const CH = {
   mainEnd:   new Date('2026-04-14T23:59:59'),
   eventDay:  new Date('2026-04-15T23:59:59'),
 };
-const DEFAULT_CH_DEADLINE_VALUE = '2026-03-21';
+const DEFAULT_CH_DEADLINE_VALUE = '2026-03-28';
 const CH_REG_KEY = 'hi_health_registrations_v2';
 const CH_SHOE_MODELS = [
   { id:'nb-860-v15', label:'New Balance 860 v15', image:'images/nb-860-re.png?v=20260321-128', genderLabel:'공용' },
@@ -14887,7 +14874,6 @@ function renderChallenge() {
           ${canCancelReg ? `<button type="button" class="ch-cancel-reg-btn" onclick="cancelRegistration('${myReg.id}')">신청 취소</button>` : ''}
         </div>
         <button type="button" class="btn btn-primary btn-full ch-workout-btn" style="margin-top:8px;padding:8px;font-size:11px" onclick="scrollToExerciseForm()">오늘 운동 기록하기</button>
-        <button type="button" class="btn btn-primary btn-full ch-workout-btn" style="margin-top:8px;padding:8px;font-size:11px" onclick="goToFamilyCert()">가족 함께 운동 인증하기</button>
       </div>
     `;
     formHtml = '';
@@ -14993,6 +14979,18 @@ function renderChallenge() {
     doneRenderKey = `challenge:${phase}:done:none`;
     formRenderKey = `challenge:${phase}:form:none`;
   }
+
+  const familyCertActionHtml = `
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">가족 인증</span>
+      </div>
+      <div style="font-size:12px;line-height:1.6;color:var(--text-secondary);margin-bottom:10px">신청 여부와 무관하게 가족과 함께한 걷기, 운동, 스트레칭 인증을 제출할 수 있어요.</div>
+      <button type="button" class="btn btn-primary btn-full ch-workout-btn" style="padding:8px;font-size:11px" onclick="goToFamilyCert()">가족 함께 운동 인증하기</button>
+    </div>
+  `;
+  doneHtml += familyCertActionHtml;
+  doneRenderKey += '|family-cert-v1';
 
   const formChanged = setChallengeSectionHtml(formEl, formHtml, formRenderKey);
   setChallengeSectionHtml(doneEl, doneHtml, doneRenderKey);

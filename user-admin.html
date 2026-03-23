@@ -3198,6 +3198,7 @@ async function postAdminNotice() {
   if (!title) { toast('제목을 입력해주세요'); return; }
   if (!text)  { toast('내용을 입력해주세요'); return; }
   const payload = {
+    id: crypto.randomUUID(),
     title,
     body: text,
     category,
