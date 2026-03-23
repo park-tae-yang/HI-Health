@@ -2791,7 +2791,8 @@
 
   function writeCachedPeopleRows(rows = []) {
     try {
-      localStorage.setItem(PEOPLE_CACHE_KEY, JSON.stringify(Array.isArray(rows) ? rows : []));
+      const mergedRows = mergeCurrentAvatarIntoPeopleRows(Array.isArray(rows) ? rows : []).rows;
+      localStorage.setItem(PEOPLE_CACHE_KEY, JSON.stringify(mergedRows));
     } catch (e) {}
   }
 
@@ -3055,15 +3056,24 @@
     try {
       const regs = JSON.parse(localStorage.getItem(CH_KEY) || '[]');
       const updated = regs.map(r => {
-        if (String(r.empId || '').toUpperCase() !== normalizedEmpId) return r;
+        if (String((r.empId ?? r.empid ?? '')).trim().toUpperCase() !== normalizedEmpId) return r;
         if (String(r.avatar || '') === newAvatar) return r;
         changed = true;
         return { ...r, avatar: newAvatar };
       });
       if (changed) localStorage.setItem(CH_KEY, JSON.stringify(updated));
     } catch (e) {}
+    const cachedRows = readCachedPeopleRows();
+    if (cachedRows.length) {
+      const nextCachedRows = cachedRows.map(r =>
+        String((r.empId ?? r.empid ?? '')).trim().toUpperCase() === normalizedEmpId
+          ? { ...r, avatar: newAvatar }
+          : r
+      );
+      writeCachedPeopleRows(nextCachedRows);
+    }
     latestPeopleList = latestPeopleList.map(r =>
-      String(r.empId || '').toUpperCase() === normalizedEmpId
+      String((r.empId ?? r.empid ?? '')).trim().toUpperCase() === normalizedEmpId
         ? { ...r, avatar: newAvatar }
         : r
     );
@@ -3367,6 +3377,70 @@
     return LIVE_AVATAR_FALLBACK;
   }
 
+  function isCurrentPeopleRow(row, identity = getCurrentRegIdentity()) {
+    const rowId = String(row?.id || '').trim();
+    const rowEmpId = String((row?.empId ?? row?.empid ?? '')).trim().toUpperCase();
+    const rowDeviceId = String((row?.deviceId ?? row?.deviceid ?? '')).trim();
+    if (identity.regId && rowId && rowId === identity.regId) return true;
+    if (identity.empId && rowEmpId && rowEmpId === identity.empId) return true;
+    if (
+      identity.deviceId &&
+      rowDeviceId &&
+      rowDeviceId === identity.deviceId &&
+      (!identity.regId || !rowId) &&
+      (!identity.empId || !rowEmpId || rowEmpId === identity.empId)
+    ) return true;
+    return false;
+  }
+
+  function mergeCurrentAvatarIntoPeopleRows(list = []) {
+    const rows = Array.isArray(list) ? list : [];
+    if (!rows.length) return { rows: [], changed: false };
+    const identity = getCurrentRegIdentity();
+    const myEmpId = getCurrentEmpId();
+    const myDeviceId = getCurrentDeviceId();
+    const myAvatar = getMyAvatarSrc();
+    const currentName = getCurrentUserName();
+    let changed = false;
+    const nextRows = rows.map(row => {
+      const rowEmpId = String((row?.empId ?? row?.empid ?? '')).trim().toUpperCase();
+      const rowDeviceId = String((row?.deviceId ?? row?.deviceid ?? '')).trim();
+      const isCurrentUserRow = isCurrentPeopleRow(row, identity)
+        || !!(myEmpId && rowEmpId && myEmpId === rowEmpId)
+        || !!(myDeviceId && rowDeviceId && myDeviceId === rowDeviceId);
+      if (!isCurrentUserRow) return row;
+      const nextRow = { ...row };
+      let rowChanged = false;
+      if (myAvatar && normalizeLiveAvatar(nextRow.avatar) !== myAvatar) {
+        nextRow.avatar = myAvatar;
+        rowChanged = true;
+      }
+      if (currentName && String(nextRow.name || '').trim() !== currentName) {
+        nextRow.name = currentName;
+        rowChanged = true;
+      }
+      if (myEmpId && String(nextRow.empId || '').trim().toUpperCase() !== myEmpId) {
+        nextRow.empId = myEmpId;
+        rowChanged = true;
+      }
+      if ('empid' in nextRow && myEmpId && String(nextRow.empid || '').trim().toUpperCase() !== myEmpId) {
+        nextRow.empid = myEmpId;
+        rowChanged = true;
+      }
+      if (myDeviceId && String(nextRow.deviceId || '').trim() !== myDeviceId) {
+        nextRow.deviceId = myDeviceId;
+        rowChanged = true;
+      }
+      if ('deviceid' in nextRow && myDeviceId && String(nextRow.deviceid || '').trim() !== myDeviceId) {
+        nextRow.deviceid = myDeviceId;
+        rowChanged = true;
+      }
+      if (rowChanged) changed = true;
+      return rowChanged ? nextRow : row;
+    });
+    return { rows: nextRows, changed };
+  }
+
   function getRegistrationMatchScore(reg, identity = getCurrentRegIdentity(), currentName = getCurrentUserName()) {
     let score = 0;
     const rowId = String(reg?.id || '').trim();
@@ -3440,9 +3514,9 @@
   }
 
   function peopleIdentityKey(row) {
-    const empId = String(row?.empId || '').trim().toUpperCase();
+    const empId = String((row?.empId ?? row?.empid ?? '')).trim().toUpperCase();
     if (empId) return 'emp:' + empId;
-    const deviceId = String(row?.deviceId || '').trim();
+    const deviceId = String((row?.deviceId ?? row?.deviceid ?? '')).trim();
     if (deviceId) return 'device:' + deviceId;
     const id = String(row?.id || '').trim();
     return id ? 'id:' + id : '';
@@ -3540,10 +3614,10 @@
     const myEmpId = getCurrentEmpId();
     const myDeviceId = getCurrentDeviceId();
     const myAvatar = getMyAvatarSrc();
-    const rows = collapsePeopleRows(list).map(row => {
-      const rowEmpId = String(row?.empId || '').trim().toUpperCase();
-      const rowDeviceId = String(row?.deviceId || '').trim();
-      const isCurrentUserRow = isCurrentRegIdentityMatch(row, myIdentity)
+    const rows = mergeCurrentAvatarIntoPeopleRows(collapsePeopleRows(list)).rows.map(row => {
+      const rowEmpId = String((row?.empId ?? row?.empid ?? '')).trim().toUpperCase();
+      const rowDeviceId = String((row?.deviceId ?? row?.deviceid ?? '')).trim();
+      const isCurrentUserRow = isCurrentPeopleRow(row, myIdentity)
         || !!(myEmpId && rowEmpId && myEmpId === rowEmpId)
         || !!(myDeviceId && rowDeviceId && myDeviceId === rowDeviceId);
       return isCurrentUserRow && myAvatar ? { ...row, avatar: myAvatar } : row;
@@ -3563,22 +3637,28 @@
     const renderKey = JSON.stringify({
       total,
       recent: recent.map(r => {
-        const rowEmpId = String(r.empId || '').trim().toUpperCase();
-        const isMe = isCurrentRegIdentityMatch(r, myIdentity) || !!(myEmpId && rowEmpId && myEmpId === rowEmpId);
+        const rowEmpId = String((r.empId ?? r.empid ?? '')).trim().toUpperCase();
+        const rowDeviceId = String((r.deviceId ?? r.deviceid ?? '')).trim();
+        const isMe = isCurrentPeopleRow(r, myIdentity)
+          || !!(myEmpId && rowEmpId && myEmpId === rowEmpId)
+          || !!(myDeviceId && rowDeviceId && myDeviceId === rowDeviceId);
         return {
           key: peopleIdentityKey(r) || String(r?.name || '').trim(),
           isMe,
           isNew: !!(r.registeredAt && (Date.now() - new Date(r.registeredAt).getTime()) <= NEW_PEOPLE_WINDOW_MS),
-          avatarSrc: isMe && myAvatar ? myAvatar : (normalizeLiveAvatar(r.avatar) || `images/avatars/av${avIdx(r.empId || r.name || r.id || '')}.png`),
+          avatarSrc: isMe && myAvatar ? myAvatar : (normalizeLiveAvatar(r.avatar) || `images/avatars/av${avIdx((r.empId ?? r.empid ?? r.name ?? r.id ?? ''))}.png`),
         };
       }),
       more: total > 8 ? total - 8 : 0,
     });
     if (renderKey === lastPeopleRenderKey) return;
     let stackHTML = recent.map(r => {
-      const rowEmpId = String(r.empId || '').trim().toUpperCase();
-      const isMe = isCurrentRegIdentityMatch(r, myIdentity) || !!(myEmpId && rowEmpId && myEmpId === rowEmpId);
-      const avatarSrc = isMe && myAvatar ? myAvatar : (normalizeLiveAvatar(r.avatar) || `images/avatars/av${avIdx(r.empId || r.name || r.id || '')}.png`);
+      const rowEmpId = String((r.empId ?? r.empid ?? '')).trim().toUpperCase();
+      const rowDeviceId = String((r.deviceId ?? r.deviceid ?? '')).trim();
+      const isMe = isCurrentPeopleRow(r, myIdentity)
+        || !!(myEmpId && rowEmpId && myEmpId === rowEmpId)
+        || !!(myDeviceId && rowDeviceId && myDeviceId === rowDeviceId);
+      const avatarSrc = isMe && myAvatar ? myAvatar : (normalizeLiveAvatar(r.avatar) || `images/avatars/av${avIdx((r.empId ?? r.empid ?? r.name ?? r.id ?? ''))}.png`);
       const isNew = !!(r.registeredAt && (Date.now() - new Date(r.registeredAt).getTime()) <= NEW_PEOPLE_WINDOW_MS);
       return `<div class="av${isMe ? ' me' : ''}">${isNew ? '<span class="av-new">NEW</span>' : ''}<img src="${avatarSrc}" alt="${isMe ? '내 아바타' : ''}" onerror="if(this.dataset.err)return;this.dataset.err=1;this.src='${LIVE_AVATAR_FALLBACK}'"></div>`;
     }).join('');
