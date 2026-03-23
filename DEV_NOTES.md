@@ -15,6 +15,12 @@
 **관련 파일**: 파일명:라인
 -->
 
+### [2026-03-24] 프로필 아바타 변경이 같이 달려요에만 반영되지 않음
+**증상**: 프로필 모달 안에서는 새 아바타가 보이지만, 모달을 닫은 뒤 챌린지의 `같이 달려요` 아바타 스택에는 이전 아바타가 남아 있음
+**원인**: 아바타 변경은 메인 앱의 `S.user`와 일부 로컬/원격 프로필에는 반영됐지만, 챌린지 참여자 목록은 부모 캐시(`CHALLENGE_PEOPLE_CACHE_KEY`)와 `runday.html` 내부 캐시(`PEOPLE_CACHE_KEY`)를 별도로 써서 최신 아바타가 즉시 동기화되지 않았음. 또한 `empId/empid`, `deviceId/deviceid` 혼용 때문에 현재 사용자 행 판별이 불안정했음
+**해결**: `index.html`에서 아바타 변경 시 챌린지 사람 목록 캐시도 함께 갱신하고 `CHALLENGE_PEOPLE_STATE`를 다시 전달하도록 보강. `runday.html`에서도 캐시 저장/렌더링 시 현재 로그인 사용자의 아바타를 우선 반영하고, `empId/empid`, `deviceId/deviceid`를 모두 인식해 현재 사용자 행을 안정적으로 식별하도록 수정
+**관련 파일**: `index.html`, `runday.html`
+
 ### [2026-03-23] runday 참여자 목록 0건 표시 (400 Bad Request)
 **증상**: user-admin에서 5건 확인되는데 runday에서 참여자 목록이 빈 화면
 **원인**: `fetchChallengePeopleRows`에서 `select=...,registeredAt,...&order=registeredAt.desc` 쿼리 시 400 반환. DB 실제 컬럼명이 `registeredAt`(camelCase)이 아님. avatar 컬럼 없을 때 재시도 로직이 있지만 재시도에도 `registeredAt`이 남아있어 또 400 → 결국 rows = null
@@ -46,18 +52,22 @@
 **관련 파일**: 파일명
 -->
 
-### #1 🔵 진행중 [2026-03-23] runday 참여자 목록 표시 버그 수정
+### #2 ✅ 완료 [2026-03-24] 챌린지 신청/수정/취소 및 아바타 동기화 안정화
+**목표**: 챌린지 신청, 수정, 취소, 프로필 아바타 변경 후 `같이 달려요` 반영까지 끊김 없이 유지되게 하기
+**현재 상태**:
+- 신청/수정/취소 후 `registrations` 로컬 상태, 원격 동기화, 챌린지 현재 상태 반영 정상 동작 확인
+- 프로필 아바타 변경 시 메인 앱 화면, 챌린지 신청 데이터, `같이 달려요` 아바타 스택까지 최신값 반영 확인
+- `runday.html` 쪽도 현재 사용자 행을 `regId / empId / deviceId` 기준으로 다시 판별하도록 정리함
+- iframe 캐시 잔류 방지를 위해 `RUNDAY_IFRAME_SRC` 버전 쿼리도 함께 갱신함
+**관련 파일**: `index.html`, `runday.html`
+
+### #1 ✅ 완료 [2026-03-23] runday 참여자 목록 표시 버그 수정
 **목표**: user-admin에서 5건 확인되는 챌린지 신청이 runday 화면에도 정상 표시되게 하기
 **현재 상태**:
 - `CHALLENGE_CONFIG` 무한루프 수정 완료 (index.html 메시지 리스너)
 - SELECT/filter 컬럼명 소문자 수정 완료 (`empid`, `deviceid`)
 - `normalizeStoredRegRow` 소문자 폴백 추가 완료
-- **아직 실제 브라우저에서 목록 표시 여부 미확인** — 오늘 세션 종료 전 테스트 못함
-**다음 단계**:
-1. 브라우저에서 챌린지 탭 진입 → 콘솔에 400 에러 사라졌는지 확인
-2. 참여자 아바타/카운트가 정상 표시되는지 확인
-3. 만약 아직 400이면 콘솔에 `[fetchChallengePeopleRows] 400 error:` 로그 내용 확인 → 남은 문제 컬럼 파악
-4. Supabase 대시보드에서 `registrations` 테이블 컬럼명 직접 확인 권장 (다른 camelCase 컬럼 있을 수 있음)
+- 이후 신청/수정/취소/아바타 변경과 함께 실제 동작 확인 완료
 **관련 파일**: `index.html`, `runday.html`
 
 ---
@@ -74,6 +84,9 @@
 - Supabase 조회 시 `push_subscriptions` 알림 필터: `enabled = true OR permission = 'granted'`
 - 챌린지 인원 수는 클라이언트 캐시 무시, 서버 응답을 권위적 소스로 사용
 - `registrations` 테이블 컬럼명은 소문자(`empid`, `deviceid`, `registeredat`). JS에서 camelCase로 정규화해서 사용. 필터/select 쿼리 문자열에도 소문자로 작성할 것
+- 챌린지 관련 변경 시 아래 5가지 흐름을 항상 함께 확인할 것: `신청`, `수정`, `취소`, `프로필 아바타 변경`, `같이 달려요 반영`
+- 프로필 아바타 변경은 `S.user`만 바꾸면 끝나지 않음. `registrations` 로컬/원격, `CHALLENGE_PEOPLE_CACHE_KEY`, `runday.html`의 `PEOPLE_CACHE_KEY`, `CHALLENGE_PEOPLE_STATE` 전달 흐름까지 같이 유지해야 함
+- 현재 사용자 식별은 `regId`, `empId/empid`, `deviceId/deviceid`를 모두 고려해야 함. 챌린지 코드 수정 시 camelCase만 가정하지 말 것
 
 ### 백엔드 선택 기준
 - 신규 기능: Supabase 우선
@@ -93,6 +106,9 @@
 ## 💬 결정 사항 (Decision Log)
 
 <!-- 왜 이렇게 만들었는지 기록. 나중에 "왜 이렇게 했지?" 방지용 -->
+
+### [2026-03-24] 챌린지 아바타 동기화는 다중 캐시를 함께 갱신하는 방식 유지
+챌린지 화면은 메인 앱 상태만 보지 않고 부모 캐시와 `runday.html` 내부 캐시를 함께 사용한다. 그래서 프로필 아바타 변경 시 한 곳만 갱신하면 `같이 달려요`에 이전 값이 다시 나타날 수 있다. 앞으로도 아바타 관련 변경은 단일 상태 갱신이 아니라 `메인 프로필 → registrations → challenge people cache → runday people cache/render` 순서를 함께 유지하는 방향으로 작업한다.
 
 ### [2026-03-20] 챌린지 인원 서버 권위 방식 채택
 클라이언트 캐시와 서버 데이터 불일치 문제 반복 발생 → 챌린지 참가 인원은 항상 서버 응답으로 덮어씌우는 방식으로 통일.
