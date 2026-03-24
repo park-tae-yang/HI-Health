@@ -77,6 +77,14 @@
 
 ---
 
+### [2026-03-24] 가족 운동 인증 버튼 미표시
+**증상**: 신청 완료 화면에 "가족 운동 인증하기" 버튼이 안 보임
+**원인**: index.html의 renderChallenge()가 iframe 모드에서 early return해 ch-reg-done 엘리먼트가 생성되지 않음. 가족 인증 버튼 코드가 실행 안 됨
+**해결**: runday.html 성공 화면에 직접 버튼 추가. Supabase Storage `family-certifications` 버킷 생성 + RLS 정책 추가
+**관련 파일**: `runday.html:3863`
+
+---
+
 ## 🚧 작업 (Task)
 
 <!-- 형식:
