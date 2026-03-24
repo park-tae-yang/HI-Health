@@ -2,6 +2,12 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## 커밋 메시지
+
+커밋 메시지는 항상 **한국어**로 작성할 것.
+
+---
+
 ## 협업 노트 — DEV_NOTES.md 기록 규칙
 
 **작업 시작 전 `DEV_NOTES.md`를 반드시 읽을 것.**

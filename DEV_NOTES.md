@@ -15,6 +15,12 @@
 **관련 파일**: 파일명:라인
 -->
 
+### [2026-03-24] 참여자 목록에서 cancelled가 pending을 덮어씀 (0명 표시)
+**증상**: 동일 empId로 cancelled → pending 순서로 신청 내역이 있을 때, 참여자 목록에 0명 표시
+**원인**: `loadPeople` / `fetchChallengePeopleRows`의 select 쿼리에 `registeredat`가 없었음. `peopleRowTs()`가 항상 0 반환 → `collapsePeopleRows`에서 `0 >= 0 = true` 조건으로 나중에 순회된 cancelled 행이 pending을 덮어씀 → status: 'cancelled' → 필터링 → 0명
+**해결**: select에 `registeredat` 추가, `normalizeRegRow`에 `registeredAt: r.registeredAt ?? r.registeredat ?? ''` 폴백 추가
+**관련 파일**: `index.html:13900-13902`, `runday.html:3713-3715`
+
 ### [2026-03-24] 프로필 아바타 변경이 같이 달려요에만 반영되지 않음
 **증상**: 프로필 모달 안에서는 새 아바타가 보이지만, 모달을 닫은 뒤 챌린지의 `같이 달려요` 아바타 스택에는 이전 아바타가 남아 있음
 **원인**: 아바타 변경은 메인 앱의 `S.user`와 일부 로컬/원격 프로필에는 반영됐지만, 챌린지 참여자 목록은 부모 캐시(`CHALLENGE_PEOPLE_CACHE_KEY`)와 `runday.html` 내부 캐시(`PEOPLE_CACHE_KEY`)를 별도로 써서 최신 아바타가 즉시 동기화되지 않았음. 또한 `empId/empid`, `deviceId/deviceid` 혼용 때문에 현재 사용자 행 판별이 불안정했음
@@ -51,6 +57,11 @@
 **다음 단계**: 뭘 해야 하는지 (완료 시 생략)
 **관련 파일**: 파일명
 -->
+
+### #3 ✅ 완료 [2026-03-24] 참여자 목록 0명 표시 버그 수정
+**목표**: cancelled + pending 이력이 같은 empId에 있을 때 pending이 올바르게 표시되게 하기
+**현재 상태**: select 쿼리에 `registeredat` 추가 + `normalizeRegRow` 폴백 추가로 수정 완료
+**관련 파일**: `index.html`, `runday.html`
 
 ### #2 ✅ 완료 [2026-03-24] 챌린지 신청/수정/취소 및 아바타 동기화 안정화
 **목표**: 챌린지 신청, 수정, 취소, 프로필 아바타 변경 후 `같이 달려요` 반영까지 끊김 없이 유지되게 하기
