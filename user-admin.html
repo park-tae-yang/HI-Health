@@ -37,41 +37,71 @@
     .login-err{font-size:12px;color:var(--red);margin-top:8px;min-height:18px;}
 
     /* ── LAYOUT ── */
-    #admin{display:none;min-height:100vh;}
-    .adm-hdr{background:linear-gradient(135deg,#1e1b4b,#4338ca);color:#fff;padding:0 24px;height:58px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,.2);}
-    .ah-left{display:flex;align-items:center;gap:10px;}
-    .ah-logo{height:26px;border-radius:5px;}
-    .ah-title{font-size:16px;font-weight:700;}
-    .ah-right{display:flex;align-items:center;gap:8px;}
-    .ah-status{font-size:11px;padding:4px 12px;border-radius:20px;font-weight:600;}
-    .ah-status.ok{background:rgba(16,185,129,.2);color:#6EE7B7;}
-    .ah-status.err{background:rgba(239,68,68,.2);color:#FCA5A5;}
-    .ah-btn{background:none;border:1px solid rgba(255,255,255,.3);color:#fff;padding:6px 13px;border-radius:20px;font-family:inherit;font-size:12px;cursor:pointer;transition:all .2s;}
-    .ah-btn:hover{background:rgba(255,255,255,.15);}
+    #admin{display:none;min-height:100vh;flex-direction:row;}
 
-    .adm-body{padding:20px;max-width:1280px;margin:0 auto;}
+    /* ── SIDEBAR ── */
+    .adm-sidebar{width:220px;min-height:100vh;background:#fff;border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;z-index:100;}
+    .sb-header{padding:16px 14px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+    .sb-logo{height:30px;border-radius:6px;}
+    .sb-brand{flex:1;min-width:0;}
+    .sb-title{font-size:14px;font-weight:800;color:var(--t1);white-space:nowrap;}
+    .sb-subtitle{font-size:10px;color:var(--t3);font-weight:500;margin-top:1px;}
+    .sb-nav{flex:1;padding:10px 8px;overflow-y:auto;}
+    .sb-section{font-size:10px;font-weight:700;color:var(--t3);padding:10px 10px 4px;letter-spacing:.7px;}
+    .sb-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;font-size:13px;font-weight:500;color:var(--t2);cursor:pointer;transition:all .15s;border:none;background:none;width:100%;text-align:left;margin-bottom:2px;font-family:inherit;}
+    .sb-item:hover{background:var(--bg);color:var(--t1);}
+    .sb-item.active{background:var(--pl);color:var(--p);font-weight:700;}
+    .sb-icon{width:20px;text-align:center;font-size:14px;flex-shrink:0;}
+    .sb-footer{padding:12px 14px;border-top:1px solid var(--border);}
+    .ah-status{display:inline-flex;align-items:center;gap:6px;font-size:11px;padding:5px 10px;border-radius:20px;font-weight:600;}
+    .ah-status.ok{background:var(--gl);color:var(--green);}
+    .ah-status.ok::before{content:'';display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--green);}
+    .ah-status.err{background:var(--rl);color:var(--red);}
+    .ah-status.err::before{content:'';display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--red);}
+
+    /* ── MAIN ── */
+    .adm-main{margin-left:220px;min-height:100vh;display:flex;flex-direction:column;background:var(--bg);}
+    .adm-topbar{background:#fff;border-bottom:1px solid var(--border);height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:50;}
+    .tb-title{font-size:15px;font-weight:700;color:var(--t1);}
+    .tb-right{display:flex;align-items:center;gap:6px;}
+    .tb-btn{background:none;border:1px solid var(--border);color:var(--t2);padding:5px 13px;border-radius:20px;font-family:inherit;font-size:12px;cursor:pointer;transition:all .2s;font-weight:500;}
+    .tb-btn:hover{background:var(--bg);border-color:var(--p);color:var(--p);}
+    .adm-content{padding:20px;flex:1;max-width:1280px;width:100%;}
 
     /* ── STAT GRID ── */
-    .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:20px;}
-    .stat-card{background:var(--card);border-radius:var(--r);padding:16px 18px;box-shadow:var(--shadow);border-top:3px solid var(--p);}
-    .stat-card.g{border-top-color:var(--green);}
-    .stat-card.a{border-top-color:var(--amber);}
-    .stat-card.pu{border-top-color:var(--purple);}
-    .stat-card.sk{border-top-color:var(--sky);}
-    .stat-card.r{border-top-color:var(--red);}
-    .s-lbl{font-size:11px;color:var(--t3);font-weight:600;margin-bottom:5px;}
-    .s-val{font-size:26px;font-weight:700;line-height:1;}
-    .s-sub{font-size:11px;color:var(--t3);margin-top:3px;}
+    .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px;}
+    .stat-card{background:var(--card);border-radius:var(--r);padding:16px;box-shadow:var(--shadow);display:flex;align-items:center;gap:12px;}
+    .sc-icon{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+    .sc-blue{background:var(--pl);}
+    .sc-green{background:var(--gl);}
+    .sc-amber{background:var(--al);}
+    .sc-purple{background:var(--pul);}
+    .sc-sky{background:var(--sl);}
+    .sc-red{background:var(--rl);}
+    .sc-body{flex:1;min-width:0;}
+    .s-val{font-size:24px;font-weight:800;line-height:1;color:var(--t1);}
+    .s-lbl{font-size:11px;color:var(--t3);font-weight:600;margin-top:4px;}
 
     /* ── TABS ── */
-    .tab-bar{display:flex;gap:4px;background:var(--card);border-radius:var(--r);padding:5px;box-shadow:var(--shadow);margin-bottom:16px;overflow-x:auto;}
-    .tab-btn{flex-shrink:0;padding:8px 16px;text-align:center;border:none;background:none;border-radius:var(--rs);font-family:inherit;font-size:13px;font-weight:600;color:var(--t3);cursor:pointer;transition:all .2s;white-space:nowrap;}
-    .tab-btn.active{background:var(--p);color:#fff;box-shadow:0 2px 8px rgba(79,70,229,.3);}
-    .sub-tab-bar{display:flex;gap:6px;padding:12px 16px 0;border-bottom:1px solid var(--bdr);}
+    .sub-tab-bar{display:flex;gap:6px;padding:12px 16px 0;border-bottom:1px solid var(--border);}
     .sub-tab{padding:6px 18px;border:none;border-radius:20px;font-family:inherit;font-size:13px;font-weight:600;color:var(--t3);background:var(--bg);cursor:pointer;transition:all .2s;}
     .sub-tab.active{background:var(--p);color:#fff;}
     .panel{display:none;}
     .panel.active{display:block;}
+
+    /* ── MOBILE ── */
+    @media(max-width:768px){
+      .adm-sidebar{width:100%;min-height:auto;height:auto;position:relative;flex-direction:row;border-right:none;border-bottom:1px solid var(--border);}
+      .sb-header{border-bottom:none;flex-shrink:0;padding:10px 12px;}
+      .sb-nav{display:flex;flex-direction:row;overflow-x:auto;padding:4px 6px;flex:1;gap:2px;scrollbar-width:none;}
+      .sb-nav::-webkit-scrollbar{display:none;}
+      .sb-section{display:none;}
+      .sb-item{flex-shrink:0;white-space:nowrap;padding:7px 10px;margin-bottom:0;}
+      .sb-footer{display:none;}
+      .adm-main{margin-left:0;}
+      .adm-content{padding:12px;}
+      .stat-grid{grid-template-columns:repeat(2,1fr);}
+    }
 
     /* ── CONTROLS ── */
     .ctrl-bar{background:var(--card);border-radius:var(--r);padding:12px 16px;box-shadow:var(--shadow);margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
@@ -211,10 +241,6 @@
     .wo-summary-grid{margin-bottom:14px;}
     .wo-inline-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
 
-    @media(max-width:600px){
-      .adm-body{padding:12px;}
-      .stat-grid{grid-template-columns:repeat(2,1fr);}
-    }
     .shop-config-bar{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:16px 18px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:16px;}
     .shop-config-title{font-size:14px;font-weight:700;color:#111827;margin-bottom:4px;}
     .shop-config-status{font-size:12px;color:#6b7280;}
@@ -243,41 +269,54 @@
 
 <!-- ── ADMIN ── -->
 <div id="admin">
-  <!-- HEADER -->
-  <header class="adm-hdr">
-    <div class="ah-left">
-      <img src="images/Hi_health_home.png" class="ah-logo" alt="">
-      <span class="ah-title">HI Health Admin</span>
-    </div>
-    <div class="ah-right">
-      <span class="ah-status err" id="conn-status">연결 중...</span>
-      <button class="ah-btn" onclick="openPwModal()">비밀번호 변경</button>
-      <button class="ah-btn" onclick="doLogout()">로그아웃</button>
-    </div>
-  </header>
 
-  <div class="adm-body">
+  <!-- SIDEBAR -->
+  <aside class="adm-sidebar">
+    <div class="sb-header">
+      <img src="images/Hi_health_home.png" class="sb-logo" alt="">
+      <div class="sb-brand">
+        <div class="sb-title">HI Health</div>
+        <div class="sb-subtitle">관리자 센터</div>
+      </div>
+    </div>
+    <nav class="sb-nav">
+      <div class="sb-section">데이터</div>
+      <button class="sb-item active" id="tab-btn-users" data-tab="users" onclick="switchTab('users',this)"><span class="sb-icon">👥</span>이용자</button>
+      <button class="sb-item" id="tab-btn-workouts" data-tab="workouts" onclick="switchTab('workouts',this)"><span class="sb-icon">🏋️</span>운동기록</button>
+      <button class="sb-item" id="tab-btn-posts" data-tab="posts" onclick="switchTab('posts',this)"><span class="sb-icon">💬</span>커뮤니티</button>
+      <button class="sb-item" id="tab-btn-challenge" data-tab="challenge" onclick="switchTab('challenge',this)"><span class="sb-icon">🏆</span>챌린지</button>
+      <button class="sb-item" id="tab-btn-famcert" data-tab="famcert" onclick="switchTab('famcert',this)"><span class="sb-icon">📸</span>가족인증</button>
+      <div class="sb-section" style="margin-top:4px">운영</div>
+      <button class="sb-item" id="tab-btn-orders" data-tab="orders" onclick="switchTab('orders',this)"><span class="sb-icon">🛒</span>구매</button>
+      <button class="sb-item" id="tab-btn-rewards" data-tab="rewards" onclick="switchTab('rewards',this)"><span class="sb-icon">🎁</span>보상</button>
+      <button class="sb-item" id="tab-btn-content" data-tab="content" onclick="switchTab('content',this)"><span class="sb-icon">📝</span>콘텐츠 작성</button>
+      <button class="sb-item" id="tab-btn-settings" data-tab="settings" onclick="switchTab('settings',this)"><span class="sb-icon">⚙️</span>설정</button>
+    </nav>
+    <div class="sb-footer">
+      <span class="ah-status err" id="conn-status">연결 중...</span>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="adm-main">
+    <header class="adm-topbar">
+      <div class="tb-title" id="tb-page-title">이용자 관리</div>
+      <div class="tb-right">
+        <button class="tb-btn" onclick="loadAll()">↺ 새로고침</button>
+        <button class="tb-btn" onclick="openPwModal()">🔒 비밀번호</button>
+        <button class="tb-btn" onclick="doLogout()">로그아웃</button>
+      </div>
+    </header>
+
+    <div class="adm-content">
     <!-- STATS -->
     <div class="stat-grid">
-      <div class="stat-card"><div class="s-lbl">전체 이용자</div><div class="s-val" id="st-users">-</div><div class="s-sub">명</div></div>
-      <div class="stat-card g"><div class="s-lbl">챌린지 신청</div><div class="s-val" id="st-regs">-</div><div class="s-sub">명</div></div>
-      <div class="stat-card a"><div class="s-lbl">운동 기록</div><div class="s-val" id="st-wo">-</div><div class="s-sub">건</div></div>
-      <div class="stat-card pu"><div class="s-lbl">커뮤니티</div><div class="s-val" id="st-posts">-</div><div class="s-sub">건</div></div>
-      <div class="stat-card sk"><div class="s-lbl">총 운동시간</div><div class="s-val" id="st-mins">-</div><div class="s-sub">분</div></div>
-      <div class="stat-card r"><div class="s-lbl">혈당 기록</div><div class="s-val" id="st-glc">-</div><div class="s-sub">건</div></div>
-    </div>
-
-    <!-- TABS -->
-    <div class="tab-bar">
-      <button class="tab-btn active" onclick="switchTab('users',this)">👥 이용자</button>
-      <button class="tab-btn" id="tab-btn-workouts" onclick="switchTab('workouts',this)">🏋️ 운동기록</button>
-      <button class="tab-btn" id="tab-btn-posts" onclick="switchTab('posts',this)">💬 커뮤니티</button>
-      <button class="tab-btn" onclick="switchTab('challenge',this)">🏆 챌린지</button>
-      <button class="tab-btn" onclick="switchTab('orders',this)">🛒 구매</button>
-      <button class="tab-btn" onclick="switchTab('rewards',this)">🎁 보상</button>
-      <button class="tab-btn" onclick="switchTab('content',this)">📝 콘텐츠 작성</button>
-      <button class="tab-btn" onclick="switchTab('settings',this)">⚙️ 설정</button>
-      <button class="tab-btn" onclick="switchTab('famcert',this)">📸 가족인증</button>
+      <div class="stat-card"><div class="sc-icon sc-blue">👥</div><div class="sc-body"><div class="s-val" id="st-users">-</div><div class="s-lbl">전체 이용자</div></div></div>
+      <div class="stat-card"><div class="sc-icon sc-green">🏆</div><div class="sc-body"><div class="s-val" id="st-regs">-</div><div class="s-lbl">챌린지 신청</div></div></div>
+      <div class="stat-card"><div class="sc-icon sc-amber">🏋️</div><div class="sc-body"><div class="s-val" id="st-wo">-</div><div class="s-lbl">운동 기록</div></div></div>
+      <div class="stat-card"><div class="sc-icon sc-purple">💬</div><div class="sc-body"><div class="s-val" id="st-posts">-</div><div class="s-lbl">커뮤니티</div></div></div>
+      <div class="stat-card"><div class="sc-icon sc-sky">⏱️</div><div class="sc-body"><div class="s-val" id="st-mins">-</div><div class="s-lbl">총 운동시간(분)</div></div></div>
+      <div class="stat-card"><div class="sc-icon sc-red">📊</div><div class="sc-body"><div class="s-val" id="st-glc">-</div><div class="s-lbl">혈당 기록</div></div></div>
     </div>
 
     <!-- ── PANEL: USERS ── -->
@@ -802,7 +841,8 @@
         </div>
       </div>
     </div>
-  </div><!-- /adm-body -->
+    </div><!-- /adm-content -->
+  </div><!-- /adm-main -->
 </div><!-- /admin -->
 
 <!-- LOADING -->
@@ -1151,7 +1191,7 @@ function doLogin() {
   const matchesAdminPw = !!raw && raw === String(ADMIN_PW || '');
   if (matchesAdminEmpId || matchesAdminPw) {
     document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('admin').style.display = 'block';
+    document.getElementById('admin').style.display = 'flex';
     initSupabase();
   } else {
     inp.classList.add('err');
@@ -3619,11 +3659,18 @@ async function deleteAdminPost(id) {
 /* ══════════════════════════════════════════════
    TABS
 ══════════════════════════════════════════════ */
+const TAB_TITLES = {
+  users: '이용자 관리', workouts: '운동 기록', posts: '커뮤니티',
+  challenge: '챌린지', orders: '구매 관리', rewards: '보상 관리',
+  content: '콘텐츠 작성', settings: '설정', famcert: '가족인증',
+};
 function switchTab(name, btn) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.sb-item').forEach(b => b.classList.remove('active'));
   document.getElementById('panel-' + name).classList.add('active');
   btn.classList.add('active');
+  const titleEl = document.getElementById('tb-page-title');
+  if (titleEl) titleEl.textContent = TAB_TITLES[name] || name;
   if (db && name !== 'settings') loadAll({ silent: true });
   if (name === 'users') renderUsers();
   if (name === 'workouts') renderWorkouts();
