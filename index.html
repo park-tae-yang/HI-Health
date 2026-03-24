@@ -13897,35 +13897,33 @@ let _challengePeopleSyncPromise = null;
 async function fetchChallengePeopleRows(options = {}) {
   if (_challengePeopleSyncPromise) return _challengePeopleSyncPromise;
   const run = async () => {
-    const selectWithAvatar = 'id,"deviceId",name,dept,"empId",avatar,status,"registeredAt"';
-    const selectFallback = 'id,"deviceId",name,dept,"empId",status,"registeredAt"';
+    const selectClause = 'id,"deviceId",name,dept,"empId",status,"registeredAt"';
     const normalizeRegRow = r => ({ ...r, empId: r.empId ?? r.empid ?? '', deviceId: r.deviceId ?? r.deviceid ?? '', registeredAt: r.registeredAt ?? r.registeredat ?? '' });
-    const fetchRows = async (selectClause) => {
-      const res = await fetch(
-        SUPABASE_URL + '/rest/v1/registrations?select=' + encodeURIComponent(selectClause) + '&order=id.desc',
-        {
-          cache: 'no-store',
-          headers: {
-            'apikey': SUPABASE_ANON_KEY,
-            'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
-          },
-        }
-      );
-      if (res.ok) return { rows: (await res.json()).map(normalizeRegRow), missingAvatarColumn: false };
-      let errorPayload = null;
-      try { errorPayload = await res.json(); } catch (e) {}
-      console.warn('[fetchChallengePeopleRows] 400 error:', errorPayload);
-      return {
-        rows: null,
-        missingAvatarColumn: selectClause === selectWithAvatar && isChallengeRegistrationSchemaError(errorPayload),
-      };
+    const fetchAvatarMap = async (rawRows) => {
+      const empIds = [...new Set(rawRows.map(r => String(r.empId || '').trim().toUpperCase()).filter(Boolean))];
+      if (!empIds.length) return {};
+      try {
+        const res = await fetch(
+          SUPABASE_URL + '/rest/v1/users?select="empId",avatar&"empId"=in.(' + empIds.join(',') + ')',
+          { cache: 'no-store', headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY } }
+        );
+        if (!res.ok) return {};
+        const map = {};
+        (await res.json()).forEach(u => { if (u.empId) map[String(u.empId).toUpperCase()] = u.avatar || ''; });
+        return map;
+      } catch (e) { return {}; }
     };
     try {
-      let result = await fetchRows(selectWithAvatar);
-      if (result.missingAvatarColumn) result = await fetchRows(selectFallback);
-      const data = result.rows;
+      const res = await fetch(
+        SUPABASE_URL + '/rest/v1/registrations?select=' + encodeURIComponent(selectClause) + '&order=id.desc',
+        { cache: 'no-store', headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY } }
+      );
+      if (!res.ok) throw new Error('challenge people fetch failed');
+      const rawRows = (await res.json()).map(normalizeRegRow);
+      const avatarMap = await fetchAvatarMap(rawRows);
+      const data = rawRows.map(r => ({ ...r, avatar: avatarMap[String(r.empId || '').toUpperCase()] || '' }));
       if (!Array.isArray(data)) throw new Error('challenge people fetch failed');
-      const rows = mergeCurrentProfileIntoChallengePeopleRows(Array.isArray(data) ? data : []).rows;
+      const rows = mergeCurrentProfileIntoChallengePeopleRows(data).rows;
       writeChallengePeopleCache(rows);
       return rows;
     } catch (e) {
