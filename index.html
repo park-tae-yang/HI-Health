@@ -7562,7 +7562,8 @@ async function hydrateAccountFromRemote(empId, fallbackName = '') {
     S.workouts = mergeWorkoutRecords(w.data || [], S.workouts);
 
     // 로컬에만 있던 기록을 Supabase에 재동기화 (오프라인/네트워크 오류로 누락된 경우)
-    if (localOnlyWorkouts.length > 0) {
+    // 오픈 초기화 직후에는 재업로드 금지 (삭제된 테스트 데이터가 복원되는 것 방지)
+    if (localOnlyWorkouts.length > 0 && localStorage.getItem('hi_reset_20260325')) {
       localOnlyWorkouts.forEach(wr => {
         const exInfo = getExType(wr.exId);
         _db.from('workouts').upsert({
