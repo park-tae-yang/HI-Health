@@ -2003,22 +2003,164 @@ async function adjPoints(sign) {
   toast((sign > 0 ? '+' : '') + (sign * v) + 'p 조정 완료');
 }
 
-async function deleteUser(deviceId, name) {
-  if (!confirm(`"${name || deviceId}" 이용자를 삭제하시겠습니까?\n모든 기록이 함께 삭제됩니다.`)) return;
-  showLoading(true);
-  try {
-    for (const tbl of ['workouts','glucose','posts','users']) {
-      const { error } = await db.from(tbl).delete().eq('deviceId', deviceId);
+function buildAdminEmpIdFilters(column, values = []) {
+  const uniq = [...new Set((values || []).map(v => String(v || '').trim()).filter(Boolean))];
+  const filters = [];
+  uniq.forEach(value => {
+    const variants = [value, value.toUpperCase(), value.toLowerCase()];
+    [...new Set(variants.filter(Boolean))].forEach(variant => {
+      filters.push(`${column}.eq.${variant}`);
+    });
+  });
+  return filters;
+}
+
+function collectAdminUserDeleteIdentity(userOrDeviceId, fallbackName = '') {
+  const selected = typeof userOrDeviceId === 'object' && userOrDeviceId
+    ? userOrDeviceId
+    : (GD.users.find(u => String(u?.deviceId || '') === String(userOrDeviceId || '')) || {
+        deviceId: String(userOrDeviceId || '').trim(),
+        name: fallbackName || '',
+      });
+  const deviceIds = new Set();
+  const empIds = new Set();
+  const registrationIds = new Set();
+  const addDeviceId = value => {
+    const next = normRegIdValue(value);
+    if (next) deviceIds.add(next);
+  };
+  const addEmpId = value => {
+    const next = normRegEmpId(value);
+    if (next) empIds.add(next);
+  };
+  const addRegistrationId = value => {
+    const next = normRegIdValue(value);
+    if (next) registrationIds.add(next);
+  };
+
+  addDeviceId(selected?.deviceId);
+  addEmpId(selected?.empId);
+  addRegistrationId(selected?.registrationId || selected?.registrationid);
+
+  let changed = true;
+  while (changed) {
+    changed = false;
+    GD.users.forEach(u => {
+      const userDeviceId = normRegIdValue(u?.deviceId);
+      const userEmpId = normRegEmpId(u?.empId);
+      const userRegId = normRegIdValue(u?.registrationId || u?.registrationid);
+      const matched = (userDeviceId && deviceIds.has(userDeviceId))
+        || (userEmpId && empIds.has(userEmpId))
+        || (userRegId && registrationIds.has(userRegId));
+      if (!matched) return;
+      const before = deviceIds.size + empIds.size + registrationIds.size;
+      addDeviceId(userDeviceId);
+      addEmpId(userEmpId);
+      addRegistrationId(userRegId);
+      if (deviceIds.size + empIds.size + registrationIds.size !== before) changed = true;
+    });
+    (GD.registrations || []).forEach(r => {
+      const regId = normRegIdValue(r?.id);
+      const regDeviceId = normRegIdValue(r?.deviceId);
+      const regEmpId = normRegEmpId(r?.empId);
+      const matched = (regId && registrationIds.has(regId))
+        || (regDeviceId && deviceIds.has(regDeviceId))
+        || (regEmpId && empIds.has(regEmpId));
+      if (!matched) return;
+      const before = deviceIds.size + empIds.size + registrationIds.size;
+      addRegistrationId(regId);
+      addDeviceId(regDeviceId);
+      addEmpId(regEmpId);
+      if (deviceIds.size + empIds.size + registrationIds.size !== before) changed = true;
+    });
+  }
+
+  return {
+    displayName: String(selected?.name || fallbackName || selected?.deviceId || '이용자').trim() || '이용자',
+    deviceIds: [...deviceIds],
+    empIds: [...empIds],
+    registrationIds: [...registrationIds],
+  };
+}
+
+function rowMatchesAdminDeleteIdentity(row, identity = {}) {
+  const rowDeviceId = normRegIdValue(row?.deviceId);
+  const rowEmpId = normRegEmpId(row?.empId);
+  const rowRegId = normRegIdValue(row?.registrationId || row?.registrationid || row?.id);
+  return (rowDeviceId && identity.deviceIds?.includes(rowDeviceId))
+    || (rowEmpId && identity.empIds?.includes(rowEmpId))
+    || (rowRegId && identity.registrationIds?.includes(rowRegId));
+}
+
+async function deleteAdminUserByIdentity(identity = {}) {
+  const deviceIds = [...new Set((identity.deviceIds || []).map(v => normRegIdValue(v)).filter(Boolean))];
+  const empIds = [...new Set((identity.empIds || []).map(v => normRegEmpId(v)).filter(Boolean))];
+  const registrationIds = [...new Set((identity.registrationIds || []).map(v => normRegIdValue(v)).filter(Boolean))];
+
+  const deleteByIds = async (tbl, key, ids) => {
+    const uniq = [...new Set((ids || []).map(v => String(v || '').trim()).filter(Boolean))];
+    if (!uniq.length) return;
+    for (let i = 0; i < uniq.length; i += 1000) {
+      const { error } = await db.from(tbl).delete().in(key, uniq.slice(i, i + 1000));
       if (error) throw new Error(`${tbl} 삭제 실패: ${error.message}`);
     }
-    GD.users     = GD.users.filter(u => u.deviceId !== deviceId);
-    GD.workouts  = GD.workouts.filter(w => w.deviceId !== deviceId);
-    GD.glucose   = GD.glucose.filter(g => g.deviceId !== deviceId);
-    GD.posts     = GD.posts.filter(p => p.deviceId !== deviceId);
-    if (selDeviceId === deviceId) clearSel();
+  };
+  const deleteByOrFilters = async (tbl, filters = []) => {
+    const uniq = [...new Set((filters || []).filter(Boolean))];
+    if (!uniq.length) return;
+    const { error } = await db.from(tbl).delete().or(uniq.join(','));
+    if (error) throw new Error(`${tbl} 삭제 실패: ${error.message}`);
+  };
+
+  let postIds = [];
+  if (deviceIds.length) {
+    const { data, error } = await db.from('posts').select('id').in('deviceId', deviceIds);
+    if (error) throw new Error(`posts 조회 실패: ${error.message}`);
+    postIds = (data || []).map(row => String(row?.id || '').trim()).filter(Boolean);
+  }
+
+  if (postIds.length) {
+    await deleteByIds('reactions', 'postId', postIds);
+    await deleteByIds('post_comments', 'postId', postIds);
+  }
+  if (deviceIds.length) {
+    await deleteByIds('reactions', 'deviceId', deviceIds);
+    await deleteByIds('post_comments', 'deviceId', deviceIds);
+    await deleteByIds('orders', 'deviceId', deviceIds);
+    await deleteByIds('workouts', 'deviceId', deviceIds);
+    await deleteByIds('glucose', 'deviceId', deviceIds);
+    await deleteByIds('posts', 'deviceId', deviceIds);
+    await deleteByIds('users', 'deviceId', deviceIds);
+    await deleteByIds('registrations', 'deviceId', deviceIds);
+  }
+  if (registrationIds.length) {
+    await deleteByIds('registrations', 'id', registrationIds);
+  }
+  if (empIds.length) {
+    const empFilters = buildAdminEmpIdFilters('empId', empIds);
+    await deleteByOrFilters('users', empFilters);
+    await deleteByOrFilters('registrations', empFilters);
+  }
+
+  GD.users = GD.users.filter(row => !rowMatchesAdminDeleteIdentity(row, { deviceIds, empIds, registrationIds }));
+  GD.workouts = GD.workouts.filter(row => !deviceIds.includes(normRegIdValue(row?.deviceId)));
+  GD.glucose = GD.glucose.filter(row => !deviceIds.includes(normRegIdValue(row?.deviceId)));
+  GD.posts = GD.posts.filter(row => !deviceIds.includes(normRegIdValue(row?.deviceId)));
+  GD.orders = GD.orders.filter(row => !deviceIds.includes(normRegIdValue(row?.deviceId)));
+  GD.registrations = GD.registrations.filter(row => !rowMatchesAdminDeleteIdentity(row, { deviceIds, empIds, registrationIds }));
+
+  if (selDeviceId && deviceIds.includes(normRegIdValue(selDeviceId))) clearSel();
+}
+
+async function deleteUser(deviceId, name) {
+  const identity = collectAdminUserDeleteIdentity(deviceId, name);
+  if (!confirm(`"${identity.displayName}" 이용자를 삭제하시겠습니까?\n운동·혈당·게시글·챌린지 신청 등 연결된 기록이 함께 삭제됩니다.`)) return;
+  showLoading(true);
+  try {
+    await deleteAdminUserByIdentity(identity);
     renderAll();
     setStatus(`연결됨 (${GD.users.length}명)`, true);
-    toast(`"${name}" 삭제 완료`);
+    toast(`"${identity.displayName}" 삭제 완료`);
   } catch(e) { toast(e.message); }
   finally { showLoading(false); }
 }
@@ -2081,14 +2223,7 @@ async function deleteDuplicates() {
   showLoading(true);
   try {
     for (const u of toDelete) {
-      for (const tbl of ['workouts','glucose','posts','users']) {
-        const { error } = await db.from(tbl).delete().eq('deviceId', u.deviceId);
-        if (error) throw new Error(`${tbl} 삭제 실패: ${error.message}`);
-      }
-      GD.users    = GD.users.filter(x => x.deviceId !== u.deviceId);
-      GD.workouts = GD.workouts.filter(w => w.deviceId !== u.deviceId);
-      GD.glucose  = GD.glucose.filter(g => g.deviceId !== u.deviceId);
-      GD.posts    = GD.posts.filter(p => p.deviceId !== u.deviceId);
+      await deleteAdminUserByIdentity(collectAdminUserDeleteIdentity(u));
     }
     renderAll();
     setStatus(`연결됨 (${GD.users.length}명)`, true);
@@ -2986,12 +3121,15 @@ function renderOrders() {
   if (!list.length) { tbody.innerHTML = `<tr><td class="empty-cell" colspan="9">주문 내역이 없습니다</td></tr>`; return; }
 
   tbody.innerHTML = list.map(o => {
+    const isReward = (o.pickup === '포인트교환') || String(o.id||'').startsWith('REW-');
     const itemNames = (o.items||[]).map(i => `${i.name||''}×${i.qty||1}`).join(', ') || '-';
     const d = o.orderedAt ? new Date(o.orderedAt).toLocaleDateString('ko-KR') : '-';
     const sBadge = o.status === 'completed' ? '<span class="badge ok">완료</span>'
       : o.status === 'confirmed'  ? '<span class="badge ch">확인</span>'
       : o.status === 'cancelled'  ? '<span class="badge can">취소</span>'
       : '<span class="badge pend">대기</span>';
+    const typeBadge = isReward ? '<span class="badge" style="background:#7c3aed;color:#fff;margin-left:4px">보상교환</span>' : '';
+    const totalStr = isReward ? `<strong>${(Number(o.total)||0).toLocaleString()}p</strong>` : `<strong>${(Number(o.total)||0).toLocaleString()}원</strong>`;
     const safeId = (o.id||'').replace(/'/g,'\\\'');
     // 인라인 상태 변경 버튼
     let actionBtns = '';
@@ -2999,12 +3137,12 @@ function renderOrders() {
     if (o.status === 'confirmed') actionBtns += `<button class="abtn pri" onclick="updateOrderStatus('${safeId}','completed')">완료</button> `;
     if (o.status !== 'cancelled') actionBtns += `<button class="abtn red" onclick="updateOrderStatus('${safeId}','cancelled')">취소</button> `;
     actionBtns += `<button class="abtn det" onclick="showOrderDetail('${safeId}')">상세</button>`;
-    return `<tr>
-      <td class="td-date">${o.id||'-'}</td>
+    return `<tr${isReward ? ' style="background:rgba(124,58,237,0.04)"' : ''}>
+      <td class="td-date">${o.id||'-'}${typeBadge}</td>
       <td class="td-name">${o.name||'-'}${o.userName ? `<br><span style="font-size:11px;color:var(--t3)">${o.userName}</span>` : ''}</td>
       <td>${o.phone||'-'}</td>
       <td class="td-memo" title="${itemNames}">${itemNames}</td>
-      <td><strong>${(Number(o.total)||0).toLocaleString()}원</strong></td>
+      <td>${totalStr}</td>
       <td>${o.pickup||'-'}${o.addr ? `<br><span style="font-size:11px;color:var(--t3)">${o.addr}</span>` : ''}</td>
       <td>${sBadge}</td>
       <td class="td-date">${d}</td>
