@@ -24,9 +24,9 @@
     body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--t1);min-height:100vh;}
 
     /* ── LOGIN ── */
-    .login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);padding:20px;}
-    .login-card{background:#fff;border-radius:var(--r);padding:40px 32px;width:100%;max-width:320px;box-shadow:var(--shadow);border:1px solid var(--border);text-align:center;}
-    .login-logo{height:52px;margin-bottom:24px;}
+    .login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:url('images/happy-play.jpg') center/cover no-repeat;padding:20px;}
+    .login-card{background:#fff;border-radius:var(--r);padding:40px 32px;width:100%;max-width:320px;box-shadow:0 8px 32px rgba(0,0,0,0.18);border:1px solid var(--border);text-align:center;}
+    .login-logo{height:64px;margin-bottom:20px;}
     .login-title{font-size:16px;font-weight:700;color:var(--t1);margin-bottom:20px;}
     .login-inp{width:100%;padding:11px 14px;border:1px solid var(--border);border-radius:var(--rs);font-family:inherit;font-size:15px;outline:none;text-align:center;letter-spacing:6px;margin-bottom:10px;transition:border-color .15s;background:var(--bg);}
     .login-inp:focus{border-color:var(--p);background:#fff;box-shadow:0 0 0 3px rgba(79,70,229,.08);}
@@ -275,7 +275,7 @@
 <!-- ── LOGIN ── -->
 <div class="login-wrap" id="login-screen">
   <div class="login-card">
-    <img src="images/Hi_health_home.png" class="login-logo" alt="HI Health">
+    <img src="images/4x/run_day_bla.png" class="login-logo" alt="HI RUN DAY">
     <div class="login-title">관리자 로그인</div>
     <input type="password" id="pw-input" class="login-inp" placeholder="비밀번호"
       onkeydown="if(event.key==='Enter')doLogin()" autocomplete="current-password" autocapitalize="off">
