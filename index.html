@@ -6834,105 +6834,7 @@ const MOCK_USERS = [
   { id:110, name:'한지민',  avatar:'images/avatars/av1.png',  lv:1, pts:140,  wPts:90,  change:0,  isChallenger:true, tags:['훈련 중', '5km 완주', '긴장되지만 설레'] },
 ];
 
-const MOCK_POSTS_SEED = [
-  {
-    id:1001, userId:102, name:'김하은', avatar:'images/avatars/av3.png', lv:5, isChallenger:true,
-    body:'오늘 워밍업 첫 인증으로 출근 전에 35분 걷고 왔어요. 생각보다 몸이 금방 깨어나서 기분 좋네요. 25일부터 본격적으로 같이 달린다고 생각하니 벌써 기대돼요.',
-    userTags:['함께 달려요','준비 완료'],
-    time:'30분 전',
-    stickers:{ cheer:11, love:16, cool:4, congrats:8, together:12 },
-    myReactions:[], comments:3,
-    commentList:[
-      { id:9001, name:'서윤아', avatar:'images/avatars/av2.png', lv:6, body:'출근 전 인증 좋네요. 워밍업은 무리 없이 쌓는 게 제일 중요하더라고요.', time:'22분 전' },
-      { id:9002, name:'이지현', avatar:'images/avatars/av4.png', lv:5, body:'첫날부터 리듬 좋네요. 저도 내일 아침 걷기로 시작해볼게요.', time:'14분 전' },
-      { id:9003, name:'조예림', avatar:'images/avatars/av10.png', lv:2, body:'벌써 분위기 올라오네요. 같이 천천히 페이스 올려봐요!', time:'5분 전' },
-    ],
-  },
-  {
-    id:1002, userId:101, name:'서윤아', avatar:'images/avatars/av2.png', lv:6, isChallenger:true,
-    body:'점심시간에 계단 오르기 15분, 퇴근 후 러닝 4km까지 완료했어요. 이번 챌린지는 기록 경쟁보다 팀 분위기 자체가 좋아서 더 오래 갈 것 같아요. 다들 오늘 인증도 화이팅입니다.',
-    userTags:['5km 완주','훈련 중','HI RUN DAY 화이팅'],
-    time:'2시간 전',
-    stickers:{ cheer:24, love:19, cool:7, congrats:13, together:18 },
-    myReactions:[], comments:5,
-    commentList:[
-      { id:9011, name:'박소연', avatar:'images/avatars/av5.png', lv:4, body:'점심+퇴근 루틴 좋네요. 이렇게 나눠서 하면 부담이 덜하겠어요.', time:'1시간 전' },
-      { id:9012, name:'김하은', avatar:'images/avatars/av3.png', lv:5, body:'팀 분위기 진짜 공감해요. 서로 인증 보니까 더 움직이게 돼요.', time:'1시간 전' },
-      { id:9013, name:'정다은', avatar:'images/avatars/av7.png', lv:3, body:'4km까지 가셨다니 멋져요. 저는 아직 2km부터 천천히 늘리는 중이에요.', time:'45분 전' },
-      { id:9014, name:'윤서희', avatar:'images/avatars/av8.png', lv:3, body:'오늘 퇴근 후 러닝 가야겠다는 마음이 생겼어요.', time:'30분 전' },
-      { id:9015, name:'한지민', avatar:'images/avatars/av1.png', lv:1, body:'선배님 기록 보니까 자극돼요. 저도 인증 꼭 올릴게요.', time:'10분 전' },
-    ],
-  },
-  {
-    id:1003, userId:109, name:'조예림', avatar:'images/avatars/av10.png', lv:2, isChallenger:true,
-    body:'선유도공원에서 여의도공원까지 달리는 코스가 생각보다 궁금해서 주말에 한강 쪽만 미리 걸어봤어요. 실제 행사 날은 단체 페이스라고 해서 더 기대됩니다. 혹시 러닝화는 다들 어떤 착화감 선호하세요?',
-    userTags:['가족과 함께','코스 완주'],
-    time:'4시간 전',
-    stickers:{ cheer:9, love:21, cool:2, congrats:1, together:17 },
-    myReactions:[], comments:4,
-    commentList:[
-      { id:9021, name:'서윤아', avatar:'images/avatars/av2.png', lv:6, body:'저는 쿠션감 있는 쪽이 편했어요. 행사 날은 편한 착화감이 제일 중요하더라고요.', time:'3시간 전' },
-      { id:9022, name:'이지현', avatar:'images/avatars/av4.png', lv:5, body:'코스 미리 걸어본 거 좋네요. 저는 평지라 생각보다 부담 없을 것 같았어요.', time:'2시간 전' },
-      { id:9023, name:'박소연', avatar:'images/avatars/av5.png', lv:4, body:'가족이랑 같이 응원 와주면 분위기 더 좋을 것 같아요 ㅎㅎ', time:'1시간 전' },
-      { id:9024, name:'강민정', avatar:'images/avatars/av9.png', lv:2, body:'저도 러닝화 고민 중이었는데 댓글 참고해야겠어요!', time:'20분 전' },
-    ],
-  },
-  {
-    id:1004, userId:105, name:'최유진', avatar:'images/avatars/av6.png', lv:4, isChallenger:true,
-    body:'페이스업 기간에는 운동이랑 혈당 기록을 같이 해야 해서 오늘부터 점심 후 측정 루틴도 붙이기 시작했어요. 기록이 쌓이니까 컨디션 체크가 훨씬 쉬워지네요.',
-    userTags:['개인 기록 도전','준비 완료'],
-    time:'어제',
-    stickers:{ cheer:31, love:14, cool:22, congrats:28, together:9 },
-    myReactions:[], comments:4,
-    commentList:[
-      { id:9031, name:'김하은', avatar:'images/avatars/av3.png', lv:5, body:'운동이랑 혈당 같이 보면 흐름 읽기 좋더라고요. 저도 따라 해볼게요.', time:'어제' },
-      { id:9032, name:'정다은', avatar:'images/avatars/av7.png', lv:3, body:'루틴 잡아두면 페이스업 들어가서 덜 흔들릴 것 같아요.', time:'어제' },
-      { id:9033, name:'한지민', avatar:'images/avatars/av1.png', lv:1, body:'측정시간까지 적어두면 더 보기 좋더라고요. 같이 해봐요!', time:'어제' },
-      { id:9034, name:'최유진', avatar:'images/avatars/av6.png', lv:4, body:'맞아요. 기록이 쌓이니까 나중에 비교하기도 훨씬 편해요.', time:'어제' },
-    ],
-  },
-  {
-    id:1005, userId:103, name:'이지현', avatar:'images/avatars/av4.png', lv:5, isChallenger:true,
-    body:'오늘은 비가 와서 밖에 못 나가나 했는데 실내 러닝머신으로 40분 채웠어요. 챌린지 시작하면 날씨 핑계 안 대려고 미리 플랜 B도 만들어두는 중입니다.',
-    userTags:['코스 완주','컨디션 최고','훈련 중'],
-    time:'어제',
-    stickers:{ cheer:38, love:27, cool:11, congrats:34, together:22 },
-    myReactions:[], comments:5,
-    commentList:[
-      { id:9041, name:'서윤아', avatar:'images/avatars/av2.png', lv:6, body:'플랜 B까지 준비한 거 최고예요. 꾸준함이 결국 제일 강하죠.', time:'어제' },
-      { id:9042, name:'박소연', avatar:'images/avatars/av5.png', lv:4, body:'날씨 안 좋아도 인증 채운 거 멋져요. 저도 실내 걷기 챙겨야겠어요.', time:'어제' },
-      { id:9043, name:'김하은', avatar:'images/avatars/av3.png', lv:5, body:'러닝머신 40분 쉽지 않은데 대단해요!', time:'어제' },
-      { id:9044, name:'윤서희', avatar:'images/avatars/av8.png', lv:3, body:'실내 인증 아이디어 얻어갑니다. 감사합니다.', time:'어제' },
-      { id:9045, name:'조예림', avatar:'images/avatars/av10.png', lv:2, body:'비 오는 날은 늘 고민이었는데 참고할게요.', time:'어제' },
-    ],
-  },
-  {
-    id:1006, userId:106, name:'정다은', avatar:'images/avatars/av7.png', lv:3, isChallenger:true,
-    body:'런데이 프로그램 중 특별 강연도 기대돼서 요즘 더 열심히 움직이고 있어요. 행사 날까지 주 3회는 꼭 채우자는 목표 세웠는데, 작은 체크 표시가 쌓이는 맛이 있네요.',
-    userTags:['최선을 다해','5km 완주','훈련 중'],
-    time:'2일 전',
-    stickers:{ cheer:15, love:12, cool:9, congrats:6, together:10 },
-    myReactions:[], comments:3,
-    commentList:[
-      { id:9051, name:'최유진', avatar:'images/avatars/av6.png', lv:4, body:'체크 표시 쌓이는 맛 진짜 공감해요. 은근 동기부여 되죠.', time:'2일 전' },
-      { id:9052, name:'강민정', avatar:'images/avatars/av9.png', lv:2, body:'주 3회 목표 같이 가요. 저도 이번 주는 꼭 채워보려고요.', time:'2일 전' },
-      { id:9053, name:'한지민', avatar:'images/avatars/av1.png', lv:1, body:'특별 강연까지 생각하니 행사 날이 더 기다려져요.', time:'1일 전' },
-    ],
-  },
-  {
-    id:1007, userId:108, name:'강민정', avatar:'images/avatars/av9.png', lv:2, isChallenger:true,
-    body:'저는 달리기보다 걷기 쪽이라 가족이랑 저녁 산책 인증부터 시작했어요. 꼭 빠르게 뛰지 않아도 같이 참여할 수 있다는 점이 이번 챌린지의 제일 좋은 부분 같아요.',
-    userTags:['걷기 참여','가족과 함께','HI RUN DAY 화이팅'],
-    time:'2일 전',
-    stickers:{ cheer:7, love:18, cool:3, congrats:2, together:14 },
-    myReactions:[], comments:3,
-    commentList:[
-      { id:9061, name:'서윤아', avatar:'images/avatars/av2.png', lv:6, body:'맞아요. 걷기부터 시작해도 충분히 좋은 흐름이에요.', time:'2일 전' },
-      { id:9062, name:'이지현', avatar:'images/avatars/av4.png', lv:5, body:'가족이랑 같이 하는 인증은 오래 기억에 남을 것 같아요.', time:'2일 전' },
-      { id:9063, name:'정다은', avatar:'images/avatars/av7.png', lv:3, body:'저도 걷기 인증 날이 제일 편하고 좋더라고요. 같이 가요!', time:'1일 전' },
-    ],
-  },
-];
+const MOCK_POSTS_SEED = [];
 
 const WEEK_DAYS = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
 
@@ -7600,9 +7502,25 @@ async function hydrateAccountFromRemote(empId, fallbackName = '') {
 
     const matchedUsers = Array.isArray(rows) ? rows.filter(Boolean) : [];
     if (!matchedUsers.length) {
+      const hadSyncedRemote = !!localStorage.getItem('hi_synced_' + fallbackDid);
+      if (hadSyncedRemote) {
+        cleanupLocalUserKeys({
+          empIds: [normalizedEmpId],
+          deviceIds: [fallbackDid],
+          registrationIds: [S.user?.registrationId],
+          storageKeys: [
+            'hi_health_v2_' + normalizedEmpId,
+            'hi_health_shop_orders_' + normalizedEmpId,
+            'hi_health_cart_' + normalizedEmpId,
+          ],
+        });
+        clearInMemoryAccountData(normalizedEmpId, fallbackName);
+        S.deviceId = fallbackDid;
+        localStorage.setItem(didKey, fallbackDid);
+      }
       if (!S.user.name && fallbackName) S.user.name = fallbackName;
       S.user.empId = S.user.empId || normalizedEmpId;
-      return { user: null, deviceId: fallbackDid };
+      return { user: null, deviceId: fallbackDid, clearedLocal: hadSyncedRemote };
     }
 
     const u = matchedUsers.find(row => String(row?.deviceId || '').trim() === fallbackDid)
@@ -8509,6 +8427,14 @@ function showCelebration(type, data) {
     title.textContent = '배지 획득!';
     sub.textContent = data.name + ' — ' + data.desc;
     iconWrap.innerHTML = '<div style="width:72px;height:72px;border-radius:50%;background:#F3F4F6;display:flex;align-items:center;justify-content:center;margin:0 auto 12px"><img src="' + data.img + '" style="width:72%;height:72%;object-fit:contain"></div>';
+  } else if (type === 'familycert') {
+    const rewardPoints = Number(data?.points) || FAMILY_CERT_REWARD_POINTS;
+    title.textContent = '가족 인증 승인!';
+    sub.textContent = data?.message || `축하합니다! 가족 운동 인증이 승인되어 ${rewardPoints}포인트가 지급됐어요.`;
+    iconWrap.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;gap:8px;margin-bottom:12px">
+      <div style="width:76px;height:76px;border-radius:24px;background:linear-gradient(135deg,#f59e0b,#f97316);display:flex;align-items:center;justify-content:center;font-size:36px;box-shadow:0 16px 32px rgba(249,115,22,0.24)">📸</div>
+      <div style="display:inline-flex;align-items:center;justify-content:center;padding:6px 14px;border-radius:999px;background:#fff7ed;color:#c2410c;font-size:13px;font-weight:900;border:1px solid #fdba74">+${rewardPoints}P</div>
+    </div>`;
   }
   // spawn confetti
   ov.querySelectorAll('.confetti-dot').forEach(d => d.remove());
@@ -12036,6 +11962,41 @@ function cleanupLocalUserKeys({ empIds = [], deviceIds = [], registrationIds = [
   } catch(e) {}
 }
 
+function clearInMemoryAccountData(empId = ACTIVE_EMPID || S.user?.empId || '', fallbackName = '') {
+  const normalizedEmpId = normalizeEmpIdValue(empId);
+  const preservedAvatar = normalizeAvatar(S.user?.avatar || AVATARS[0]);
+  S.user = {
+    ...S.user,
+    name: fallbackName || '',
+    nickname: '',
+    avatar: preservedAvatar,
+    empId: normalizedEmpId,
+    dept: '',
+    points: 0,
+    totalPoints: 0,
+    streak: 0,
+    registrationId: null,
+    tags: [],
+  };
+  S.workouts = [];
+  S.glucoseRecords = [];
+  S.posts = JSON.parse(JSON.stringify(MOCK_POSTS_SEED));
+  S.redeemedRewards = [];
+  S.pendingRewards = [];
+  S.rewardHistory = [];
+  S.myReactions = {};
+  S.communityPosts = [];
+  S.adminPosts = [];
+  S.todayLog = null;
+  _dayNotes = {};
+  _pendingTrackedRun = null;
+  _cart = {};
+  saveCart();
+  hydrateRecordChipState(true);
+  loadTodayLog();
+  applyTodayPhotoState(normalizedEmpId);
+}
+
 function resetToLoggedOutState() {
   if (_accountSettingsSyncTimer) {
     clearTimeout(_accountSettingsSyncTimer);
@@ -13665,12 +13626,11 @@ function renderRewards() {
     if (done)         cardClass += ' done';
     else if (pending) cardClass += ' pending';
     else if (can)     cardClass += ' can';
-    const onclick = !done && !pending ? `onclick="redeemReward('${r.id}')"` : '';
+    const onclick = can ? `onclick="redeemReward('${r.id}')"` : '';
     const badge = done
       ? `<span class="reward-cost reward-done-badge">수령완료</span>`
       : pending
-      ? `<span class="reward-cost reward-pending-badge">처리중</span>
-         <button class="reward-confirm-btn" style="margin-left:6px" onclick="event.stopPropagation();confirmReward('${r.id}')">직원 확인</button>`
+      ? `<span class="reward-cost reward-pending-badge">직원 확인 대기</span>`
       : can
       ? `<span class="reward-cost reward-apply-badge">교환 신청하기</span>`
       : `<span class="reward-cost" style="background:#f3f4f6;color:#9ca3af">${shortfall}p 남음</span>`;
@@ -13765,7 +13725,7 @@ function redeemReward(id) {
   if (!r) return;
   if (S.redeemedRewards.includes(id)) { haptic('error'); showToast('이미 신청한 보상이에요'); return; }
   if (S.pendingRewards.includes(id))  { haptic('error'); showToast('이미 신청 처리 중이에요'); return; }
-  if (!_challengeRewardMode && S.user.points < r.cost) { haptic('error'); showToast('⚠️ 포인트가 부족해요 (필요: ' + r.cost + 'p)'); return; }
+  if (S.user.points < r.cost) { haptic('error'); showToast('⚠️ 포인트가 부족해요 (필요: ' + r.cost + 'p)'); return; }
 
   if (!_challengeRewardMode) S.user.points -= r.cost;
   S.pendingRewards.push(id);
@@ -13798,18 +13758,8 @@ function redeemReward(id) {
 function confirmReward(id) {
   const r = REWARDS_DATA.find(x => x.id === id);
   if (!r) return;
-  S.pendingRewards  = S.pendingRewards.filter(x => x !== id);
-  S.redeemedRewards.push(id);
-  const hist = (S.rewardHistory || []).find(h => h.id === id && h.status === 'pending');
-  if (hist) { hist.status = 'done'; hist.doneTs = Date.now(); }
-  save();
-  haptic('success');
-  showToast('✅ 교환 완료 확인!');
-  // Supabase orders 상태 업데이트
-  if (_db && hist?.orderId) {
-    _db.from('orders').update({ status: 'completed' }).eq('id', hist.orderId);
-  }
-  renderRewards();
+  haptic('light');
+  showToast('직원 확인 후 자동으로 수령 완료 처리됩니다');
 }
 
 async function syncRewardStatus() {
@@ -14970,6 +14920,167 @@ function scrollToExerciseForm() {
 
 function goToFamilyCert() {
   openFamilyCertModal();
+}
+
+const FAMILY_CERT_REWARD_POINTS = 100;
+const FAMILY_CERT_REWARD_SEEN_KEY = 'hi_family_cert_reward_seen';
+let _familyCertRewardSyncPromise = null;
+
+function getCurrentFamilyCertIdentity() {
+  const myReg = getMyReg();
+  return {
+    empId: normalizeEmpIdValue(S.user?.empId || ACTIVE_EMPID || ''),
+    regId: String(myReg?.id || S.user?.registrationId || '').trim(),
+    deviceId: String(S.deviceId || '').trim(),
+  };
+}
+
+function isCurrentFamilyCertRow(row) {
+  const identity = getCurrentFamilyCertIdentity();
+  const certEmpId = normalizeEmpIdValue(row?.emp_id || row?.empId || '');
+  const certRegId = String(row?.reg_id || row?.regId || '').trim();
+  if (identity.empId && certEmpId && identity.empId === certEmpId) return true;
+  if (identity.regId && certRegId && identity.regId === certRegId) return true;
+  return false;
+}
+
+function getFamilyCertRewardSeenKey(empId = ACTIVE_EMPID || S.user?.empId || '') {
+  return getAccountScopedStorageKey(FAMILY_CERT_REWARD_SEEN_KEY, empId);
+}
+
+function getFamilyCertRewardToken(row) {
+  const certId = String(row?.id || '').trim();
+  const stamp = String(row?.rewarded_at || row?.reviewed_at || '').trim();
+  return certId && stamp ? `${certId}:${stamp}` : '';
+}
+
+function hasSeenFamilyCertReward(row, empId = ACTIVE_EMPID || S.user?.empId || '') {
+  const token = getFamilyCertRewardToken(row);
+  if (!token) return false;
+  return localStorage.getItem(getFamilyCertRewardSeenKey(empId)) === token;
+}
+
+function markFamilyCertRewardSeen(row, empId = ACTIVE_EMPID || S.user?.empId || '') {
+  const token = getFamilyCertRewardToken(row);
+  if (!token) return;
+  localStorage.setItem(getFamilyCertRewardSeenKey(empId), token);
+}
+
+function pickCurrentRemoteUser(rows = [], empId = '', deviceId = '') {
+  const normalizedEmpId = normalizeEmpIdValue(empId);
+  const normalizedDeviceId = String(deviceId || '').trim();
+  return [...rows].sort((a, b) => {
+    const aEmp = normalizeEmpIdValue(a?.empId);
+    const bEmp = normalizeEmpIdValue(b?.empId);
+    const aDevice = String(a?.deviceId || '').trim();
+    const bDevice = String(b?.deviceId || '').trim();
+    const aScore = (normalizedEmpId && aEmp === normalizedEmpId ? 4 : 0)
+      + (normalizedDeviceId && aDevice === normalizedDeviceId ? 2 : 0)
+      + (aEmp ? 1 : 0);
+    const bScore = (normalizedEmpId && bEmp === normalizedEmpId ? 4 : 0)
+      + (normalizedDeviceId && bDevice === normalizedDeviceId ? 2 : 0)
+      + (bEmp ? 1 : 0);
+    if (bScore !== aScore) return bScore - aScore;
+    const aTs = Date.parse(a?.lastactiveat || a?.updatedAt || a?.updatedat || 0) || 0;
+    const bTs = Date.parse(b?.lastactiveat || b?.updatedAt || b?.updatedat || 0) || 0;
+    return bTs - aTs;
+  })[0] || null;
+}
+
+async function refreshCurrentUserPointsFromRemote() {
+  if (!_db) return null;
+  const identity = getCurrentFamilyCertIdentity();
+  const filters = [];
+  if (identity.empId) {
+    filters.push(`"empId".eq.${identity.empId}`);
+    if (identity.empId.toLowerCase() !== identity.empId) filters.push(`"empId".eq.${identity.empId.toLowerCase()}`);
+  }
+  if (identity.deviceId) filters.push(`deviceId.eq.${identity.deviceId}`);
+  if (!filters.length) return null;
+
+  const { data, error } = await _db
+    .from('users')
+    .select('deviceId,empId,name,dept,avatar,points,tags,lastactiveat')
+    .or(filters.join(','));
+  if (error) throw error;
+
+  const remoteUser = pickCurrentRemoteUser(data || [], identity.empId, identity.deviceId);
+  if (!remoteUser) return null;
+  S.deviceId = String(remoteUser.deviceId || S.deviceId || '').trim() || S.deviceId;
+  S.user.name = remoteUser.name || S.user.name;
+  S.user.empId = remoteUser.empId || S.user.empId;
+  S.user.dept = remoteUser.dept || S.user.dept;
+  S.user.avatar = normalizeAvatar(remoteUser.avatar || S.user.avatar);
+  S.user.points = Number(remoteUser.points) || 0;
+  S.user.totalPoints = Math.max(Number(remoteUser.points) || 0, Number(S.user.totalPoints || 0));
+  if (remoteUser.tags != null) {
+    S.user.tags = typeof remoteUser.tags === 'string'
+      ? remoteUser.tags.split(',').map(v => String(v || '').trim()).filter(Boolean)
+      : (Array.isArray(remoteUser.tags) ? remoteUser.tags : []);
+  }
+  save();
+  renderHeader();
+  if (document.getElementById('page-home')?.classList.contains('active')) renderHome();
+  if (document.getElementById('page-challenge')?.classList.contains('active')) renderChallenge();
+  if (document.getElementById('page-league')?.classList.contains('active')) {
+    resetLeagueCache();
+    fetchLeagueData({ force: true, needWeekly: S.leagueTab === 'weekly' });
+  }
+  return remoteUser;
+}
+
+async function consumeFamilyCertReward(row) {
+  if (!row || String(row?.status || '').trim().toLowerCase() !== 'approved') return false;
+  if (!isCurrentFamilyCertRow(row)) return false;
+  if (hasSeenFamilyCertReward(row)) return false;
+
+  await refreshCurrentUserPointsFromRemote();
+  markFamilyCertRewardSeen(row);
+  haptic('success');
+  showCelebration('familycert', {
+    points: Number(row?.reward_points) || FAMILY_CERT_REWARD_POINTS,
+    message: String(row?.reward_message || '').trim(),
+  });
+  showToast(`🎉 가족 운동 인증 승인! +${Number(row?.reward_points) || FAMILY_CERT_REWARD_POINTS}p 지급 완료`);
+  return true;
+}
+
+async function syncFamilyCertRewardStatus() {
+  if (!_db) return null;
+  if (_familyCertRewardSyncPromise) return _familyCertRewardSyncPromise;
+  const identity = getCurrentFamilyCertIdentity();
+  const filters = [];
+  if (identity.empId) {
+    filters.push(`emp_id.eq.${identity.empId}`);
+    if (identity.empId.toLowerCase() !== identity.empId) filters.push(`emp_id.eq.${identity.empId.toLowerCase()}`);
+  }
+  if (identity.regId) filters.push(`reg_id.eq.${identity.regId}`);
+  if (!filters.length) return null;
+
+  const run = (async () => {
+    const { data, error } = await _db
+      .from('family_certifications')
+      .select('*')
+      .eq('status', 'approved')
+      .or(filters.join(','))
+      .order('reviewed_at', { ascending: false })
+      .limit(10);
+    if (error) throw error;
+
+    const matched = (data || []).filter(isCurrentFamilyCertRow);
+    if (!matched.length) return null;
+    const unseen = matched.find(row => !hasSeenFamilyCertReward(row));
+    const target = unseen || matched[0];
+    if (target && unseen) await consumeFamilyCertReward(target);
+    return target;
+  })();
+
+  _familyCertRewardSyncPromise = run;
+  try {
+    return await run;
+  } finally {
+    if (_familyCertRewardSyncPromise === run) _familyCertRewardSyncPromise = null;
+  }
 }
 
 function openFamilyCertModal() {
@@ -16775,7 +16886,7 @@ async function init() {
       <span class="fc-title">가족 운동 인증</span>
       <button type="button" onclick="closeFamilyCertModal()" style="background:none;border:none;font-size:20px;color:var(--text-secondary);cursor:pointer;padding:0">✕</button>
     </div>
-    <div class="fc-sub">가족과 함께 운동하는 사진 또는 영상을 올려주세요.<br>제출 완료 시 추가 <strong>100포인트</strong>가 지급됩니다.</div>
+    <div class="fc-sub">가족과 함께 운동하는 사진 또는 영상을 올려주세요.<br>관리자 승인 완료 시 추가 <strong>100포인트</strong>가 자동 지급됩니다.</div>
     <div id="fc-preview-wrap" class="fc-preview-wrap">
       <img id="fc-img" class="fc-media-preview" style="display:none" alt="인증 미리보기">
       <video id="fc-vid" class="fc-media-preview" controls style="display:none"></video>
@@ -16784,7 +16895,7 @@ async function init() {
       📁 사진 / 영상 선택
       <input type="file" id="fc-file-input" accept="image/*,video/*" style="display:none" onchange="handleFcFileSelect(this)">
     </label>
-    <div class="fc-reward-note"><span>가족 운동 인증을 제출하면 챌린지 보너스 <strong>100포인트</strong>가 추가 지급됩니다.</span></div>
+    <div class="fc-reward-note"><span>가족 운동 인증이 승인되면 챌린지 보너스 <strong>100포인트</strong>가 자동 지급됩니다.</span></div>
     <textarea class="fc-memo" id="fc-memo" rows="2" placeholder="한 줄 메모 (선택사항)"></textarea>
     <div class="fc-consent">
       <div class="fc-consent-copy">제출한 사진 및 영상은 병원 홍보 영상 또는 관련 홍보 콘텐츠에 활용될 수 있습니다.</div>
@@ -16797,7 +16908,7 @@ async function init() {
     <div id="fc-done" class="fc-done" style="display:none">
       <div class="fc-done-icon">✅</div>
       <div class="fc-done-text">인증 제출 완료!</div>
-      <div class="fc-done-sub">관리자 확인 후 승인됩니다.</div>
+      <div class="fc-done-sub">관리자 승인 후 100포인트가 자동 지급됩니다.</div>
     </div>
   </div>
 </div>
@@ -17319,6 +17430,13 @@ async function init() {
   // 로그인 후 5초 뒤에 표시 (단 한 번만)
   window.addEventListener('hi:loggedin', () => setTimeout(showInstallGuide, 5000));
   window.addEventListener('hi:loggedin', () => setTimeout(syncPushSubscriptionIfNeeded, 1500));
+  window.addEventListener('hi:loggedin', () => setTimeout(() => {
+    syncFamilyCertRewardStatus().catch(err => console.warn('[family-cert/reward-sync]', err));
+  }, 1800));
+  window.addEventListener('focus', () => {
+    if (!(S.user?.empId || ACTIVE_EMPID)) return;
+    syncFamilyCertRewardStatus().catch(err => console.warn('[family-cert/reward-focus-sync]', err));
+  });
 
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
@@ -17374,6 +17492,18 @@ async function init() {
             orders[idx].status = changed.status;
             localStorage.setItem(SHOP_ORDERS_KEY, JSON.stringify(orders));
             renderShopOrderHistory();
+          }
+        })
+        .subscribe();
+      _db.channel('family_certifications_ch')
+        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'family_certifications' }, async (payload) => {
+          const changed = payload.new || {};
+          if (String(changed.status || '').trim().toLowerCase() !== 'approved') return;
+          if (!isCurrentFamilyCertRow(changed)) return;
+          try {
+            await consumeFamilyCertReward(changed);
+          } catch (err) {
+            console.warn('[family-cert/realtime]', err);
           }
         })
         .subscribe();

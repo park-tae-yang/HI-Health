@@ -605,7 +605,6 @@
               <th>티셔츠</th>
               <th>혈당체크기기</th>
               <th>가족 정보</th>
-              <th>참여 옵션</th>
               <th>요청사항</th>
               <th>상태</th>
               <th>관리</th>
@@ -625,7 +624,6 @@
         <div class="ch-s-pill"><div class="ch-s-val" id="ord-conf">-</div><div class="ch-s-lbl">확인</div></div>
         <div class="ch-s-pill"><div class="ch-s-val" id="ord-done">-</div><div class="ch-s-lbl">완료</div></div>
         <div class="ch-s-pill"><div class="ch-s-val" id="ord-can">-</div><div class="ch-s-lbl">취소</div></div>
-        <div class="ch-s-pill"><div class="ch-s-val" id="ord-amt">-</div><div class="ch-s-lbl">총금액(원)</div></div>
       </div>
       <div class="ctrl-bar">
         <input class="ctrl-inp" id="ord-search" placeholder="이름·연락처·상품 검색" oninput="renderOrders()">
@@ -2272,20 +2270,34 @@ async function resetAllData() {
   if (!confirm(`⚠️ 전체 데이터 초기화\n\n이용자 ${cnt}명과 모든 운동·혈당·게시글·챌린지 신청 데이터가 영구 삭제됩니다.\n\n정말 삭제하시겠습니까?`)) return;
   showLoading(true);
   try {
-    const deleteByIds = async (tbl, key, ids) => {
+    const isIgnorableResetError = error => {
+      const message = String(error?.message || error || '');
+      return /relation .* does not exist|Could not find the table|column .* does not exist|Could not find the '.*' column/i.test(message);
+    };
+    const selectIds = async (tbl, key, optional = false) => {
+      const { data, error } = await db.from(tbl).select(key);
+      if (error) {
+        if (optional && isIgnorableResetError(error)) return [];
+        throw new Error(`${tbl} 조회 실패: ${error.message}`);
+      }
+      return data || [];
+    };
+    const deleteByIds = async (tbl, key, ids, optional = false) => {
       const uniq = [...new Set((ids || []).map(v => String(v || '').trim()).filter(Boolean))];
       if (!uniq.length) return;
       for (let i = 0; i < uniq.length; i += 1000) {
         const { error } = await db.from(tbl).delete().in(key, uniq.slice(i, i + 1000));
-        if (error) throw new Error(`${tbl} 삭제 실패: ${error.message}`);
+        if (error) {
+          if (optional && isIgnorableResetError(error)) return;
+          throw new Error(`${tbl} 삭제 실패: ${error.message}`);
+        }
       }
     };
 
-    const { data: posts, error: postsErr } = await db.from('posts').select('id');
-    if (postsErr) throw new Error(`posts 조회 실패: ${postsErr.message}`);
-    const postIds = (posts || []).map(p => p.id);
-    await deleteByIds('reactions', 'postId', postIds);
-    await deleteByIds('post_comments', 'postId', postIds);
+    const posts = await selectIds('posts', 'id');
+    const postIds = posts.map(p => p.id);
+    await deleteByIds('reactions', 'postId', postIds, true);
+    await deleteByIds('post_comments', 'postId', postIds, true);
 
     const defs = [
       { tbl:'orders',   key:'id' },
@@ -2293,19 +2305,26 @@ async function resetAllData() {
       { tbl:'glucose',  key:'id' },
       { tbl:'posts',    key:'id' },
       { tbl:'registrations', key:'id' },
+      { tbl:'family_certifications', key:'id', optional:true },
+      { tbl:'admin_posts', key:'id', optional:true },
       { tbl:'users',    key:'deviceId' },
     ];
-    for (const { tbl, key } of defs) {
-      const { data, error } = await db.from(tbl).select(key);
-      if (error) throw new Error(`${tbl} 조회 실패: ${error.message}`);
+    for (const { tbl, key, optional } of defs) {
+      const data = await selectIds(tbl, key, optional);
       if (!data?.length) continue;
       const ids = data.map(r => r[key]);
-      await deleteByIds(tbl, key, ids);
+      await deleteByIds(tbl, key, ids, optional);
     }
-    GD = { users:[], workouts:[], posts:[], glucose:[], registrations:[], orders:[], adminPosts: GD.adminPosts };
+    GD = { users:[], workouts:[], posts:[], glucose:[], registrations:[], orders:[], adminPosts: [] };
+    GD_famcert = [];
     selDeviceId = '';
-    setStatus('연결됨 (0명)', true);
-    renderAll();
+    try {
+      setStatus('연결됨 (0명)', true);
+      renderAll();
+      renderFamCert();
+    } catch (renderErr) {
+      console.warn('[resetAllData/render]', renderErr);
+    }
     toast('✅ 전체 초기화 완료. 새롭게 시작할 준비가 됐습니다!');
   } catch(e) { toast('초기화 실패: ' + e.message); }
   finally { showLoading(false); }
@@ -2914,7 +2933,6 @@ function renderChallenge() {
       <td>${escHtml(tshirtText)}</td>
       <td>${escHtml(cgmText)}</td>
       <td class="td-memo">${escHtml(familySummary)}</td>
-      <td class="td-memo">${escHtml(optionSummary)}</td>
       <td class="td-memo">${requestHtml}</td>
       <td>${sBadge}</td>
       <td>
@@ -3137,8 +3155,6 @@ function renderOrders() {
   document.getElementById('ord-conf').textContent  = all.filter(o => o.status === 'confirmed').length;
   document.getElementById('ord-done').textContent  = all.filter(o => o.status === 'completed').length;
   document.getElementById('ord-can').textContent   = all.filter(o => o.status === 'cancelled').length;
-  document.getElementById('ord-amt').textContent   = all.filter(o => o.status !== 'cancelled')
-    .reduce((s,o) => s + (Number(o.total)||0), 0).toLocaleString();
   document.getElementById('ord-count').textContent = list.length + '건';
 
   const tbody = document.getElementById('ord-tbody');
@@ -3588,6 +3604,77 @@ function switchTab(name, btn) {
    FAMILY CERTIFICATION
 ══════════════════════════════════════════════ */
 let GD_famcert = [];
+const FAMILY_CERT_REWARD_POINTS = 100;
+
+function isFamCertRewardColumnMissingError(error) {
+  const message = String(error?.message || error || '');
+  return /rewarded_at|reward_points|reward_message/i.test(message) && /column .* does not exist|Could not find the '.*' column/i.test(message);
+}
+
+function formatFamCertReviewError(error) {
+  if (isFamCertRewardColumnMissingError(error)) {
+    return '가족인증 보상 컬럼이 없습니다. Supabase migration 적용이 먼저 필요합니다';
+  }
+  return error?.message || String(error || '알 수 없는 오류');
+}
+
+function pickFamCertRewardUser(rows, targetEmpId = '', targetDeviceId = '') {
+  const normalizedEmpId = normRegEmpId(targetEmpId);
+  const normalizedDeviceId = String(targetDeviceId || '').trim();
+  return [...(rows || [])].sort((a, b) => {
+    const aEmp = normRegEmpId(a?.empId);
+    const bEmp = normRegEmpId(b?.empId);
+    const aDevice = String(a?.deviceId || '').trim();
+    const bDevice = String(b?.deviceId || '').trim();
+    const aScore = (normalizedEmpId && aEmp === normalizedEmpId ? 4 : 0)
+      + (normalizedDeviceId && aDevice === normalizedDeviceId ? 2 : 0)
+      + (aEmp ? 1 : 0);
+    const bScore = (normalizedEmpId && bEmp === normalizedEmpId ? 4 : 0)
+      + (normalizedDeviceId && bDevice === normalizedDeviceId ? 2 : 0)
+      + (bEmp ? 1 : 0);
+    if (bScore !== aScore) return bScore - aScore;
+    const aTs = Date.parse(a?.lastactiveat || a?.updatedAt || a?.updatedat || 0) || 0;
+    const bTs = Date.parse(b?.lastactiveat || b?.updatedAt || b?.updatedat || 0) || 0;
+    return bTs - aTs;
+  })[0] || null;
+}
+
+async function resolveFamCertRewardTarget(certRow) {
+  const regId = String(certRow?.reg_id || '').trim();
+  let targetEmpId = normRegEmpId(certRow?.emp_id);
+  let targetDeviceId = '';
+  if (regId) {
+    const regRes = await db
+      .from('registrations')
+      .select('id,"deviceId","empId"')
+      .eq('id', regId)
+      .maybeSingle();
+    if (regRes.error) return { error: regRes.error };
+    const reg = regRes.data || null;
+    if (!targetEmpId && reg?.empId) targetEmpId = normRegEmpId(reg.empId);
+    targetDeviceId = String(reg?.deviceId || '').trim();
+  }
+
+  const filters = [];
+  if (targetEmpId) {
+    filters.push(`"empId".eq.${targetEmpId}`);
+    if (targetEmpId.toLowerCase() !== targetEmpId) filters.push(`"empId".eq.${targetEmpId.toLowerCase()}`);
+  }
+  if (targetDeviceId) filters.push(`deviceId.eq.${targetDeviceId}`);
+  if (!filters.length) return { user: null, empId: targetEmpId, deviceId: targetDeviceId };
+
+  const userRes = await db
+    .from('users')
+    .select('deviceId,empId,name,points,lastactiveat')
+    .or(filters.join(','));
+  if (userRes.error) return { error: userRes.error };
+
+  return {
+    user: pickFamCertRewardUser(userRes.data || [], targetEmpId, targetDeviceId),
+    empId: targetEmpId,
+    deviceId: targetDeviceId,
+  };
+}
 
 async function loadFamCerts() {
   const { data, error } = await db
@@ -3648,17 +3735,89 @@ function renderFamCert() {
 }
 
 async function reviewFamCert(id, status) {
+  const certRow = GD_famcert.find(r => String(r.id) === String(id));
+  if (!certRow) { toast('가족인증 정보를 찾을 수 없습니다'); return; }
   const label = status === 'approved' ? '승인' : '반려';
   if (!confirm(`이 인증을 ${label} 처리할까요?`)) return;
+  showLoading(true);
+  const reviewedAt = new Date().toISOString();
+  let rewardMeta = null;
+
+  if (status === 'approved' && !certRow.rewarded_at) {
+    const targetRes = await resolveFamCertRewardTarget(certRow);
+    if (targetRes.error) {
+      showLoading(false);
+      toast('대상 이용자 조회 실패: ' + formatFamCertReviewError(targetRes.error));
+      return;
+    }
+    if (!targetRes.user?.deviceId) {
+      showLoading(false);
+      toast('포인트를 지급할 이용자를 찾지 못했습니다');
+      return;
+    }
+    const prevPoints = Number(targetRes.user.points) || 0;
+    const nextPoints = prevPoints + FAMILY_CERT_REWARD_POINTS;
+    const userRes = await db
+      .from('users')
+      .update({ points: nextPoints, lastactiveat: reviewedAt })
+      .eq('deviceId', targetRes.user.deviceId);
+    if (userRes.error) {
+      showLoading(false);
+      toast('포인트 지급 실패: ' + formatFamCertReviewError(userRes.error));
+      return;
+    }
+    rewardMeta = {
+      userDeviceId: targetRes.user.deviceId,
+      prevPoints,
+      nextPoints,
+      rewardedAt: reviewedAt,
+      rewardPoints: FAMILY_CERT_REWARD_POINTS,
+      rewardMessage: `가족 운동 인증이 승인되어 ${FAMILY_CERT_REWARD_POINTS}포인트가 지급되었습니다!`,
+    };
+  }
+
+  const updatePayload = { status, reviewed_at: reviewedAt };
+  if (status === 'approved' && rewardMeta) {
+    updatePayload.rewarded_at = rewardMeta.rewardedAt;
+    updatePayload.reward_points = rewardMeta.rewardPoints;
+    updatePayload.reward_message = rewardMeta.rewardMessage;
+  }
   const { error } = await db
     .from('family_certifications')
-    .update({ status, reviewed_at: new Date().toISOString() })
+    .update(updatePayload)
     .eq('id', id);
-  if (error) { toast('처리 실패: ' + error.message); return; }
-  const row = GD_famcert.find(r => r.id === id);
-  if (row) row.status = status;
+  if (error) {
+    if (rewardMeta?.userDeviceId) {
+      await db
+        .from('users')
+        .update({ points: rewardMeta.prevPoints, lastactiveat: reviewedAt })
+        .eq('deviceId', rewardMeta.userDeviceId);
+    }
+    showLoading(false);
+    toast('처리 실패: ' + formatFamCertReviewError(error));
+    return;
+  }
+
+  if (rewardMeta?.userDeviceId) {
+    const linkedUser = GD.users.find(u => String(u?.deviceId || '').trim() === rewardMeta.userDeviceId);
+    if (linkedUser) linkedUser.points = rewardMeta.nextPoints;
+  }
+  if (certRow) {
+    certRow.status = status;
+    certRow.reviewed_at = reviewedAt;
+    if (rewardMeta) {
+      certRow.rewarded_at = rewardMeta.rewardedAt;
+      certRow.reward_points = rewardMeta.rewardPoints;
+      certRow.reward_message = rewardMeta.rewardMessage;
+    }
+  }
+  showLoading(false);
   renderFamCert();
-  toast(`인증 ${label} 완료 ✓`);
+  renderUsers();
+  renderStats();
+  toast(status === 'approved'
+    ? `인증 승인 및 ${FAMILY_CERT_REWARD_POINTS}포인트 지급 완료 ✓`
+    : `인증 ${label} 완료 ✓`);
 }
 
 /* ── 구매 기능 설정 ── */
