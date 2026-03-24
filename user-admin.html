@@ -1764,7 +1764,7 @@ async function loadAll(opts = {}) {
     }
   } catch(e) {
     setStatus('연결 실패', false);
-    toast('오류: ' + e.message);
+    if (!req.silent) toast('오류: ' + e.message);
   } finally {
     if (!req.silent) showLoading(false);
     if (_loadSafetyTimer) { clearTimeout(_loadSafetyTimer); _loadSafetyTimer = null; }
