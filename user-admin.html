@@ -352,7 +352,6 @@
         <span class="ctrl-count" id="u-count">0명</span>
         <button class="cbtn amb" id="restore-users-btn" style="display:none" onclick="restoreUsersFromActivity()">users 복구</button>
         <button class="cbtn dan" id="dup-btn" style="display:none" onclick="deleteDuplicates()">중복 삭제</button>
-        <button class="cbtn dan" onclick="resetAllData()">전체 초기화</button>
       </div>
 
       <div class="tbl-wrap">
@@ -795,6 +794,14 @@
           </div>
           <span id="admin-challenge-reward-label" style="font-size:13px;font-weight:600;color:var(--t3)">로딩중...</span>
         </div>
+      </div>
+      <!-- 전체 초기화 -->
+      <div class="shop-config-bar" style="margin-top:14px;border-top:1px solid var(--border);padding-top:18px">
+        <div>
+          <div class="shop-config-title" style="color:var(--red)">⚠️ 전체 초기화</div>
+          <div style="font-size:11px;color:var(--t3);margin-top:2px">모든 이용자·운동·혈당·게시글·챌린지 데이터를 영구 삭제합니다</div>
+        </div>
+        <button class="cbtn dan" onclick="resetAllData()">초기화</button>
       </div>
     </div>
 
@@ -1966,7 +1973,7 @@ function renderUsers() {
       <td>${Number(u.streak)||0}일</td>
       <td>${actCell}</td>
       <td>
-        <button class="abtn del" onclick="deleteUser('${safeId}','${safeName}')" title="삭제">✕</button>
+        <button class="abtn del" onclick="deleteUser('${safeId}','${safeName}')" title="삭제"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg></button>
       </td>
     </tr>`;
   }).join('');
