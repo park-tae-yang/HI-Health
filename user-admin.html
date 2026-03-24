@@ -3579,7 +3579,7 @@ function switchTab(name, btn) {
   if (name === 'glucose') renderGlucose();
   if (name === 'posts') renderPosts();
   if (name === 'challenge') renderChallenge();
-if (name === 'orders') loadShopConfig();
+  if (name === 'orders') { renderOrders(); loadShopConfig(); }
   if (name === 'settings') loadSettingsTab();
   if (name === 'famcert') loadFamCerts();
 }
