@@ -3351,10 +3351,10 @@
     const normalizedDeviceId = String(deviceId || '').trim();
     const filters = [];
     if (normalizedEmpId) {
-      filters.push(`empid.eq.${normalizedEmpId}`);
-      if (normalizedEmpId.toLowerCase() !== normalizedEmpId) filters.push(`empid.eq.${normalizedEmpId.toLowerCase()}`);
+      filters.push(`"empId".eq.${normalizedEmpId}`);
+      if (normalizedEmpId.toLowerCase() !== normalizedEmpId) filters.push(`"empId".eq.${normalizedEmpId.toLowerCase()}`);
     } else if (normalizedDeviceId) {
-      filters.push(`deviceid.eq.${normalizedDeviceId}`);
+      filters.push(`"deviceId".eq.${normalizedDeviceId}`);
     }
     if (!filters.length) return;
     try {

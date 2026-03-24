@@ -12118,7 +12118,7 @@ async function deleteMyDeviceAndServerData() {
     const userFilters = [];
     const regFilters = [];
     [...deviceIds].forEach(deviceId => {
-      userFilters.push(`deviceid.eq.${deviceId}`);
+      userFilters.push(`"deviceId".eq.${deviceId}`);
       regFilters.push(`"deviceId".eq.${deviceId}`);
     });
     [...registrationIds].forEach(registrationId => {
@@ -12126,11 +12126,11 @@ async function deleteMyDeviceAndServerData() {
       regFilters.push(`id.eq.${registrationId}`);
     });
     empIds.forEach(empId => {
-      userFilters.push(`empid.eq.${empId}`);
+      userFilters.push(`"empId".eq.${empId}`);
       regFilters.push(`"empId".eq.${empId}`);
     });
     lowerEmpIds.forEach(empId => {
-      userFilters.push(`empid.eq.${empId}`);
+      userFilters.push(`"empId".eq.${empId}`);
       regFilters.push(`"empId".eq.${empId}`);
     });
 
