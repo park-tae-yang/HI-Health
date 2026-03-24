@@ -166,14 +166,28 @@
 
     /* ── USER DETAIL PANEL ── */
     .detail-panel{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);padding:20px;margin-bottom:20px;}
-    .dp-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border);}
+    .dp-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--border);}
+    .dp-user-summary{display:flex;align-items:center;gap:12px;}
+    .dp-avatar-preview{width:48px;height:48px;border-radius:50%;background:var(--pl);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;border:2px solid var(--border);}
     .dp-title{font-size:16px;font-weight:700;}
-    .dp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:16px;}
+    .dp-meta{font-size:12px;color:var(--t3);margin-top:2px;}
+    .dp-body{display:grid;grid-template-columns:1fr 1.4fr;gap:16px;margin-bottom:16px;}
+    .dp-section-title{font-size:11px;font-weight:700;color:var(--t3);margin-bottom:10px;letter-spacing:.5px;text-transform:uppercase;}
+    .dp-info-grid{display:flex;flex-direction:column;}
+    .dp-info-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);}
+    .dp-info-row:last-child{border-bottom:none;}
+    .dp-info-label{font-size:11px;color:var(--t3);font-weight:600;min-width:68px;flex-shrink:0;}
+    .dp-info-val{font-size:13px;color:var(--t1);font-weight:500;word-break:break-all;}
+    .dp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:0;}
     .dp-field label{font-size:11px;color:var(--t3);font-weight:600;display:block;margin-bottom:4px;}
     .dp-inp{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:inherit;font-size:13px;outline:none;}
     .dp-inp:focus{border-color:var(--p);}
-    .dp-row{display:flex;gap:8px;align-items:center;}
+    .dp-pts-section{background:var(--bg);border-radius:var(--rs);padding:14px 16px;margin-bottom:14px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+    .dp-pts-current{display:flex;align-items:center;gap:10px;}
+    .dp-pts-label{font-size:12px;color:var(--t3);font-weight:600;white-space:nowrap;}
     .dp-pts-adj{display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
+    .dp-actions{display:flex;gap:8px;flex-wrap:wrap;padding-top:14px;border-top:1px solid var(--border);}
+    @media(max-width:600px){.dp-body{grid-template-columns:1fr;}}
 
     /* ── MODAL ── */
     .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center;padding:20px;}
@@ -383,29 +397,56 @@
       <!-- USER DETAIL -->
       <div class="detail-panel" id="u-detail" style="display:none">
         <div class="dp-header">
-          <span class="dp-title" id="u-detail-title">이용자 상세</span>
-          <button class="cbtn" style="background:var(--bg)" onclick="hideDetail()">✕ 닫기</button>
+          <div class="dp-user-summary">
+            <div class="dp-avatar-preview" id="dp-avatar-preview">👤</div>
+            <div>
+              <div class="dp-title" id="u-detail-title">이용자 상세</div>
+              <div class="dp-meta" id="dp-meta"></div>
+            </div>
+          </div>
+          <button class="cbtn" style="background:var(--bg);color:var(--t2)" onclick="hideDetail()">✕ 닫기</button>
         </div>
-        <div class="dp-grid">
-          <div class="dp-field"><label>이름</label><input class="dp-inp" id="d-name" oninput="markUserDetailDirty()"></div>
-          <div class="dp-field"><label>닉네임</label><input class="dp-inp" id="d-nickname" oninput="markUserDetailDirty()"></div>
-          <div class="dp-field"><label>아바타</label><input class="dp-inp" id="d-avatar" oninput="markUserDetailDirty()"></div>
-          <div class="dp-field"><label>포인트</label><input class="dp-inp" type="number" id="d-points" oninput="markUserDetailDirty()"></div>
-          <div class="dp-field"><label>연속 달성일</label><input class="dp-inp" type="number" id="d-streak" oninput="markUserDetailDirty()"></div>
-          <div class="dp-field"><label>계정 ID</label><input class="dp-inp" id="d-empid" readonly style="background:var(--bg)"></div>
-          <div class="dp-field"><label>신청번호</label><input class="dp-inp" id="d-registration-id" readonly style="background:var(--bg)"></div>
-          <div class="dp-field"><label>부서</label><input class="dp-inp" id="d-dept" readonly style="background:var(--bg)"></div>
+
+        <div class="dp-body">
+          <!-- 좌: 읽기 전용 계정 정보 -->
+          <div>
+            <div class="dp-section-title">계정 정보</div>
+            <div class="dp-info-grid">
+              <div class="dp-info-row"><span class="dp-info-label">계정 ID</span><span class="dp-info-val" id="di-empid">-</span></div>
+              <div class="dp-info-row"><span class="dp-info-label">부서</span><span class="dp-info-val" id="di-dept">-</span></div>
+              <div class="dp-info-row"><span class="dp-info-label">신청번호</span><span class="dp-info-val" id="di-regid">-</span></div>
+            </div>
+          </div>
+          <!-- 우: 수정 가능 필드 -->
+          <div>
+            <div class="dp-section-title">정보 수정</div>
+            <div class="dp-grid">
+              <div class="dp-field"><label>이름</label><input class="dp-inp" id="d-name" oninput="markUserDetailDirty()"></div>
+              <div class="dp-field"><label>닉네임</label><input class="dp-inp" id="d-nickname" oninput="markUserDetailDirty()"></div>
+              <div class="dp-field"><label>아바타</label><input class="dp-inp" id="d-avatar" placeholder="이모지 또는 경로" oninput="markUserDetailDirty()"></div>
+              <div class="dp-field"><label>연속 달성일</label><input class="dp-inp" type="number" id="d-streak" oninput="markUserDetailDirty()"></div>
+            </div>
+          </div>
         </div>
-        <div class="dp-pts-adj" style="margin-bottom:14px">
-          <span style="font-size:12px;color:var(--t3);font-weight:600">포인트 조정</span>
-          <input class="dp-inp" type="number" id="adj-val" placeholder="조정값" style="width:120px">
-          <button class="cbtn grn" onclick="adjPoints(1)">+ 추가</button>
-          <button class="cbtn dan" onclick="adjPoints(-1)">- 차감</button>
+
+        <!-- 포인트 조정 -->
+        <div class="dp-pts-section">
+          <div class="dp-pts-current">
+            <span class="dp-pts-label">포인트</span>
+            <input class="dp-inp" type="number" id="d-points" oninput="markUserDetailDirty()" style="width:110px;font-size:18px;font-weight:800;text-align:center">
+          </div>
+          <div class="dp-pts-adj">
+            <span style="font-size:12px;color:var(--t3);font-weight:600">빠른 조정</span>
+            <input class="dp-inp" type="number" id="adj-val" placeholder="조정값" style="width:100px">
+            <button class="cbtn grn" onclick="adjPoints(1)">+ 추가</button>
+            <button class="cbtn dan" onclick="adjPoints(-1)">− 차감</button>
+          </div>
         </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <button class="cbtn pri" onclick="saveUserDetail()">저장</button>
-          <button class="cbtn sky" onclick="openUserWorkouts()">운동기록 보기</button>
-          <button class="cbtn dan" onclick="deleteSelUser()">이용자 삭제</button>
+
+        <div class="dp-actions">
+          <button class="cbtn pri" onclick="saveUserDetail()">💾 저장</button>
+          <button class="cbtn sky" onclick="openUserWorkouts()">🏋️ 운동기록 보기</button>
+          <button class="cbtn dan" onclick="deleteSelUser()">🗑️ 이용자 삭제</button>
         </div>
       </div>
     </div>
@@ -1977,15 +2018,28 @@ function markUserDetailDirty() {
 
 function fillUserDetailForm(u, fallbackName = '') {
   if (!u) return;
+  const name = u.name || fallbackName || '이용자';
   document.getElementById('d-name').value     = u.name     || fallbackName || '';
   document.getElementById('d-nickname').value = u.nickname || '';
   document.getElementById('d-avatar').value   = u.avatar   || '';
   document.getElementById('d-points').value   = Number(u.points) || 0;
   document.getElementById('d-streak').value   = Number(u.streak) || 0;
-  document.getElementById('d-empid').value    = u.empId  || '';
-  document.getElementById('d-registration-id').value = u.registrationId || '-';
-  document.getElementById('d-dept').value     = u.dept   || '';
-  document.getElementById('u-detail-title').textContent = (u.avatar||'') + ' ' + (u.name||fallbackName||'이용자') + ' 상세';
+  // 읽기전용 계정 정보
+  document.getElementById('di-empid').textContent  = u.empId  || '-';
+  document.getElementById('di-dept').textContent   = u.dept   || '-';
+  document.getElementById('di-regid').textContent  = u.registrationId || '-';
+  // 헤더 요약
+  document.getElementById('u-detail-title').textContent = name;
+  const meta = [u.empId, u.dept].filter(Boolean).join(' · ');
+  document.getElementById('dp-meta').textContent = meta || '';
+  // 아바타 프리뷰
+  const av = u.avatar || '';
+  const avEl = document.getElementById('dp-avatar-preview');
+  if (av && av.startsWith('images/')) {
+    avEl.innerHTML = `<img src="${av}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+  } else {
+    avEl.textContent = av || name.charAt(0) || '👤';
+  }
   _userDetailDirty = false;
 }
 
