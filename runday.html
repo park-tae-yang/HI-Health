@@ -3646,7 +3646,7 @@
           key: peopleIdentityKey(r) || String(r?.name || '').trim(),
           isMe,
           isNew: !!(r.registeredAt && (Date.now() - new Date(r.registeredAt).getTime()) <= NEW_PEOPLE_WINDOW_MS),
-          avatarSrc: isMe && myAvatar ? myAvatar : (normalizeLiveAvatar(r.avatar) || `images/avatars/av${avIdx((r.empId ?? r.empid ?? r.name ?? r.id ?? ''))}.png`),
+          avatarSrc: isMe && myAvatar ? myAvatar : (normalizeLiveAvatar(r.avatar) || `images/avatars/av${avIdx((r.empId || r.empid || r.name || r.id || ''))}.png`),
         };
       }),
       more: total > 8 ? total - 8 : 0,
@@ -3658,7 +3658,7 @@
       const isMe = isCurrentPeopleRow(r, myIdentity)
         || !!(myEmpId && rowEmpId && myEmpId === rowEmpId)
         || !!(myDeviceId && rowDeviceId && myDeviceId === rowDeviceId);
-      const avatarSrc = isMe && myAvatar ? myAvatar : (normalizeLiveAvatar(r.avatar) || `images/avatars/av${avIdx((r.empId ?? r.empid ?? r.name ?? r.id ?? ''))}.png`);
+      const avatarSrc = isMe && myAvatar ? myAvatar : (normalizeLiveAvatar(r.avatar) || `images/avatars/av${avIdx((r.empId || r.empid || r.name || r.id || ''))}.png`);
       const isNew = !!(r.registeredAt && (Date.now() - new Date(r.registeredAt).getTime()) <= NEW_PEOPLE_WINDOW_MS);
       return `<div class="av${isMe ? ' me' : ''}">${isNew ? '<span class="av-new">NEW</span>' : ''}<img src="${avatarSrc}" alt="${isMe ? '내 아바타' : ''}" onerror="if(this.dataset.err)return;this.dataset.err=1;this.src='${LIVE_AVATAR_FALLBACK}'"></div>`;
     }).join('');
@@ -3738,7 +3738,11 @@
         if (Array.isArray(data)) {
           clearTimeout(fallbackTimer);
           const serverRows = data.slice();
-          const recoveryRows = mergePeopleRows(serverRows, getCurrentLocalRecoveryRows(local));
+          const mergedRows = mergePeopleRows(serverRows, getCurrentLocalRecoveryRows(local));
+          const recoveryRows = mergedRows.map(r => {
+            const serverAvatar = avatarMap[String(r.empId || '').toUpperCase()];
+            return serverAvatar ? { ...r, avatar: serverAvatar } : r;
+          });
           peopleLoadedAt = Date.now();
           writeCachedPeopleRows(recoveryRows);
           renderPeople(recoveryRows);
