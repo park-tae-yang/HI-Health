@@ -2480,6 +2480,11 @@
       background:#fff; border:2px solid rgba(79,70,229,0.14);
       box-shadow:0 6px 16px rgba(79,70,229,0.10);
     }
+    .header-avatar .av-wrap,
+    .pm-summary-avatar .av-wrap,
+    .avatar-opt .av-wrap {
+      background: linear-gradient(180deg, #ffffff 0%, #eef2ff 100%);
+    }
     .pm-summary-main { min-width:0; flex:1; }
     .pm-summary-label {
       font-size:10px; font-weight:700; color:#6366F1;
@@ -5678,8 +5683,15 @@ const AVATARS = [
 const AVATAR_SET = new Set(AVATARS);
 function normalizeAvatar(src) {
   const raw = String(src || '').trim();
-  if (AVATAR_SET.has(raw)) return raw;
-  const runMatch = raw.match(/images\/avatars\/run(\d+)\.png$/i);
+  if (!raw) return AVATARS[0];
+  const cleaned = raw.replace(/[?#].*$/, '');
+  if (AVATAR_SET.has(cleaned)) return cleaned;
+  const avatarMatch = cleaned.match(/(?:^|\/)images\/avatars\/av(\d+)\.png$/i) || cleaned.match(/(?:^|\/)av(\d+)\.png$/i);
+  if (avatarMatch) {
+    const mapped = `images/avatars/av${Math.max(1, Math.min(20, Number(avatarMatch[1]) || 1))}.png`;
+    return AVATAR_SET.has(mapped) ? mapped : AVATARS[0];
+  }
+  const runMatch = cleaned.match(/(?:^|\/)images\/avatars\/run(\d+)\.png$/i) || cleaned.match(/(?:^|\/)run(\d+)\.png$/i);
   if (runMatch) {
     const mapped = `images/avatars/av${Math.max(1, Math.min(20, Number(runMatch[1]) || 1))}.png`;
     return AVATAR_SET.has(mapped) ? mapped : AVATARS[0];
@@ -5689,7 +5701,7 @@ function normalizeAvatar(src) {
 function avHTML(src) {
   const fallback = AVATARS[0];
   const s = normalizeAvatar(src);
-  return `<span class="av-wrap"><img src="${s}" class="av-img" onerror="if(this.dataset.err)return;this.dataset.err=1;this.src='${fallback}'"></span>`;
+  return `<span class="av-wrap"><img src="${s}" class="av-img" alt="프로필 아바타" decoding="async" draggable="false" onerror="if(this.dataset.err)return;this.dataset.err=1;this.src='${fallback}'"></span>`;
 }
 
 let _lastHeaderAvatarSrc = '';
@@ -8573,7 +8585,7 @@ function myWeekPts() {
    NAVIGATION
 ════════════════════════════════════════ */
 const _isTouch = () => window.matchMedia('(hover: none)').matches;
-const RUNDAY_IFRAME_SRC = 'runday.html?v=20260324-205';
+const RUNDAY_IFRAME_SRC = 'runday.html?v=20260324-206';
 let _rundayIframeReady = false;
 let _rundayIframeLoadStarted = false;
 const _rundayIframeQueue = [];
@@ -8968,7 +8980,12 @@ window.retryInlineChallengeMount = function retryInlineChallengeMount() {
   return activateInlineChallengePage();
 };
 
-window.addEventListener('hi:runday-registration-sync', () => {
+window.addEventListener('hi:runday-registration-sync', e => {
+  const payload = e?.detail && typeof e.detail === 'object' ? e.detail : null;
+  if (payload) {
+    applyRundayRegistrationSync(payload);
+    return;
+  }
   const activeReg = getMyReg();
   S.user.registrationId = activeReg ? activeReg.id : null;
   save();
@@ -13928,16 +13945,19 @@ function getChallengeSyncPayload() {
       empId: '',
       registrationId: '',
       registration: null,
+      cancelled: false,
       guest: true,
     };
   }
   const activeReg = getMyReg();
   const fallbackReg = activeReg || getMyReg({ includeCancelled: true });
+  const cancelledReg = !activeReg && fallbackReg && !isActiveChallengeReg(fallbackReg) ? fallbackReg : null;
   return {
     type: 'CHALLENGE_REGISTRATION_STATE',
     empId: S.user.empId || ACTIVE_EMPID || '',
     registrationId: activeReg?.id || fallbackReg?.id || S.user.registrationId || '',
-    registration: activeReg ? { ...activeReg } : null,
+    registration: activeReg ? { ...activeReg } : (cancelledReg ? { ...cancelledReg } : null),
+    cancelled: !!cancelledReg,
   };
 }
 
@@ -14841,6 +14861,8 @@ async function cancelRegistration(regId) {
     return;
   }
   clearRemoteChallengeRegistrationRef(r.empId || S.user.empId || ACTIVE_EMPID, r.deviceId || S.deviceId);
+  syncChallengeStateToRunday();
+  syncChallengePeopleToRunday();
   showToast('신청이 취소됐습니다');
 }
 
@@ -15715,6 +15737,8 @@ async function submitChReg(e) {
   S.user.name = name;
   save();
   syncRemoteChallengeRegistrationRef(id, empId, S.deviceId);
+  syncChallengeStateToRunday();
+  syncChallengePeopleToRunday();
   renderHeader();
   haptic('success');
   showToast('🎉 챌린지 신청 완료! 신청번호: ' + id);

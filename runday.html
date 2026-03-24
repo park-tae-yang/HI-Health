@@ -79,7 +79,7 @@
       height: 38px;
       border-radius: 50%;
       border: 1.5px solid rgba(30,16,71,0.1);
-      background: rgba(255,255,255,0.92);
+      background: linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(238,242,255,0.96) 100%);
       box-shadow: none;
       display: flex;
       align-items: center;
@@ -2799,11 +2799,23 @@
   function renderRundayProfileHeader() {
     const avatarEl = document.getElementById('hero-profile-avatar');
     if (!avatarEl) return;
-    const currentImg = document.getElementById('hero-profile-avatar-img') || avatarEl.querySelector('img');
-    const avatarSrc = currentLoginAvatar || LIVE_AVATAR_FALLBACK;
-    if (currentImg && lastProfileAvatarSrc === avatarSrc) return;
+    let currentImg = document.getElementById('hero-profile-avatar-img') || avatarEl.querySelector('img');
+    const avatarSrc = normalizeLiveAvatar(currentLoginAvatar) || LIVE_AVATAR_FALLBACK;
+    if (!currentImg) {
+      currentImg = document.createElement('img');
+      currentImg.id = 'hero-profile-avatar-img';
+      currentImg.alt = '프로필 아바타';
+      currentImg.decoding = 'async';
+      currentImg.draggable = false;
+      currentImg.onerror = function () {
+        if (this.dataset.err) return;
+        this.dataset.err = '1';
+        this.src = LIVE_AVATAR_FALLBACK;
+      };
+      avatarEl.replaceChildren(currentImg);
+    }
+    if (lastProfileAvatarSrc === avatarSrc && currentImg.getAttribute('src') === avatarSrc) return;
     lastProfileAvatarSrc = avatarSrc;
-    if (!currentImg) return;
     if (currentImg.getAttribute('src') !== avatarSrc) {
       delete currentImg.dataset.err;
       currentImg.src = avatarSrc;

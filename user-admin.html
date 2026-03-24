@@ -1412,6 +1412,18 @@ function normalizeUserRow(u) {
   };
 }
 
+function normalizeAdminAvatarPath(src) {
+  const raw = String(src || '').trim();
+  if (!raw) return '';
+  const cleaned = raw.replace(/[?#].*$/, '');
+  if (/^(?:https?:)?\/\//i.test(raw) && /\/images\/avatars\/av\d+\.png$/i.test(cleaned)) return raw;
+  if (/^images\/avatars\/av\d+\.png$/i.test(cleaned)) return cleaned;
+  if (/^av\d+\.png$/i.test(cleaned)) return 'images/avatars/' + cleaned;
+  if (/^run\d+\.png$/i.test(cleaned)) return 'images/avatars/' + cleaned.replace(/^run/i, 'av');
+  if (/^images\/avatars\/run\d+\.png$/i.test(cleaned)) return cleaned.replace(/\/run(\d+)\.png$/i, '/av$1.png');
+  return '';
+}
+
 function normalizeRegistrationRow(r) {
   return {
     ...r,
@@ -1419,6 +1431,7 @@ function normalizeRegistrationRow(r) {
     deviceId: r?.deviceId ?? r?.deviceid ?? '',
     empId: r?.empId ?? r?.empid ?? '',
     name: r?.name || '',
+    avatar: r?.avatar || '',
     dept: r?.dept || '',
     phone: r?.phone || '',
     shoeSize: r?.shoeSize ?? r?.shoesize ?? '',
@@ -1581,7 +1594,7 @@ function mergeUsersWithRegistrations(users, registrations) {
         u = normalizeUserRow({
           deviceId: deviceId || (empId ? ('emp:' + empId) : ('reg:' + regId)),
           name: r.name || '',
-          avatar: '🏃',
+          avatar: r.avatar || '🏃',
           empId,
           dept: r.dept || '',
           points: 0,
@@ -1594,6 +1607,9 @@ function mergeUsersWithRegistrations(users, registrations) {
         rows.push(u);
       }
       if (!u.name) u.name = norm(r.name);
+      if ((!norm(u.avatar) || u.avatar === '🏃' || u.avatar === '👤') && normalizeAdminAvatarPath(r.avatar)) {
+        u.avatar = r.avatar;
+      }
       if (!u.empId && empId) u.empId = empId;
       if (!u.dept) u.dept = norm(r.dept);
       if (!u.lastActiveAt && (r.registeredAt || r.createdAt || r.ts)) {
@@ -2004,9 +2020,10 @@ function fillUserDetailForm(u, fallbackName = '') {
   document.getElementById('dp-meta').textContent = meta || '';
   // 아바타 프리뷰
   const av = u.avatar || '';
+  const avatarSrc = normalizeAdminAvatarPath(av);
   const avEl = document.getElementById('dp-avatar-preview');
-  if (av && av.startsWith('images/')) {
-    avEl.innerHTML = `<img src="${av}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+  if (avatarSrc) {
+    avEl.innerHTML = `<img src="${avatarSrc}" alt="이용자 아바타" style="width:100%;height:100%;object-fit:cover;border-radius:50%" onerror="if(this.dataset.err)return;this.dataset.err=1;this.closest('#dp-avatar-preview').textContent='${(name.charAt(0) || '👤').replace(/'/g, "\\'")}'">`;
   } else {
     avEl.textContent = av || name.charAt(0) || '👤';
   }
