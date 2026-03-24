@@ -7630,6 +7630,11 @@ function load() {
       d.pendingRewards = [];
       d.rewardHistory = [];
       try { localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); } catch(e) {}
+      // 가족인증 축하 토큰도 초기화 (테스트 인증 데이터 잔류 방지)
+      try {
+        const empId = d.user?.empId || '';
+        if (empId) localStorage.removeItem(`hi_family_cert_reward_seen_${empId.toUpperCase()}`);
+      } catch(e) {}
       localStorage.setItem(LAUNCH_RESET_FLAG, '1');
     }
     S.user = { ...S.user, ...d.user };
