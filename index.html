@@ -12119,7 +12119,7 @@ async function deleteMyDeviceAndServerData() {
     const regFilters = [];
     [...deviceIds].forEach(deviceId => {
       userFilters.push(`deviceid.eq.${deviceId}`);
-      regFilters.push(`deviceid.eq.${deviceId}`);
+      regFilters.push(`"deviceId".eq.${deviceId}`);
     });
     [...registrationIds].forEach(registrationId => {
       userFilters.push(`registrationId.eq.${registrationId}`);
@@ -12127,11 +12127,11 @@ async function deleteMyDeviceAndServerData() {
     });
     empIds.forEach(empId => {
       userFilters.push(`empid.eq.${empId}`);
-      regFilters.push(`empid.eq.${empId}`);
+      regFilters.push(`"empId".eq.${empId}`);
     });
     lowerEmpIds.forEach(empId => {
       userFilters.push(`empid.eq.${empId}`);
-      regFilters.push(`empid.eq.${empId}`);
+      regFilters.push(`"empId".eq.${empId}`);
     });
 
     const [relatedUsersRes, relatedRegsRes] = await Promise.all([
@@ -14579,10 +14579,10 @@ async function syncMyChallengeRegistrationWithOptions(opts = {}) {
   const filters = [];
   if (regId) filters.push(`id.eq.${regId}`);
   if (empId) {
-    filters.push(`empid.eq.${empId}`);
-    filters.push(`empid.eq.${empId.toLowerCase()}`);
+    filters.push(`"empId".eq.${empId}`);
+    if (empId.toLowerCase() !== empId) filters.push(`"empId".eq.${empId.toLowerCase()}`);
   }
-  if (!filters.length && useDeviceFallback && deviceId) filters.push(`deviceid.eq.${deviceId}`);
+  if (!filters.length && useDeviceFallback && deviceId) filters.push(`"deviceId".eq.${deviceId}`);
   if (!filters.length) return getMyReg();
 
   try {
