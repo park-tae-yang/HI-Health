@@ -316,8 +316,8 @@
     <header class="adm-topbar">
       <div class="tb-title" id="tb-page-title">이용자 관리</div>
       <div class="tb-right">
-        <button class="tb-btn" onclick="loadAll()">↺ 새로고침</button>
-        <button class="tb-btn" onclick="openPwModal()">🔒 비밀번호</button>
+        <button class="tb-btn" onclick="loadAll()">새로고침</button>
+        <button class="tb-btn" onclick="openPwModal()">비밀번호</button>
         <button class="tb-btn" onclick="doLogout()">로그아웃</button>
       </div>
     </header>
@@ -325,12 +325,12 @@
     <div class="adm-content">
     <!-- STATS -->
     <div class="stat-grid">
-      <div class="stat-card"><div class="sc-icon sc-blue">👥</div><div class="sc-body"><div class="s-val" id="st-users">-</div><div class="s-lbl">전체 이용자</div></div></div>
-      <div class="stat-card"><div class="sc-icon sc-green">🏆</div><div class="sc-body"><div class="s-val" id="st-regs">-</div><div class="s-lbl">챌린지 신청</div></div></div>
-      <div class="stat-card"><div class="sc-icon sc-amber">🏋️</div><div class="sc-body"><div class="s-val" id="st-wo">-</div><div class="s-lbl">운동 기록</div></div></div>
-      <div class="stat-card"><div class="sc-icon sc-purple">💬</div><div class="sc-body"><div class="s-val" id="st-posts">-</div><div class="s-lbl">커뮤니티</div></div></div>
-      <div class="stat-card"><div class="sc-icon sc-sky">⏱️</div><div class="sc-body"><div class="s-val" id="st-mins">-</div><div class="s-lbl">총 운동시간(분)</div></div></div>
-      <div class="stat-card"><div class="sc-icon sc-red">📊</div><div class="sc-body"><div class="s-val" id="st-glc">-</div><div class="s-lbl">혈당 기록</div></div></div>
+      <div class="stat-card"><div class="sc-icon sc-blue"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4F46E5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div><div class="sc-body"><div class="s-val" id="st-users">-</div><div class="s-lbl">전체 이용자</div></div></div>
+      <div class="stat-card"><div class="sc-icon sc-green"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="sc-body"><div class="s-val" id="st-regs">-</div><div class="s-lbl">챌린지 신청</div></div></div>
+      <div class="stat-card"><div class="sc-icon sc-amber"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg></div><div class="sc-body"><div class="s-val" id="st-wo">-</div><div class="s-lbl">운동 기록</div></div></div>
+      <div class="stat-card"><div class="sc-icon sc-purple"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8B5CF6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div><div class="sc-body"><div class="s-val" id="st-posts">-</div><div class="s-lbl">커뮤니티</div></div></div>
+      <div class="stat-card"><div class="sc-icon sc-sky"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0EA5E9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div class="sc-body"><div class="s-val" id="st-mins">-</div><div class="s-lbl">총 운동시간(분)</div></div></div>
+      <div class="stat-card"><div class="sc-icon sc-red"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div><div class="sc-body"><div class="s-val" id="st-glc">-</div><div class="s-lbl">혈당 기록</div></div></div>
     </div>
 
     <!-- ── PANEL: USERS ── -->
@@ -444,9 +444,9 @@
         </div>
 
         <div class="dp-actions">
-          <button class="cbtn pri" onclick="saveUserDetail()">💾 저장</button>
-          <button class="cbtn sky" onclick="openUserWorkouts()">🏋️ 운동기록 보기</button>
-          <button class="cbtn dan" onclick="deleteSelUser()">🗑️ 이용자 삭제</button>
+          <button class="cbtn pri" onclick="saveUserDetail()">저장</button>
+          <button class="cbtn sky" onclick="openUserWorkouts()">운동기록 보기</button>
+          <button class="cbtn dan" onclick="deleteSelUser()">이용자 삭제</button>
         </div>
       </div>
     </div>
