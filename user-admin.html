@@ -112,7 +112,7 @@
 
     /* ── CONTROLS ── */
     .ctrl-bar{padding:0 0 14px;margin-bottom:14px;border-bottom:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
-    .ctrl-inp{flex:1;min-width:160px;padding:8px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:inherit;font-size:13px;outline:none;background:var(--bg);}
+    .ctrl-inp{flex:0 1 240px;min-width:140px;padding:8px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:inherit;font-size:13px;outline:none;background:var(--bg);}
     .ctrl-inp:focus{border-color:var(--p);background:#fff;}
     .ctrl-sel{padding:8px 30px 8px 11px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:inherit;font-size:13px;outline:none;background:var(--bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236B7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E") no-repeat right 7px center/15px;appearance:none;cursor:pointer;}
     .ctrl-count{font-size:13px;color:var(--t3);font-weight:600;margin-left:auto;white-space:nowrap;}
@@ -363,6 +363,7 @@
           <option value="workouts">운동횟수순</option>
           <option value="streak">연속일순</option>
         </select>
+        <button class="cbtn sky" onclick="loadAll()">↻ 새로고침</button>
         <div class="sel-bar" id="sel-bar" style="display:none">
           <span id="sel-bar-name"></span> 선택됨
           <button onclick="clearSel()" title="선택 해제">✕</button>
@@ -371,7 +372,6 @@
         <button class="cbtn amb" id="restore-users-btn" style="display:none" onclick="restoreUsersFromActivity()">users 복구</button>
         <button class="cbtn dan" id="dup-btn" style="display:none" onclick="deleteDuplicates()">중복 삭제</button>
         <button class="cbtn dan" onclick="resetAllData()">전체 초기화</button>
-        <button class="cbtn sky" onclick="loadAll()">↻ 새로고침</button>
       </div>
 
       <div class="tbl-wrap">
@@ -1892,6 +1892,7 @@ function filteredUsers() {
     // 드롭다운 필터
     if (mode === 'bad') return isBadName(u.name);
     if (mode === 'dup') return dupIds.has((u.empId||'').trim());
+    if (mode === 'ch')  return isChallenger(u);
     return true;
   });
 }
