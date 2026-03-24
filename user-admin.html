@@ -1035,7 +1035,7 @@ function withMm(v) {
 }
 
 function getRegFamilyMembers(r) {
-  if (Array.isArray(r?.familyMembers)) {
+  if (Array.isArray(r?.familyMembers) && r.familyMembers.length > 0) {
     return r.familyMembers.map(m => ({
       gender: String(m?.gender || '').trim(),
       tshirtSize: String(m?.tshirtSize || '').trim(),
@@ -1147,9 +1147,11 @@ function getRegFamilySummaryText(r) {
   if (members.length) {
     return `가족 ${members.length}인 · ` + members.map((m, idx) => `가족 ${idx + 1} ${[m.gender, m.tshirtSize].filter(Boolean).join(' / ') || '입력 없음'}`).join(' / ');
   }
+  const noteCount = parseInt(String(getRegNoteLine(r, '가족수') || '').replace(/[^0-9]/g, '')) || 0;
+  const familyCount = Number(r?.familyCount) || noteCount || 1;
   const bits = [getRegFamilyGenderText(r), getRegFamilyAgeText(r), getRegFamilyShoeText(r)].filter(Boolean);
-  if (bits.length) return `가족 1인 · ${bits.join(' / ')}`;
-  return isSyncPendingRegistration(r) ? '동기화 필요' : '가족 1인';
+  if (bits.length) return `가족 ${familyCount}인 · ${bits.join(' / ')}`;
+  return isSyncPendingRegistration(r) ? '동기화 필요' : `가족 ${familyCount}인`;
 }
 
 function getRegOptionSummaryText(r) {
@@ -2129,20 +2131,30 @@ async function deleteAdminUserByIdentity(identity = {}) {
   const deviceIds = [...new Set((identity.deviceIds || []).map(v => normRegIdValue(v)).filter(Boolean))];
   const empIds = [...new Set((identity.empIds || []).map(v => normRegEmpId(v)).filter(Boolean))];
   const registrationIds = [...new Set((identity.registrationIds || []).map(v => normRegIdValue(v)).filter(Boolean))];
+  const isIgnorableDeleteError = error => {
+    const message = String(error?.message || error || '');
+    return /relation .* does not exist|Could not find the table|column .* does not exist|Could not find the '.*' column/i.test(message);
+  };
 
-  const deleteByIds = async (tbl, key, ids) => {
+  const deleteByIds = async (tbl, key, ids, optional = false) => {
     const uniq = [...new Set((ids || []).map(v => String(v || '').trim()).filter(Boolean))];
     if (!uniq.length) return;
     for (let i = 0; i < uniq.length; i += 1000) {
       const { error } = await db.from(tbl).delete().in(key, uniq.slice(i, i + 1000));
-      if (error) throw new Error(`${tbl} 삭제 실패: ${error.message}`);
+      if (error) {
+        if (optional && isIgnorableDeleteError(error)) return;
+        throw new Error(`${tbl} 삭제 실패: ${error.message}`);
+      }
     }
   };
-  const deleteByOrFilters = async (tbl, filters = []) => {
+  const deleteByOrFilters = async (tbl, filters = [], optional = false) => {
     const uniq = [...new Set((filters || []).filter(Boolean))];
     if (!uniq.length) return;
     const { error } = await db.from(tbl).delete().or(uniq.join(','));
-    if (error) throw new Error(`${tbl} 삭제 실패: ${error.message}`);
+    if (error) {
+      if (optional && isIgnorableDeleteError(error)) return;
+      throw new Error(`${tbl} 삭제 실패: ${error.message}`);
+    }
   };
 
   let postIds = [];
@@ -2163,14 +2175,22 @@ async function deleteAdminUserByIdentity(identity = {}) {
     await deleteByIds('workouts', 'deviceId', deviceIds);
     await deleteByIds('glucose', 'deviceId', deviceIds);
     await deleteByIds('posts', 'deviceId', deviceIds);
+    await deleteByIds('push_subscriptions', 'device_id', deviceIds, true);
+    await deleteByIds('push_logs', 'target_device_id', deviceIds, true);
     await deleteByIds('users', 'deviceId', deviceIds);
     await deleteByIds('registrations', 'deviceId', deviceIds);
   }
   if (registrationIds.length) {
     await deleteByIds('registrations', 'id', registrationIds);
+    await deleteByIds('family_certifications', 'reg_id', registrationIds, true);
   }
   if (empIds.length) {
     const empFilters = buildAdminEmpIdFilters('empId', empIds);
+    const settingsFilters = buildAdminEmpIdFilters('emp_id', empIds);
+    await deleteByOrFilters('family_certifications', buildAdminEmpIdFilters('emp_id', empIds), true);
+    await deleteByOrFilters('push_subscriptions', buildAdminEmpIdFilters('emp_id', empIds), true);
+    await deleteByOrFilters('push_logs', buildAdminEmpIdFilters('target_emp_id', empIds), true);
+    await deleteByOrFilters('user_client_settings', settingsFilters, true);
     await deleteByOrFilters('users', empFilters);
     await deleteByOrFilters('registrations', empFilters);
   }
@@ -2181,6 +2201,11 @@ async function deleteAdminUserByIdentity(identity = {}) {
   GD.posts = GD.posts.filter(row => !deviceIds.includes(normRegIdValue(row?.deviceId)));
   GD.orders = GD.orders.filter(row => !deviceIds.includes(normRegIdValue(row?.deviceId)));
   GD.registrations = GD.registrations.filter(row => !rowMatchesAdminDeleteIdentity(row, { deviceIds, empIds, registrationIds }));
+  GD_famcert = GD_famcert.filter(row => {
+    const regId = normRegIdValue(row?.reg_id || row?.regId);
+    const empId = normRegEmpId(row?.emp_id || row?.empId);
+    return !(registrationIds.includes(regId) || empIds.includes(empId));
+  });
 
   if (selDeviceId && deviceIds.includes(normRegIdValue(selDeviceId))) clearSel();
 }
@@ -2192,6 +2217,7 @@ async function deleteUser(deviceId, name) {
   try {
     await deleteAdminUserByIdentity(identity);
     renderAll();
+    loadPushLogs();
     setStatus(`연결됨 (${GD.users.length}명)`, true);
     toast(`"${identity.displayName}" 삭제 완료`);
   } catch(e) { toast(e.message); }
@@ -2259,6 +2285,7 @@ async function deleteDuplicates() {
       await deleteAdminUserByIdentity(collectAdminUserDeleteIdentity(u));
     }
     renderAll();
+    loadPushLogs();
     setStatus(`연결됨 (${GD.users.length}명)`, true);
     toast(`중복 이용자 ${toDelete.length}명 삭제 완료`);
   } catch(e) { toast('삭제 실패: ' + e.message); }
@@ -2306,6 +2333,9 @@ async function resetAllData() {
       { tbl:'posts',    key:'id' },
       { tbl:'registrations', key:'id' },
       { tbl:'family_certifications', key:'id', optional:true },
+      { tbl:'push_subscriptions', key:'id', optional:true },
+      { tbl:'push_logs', key:'id', optional:true },
+      { tbl:'user_client_settings', key:'id', optional:true },
       { tbl:'admin_posts', key:'id', optional:true },
       { tbl:'users',    key:'deviceId' },
     ];
@@ -2322,6 +2352,7 @@ async function resetAllData() {
       setStatus('연결됨 (0명)', true);
       renderAll();
       renderFamCert();
+      loadPushLogs();
     } catch (renderErr) {
       console.warn('[resetAllData/render]', renderErr);
     }

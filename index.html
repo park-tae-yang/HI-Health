@@ -4543,16 +4543,10 @@
         <div class="app-intro-title">달리기 측정으로<br>기록을 남겨요</div>
         <div class="app-intro-desc">실시간 달리기 타이머로 거리·시간을 측정하고 운동 기록에 바로 저장할 수 있어요</div>
       </div>
-      <div class="app-intro-slide">
-        <div class="app-intro-icon" data-svg-icon="signal" data-svg-color="#0891b2" data-svg-size="48px"></div>
-        <div class="app-intro-title">덱스콤 연동으로<br>혈당을 자동 확인</div>
-        <div class="app-intro-desc">덱스콤 앱과 연동하면 실시간 혈당 수치와 추이가 HI Health에 자동으로 불러와져요</div>
-      </div>
     </div>
     <div class="app-intro-bottom">
       <div class="app-intro-dots" id="app-intro-dots">
         <div class="app-intro-dot active"></div>
-        <div class="app-intro-dot"></div>
         <div class="app-intro-dot"></div>
         <div class="app-intro-dot"></div>
         <div class="app-intro-dot"></div>
@@ -6398,6 +6392,7 @@ function buildAccountSettingsSnapshot(empId = ACTIVE_EMPID || S.user?.empId || '
       deletedIds: [...getDeletedNotifIds()],
       localItems: getLocalNotifItems(normalizedEmpId),
       commentSeenIds: [...getSeenMyPostCommentIds(normalizedEmpId)],
+      familyCertRewardSeenToken: String(localStorage.getItem(getFamilyCertRewardSeenKey(normalizedEmpId)) || '').trim(),
     },
     profile: {
       avatar: normalizeAvatar(profileOverride?.avatar || S.user?.avatar),
@@ -6425,7 +6420,7 @@ function hasAccountSettingsContent(snapshot) {
     !!snapshot.todayPhoto?.data ||
     Object.keys(snapshot.dayNotes || {}).length > 0 ||
     Object.values(chips).some(value => Array.isArray(value) && value.length > 0) ||
-    Object.values(notifications).some(value => Array.isArray(value) && value.length > 0)
+    Object.values(notifications).some(value => (Array.isArray(value) && value.length > 0) || (typeof value === 'string' && value.trim()))
   );
 }
 
@@ -6479,6 +6474,11 @@ function applyAccountSettingsSnapshot(snapshot, empId = ACTIVE_EMPID || S.user?.
     localStorage.setItem(getAccountScopedStorageKey(NOTIF_DELETED_KEY, normalizedEmpId), JSON.stringify(Array.isArray(notifications.deletedIds) ? notifications.deletedIds : []));
     localStorage.setItem(getAccountScopedStorageKey(LOCAL_NOTIF_ITEMS_KEY, normalizedEmpId), JSON.stringify(Array.isArray(notifications.localItems) ? notifications.localItems.slice(0, 80) : []));
     localStorage.setItem(getAccountScopedStorageKey(MY_POST_COMMENT_SEEN_KEY, normalizedEmpId), JSON.stringify(Array.isArray(notifications.commentSeenIds) ? notifications.commentSeenIds.slice(-400) : []));
+    if (Object.prototype.hasOwnProperty.call(notifications, 'familyCertRewardSeenToken')) {
+      const familyCertRewardSeenToken = String(notifications.familyCertRewardSeenToken || '').trim();
+      if (familyCertRewardSeenToken) localStorage.setItem(getFamilyCertRewardSeenKey(normalizedEmpId), familyCertRewardSeenToken);
+      else localStorage.removeItem(getFamilyCertRewardSeenKey(normalizedEmpId));
+    }
     localStorage.setItem(getAccountScopedStorageKey(COMM_SEEN_KEY, normalizedEmpId), String(Number(snapshot.communitySeenTs) || 0));
     if (snapshot.introSeen) localStorage.setItem(getAccountScopedStorageKey('hi_intro_seen', normalizedEmpId), '1');
     else localStorage.removeItem(getAccountScopedStorageKey('hi_intro_seen', normalizedEmpId));
@@ -6821,18 +6821,7 @@ const ACHIEVEMENTS_DATA = [
   { id:'a9', name:'공유 스타',     desc:'레벨 카드를 3번 공유했어요',   goal:3,    key:'levelCardShares',   img:'images/badge_run.png', color:'#E0F2FE' },
 ];
 
-const MOCK_USERS = [
-  { id:101, name:'서윤아',  avatar:'images/avatars/av2.png',  lv:6, pts:4320, wPts:380, change:1,  isChallenger:true, tags:['5km 완주', '훈련 중', 'HI RUN DAY 화이팅'] },
-  { id:102, name:'김하은',  avatar:'images/avatars/av3.png',  lv:5, pts:3150, wPts:340, change:2,  isChallenger:true, tags:['함께 달려요', '즐겁게 달리기', '준비 완료'] },
-  { id:103, name:'이지현',  avatar:'images/avatars/av4.png',  lv:5, pts:2870, wPts:310, change:-1, isChallenger:true, tags:['코스 완주', '컨디션 최고', '훈련 중'] },
-  { id:104, name:'박소연',  avatar:'images/avatars/av5.png',  lv:4, pts:1960, wPts:265, change:3,  isChallenger:true, tags:['걷기 참여', '가족과 함께', '즐겁게 완주'] },
-  { id:105, name:'최유진',  avatar:'images/avatars/av6.png',  lv:4, pts:1740, wPts:230, change:0,  isChallenger:true, tags:['개인 기록 도전', '건강하게 달리자', '준비 완료'] },
-  { id:106, name:'정다은',  avatar:'images/avatars/av7.png',  lv:3, pts:890,  wPts:200, change:2,  isChallenger:true, tags:['최선을 다해', '5km 완주', '훈련 중'] },
-  { id:107, name:'윤서희',  avatar:'images/avatars/av8.png',  lv:3, pts:710,  wPts:185, change:-1, isChallenger:true, tags:['함께 달려요', '건강하게 달리자', '컨디션 최고'] },
-  { id:108, name:'강민정',  avatar:'images/avatars/av9.png',  lv:2, pts:430,  wPts:155, change:1,  isChallenger:true, tags:['걷기 참여', 'HI RUN DAY 화이팅', '준비 완료'] },
-  { id:109, name:'조예림',  avatar:'images/avatars/av10.png', lv:2, pts:310,  wPts:130, change:-1, isChallenger:true, tags:['가족과 함께', '즐겁게 달리기', '코스 완주'] },
-  { id:110, name:'한지민',  avatar:'images/avatars/av1.png',  lv:1, pts:140,  wPts:90,  change:0,  isChallenger:true, tags:['훈련 중', '5km 완주', '긴장되지만 설레'] },
-];
+const MOCK_USERS = [];
 
 const MOCK_POSTS_SEED = [];
 
@@ -7502,8 +7491,14 @@ async function hydrateAccountFromRemote(empId, fallbackName = '') {
 
     const matchedUsers = Array.isArray(rows) ? rows.filter(Boolean) : [];
     if (!matchedUsers.length) {
+      const hasLocalAccountData = !!(
+        localStorage.getItem('hi_health_v2_' + normalizedEmpId) ||
+        localStorage.getItem('hi_health_shop_orders_' + normalizedEmpId) ||
+        localStorage.getItem('hi_health_cart_' + normalizedEmpId)
+      );
       const hadSyncedRemote = !!localStorage.getItem('hi_synced_' + fallbackDid);
-      if (hadSyncedRemote) {
+      const shouldClearLocal = hadSyncedRemote || hasLocalAccountData;
+      if (shouldClearLocal) {
         cleanupLocalUserKeys({
           empIds: [normalizedEmpId],
           deviceIds: [fallbackDid],
@@ -7520,7 +7515,7 @@ async function hydrateAccountFromRemote(empId, fallbackName = '') {
       }
       if (!S.user.name && fallbackName) S.user.name = fallbackName;
       S.user.empId = S.user.empId || normalizedEmpId;
-      return { user: null, deviceId: fallbackDid, clearedLocal: hadSyncedRemote };
+      return { user: null, deviceId: fallbackDid, clearedLocal: shouldClearLocal };
     }
 
     const u = matchedUsers.find(row => String(row?.deviceId || '').trim() === fallbackDid)
@@ -11907,7 +11902,7 @@ function collectDeleteIdentity() {
   };
 }
 
-function cleanupLocalUserKeys({ empIds = [], deviceIds = [], registrationIds = [], storageKeys = [] }) {
+function cleanupLocalUserKeys({ empIds = [], deviceIds = [], registrationIds = [], storageKeys = [], preserveFamilyCertRewardSeen = false }) {
   const normEmpIds = [...new Set((empIds || []).map(v => String(v || '').trim().toUpperCase()).filter(Boolean))];
   const normDeviceIds = [...new Set((deviceIds || []).map(v => String(v || '').trim()).filter(Boolean))];
   const normRegIds = [...new Set((registrationIds || []).map(v => String(v || '').trim()).filter(Boolean))];
@@ -11921,6 +11916,7 @@ function cleanupLocalUserKeys({ empIds = [], deviceIds = [], registrationIds = [
     localStorage.removeItem('hi_health_day_notes_' + empId);
     localStorage.removeItem('hi_today_photo_' + empId);
     localStorage.removeItem('hi_device_id_' + empId);
+    localStorage.removeItem('hi_health_challenge_backup_' + empId);
     [
       'hi_custom_ex_types',
       'hi_hidden_ex_presets',
@@ -11933,12 +11929,23 @@ function cleanupLocalUserKeys({ empIds = [], deviceIds = [], registrationIds = [
       ACCOUNT_SETTINGS_META_KEY,
       NOTIF_READ_KEY,
       NOTIF_DELETED_KEY,
+      LOCAL_NOTIF_ITEMS_KEY,
+      MY_POST_COMMENT_SEEN_KEY,
       COMM_SEEN_KEY,
       'hi_intro_seen',
       'hi_install_dismissed',
       'dexcom_user',
       'dexcom_pass',
     ].forEach(prefix => localStorage.removeItem(`${prefix}_${empId}`));
+    if (!preserveFamilyCertRewardSeen) {
+      localStorage.removeItem(getFamilyCertRewardSeenKey(empId));
+    }
+    try {
+      Object.keys(localStorage).forEach(key => {
+        if (key.startsWith(`hi_health_challenge_backup_${empId}_`)) localStorage.removeItem(key);
+      });
+    } catch (e) {}
+    try { localStorage.removeItem(getProfileOverrideStorageKey(empId)); } catch (e) {}
   });
   allStorageKeys.forEach(key => localStorage.removeItem(key));
   normDeviceIds.forEach(deviceId => localStorage.removeItem('hi_synced_' + deviceId));
@@ -11965,6 +11972,9 @@ function cleanupLocalUserKeys({ empIds = [], deviceIds = [], registrationIds = [
 function clearInMemoryAccountData(empId = ACTIVE_EMPID || S.user?.empId || '', fallbackName = '') {
   const normalizedEmpId = normalizeEmpIdValue(empId);
   const preservedAvatar = normalizeAvatar(S.user?.avatar || AVATARS[0]);
+  _realLeagueUsers = null;
+  _leagueFetching = false;
+  resetLeagueCache();
   S.user = {
     ...S.user,
     name: fallbackName || '',
@@ -12178,6 +12188,7 @@ async function deleteMyDeviceAndServerData() {
 
     const deviceIdList = [...deviceIds];
     const registrationIdList = [...registrationIds];
+    const empIdList = [...new Set([...empIds, ...lowerEmpIds].map(v => String(v || '').trim()).filter(Boolean))];
     const postIds = new Set(
       (S.posts || [])
         .filter(p => Number(p?.userId) === 0)
@@ -12201,13 +12212,19 @@ async function deleteMyDeviceAndServerData() {
       await runDeleteByIds('orders', 'orders', 'deviceId', deviceIdList);
       await runDeleteByIds('workouts', 'workouts', 'deviceId', deviceIdList);
       await runDeleteByIds('glucose', 'glucose', 'deviceId', deviceIdList);
+      await runDeleteByIds('push_subscriptions(device_id)', 'push_subscriptions', 'device_id', deviceIdList);
+      await runDeleteByIds('push_logs(target_device_id)', 'push_logs', 'target_device_id', deviceIdList);
       await runDeleteByIds('users(deviceId)', 'users', 'deviceId', deviceIdList);
       await runDeleteByIds('registrations(deviceId)', 'registrations', 'deviceId', deviceIdList);
     }
     if (registrationIdList.length) {
       await runDeleteByIds('registrations(id)', 'registrations', 'id', registrationIdList);
+      await runDeleteByIds('family_certifications(reg_id)', 'family_certifications', 'reg_id', registrationIdList);
     }
     if (empIds.length || lowerEmpIds.length) {
+      await runDeleteByIds('family_certifications(emp_id)', 'family_certifications', 'emp_id', empIdList);
+      await runDeleteByIds('push_subscriptions(emp_id)', 'push_subscriptions', 'emp_id', empIdList);
+      await runDeleteByIds('push_logs(target_emp_id)', 'push_logs', 'target_emp_id', empIdList);
       await runDeleteByIds('user_client_settings(emp_id)', ACCOUNT_SETTINGS_TABLE, 'emp_id', [...empIds, ...lowerEmpIds]);
       const empDeleteFilters = [...new Set([
         ...empIds.map(empId => `"empId".eq.${empId}`),
@@ -12253,12 +12270,11 @@ function requestDeleteMyDeviceAndServerData() {
 function logout() {
   if (!confirm('로그아웃 하면 이 기기의 운동 기록, 포인트 등 모든 데이터가 초기화됩니다.\n계속하시겠어요?')) return;
   cleanupLocalUserKeys({
-    empId: ACTIVE_EMPID || S.user.empId,
-    deviceId: S.deviceId,
-    registrationId: S.user.registrationId,
-    storageKey: STORAGE_KEY,
-    ordersKey: SHOP_ORDERS_KEY,
-    cartKey: SHOP_CART_KEY,
+    empIds: [ACTIVE_EMPID || S.user.empId],
+    deviceIds: [S.deviceId],
+    registrationIds: [S.user.registrationId],
+    storageKeys: [STORAGE_KEY, SHOP_ORDERS_KEY, SHOP_CART_KEY],
+    preserveFamilyCertRewardSeen: true,
   });
   resetToLoggedOutState();
 }
@@ -14964,6 +14980,7 @@ function markFamilyCertRewardSeen(row, empId = ACTIVE_EMPID || S.user?.empId || 
   const token = getFamilyCertRewardToken(row);
   if (!token) return;
   localStorage.setItem(getFamilyCertRewardSeenKey(empId), token);
+  markAccountSettingsDirty();
 }
 
 function pickCurrentRemoteUser(rows = [], empId = '', deviceId = '') {
@@ -16177,10 +16194,7 @@ function buildGuestSampleState() {
         { id: 9092, name:'윤서희', avatar:'images/avatars/av8.png', lv:3, body:'저도 숫자만 보면 감이 안 왔는데 운동이랑 같이 적으니 훨씬 이해되더라고요.', time:'2일 전' },
       ],
     },
-  ].map(post => ({
-    ...post,
-    comments: post.commentList.length,
-  }));
+  ].map(post => ({ ...post, comments: post.commentList.length }));
   const sampleNotifPost = samplePosts[0];
   const sampleNotifComment = sampleNotifPost?.commentList?.[0] || null;
   const sampleNotifItems = sampleNotifPost && sampleNotifComment ? [{
@@ -16254,9 +16268,18 @@ function applyGuestSampleState() {
     ...sample.user,
   };
   S.workouts = mapWorkoutRecords(sample.workouts, S.workouts);
-  S.posts = [
-    ...JSON.parse(JSON.stringify(sample.posts || [])),
-    ...JSON.parse(JSON.stringify(MOCK_POSTS_SEED)),
+  S.posts = JSON.parse(JSON.stringify(sample.posts || []));
+  _realLeagueUsers = [
+    { id:'HI101', name:'서윤아',  avatar:'images/avatars/av2.png',  lv:6, pts:4320, wPts:380, change:1,  isMe:false, isChallenger:true, tags:['5km 완주', '훈련 중', 'HI RUN DAY 화이팅'] },
+    { id:'HI102', name:'김하은',  avatar:'images/avatars/av3.png',  lv:5, pts:3150, wPts:340, change:2,  isMe:false, isChallenger:true, tags:['함께 달려요', '즐겁게 달리기', '준비 완료'] },
+    { id:'HI103', name:'이지현',  avatar:'images/avatars/av4.png',  lv:5, pts:2870, wPts:310, change:-1, isMe:false, isChallenger:true, tags:['코스 완주', '컨디션 최고', '훈련 중'] },
+    { id:'HI104', name:'박소연',  avatar:'images/avatars/av5.png',  lv:4, pts:1960, wPts:265, change:3,  isMe:false, isChallenger:true, tags:['걷기 참여', '가족과 함께', '즐겁게 완주'] },
+    { id:'HI105', name:'최유진',  avatar:'images/avatars/av6.png',  lv:4, pts:1740, wPts:230, change:0,  isMe:false, isChallenger:true, tags:['개인 기록 도전', '건강하게 달리자', '준비 완료'] },
+    { id:'HI106', name:'정다은',  avatar:'images/avatars/av7.png',  lv:3, pts:890,  wPts:200, change:2,  isMe:false, isChallenger:true, tags:['최선을 다해', '5km 완주', '훈련 중'] },
+    { id:'HI107', name:'윤서희',  avatar:'images/avatars/av8.png',  lv:3, pts:710,  wPts:185, change:-1, isMe:false, isChallenger:true, tags:['함께 달려요', '건강하게 달리자', '컨디션 최고'] },
+    { id:'HI108', name:'강민정',  avatar:'images/avatars/av9.png',  lv:2, pts:430,  wPts:155, change:1,  isMe:false, isChallenger:true, tags:['걷기 참여', 'HI RUN DAY 화이팅', '준비 완료'] },
+    { id:'HI109', name:'조예림',  avatar:'images/avatars/av10.png', lv:2, pts:310,  wPts:130, change:-1, isMe:false, isChallenger:true, tags:['가족과 함께', '즐겁게 달리기', '코스 완주'] },
+    { id:'HI110', name:'한지민',  avatar:'images/avatars/av1.png',  lv:1, pts:140,  wPts:90,  change:0,  isMe:false, isChallenger:true, tags:['훈련 중', '5km 완주', '긴장되지만 설레'] },
   ];
   _cart = { ...(sample.cart || {}) };
   saveCart();
@@ -16436,7 +16459,7 @@ async function doAppLogin() {
   if (!S.user.name) S.user.name = inputName;
   await hydrateAccountFromRemote(ACTIVE_EMPID, inputName);
   await syncAccountSettingsWithRemote(ACTIVE_EMPID);
-  await syncMyChallengeRegistration();
+  await syncMyChallengeRegistrationWithOptions({ pruneMissingRemote: true });
   repairChRegNote();
   save();
   sessionStorage.setItem('hi_session_empid', ACTIVE_EMPID);
@@ -16624,7 +16647,7 @@ async function init() {
     if (autoLoadEl) autoLoadEl.style.display = 'block';
     await hydrateAccountFromRemote(savedEmpId, keepName || S.user.name || '');
     await syncAccountSettingsWithRemote(savedEmpId);
-    await syncMyChallengeRegistration();
+    await syncMyChallengeRegistrationWithOptions({ pruneMissingRemote: true });
     save();
     renderHeader();
     renderHome();
