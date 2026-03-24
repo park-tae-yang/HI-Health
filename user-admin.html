@@ -304,6 +304,7 @@
       <div class="sb-section">데이터</div>
       <button class="sb-item active" id="tab-btn-users" data-tab="users" onclick="switchTab('users',this)"><span class="sb-icon">👥</span>이용자</button>
       <button class="sb-item" id="tab-btn-workouts" data-tab="workouts" onclick="switchTab('workouts',this)"><span class="sb-icon">🏋️</span>운동기록</button>
+      <button class="sb-item" id="tab-btn-glucose" data-tab="glucose" onclick="switchTab('glucose',this)"><span class="sb-icon">🩸</span>혈당기록</button>
       <button class="sb-item" id="tab-btn-posts" data-tab="posts" onclick="switchTab('posts',this)"><span class="sb-icon">💬</span>커뮤니티</button>
       <button class="sb-item" id="tab-btn-challenge" data-tab="challenge" onclick="switchTab('challenge',this)"><span class="sb-icon">🏆</span>챌린지</button>
       <button class="sb-item" id="tab-btn-famcert" data-tab="famcert" onclick="switchTab('famcert',this)"><span class="sb-icon">📸</span>가족인증</button>
@@ -583,6 +584,49 @@
       </div>
     </div>
 
+    <!-- ── PANEL: GLUCOSE ── -->
+    <div class="panel" id="panel-glucose">
+      <div class="ch-status-bar">
+        <div class="ch-s-pill"><div class="ch-s-val" id="glc-total">-</div><div class="ch-s-lbl">전체 기록</div></div>
+        <div class="ch-s-pill"><div class="ch-s-val" id="glc-today">-</div><div class="ch-s-lbl">오늘</div></div>
+        <div class="ch-s-pill"><div class="ch-s-val" id="glc-users">-</div><div class="ch-s-lbl">기록 이용자</div></div>
+        <div class="ch-s-pill"><div class="ch-s-val" id="glc-avg">-</div><div class="ch-s-lbl">평균 혈당(mg/dL)</div></div>
+      </div>
+      <div class="ctrl-bar">
+        <input class="ctrl-inp" id="glc-search" placeholder="이름·계정 ID 검색" oninput="renderGlucose()">
+        <select class="ctrl-sel" id="glc-period" onchange="renderGlucose()">
+          <option value="">전체 기간</option>
+          <option value="today">오늘</option>
+          <option value="week">최근 7일</option>
+          <option value="month">이번 달</option>
+        </select>
+        <select class="ctrl-sel" id="glc-timing" onchange="renderGlucose()">
+          <option value="">전체 시점</option>
+          <option value="공복">공복</option>
+          <option value="식후">식후</option>
+          <option value="취침전">취침전</option>
+          <option value="기상후">기상후</option>
+        </select>
+        <span class="ctrl-count" id="glc-count">0건</span>
+      </div>
+      <div class="tbl-wrap">
+        <div class="tbl-scroll">
+          <table>
+            <thead><tr>
+              <th>날짜</th>
+              <th>이름</th>
+              <th>계정 ID</th>
+              <th>혈당(mg/dL)</th>
+              <th>측정 시점</th>
+              <th>포인트</th>
+            </tr></thead>
+            <tbody id="glc-tbody"></tbody>
+          </table>
+        </div>
+        <div class="pagination" id="glc-pager"></div>
+      </div>
+    </div>
+
     <!-- ── PANEL: CHALLENGE ── -->
     <div class="panel" id="panel-challenge">
       <div class="ch-status-bar">
@@ -594,11 +638,9 @@
         <div class="ch-s-pill"><div class="ch-s-val" id="ch-can">-</div><div class="ch-s-lbl">취소</div></div>
         <div class="ch-s-pill"><div class="ch-s-val" id="ch-fam">-</div><div class="ch-s-lbl">가족참여</div></div>
         <div class="ch-s-pill"><div class="ch-s-val" id="ch-cgm">-</div><div class="ch-s-lbl">혈당기기</div></div>
-        <div class="ch-s-pill"><div class="ch-s-val" id="ch-cruise">-</div><div class="ch-s-lbl">크루즈</div></div>
-        <div class="ch-s-pill"><div class="ch-s-val" id="ch-event">-</div><div class="ch-s-lbl">행사참여</div></div>
       </div>
       <div class="ctrl-bar">
-        <input class="ctrl-inp" id="ch-search" placeholder="신청번호·이름·계정 ID·티셔츠·혈당체크기기·운동화모델 검색" oninput="renderChallenge()">
+        <input class="ctrl-inp" id="ch-search" placeholder="신청번호·이름·계정 ID·티셔츠·혈당체크기기 검색" oninput="renderChallenge()">
         <select class="ctrl-sel" id="ch-sfilter" onchange="renderChallenge()">
           <option value="">전체 상태</option>
           <option value="pending">대기</option>
@@ -618,7 +660,6 @@
               <th>본인신발</th>
               <th>티셔츠</th>
               <th>혈당체크기기</th>
-              <th>운동화모델</th>
               <th>가족 정보</th>
               <th>참여 옵션</th>
               <th>요청사항</th>
@@ -2919,7 +2960,6 @@ function renderChallenge() {
       r.dept || '',
       getRegTshirtText(r),
       getRegCgmParticipation(r) ? '신청' : '미신청',
-      getRegShoePrefText(r),
       getRegRequestSummaryText(r),
       getRegFamilySummaryText(r),
       getRegOptionSummaryText(r),
@@ -2934,15 +2974,14 @@ function renderChallenge() {
   document.getElementById('ch-pend').textContent    = all.filter(r => r.status === 'pending').length;
   document.getElementById('ch-ok').textContent      = all.filter(r => r.status === 'confirmed').length;
   document.getElementById('ch-can').textContent     = all.filter(r => r.status === 'cancelled').length;
-  document.getElementById('ch-fam').textContent     = all.filter(getRegFamilyParticipation).length;
-  document.getElementById('ch-cgm').textContent     = all.filter(getRegCgmParticipation).length;
-  document.getElementById('ch-cruise').textContent  = all.filter(getRegCruiseParticipation).length;
-  document.getElementById('ch-event').textContent   = all.filter(getRegEventParticipation).length;
+  const activeParts = all.filter(r => r.status !== 'cancelled');
+  document.getElementById('ch-fam').textContent     = activeParts.filter(getRegFamilyParticipation).length;
+  document.getElementById('ch-cgm').textContent     = activeParts.filter(getRegCgmParticipation).length;
   document.getElementById('ch-count').textContent   = list.length + '건';
 
   const tbody = document.getElementById('ch-tbody');
   if (!list.length) {
-    tbody.innerHTML = `<tr><td class="empty-cell" colspan="12">신청 내역이 없습니다</td></tr>`;
+    tbody.innerHTML = `<tr><td class="empty-cell" colspan="11">신청 내역이 없습니다</td></tr>`;
     return;
   }
   tbody.innerHTML = list.map(r => {
@@ -2953,7 +2992,6 @@ function renderChallenge() {
     const ownShoe = getRegDisplayText(r, withMm(r.shoeSize) || withMm(getRegNoteLine(r, '신발사이즈')));
     const tshirtText = getRegDisplayText(r, getRegTshirtText(r));
     const cgmText = getRegChoiceText(getRegCgmParticipationState(r), '신청', '미신청', r);
-    const shoePrefText = getRegDisplayText(r, getRegShoePrefText(r));
     const familySummary = getRegFamilySummaryText(r);
     const optionSummary = getRegOptionSummaryText(r);
     const requestParts = [];
@@ -2971,7 +3009,6 @@ function renderChallenge() {
       <td>${escHtml(ownShoe)}</td>
       <td>${escHtml(tshirtText)}</td>
       <td>${escHtml(cgmText)}</td>
-      <td class="td-memo">${escHtml(shoePrefText)}</td>
       <td class="td-memo">${escHtml(familySummary)}</td>
       <td class="td-memo">${escHtml(optionSummary)}</td>
       <td class="td-memo">${requestHtml}</td>
@@ -2988,13 +3025,10 @@ function showChDetail(id) {
   if (!r) return;
   const tshirtText = getRegDisplayText(r, getRegTshirtText(r));
   const cgmText = getRegChoiceText(getRegCgmParticipationState(r), '신청', '미신청', r);
-  const shoePrefText = getRegDisplayText(r, getRegShoePrefText(r));
   const shoeRequestText = getRegDisplayText(r, getRegShoeRequestText(r));
   const familyParticipation = getRegFamilyParticipationState(r);
   const familySummary = getRegFamilySummaryText(r);
   const familyMemo = getRegDisplayText(r, getRegFamilyMemoText(r));
-  const cruiseText = getRegChoiceText(getRegCruiseParticipationState(r), '탑승 희망', '탑승 안 함', r);
-  const eventText = getRegChoiceText(getRegEventParticipationState(r), '참여', '불참', r);
   const rows = [
     ['신청번호', r.id],
     ['이름', r.name],
@@ -3004,13 +3038,10 @@ function showChDetail(id) {
     ['신발(본인)', getRegDisplayText(r, withMm(r.shoeSize) || withMm(getRegNoteLine(r, '신발사이즈')))],
     ['티셔츠', tshirtText],
     ['혈당체크기기', cgmText],
-    ['운동화모델', shoePrefText],
     ['운동화요청', shoeRequestText],
     ['가족참여', familyParticipation === true ? '가족함께 참여' : familyParticipation === false ? '본인만' : getRegChoiceText(familyParticipation, '가족함께 참여', '본인만', r)],
     ['가족정보', familySummary],
     ['가족메모', familyMemo],
-    ['크루즈', cruiseText],
-    ['행사', eventText],
     ['상태', r.status],
     ['신청일', r.registeredAt ? new Date(r.registeredAt).toLocaleString('ko-KR') : '-'],
     ['비고', r.adminNote||'-'],
@@ -3146,19 +3177,16 @@ async function deleteChallengeRegistration(id) {
 }
 
 function exportChallengeCsv() {
-  const rows = [['신청번호','이름','계정 ID','부서','연락처','본인신발','티셔츠','혈당체크기기','운동화모델','운동화요청','가족참여','가족정보','가족메모','크루즈','행사','상태','신청일']];
+  const rows = [['신청번호','이름','계정 ID','부서','연락처','본인신발','티셔츠','혈당체크기기','운동화요청','가족참여','가족정보','가족메모','상태','신청일']];
   getEffectiveChallengeRegistrations().forEach(r => rows.push([
     r.id, r.name, r.empId, r.dept, r.phone,
     getRegDisplayText(r, withMm(r.shoeSize) || withMm(getRegNoteLine(r, '신발사이즈')), ''),
     getRegDisplayText(r, getRegTshirtText(r), ''),
     getRegChoiceText(getRegCgmParticipationState(r), '신청', '미신청', r, ''),
-    getRegDisplayText(r, getRegShoePrefText(r), ''),
     getRegDisplayText(r, getRegShoeRequestText(r), ''),
     getRegChoiceText(getRegFamilyParticipationState(r), 'Y', 'N', r, ''),
     getRegFamilySummaryText(r),
     getRegDisplayText(r, getRegFamilyMemoText(r), ''),
-    getRegChoiceText(getRegCruiseParticipationState(r), 'Y', 'N', r, ''),
-    getRegChoiceText(getRegEventParticipationState(r), 'Y', 'N', r, ''),
     r.status,
     r.registeredAt ? new Date(r.registeredAt).toLocaleDateString('ko-KR') : '',
   ]));
@@ -3625,7 +3653,7 @@ async function deleteAdminPost(id) {
    TABS
 ══════════════════════════════════════════════ */
 const TAB_TITLES = {
-  users: '이용자 관리', workouts: '운동 기록', posts: '커뮤니티',
+  users: '이용자 관리', workouts: '운동 기록', glucose: '혈당 기록', posts: '커뮤니티',
   challenge: '챌린지', orders: '구매 관리',
   content: '콘텐츠 작성', settings: '설정', famcert: '가족인증',
 };
@@ -3639,6 +3667,7 @@ function switchTab(name, btn) {
   if (db && name !== 'settings') loadAll({ silent: true });
   if (name === 'users') renderUsers();
   if (name === 'workouts') renderWorkouts();
+  if (name === 'glucose') renderGlucose();
   if (name === 'posts') renderPosts();
   if (name === 'challenge') renderChallenge();
 if (name === 'orders') loadShopConfig();
@@ -3956,6 +3985,79 @@ async function applyChallengeRewardToggle() {
   } catch(e) {
     toast('저장 실패: ' + formatAppConfigError(e));
   }
+}
+
+/* ══════════════════════════════════════════════
+   GLUCOSE (혈당기록)
+══════════════════════════════════════════════ */
+let glcPage = 0;
+const GLC_PAGE = 100;
+
+function renderGlucose() {
+  const q      = (document.getElementById('glc-search')?.value || '').toLowerCase();
+  const period = document.getElementById('glc-period')?.value || '';
+  const timing = document.getElementById('glc-timing')?.value || '';
+  const today  = new Date().toDateString();
+  const now    = Date.now();
+  const week   = 7 * 86400000;
+  const month  = 30 * 86400000;
+
+  const all = GD.glucose;
+
+  // 요약 통계
+  const todayCnt  = all.filter(g => new Date(g.ts || g.createdAt).toDateString() === today).length;
+  const userSet   = new Set(all.map(g => g.deviceId).filter(Boolean));
+  const vals      = all.map(g => Number(g.value)).filter(v => v > 0);
+  const avgVal    = vals.length ? Math.round(vals.reduce((a,b) => a+b, 0) / vals.length) : '-';
+  document.getElementById('glc-total').textContent = all.length;
+  document.getElementById('glc-today').textContent = todayCnt;
+  document.getElementById('glc-users').textContent = userSet.size;
+  document.getElementById('glc-avg').textContent   = avgVal;
+
+  // 필터
+  const list = all.filter(g => {
+    const ts = new Date(g.ts || g.createdAt);
+    if (period === 'today' && ts.toDateString() !== today) return false;
+    if (period === 'week'  && now - ts.getTime() > week)   return false;
+    if (period === 'month' && now - ts.getTime() > month)  return false;
+    if (timing && (g.timing || '') !== timing) return false;
+    if (q && ![(g.userName||''),(g.deviceId||'')].some(s => s.toLowerCase().includes(q))) return false;
+    return true;
+  }).sort((a, b) => new Date(b.ts || b.createdAt) - new Date(a.ts || a.createdAt));
+
+  document.getElementById('glc-count').textContent = list.length + '건';
+
+  const totalPages = Math.max(1, Math.ceil(list.length / GLC_PAGE));
+  if (glcPage >= totalPages) glcPage = totalPages - 1;
+  const page = list.slice(glcPage * GLC_PAGE, (glcPage + 1) * GLC_PAGE);
+
+  const tbody = document.getElementById('glc-tbody');
+  if (!page.length) {
+    tbody.innerHTML = `<tr><td class="empty-cell" colspan="6">혈당 기록이 없습니다</td></tr>`;
+    document.getElementById('glc-pager').innerHTML = '';
+    return;
+  }
+
+  const timingColor = { '공복':'var(--sky)', '식후':'var(--amber)', '취침전':'var(--purple)', '기상후':'var(--green)' };
+  tbody.innerHTML = page.map(g => {
+    const d  = g.ts || g.createdAt;
+    const dt = d ? new Date(d).toLocaleString('ko-KR', { month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' }) : '-';
+    const v  = Number(g.value) || '-';
+    const vColor = typeof v === 'number'
+      ? v < 70 ? 'var(--sky)' : v > 140 ? 'var(--red)' : 'var(--green)'
+      : 'var(--t3)';
+    const tc = timingColor[g.timing] || 'var(--t3)';
+    return `<tr>
+      <td class="td-date">${dt}</td>
+      <td class="td-name">${g.userName || '-'}</td>
+      <td style="font-size:12px;color:var(--t3)">${g.deviceId || '-'}</td>
+      <td><span style="font-weight:700;color:${vColor}">${v}</span> <span style="font-size:11px;color:var(--t3)">mg/dL</span></td>
+      <td>${g.timing ? `<span class="badge" style="background:${tc}22;color:${tc}">${g.timing}</span>` : '-'}</td>
+      <td><span class="badge pts">+${g.points || 0}p</span></td>
+    </tr>`;
+  }).join('');
+
+  renderPager('glc-pager', list.length, totalPages, glcPage, p => { glcPage = p; renderGlucose(); });
 }
 
 /* ══════════════════════════════════════════════

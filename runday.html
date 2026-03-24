@@ -1107,6 +1107,7 @@
     .succ-actions { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 16px; border-top: 1px solid #f0f0f5; }
     .succ-note { font-size: 11px; color: var(--sub); line-height: 1.5; }
     .succ-btn-row { display: flex; gap: 6px; flex-shrink: 0; }
+    .succ-cta-stack { display: flex; flex-direction: column; gap: 8px; padding-top: 12px; }
     .btn-edit-reg {
       padding: 6px 14px;
       background: #f3f4f6; border: none;
@@ -3872,7 +3873,7 @@
           </div>` : ''}
         </div>
       </div>
-      <div class="succ-actions">
+      <div class="succ-cta-stack">
         <button type="button" class="btn-app" onclick="if(window.parent&&window.parent.navigate){window.parent.navigate('exercise')}else{window.parent.location.href='index.html'}">
           <div class="btn-app-icon"><img id="success-app-avatar-img" src="${appAvatarSrc}" alt="운동 기록 아바타" onerror="if(this.dataset.err)return;this.dataset.err=1;this.src='${LIVE_AVATAR_FALLBACK}'"></div>
           <div class="btn-app-body">
@@ -3881,11 +3882,11 @@
           </div>
           <div class="btn-app-arr">›</div>
         </button>
-        <button type="button" class="btn-app" style="margin-top:8px" onclick="if(window.parent&&window.parent.openFamilyCertModal){window.parent.openFamilyCertModal()}">
+        <button type="button" class="btn-app" onclick="if(window.parent&&window.parent.openFamilyCertModal){window.parent.openFamilyCertModal()}">
           <div class="btn-app-icon" style="font-size:22px;display:flex;align-items:center;justify-content:center">📸</div>
           <div class="btn-app-body">
             <div class="btn-app-main">가족 운동 인증하기</div>
-            <div class="btn-app-sub">가족과 함께한 운동 사진 · 영상 제출</div>
+            <div class="btn-app-sub">사진 · 영상 제출 시 추가 100포인트</div>
           </div>
           <div class="btn-app-arr">›</div>
         </button>
