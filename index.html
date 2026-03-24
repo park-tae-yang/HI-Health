@@ -13902,7 +13902,7 @@ async function fetchChallengePeopleRows(options = {}) {
     const normalizeRegRow = r => ({ ...r, empId: r.empId ?? r.empid ?? '', deviceId: r.deviceId ?? r.deviceid ?? '', registeredAt: r.registeredAt ?? r.registeredat ?? '' });
     const fetchRows = async (selectClause) => {
       const res = await fetch(
-        SUPABASE_URL + '/rest/v1/registrations?select=' + encodeURIComponent(selectClause) + '&order=id.desc&_=' + Date.now(),
+        SUPABASE_URL + '/rest/v1/registrations?select=' + encodeURIComponent(selectClause) + '&order=id.desc',
         {
           cache: 'no-store',
           headers: {
