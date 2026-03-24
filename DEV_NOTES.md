@@ -7,6 +7,16 @@
 
 ## 🐛 오류 / 이슈
 
+### [2026-03-24] 같이 달려요 아바타 전부 av1.png 표시
+**증상**: 참여자 아바타 스택에 모든 사람이 av1.png로 표시됨
+**원인**:
+1. `avIdx` 호출 시 `r.empId ?? r.empid ?? r.name ?? r.id` 사용 — `??`는 `null/undefined`만 폴백하므로 `empId=''`(빈 문자열)이면 `name/id`로 넘어가지 않음 → `avIdx('')=1` → 모두 av1.png
+2. `mergePeopleRows(serverRows, localRecoveryRows)`에서 로컬 등록 캐시의 구 avatar(`av1.png`)가 서버에서 조회한 최신 avatar(`av4.png` 등)를 덮어씀 → 서버 avatar 무효화
+**해결**:
+1. `??` → `||` 로 변경 (빈 문자열도 falsy로 처리)
+2. `mergePeopleRows` 후 `avatarMap`을 재적용해 서버 avatar 우선 보장
+**관련 파일**: `runday.html:3649, 3661, 3741`
+
 <!-- 형식:
 ### [YYYY-MM-DD] 제목
 **증상**: 어떤 문제가 발생했는지
