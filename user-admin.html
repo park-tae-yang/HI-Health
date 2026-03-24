@@ -2602,10 +2602,7 @@ function renderWorkouts() {
       <td><span class="badge pts">+${w.points||0}p</span></td>
       <td class="td-memo">${escHtml(memo || '-')}</td>
       <td>
-        <div style="display:flex;gap:4px">
-          <button class="abtn det" onclick="showWorkoutDetail('${safeId}')">상세</button>
-          <button class="abtn del" onclick="deleteWorkout('${safeId}')">삭제</button>
-        </div>
+        <button class="abtn del" onclick="deleteWorkout('${safeId}')" title="삭제"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg></button>
       </td>
     </tr>`;
   }).join('');
