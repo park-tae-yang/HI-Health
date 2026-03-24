@@ -24,7 +24,10 @@
     body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--t1);min-height:100vh;}
 
     /* ── LOGIN ── */
-    .login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:url('images/happy-play.jpg') center/cover no-repeat;padding:20px;}
+    .login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;position:relative;}
+    .login-wrap::before{content:'';position:absolute;inset:0;background:url('images/happy-play.jpg') center/cover no-repeat;filter:blur(12px);transform:scale(1.05);z-index:0;}
+    .login-wrap::after{content:'';position:absolute;inset:0;background:rgba(0,0,0,0.25);z-index:1;}
+    .login-card{position:relative;z-index:2;}
     .login-card{background:#fff;border-radius:var(--r);padding:40px 32px;width:100%;max-width:320px;box-shadow:0 8px 32px rgba(0,0,0,0.18);border:1px solid var(--border);text-align:center;}
     .login-logo{height:64px;margin-bottom:20px;}
     .login-title{font-size:16px;font-weight:700;color:var(--t1);margin-bottom:20px;}
