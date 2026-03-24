@@ -13735,21 +13735,34 @@ function redeemReward(id) {
   if (!r) return;
   if (S.redeemedRewards.includes(id)) { haptic('error'); showToast('이미 신청한 보상이에요'); return; }
   if (S.pendingRewards.includes(id))  { haptic('error'); showToast('이미 신청 처리 중이에요'); return; }
-  if (S.user.points < r.cost) { haptic('error'); showToast('⚠️ 포인트가 부족해요 (필요: ' + r.cost + 'p)'); return; }
-  const confirmMsg = _challengeRewardMode
-    ? `"${r.name}" 보상을 신청할까요?\n달성 포인트는 차감되지 않습니다.`
-    : `"${r.name}"을(를) ${r.cost}p로 교환 요청할까요?`;
-  showConfirm(confirmMsg, () => {
-    if (!_challengeRewardMode) S.user.points -= r.cost;
-    S.pendingRewards.push(id);
-    if (!S.rewardHistory) S.rewardHistory = [];
-    S.rewardHistory.unshift({ id, name: r.name, cost: r.cost, status: 'pending', ts: Date.now() });
-    save();
-    renderHeader();
-    haptic('success');
-    showToast(_challengeRewardMode ? '🎁 신청 완료! 직원 확인 후 수령하세요' : '📋 교환 요청 완료! 직원 확인 후 수령하세요');
-    renderRewards();
+  if (!_challengeRewardMode && S.user.points < r.cost) { haptic('error'); showToast('⚠️ 포인트가 부족해요 (필요: ' + r.cost + 'p)'); return; }
+
+  if (!_challengeRewardMode) S.user.points -= r.cost;
+  S.pendingRewards.push(id);
+  if (!S.rewardHistory) S.rewardHistory = [];
+  S.rewardHistory.unshift({ id, name: r.name, cost: r.cost, status: 'pending', ts: Date.now() });
+  save();
+  renderHeader();
+  haptic('success');
+
+  // 관리자 페이지 orders 테이블에 등록
+  const orderId = 'REW-' + String(Date.now()).slice(-8);
+  apiSync('addOrder', {
+    id: orderId,
+    deviceId: S.deviceId || '',
+    userName: S.user.name || '',
+    name: S.user.name || '',
+    phone: S.user.empId || '',
+    pickup: '포인트교환',
+    addr: '',
+    items: JSON.stringify([{ id: r.id, name: r.name, price: r.cost, qty: 1 }]),
+    total: r.cost,
+    status: 'pending',
+    orderedAt: new Date().toISOString(),
   });
+
+  showToast(_challengeRewardMode ? '🎁 신청 완료! 직원 확인 후 수령하세요' : '✅ 교환 신청 완료! 직원 확인 후 수령하세요');
+  renderRewards();
 }
 
 function confirmReward(id) {
