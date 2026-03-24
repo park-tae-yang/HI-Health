@@ -13948,6 +13948,9 @@ async function syncChallengePeopleToRunday(options = {}) {
 async function syncChallengeRuntimeToRunday(options = {}) {
   const runtime = window.RundayInline;
   syncChallengeConfigToRunday();
+  if (!IS_GUEST && (S.user?.name || S.user?.empId || ACTIVE_EMPID)) {
+    postToRunday({ type: 'LOGIN', name: S.user.name, empId: S.user.empId || ACTIVE_EMPID, avatar: normalizeAvatar(S.user.avatar) });
+  }
   syncChallengeStateToRunday();
   const peoplePromise = syncChallengePeopleToRunday({ silent: options.silent !== false });
   if (typeof runtime?.bootstrapChallengePage === 'function') {
