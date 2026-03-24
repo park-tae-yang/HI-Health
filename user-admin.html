@@ -251,9 +251,7 @@
 
     /* ── RANK BADGE ── */
     .rank{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;font-size:11px;font-weight:700;background:var(--bg);color:var(--t3);}
-    .rank.g1{background:#FEF9C3;color:#92400E;}
-    .rank.g2{background:#F1F5F9;color:#475569;}
-    .rank.g3{background:#FEF3C7;color:#B45309;}
+    .rank.g1,.rank.g2,.rank.g3{}
 
     /* ── SELECTED USER BAR ── */
     .sel-bar{display:inline-flex;align-items:center;gap:6px;background:var(--pl);border-radius:20px;padding:4px 8px 4px 12px;font-size:12px;font-weight:600;color:var(--p);}
@@ -351,13 +349,7 @@
       </div>
 
       <div class="ctrl-bar">
-        <input class="ctrl-inp" id="u-search" placeholder="이름·닉네임·계정 ID·신청번호·부서 검색" oninput="onUserSearch()">
-        <select class="ctrl-sel" id="u-filter" onchange="renderUsers()">
-          <option value="all">전체</option>
-          <option value="bad">이상한 이름</option>
-          <option value="dup">중복 계정 ID</option>
-          <option value="ch">챌린지 참여자</option>
-        </select>
+        <input class="ctrl-inp" id="u-search" placeholder="이름·닉네임·계정 ID·부서 검색" oninput="onUserSearch()">
         <select class="ctrl-sel" id="u-sort" onchange="renderUsers()">
           <option value="name">이름순</option>
           <option value="points">포인트순</option>
@@ -383,17 +375,15 @@
               <th>이름</th>
               <th>닉네임</th>
               <th>계정 ID</th>
-              <th>신청번호</th>
               <th>부서</th>
               <th>포인트</th>
               <th>운동</th>
               <th>연속</th>
-              <th>챌린지</th>
               <th>마지막 활동</th>
               <th>관리</th>
             </tr></thead>
             <tbody id="u-tbody">
-              <tr><td class="empty-cell" colspan="12">불러오는 중...</td></tr>
+              <tr><td class="empty-cell" colspan="10">불러오는 중...</td></tr>
             </tbody>
           </table>
         </div>
@@ -413,25 +403,10 @@
           <button class="cbtn" style="background:var(--bg);color:var(--t2)" onclick="hideDetail()">✕ 닫기</button>
         </div>
 
-        <div class="dp-body">
-          <!-- 좌: 읽기 전용 계정 정보 -->
-          <div>
-            <div class="dp-section-title">계정 정보</div>
-            <div class="dp-info-grid">
-              <div class="dp-info-row"><span class="dp-info-label">계정 ID</span><span class="dp-info-val" id="di-empid">-</span></div>
-              <div class="dp-info-row"><span class="dp-info-label">부서</span><span class="dp-info-val" id="di-dept">-</span></div>
-              <div class="dp-info-row"><span class="dp-info-label">신청번호</span><span class="dp-info-val" id="di-regid">-</span></div>
-            </div>
-          </div>
-          <!-- 우: 수정 가능 필드 -->
-          <div>
-            <div class="dp-section-title">정보 수정</div>
-            <div class="dp-grid">
-              <div class="dp-field"><label>이름</label><input class="dp-inp" id="d-name" oninput="markUserDetailDirty()"></div>
-              <div class="dp-field"><label>닉네임</label><input class="dp-inp" id="d-nickname" oninput="markUserDetailDirty()"></div>
-              <div class="dp-field"><label>아바타</label><input class="dp-inp" id="d-avatar" placeholder="이모지 또는 경로" oninput="markUserDetailDirty()"></div>
-              <div class="dp-field"><label>연속 달성일</label><input class="dp-inp" type="number" id="d-streak" oninput="markUserDetailDirty()"></div>
-            </div>
+        <div class="dp-body" style="display:block;">
+          <div class="dp-info-grid">
+            <div class="dp-info-row"><span class="dp-info-label">계정 ID</span><span class="dp-info-val" id="di-empid">-</span></div>
+            <div class="dp-info-row"><span class="dp-info-label">부서</span><span class="dp-info-val" id="di-dept">-</span></div>
           </div>
         </div>
 
@@ -439,20 +414,16 @@
         <div class="dp-pts-section">
           <div class="dp-pts-current">
             <span class="dp-pts-label">포인트</span>
-            <input class="dp-inp" type="number" id="d-points" oninput="markUserDetailDirty()" style="width:110px;font-size:18px;font-weight:800;text-align:center">
+            <span id="d-points" style="font-size:22px;font-weight:800;color:var(--p)">-</span>
           </div>
           <div class="dp-pts-adj">
-            <span style="font-size:12px;color:var(--t3);font-weight:600">빠른 조정</span>
             <input class="dp-inp" type="number" id="adj-val" placeholder="조정값" style="width:100px">
             <button class="cbtn grn" onclick="adjPoints(1)">+ 추가</button>
             <button class="cbtn dan" onclick="adjPoints(-1)">− 차감</button>
           </div>
-        </div>
-
-        <div class="dp-actions">
-          <button class="cbtn pri" onclick="saveUserDetail()">저장</button>
-          <button class="cbtn sky" onclick="openUserWorkouts()">운동기록 보기</button>
-          <button class="cbtn dan" onclick="deleteSelUser()">이용자 삭제</button>
+          <div style="display:flex;gap:8px;margin-left:auto;">
+            <button class="cbtn sky" onclick="openUserWorkouts()">운동기록 보기</button>
+          </div>
         </div>
       </div>
     </div>
@@ -586,36 +557,63 @@
 
     <!-- ── PANEL: GLUCOSE ── -->
     <div class="panel" id="panel-glucose">
-      <div class="ch-status-bar">
-        <div class="ch-s-pill"><div class="ch-s-val" id="glc-total">-</div><div class="ch-s-lbl">전체 기록</div></div>
-        <div class="ch-s-pill"><div class="ch-s-val" id="glc-today">-</div><div class="ch-s-lbl">오늘</div></div>
-        <div class="ch-s-pill"><div class="ch-s-val" id="glc-users">-</div><div class="ch-s-lbl">기록 이용자</div></div>
-        <div class="ch-s-pill"><div class="ch-s-val" id="glc-avg">-</div><div class="ch-s-lbl">평균 혈당(mg/dL)</div></div>
+      <div class="stat-grid wo-summary-grid">
+        <div class="stat-card a"><div class="s-lbl">오늘 혈당</div><div class="s-val" id="glc-sum-today">-</div><div class="s-sub">건</div></div>
+        <div class="stat-card g"><div class="s-lbl">최근 7일</div><div class="s-val" id="glc-sum-week">-</div><div class="s-sub">건</div></div>
+        <div class="stat-card pu"><div class="s-lbl">기록 이용자</div><div class="s-val" id="glc-sum-users">-</div><div class="s-sub">명</div></div>
+        <div class="stat-card sk"><div class="s-lbl">평균 혈당</div><div class="s-val" id="glc-sum-avg">-</div><div class="s-sub">mg/dL</div></div>
+      </div>
+      <div class="wo-guide" id="glc-guide">
+        전체 혈당기록을 한 번에 나열하지 않고, 먼저 활동 요약과 최근 활동 이용자 상위 목록을 보여줍니다. 특정 이용자를 선택하면 그 사람 기록만 자세히 볼 수 있습니다.
       </div>
       <div class="ctrl-bar">
-        <input class="ctrl-inp" id="glc-search" placeholder="이름·계정 ID 검색" oninput="renderGlucose()">
-        <select class="ctrl-sel" id="glc-period" onchange="renderGlucose()">
+        <input class="ctrl-inp" id="glc-search" placeholder="이용자명·계정 ID 검색" oninput="glcReset()">
+        <select class="ctrl-sel" id="glc-user" onchange="glcReset()"><option value="">이용자 선택</option></select>
+        <div class="wo-inline-actions">
+          <button class="cbtn sky" onclick="useSelectedUserForGlucose()">선택 이용자 보기</button>
+          <button class="cbtn" style="background:var(--bg);color:var(--t2)" onclick="clearGlucoseUserFilter()">선택 해제</button>
+        </div>
+        <select class="ctrl-sel" id="glc-period" onchange="glcReset()">
           <option value="">전체 기간</option>
           <option value="today">오늘</option>
           <option value="week">최근 7일</option>
           <option value="month">이번 달</option>
         </select>
-        <select class="ctrl-sel" id="glc-timing" onchange="renderGlucose()">
+        <select class="ctrl-sel" id="glc-timing" onchange="glcReset()">
           <option value="">전체 시점</option>
           <option value="공복">공복</option>
           <option value="식후">식후</option>
           <option value="취침전">취침전</option>
           <option value="기상후">기상후</option>
         </select>
-        <span class="ctrl-count" id="glc-count">0건</span>
+        <div class="sel-bar" id="glc-sel-bar" style="display:none">
+          <span id="glc-sel-name"></span> 혈당기록 보는 중
+          <button onclick="clearGlucoseUserFilter()" title="선택 해제">✕</button>
+        </div>
+        <span class="ctrl-count" id="glc-count">최근 활동 이용자 상위 보기</span>
       </div>
-      <div class="tbl-wrap">
+      <div class="tbl-wrap" id="glc-overview-wrap">
+        <div class="tbl-scroll">
+          <table>
+            <thead><tr>
+              <th>#</th>
+              <th>이용자</th>
+              <th>계정 ID</th>
+              <th>최근 기록</th>
+              <th>최근 7일</th>
+              <th>누적 기록</th>
+              <th>평균 혈당</th>
+              <th>관리</th>
+            </tr></thead>
+            <tbody id="glc-overview-body"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="tbl-wrap" id="glc-list-wrap" style="display:none">
         <div class="tbl-scroll">
           <table>
             <thead><tr>
               <th>날짜</th>
-              <th>이름</th>
-              <th>계정 ID</th>
               <th>혈당(mg/dL)</th>
               <th>측정 시점</th>
               <th>포인트</th>
@@ -629,15 +627,15 @@
 
     <!-- ── PANEL: CHALLENGE ── -->
     <div class="panel" id="panel-challenge">
-      <div class="ch-status-bar">
-        <div class="ch-s-pill"><div class="ch-s-val" id="ch-total">-</div><div class="ch-s-lbl">전체</div></div>
-        <div class="ch-s-pill"><div class="ch-s-val" id="ch-live">-</div><div class="ch-s-lbl">같이 달려요</div></div>
-        <div class="ch-s-pill wide"><div class="ch-s-val" id="ch-donation">-</div><div class="ch-s-lbl">예상기부금(원)</div></div>
-        <div class="ch-s-pill"><div class="ch-s-val" id="ch-pend">-</div><div class="ch-s-lbl">대기</div></div>
-        <div class="ch-s-pill"><div class="ch-s-val" id="ch-ok">-</div><div class="ch-s-lbl">확정</div></div>
-        <div class="ch-s-pill"><div class="ch-s-val" id="ch-can">-</div><div class="ch-s-lbl">취소</div></div>
-        <div class="ch-s-pill"><div class="ch-s-val" id="ch-fam">-</div><div class="ch-s-lbl">가족참여</div></div>
-        <div class="ch-s-pill"><div class="ch-s-val" id="ch-cgm">-</div><div class="ch-s-lbl">혈당기기</div></div>
+      <div style="display:flex;gap:24px;align-items:baseline;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--border);">
+        <div><span id="ch-total" style="font-size:28px;font-weight:800;color:var(--t1)">-</span><span style="font-size:13px;color:var(--t3);margin-left:4px">명 전체</span></div>
+        <div><span id="ch-fam" style="font-size:22px;font-weight:700;color:var(--p)">-</span><span style="font-size:12px;color:var(--t3);margin-left:4px">명 가족참여</span></div>
+        <div><span id="ch-cgm" style="font-size:22px;font-weight:700;color:var(--green)">-</span><span style="font-size:12px;color:var(--t3);margin-left:4px">명 혈당기기</span></div>
+        <span id="ch-live" style="display:none"></span>
+        <span id="ch-donation" style="display:none"></span>
+        <span id="ch-pend" style="display:none"></span>
+        <span id="ch-ok" style="display:none"></span>
+        <span id="ch-can" style="display:none"></span>
       </div>
       <div class="ctrl-bar">
         <input class="ctrl-inp" id="ch-search" placeholder="신청번호·이름·계정 ID·티셔츠·혈당체크기기 검색" oninput="renderChallenge()">
@@ -1920,8 +1918,6 @@ function isChallenger(u) {
 
 function filteredUsers() {
   const q = (document.getElementById('u-search')?.value || '').toLowerCase();
-  const mode = document.getElementById('u-filter')?.value || 'all';
-  const dupIds = getDupEmpIds();
   return GD.users.filter(u => {
     // 관리자 전용 계정 제외
     if (USER_LIST_EXCLUDE_EMPIDS.includes((u.empId || '').trim().toUpperCase())) return false;
@@ -1929,11 +1925,7 @@ function filteredUsers() {
     if (uTab === 'gen') { if (isChallenger(u)) return false; }
     if (uTab === 'ch')  { if (!isChallenger(u)) return false; }
     // 검색
-    if (q && ![(u.name||''),(u.nickname||''),(u.empId||''),(u.registrationId||''),(u.dept||'')].some(s => s.toLowerCase().includes(q))) return false;
-    // 드롭다운 필터
-    if (mode === 'bad') return isBadName(u.name);
-    if (mode === 'dup') return dupIds.has((u.empId||'').trim());
-    if (mode === 'ch')  return isChallenger(u);
+    if (q && ![(u.name||''),(u.nickname||''),(u.empId||''),(u.dept||'')].some(s => s.toLowerCase().includes(q))) return false;
     return true;
   });
 }
@@ -1956,10 +1948,11 @@ function renderUsers() {
   const woCnt = {};
   GD.workouts.forEach(w => woCnt[w.deviceId] = (woCnt[w.deviceId]||0)+1);
 
-  // 서브탭 카운트 업데이트
-  const genCnt = GD.users.filter(u => !isChallenger(u)).length;
-  const chCnt  = GD.users.filter(u =>  isChallenger(u)).length;
-  document.getElementById('utab-all').textContent = `전체 (${GD.users.length})`;
+  // 서브탭 카운트 업데이트 (관리자 계정 제외)
+  const visibleUsers = GD.users.filter(u => !USER_LIST_EXCLUDE_EMPIDS.includes((u.empId||'').trim().toUpperCase()));
+  const genCnt = visibleUsers.filter(u => !isChallenger(u)).length;
+  const chCnt  = visibleUsers.filter(u =>  isChallenger(u)).length;
+  document.getElementById('utab-all').textContent = `전체 (${visibleUsers.length})`;
   document.getElementById('utab-gen').textContent = `일반 (${genCnt})`;
   document.getElementById('utab-ch').textContent  = `챌린저 (${chCnt})`;
 
@@ -2010,12 +2003,10 @@ function renderUsers() {
       </td>
       <td style="color:var(--t2)">${u.nickname||'-'}</td>
       <td>${u.empId||'-'}</td>
-      <td>${u.registrationId||'-'}</td>
       <td>${u.dept||'-'}</td>
       <td><span class="badge pts">+${(Number(u.points)||0).toLocaleString()}p</span></td>
       <td>${woCnt[u.deviceId]||0}</td>
       <td>${Number(u.streak)||0}일</td>
-      <td>${isCh ? '✓' : '-'}</td>
       <td>${actCell}</td>
       <td>
         <div style="display:flex;gap:4px">
@@ -2049,15 +2040,10 @@ function markUserDetailDirty() {
 function fillUserDetailForm(u, fallbackName = '') {
   if (!u) return;
   const name = u.name || fallbackName || '이용자';
-  document.getElementById('d-name').value     = u.name     || fallbackName || '';
-  document.getElementById('d-nickname').value = u.nickname || '';
-  document.getElementById('d-avatar').value   = u.avatar   || '';
-  document.getElementById('d-points').value   = Number(u.points) || 0;
-  document.getElementById('d-streak').value   = Number(u.streak) || 0;
+  document.getElementById('d-points').textContent = Number(u.points) || 0;
   // 읽기전용 계정 정보
   document.getElementById('di-empid').textContent  = u.empId  || '-';
   document.getElementById('di-dept').textContent   = u.dept   || '-';
-  document.getElementById('di-regid').textContent  = u.registrationId || '-';
   // 헤더 요약
   document.getElementById('u-detail-title').textContent = name;
   const meta = [u.empId, u.dept].filter(Boolean).join(' · ');
@@ -2075,7 +2061,7 @@ function fillUserDetailForm(u, fallbackName = '') {
 }
 
 function syncSelectedUserDetail() {
-  if (!selDeviceId || _userDetailDirty) return;
+  if (!selDeviceId) return;
   const u = GD.users.find(x => x.deviceId === selDeviceId);
   if (!u) return;
   fillUserDetailForm(u, u.name || '');
@@ -2126,7 +2112,7 @@ async function adjPoints(sign) {
   showLoading(false);
   if (error) { toast('실패: ' + error.message); return; }
   u.points = newPts;
-  document.getElementById('d-points').value = newPts;
+  document.getElementById('d-points').textContent = newPts;
   renderStats(); renderUsers();
   toast((sign > 0 ? '+' : '') + (sign * v) + 'p 조정 완료');
 }
@@ -3993,38 +3979,146 @@ async function applyChallengeRewardToggle() {
 let glcPage = 0;
 const GLC_PAGE = 100;
 
-function renderGlucose() {
+function glcTs(g) {
+  const parsed = Date.parse(String(g?.ts || g?.createdAt || ''));
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function renderGlucoseSummary() {
+  const now = Date.now();
+  const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+  const weekStart  = now - 7 * 86400000;
+  const todayCnt = GD.glucose.filter(g => glcTs(g) >= todayStart.getTime()).length;
+  const weekCnt  = GD.glucose.filter(g => glcTs(g) >= weekStart).length;
+  const userSet  = new Set(GD.glucose.map(g => g.deviceId).filter(Boolean));
+  const vals     = GD.glucose.map(g => Number(g.value)).filter(v => v > 0);
+  const avg      = vals.length ? Math.round(vals.reduce((a,b)=>a+b,0)/vals.length) : '-';
+  document.getElementById('glc-sum-today').textContent = todayCnt;
+  document.getElementById('glc-sum-week').textContent  = weekCnt;
+  document.getElementById('glc-sum-users').textContent = userSet.size;
+  document.getElementById('glc-sum-avg').textContent   = avg;
+}
+
+function syncGlucoseSelectionUI(deviceId) {
+  const wrap    = document.getElementById('glc-sel-bar');
+  const nameEl  = document.getElementById('glc-sel-name');
+  const guideEl = document.getElementById('glc-guide');
+  const countEl = document.getElementById('glc-count');
+  const detailControls = ['glc-period','glc-timing'].map(id => document.getElementById(id)).filter(Boolean);
+  const user = GD.users.find(u => u.deviceId === deviceId);
+  if (deviceId) {
+    if (wrap) wrap.style.display = '';
+    if (nameEl) nameEl.textContent = user?.name || deviceId;
+    if (guideEl) guideEl.textContent = '선택한 이용자의 혈당기록만 표시합니다. 기간, 측정시점으로 추가 필터링할 수 있습니다.';
+    detailControls.forEach(el => el.disabled = false);
+  } else {
+    if (wrap) wrap.style.display = 'none';
+    if (nameEl) nameEl.textContent = '';
+    if (guideEl) guideEl.textContent = '전체 혈당기록을 한 번에 나열하지 않고, 먼저 활동 요약과 최근 활동 이용자 상위 목록을 보여줍니다. 특정 이용자를 선택하면 그 사람 기록만 자세히 볼 수 있습니다.';
+    detailControls.forEach(el => el.disabled = true);
+    if (countEl) countEl.textContent = '최근 활동 이용자 상위 보기';
+  }
+}
+
+function setGlucoseUserFilter(deviceId = '', opts = {}) {
+  const sel = document.getElementById('glc-user');
+  if (sel) sel.value = deviceId || '';
+  syncGlucoseSelectionUI(deviceId);
+  if (!opts.skipRender) glcReset();
+}
+
+function clearGlucoseUserFilter() { setGlucoseUserFilter(''); }
+
+function useSelectedUserForGlucose() {
+  if (!selDeviceId) { toast('이용자 탭에서 먼저 대상을 선택해주세요'); return; }
+  setGlucoseUserFilter(selDeviceId, { skipRender: true });
+  const btn = document.getElementById('tab-btn-glucose');
+  if (btn) switchTab('glucose', btn);
+  renderGlucose();
+}
+
+function glcReset() { glcPage = 0; renderGlucose(); }
+
+function renderGlucoseOverview() {
+  const q = (document.getElementById('glc-search')?.value || '').toLowerCase();
+  const weekStart = Date.now() - 7 * 86400000;
+  const stats = new Map();
+  GD.glucose.forEach(g => {
+    const id = String(g.deviceId || '').trim();
+    if (!id) return;
+    const s = stats.get(id) || { count:0, weekCount:0, latestTs:0, vals:[] };
+    const ts = glcTs(g);
+    s.count++;
+    if (ts > s.latestTs) s.latestTs = ts;
+    if (ts >= weekStart) s.weekCount++;
+    const v = Number(g.value);
+    if (v > 0) s.vals.push(v);
+    stats.set(id, s);
+  });
+
+  const rows = GD.users
+    .map(u => ({ user: u, stat: stats.get(u.deviceId) }))
+    .filter(({ user, stat }) => {
+      if (!stat) return false;
+      if (q && ![(user.name||''),(user.empId||'')].some(s => s.toLowerCase().includes(q))) return false;
+      return true;
+    })
+    .sort((a, b) => b.stat.latestTs - a.stat.latestTs)
+    .slice(0, 30);
+
+  document.getElementById('glc-list-wrap').style.display = 'none';
+  document.getElementById('glc-overview-wrap').style.display = '';
+  document.getElementById('glc-pager').innerHTML = '';
+  document.getElementById('glc-count').textContent = `활동 이용자 ${rows.length}명`;
+
+  const tbody = document.getElementById('glc-overview-body');
+  if (!rows.length) {
+    tbody.innerHTML = `<tr><td class="empty-cell" colspan="8">혈당 기록 이용자가 없습니다</td></tr>`;
+    return;
+  }
+
+  const timingColor = { '공복':'var(--sky)', '식후':'var(--amber)', '취침전':'var(--purple)', '기상후':'var(--green)' };
+  tbody.innerHTML = rows.map(({ user, stat }, idx) => {
+    const safeId = String(user.deviceId || '').replace(/'/g,"\'");
+    const latestText = stat.latestTs ? new Date(stat.latestTs).toLocaleString('ko-KR', { month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' }) : '-';
+    const avg = stat.vals.length ? Math.round(stat.vals.reduce((a,b)=>a+b,0)/stat.vals.length) : '-';
+    const avgColor = typeof avg === 'number' ? avg < 70 ? 'var(--sky)' : avg > 140 ? 'var(--red)' : 'var(--green)' : 'var(--t3)';
+    return `<tr>
+      <td><span class="rank ${idx===0?'g1':idx===1?'g2':idx===2?'g3':''}">${idx+1}</span></td>
+      <td class="td-name">${escHtml(user.name||'(이름없음)')}</td>
+      <td>${escHtml(user.empId||'-')}</td>
+      <td class="td-date">${latestText}</td>
+      <td>${stat.weekCount}건</td>
+      <td>${stat.count}건</td>
+      <td style="font-weight:700;color:${avgColor}">${avg}${typeof avg==='number'?' mg/dL':''}</td>
+      <td><button class="abtn det" onclick="setGlucoseUserFilter('${safeId}')">기록 보기</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function renderGlucoseList(deviceId) {
   const q      = (document.getElementById('glc-search')?.value || '').toLowerCase();
   const period = document.getElementById('glc-period')?.value || '';
   const timing = document.getElementById('glc-timing')?.value || '';
-  const today  = new Date().toDateString();
   const now    = Date.now();
-  const week   = 7 * 86400000;
-  const month  = 30 * 86400000;
+  const todayStart = new Date(); todayStart.setHours(0,0,0,0);
 
-  const all = GD.glucose;
-
-  // 요약 통계
-  const todayCnt  = all.filter(g => new Date(g.ts || g.createdAt).toDateString() === today).length;
-  const userSet   = new Set(all.map(g => g.deviceId).filter(Boolean));
-  const vals      = all.map(g => Number(g.value)).filter(v => v > 0);
-  const avgVal    = vals.length ? Math.round(vals.reduce((a,b) => a+b, 0) / vals.length) : '-';
-  document.getElementById('glc-total').textContent = all.length;
-  document.getElementById('glc-today').textContent = todayCnt;
-  document.getElementById('glc-users').textContent = userSet.size;
-  document.getElementById('glc-avg').textContent   = avgVal;
-
-  // 필터
-  const list = all.filter(g => {
-    const ts = new Date(g.ts || g.createdAt);
-    if (period === 'today' && ts.toDateString() !== today) return false;
-    if (period === 'week'  && now - ts.getTime() > week)   return false;
-    if (period === 'month' && now - ts.getTime() > month)  return false;
-    if (timing && (g.timing || '') !== timing) return false;
-    if (q && ![(g.userName||''),(g.deviceId||'')].some(s => s.toLowerCase().includes(q))) return false;
+  const list = GD.glucose.filter(g => {
+    if (String(g.deviceId||'').trim() !== deviceId) return false;
+    const ts = glcTs(g);
+    if (period === 'today' && ts < todayStart.getTime()) return false;
+    if (period === 'week'  && ts < now - 7*86400000)     return false;
+    if (period === 'month' && ts < now - 30*86400000)    return false;
+    if (timing && (g.timing||'') !== timing) return false;
+    if (q) {
+      const user = GD.users.find(u => u.deviceId === deviceId);
+      if (![(user?.name||''),(g.deviceId||'')].some(s => s.toLowerCase().includes(q))) return false;
+    }
     return true;
-  }).sort((a, b) => new Date(b.ts || b.createdAt) - new Date(a.ts || a.createdAt));
+  }).sort((a,b) => glcTs(b) - glcTs(a));
 
+  document.getElementById('glc-overview-wrap').style.display = 'none';
+  document.getElementById('glc-list-wrap').style.display = '';
   document.getElementById('glc-count').textContent = list.length + '건';
 
   const totalPages = Math.max(1, Math.ceil(list.length / GLC_PAGE));
@@ -4033,31 +4127,46 @@ function renderGlucose() {
 
   const tbody = document.getElementById('glc-tbody');
   if (!page.length) {
-    tbody.innerHTML = `<tr><td class="empty-cell" colspan="6">혈당 기록이 없습니다</td></tr>`;
+    tbody.innerHTML = `<tr><td class="empty-cell" colspan="4">혈당 기록이 없습니다</td></tr>`;
     document.getElementById('glc-pager').innerHTML = '';
     return;
   }
 
   const timingColor = { '공복':'var(--sky)', '식후':'var(--amber)', '취침전':'var(--purple)', '기상후':'var(--green)' };
   tbody.innerHTML = page.map(g => {
-    const d  = g.ts || g.createdAt;
-    const dt = d ? new Date(d).toLocaleString('ko-KR', { month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' }) : '-';
+    const dt = glcTs(g) ? new Date(glcTs(g)).toLocaleString('ko-KR', { month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' }) : '-';
     const v  = Number(g.value) || '-';
-    const vColor = typeof v === 'number'
-      ? v < 70 ? 'var(--sky)' : v > 140 ? 'var(--red)' : 'var(--green)'
-      : 'var(--t3)';
+    const vColor = typeof v === 'number' ? v < 70 ? 'var(--sky)' : v > 140 ? 'var(--red)' : 'var(--green)' : 'var(--t3)';
     const tc = timingColor[g.timing] || 'var(--t3)';
     return `<tr>
       <td class="td-date">${dt}</td>
-      <td class="td-name">${g.userName || '-'}</td>
-      <td style="font-size:12px;color:var(--t3)">${g.deviceId || '-'}</td>
       <td><span style="font-weight:700;color:${vColor}">${v}</span> <span style="font-size:11px;color:var(--t3)">mg/dL</span></td>
       <td>${g.timing ? `<span class="badge" style="background:${tc}22;color:${tc}">${g.timing}</span>` : '-'}</td>
-      <td><span class="badge pts">+${g.points || 0}p</span></td>
+      <td><span class="badge pts">+${g.points||0}p</span></td>
     </tr>`;
   }).join('');
 
   renderPager('glc-pager', list.length, totalPages, glcPage, p => { glcPage = p; renderGlucose(); });
+}
+
+function renderGlucose() {
+  renderGlucoseSummary();
+  // 이용자 드롭다운 동기화
+  const sel = document.getElementById('glc-user');
+  if (sel) {
+    const prev = sel.value;
+    sel.innerHTML = '<option value="">이용자 선택</option>';
+    [...GD.users].sort((a,b)=>(a.name||'').localeCompare(b.name||'','ko')).forEach(u => {
+      const o = document.createElement('option');
+      o.value = u.deviceId; o.textContent = u.name || u.deviceId;
+      sel.appendChild(o);
+    });
+    sel.value = [...sel.options].some(o => o.value === prev) ? prev : '';
+  }
+  const deviceId = document.getElementById('glc-user')?.value || '';
+  syncGlucoseSelectionUI(deviceId);
+  if (deviceId) renderGlucoseList(deviceId);
+  else renderGlucoseOverview();
 }
 
 /* ══════════════════════════════════════════════
