@@ -1125,18 +1125,17 @@
     .btn-app {
       display: flex; align-items: center; gap: 10px;
       width: 100%; padding: 9px 14px;
-      background: linear-gradient(180deg, #ffffff 0%, #f8f5ff 100%);
+      background: #ffffff;
       color: #1e1047;
-      border: 1px solid rgba(109,40,217,0.14);
+      border: 1px solid rgba(148,163,184,0.22);
       border-radius: 14px;
       font-family: inherit; text-decoration: none; cursor: pointer;
-      box-shadow: 0 10px 24px rgba(91,33,182,0.08);
-      transition: transform 0.18s, box-shadow 0.18s, border-color 0.18s;
+      box-shadow: none;
+      transition: border-color 0.18s, background 0.18s;
     }
     .btn-app:hover {
-      transform: translateY(-2px);
-      border-color: rgba(109,40,217,0.24);
-      box-shadow: 0 14px 30px rgba(91,33,182,0.12);
+      border-color: rgba(109,40,217,0.22);
+      background: #fcfbff;
     }
     .btn-app-icon {
       width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;
@@ -1152,15 +1151,58 @@
       flex-direction: column;
       gap: 1px;
     }
+    .btn-app-top {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 2px;
+      flex-wrap: wrap;
+    }
+    .btn-app-chip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 18px;
+      padding: 0 7px;
+      border-radius: 999px;
+      background: #fff7ed;
+      color: #c2410c;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+    }
+    .btn-app-kicker {
+      font-size: 10px;
+      font-weight: 700;
+      color: #94a3b8;
+      letter-spacing: 0.02em;
+    }
     .btn-app-main { font-size: 13px; font-weight: 800; letter-spacing: -0.2px; }
     .btn-app-sub  { font-size: 10px; color: #6b7280; margin-top: 0; }
     .btn-app-arr  {
       width: 26px; height: 26px; border-radius: 999px;
       display: flex; align-items: center; justify-content: center;
-      background: rgba(255,255,255,0.86);
+      background: #f8fafc;
       color: #6d28d9; font-size: 15px; font-weight: 700;
-      box-shadow: 0 6px 14px rgba(109,40,217,0.12);
+      box-shadow: none;
       flex-shrink: 0;
+    }
+    .btn-app.fc-cta {
+      border-color: rgba(251,146,60,0.28);
+      background: linear-gradient(180deg, #fffdf8 0%, #fff7ed 100%);
+    }
+    .btn-app.fc-cta:hover {
+      border-color: rgba(249,115,22,0.34);
+      background: #fff7ed;
+    }
+    .btn-app.fc-cta .btn-app-icon {
+      background: #fff;
+      color: #c2410c;
+      border: 1px solid rgba(251,146,60,0.26);
+    }
+    .btn-app.fc-cta .btn-app-arr {
+      background: #fff;
+      color: #c2410c;
     }
 
     .hide { display: none !important; }
@@ -3882,11 +3924,15 @@
           </div>
           <div class="btn-app-arr">›</div>
         </button>
-        <button type="button" class="btn-app" onclick="if(window.parent&&window.parent.openFamilyCertModal){window.parent.openFamilyCertModal()}">
-          <div class="btn-app-icon" style="font-size:22px;display:flex;align-items:center;justify-content:center">📸</div>
+        <button type="button" class="btn-app fc-cta" onclick="if(window.parent&&window.parent.openFamilyCertModal){window.parent.openFamilyCertModal()}">
+          <div class="btn-app-icon" style="font-size:18px;display:flex;align-items:center;justify-content:center">📷</div>
           <div class="btn-app-body">
-            <div class="btn-app-main">가족 운동 인증하기</div>
-            <div class="btn-app-sub">사진 · 영상 제출 시 추가 100포인트</div>
+            <div class="btn-app-top">
+              <span class="btn-app-chip">+100P</span>
+              <span class="btn-app-kicker">가족 참여 미션</span>
+            </div>
+            <div class="btn-app-main">가족 사진 · 영상 인증하기</div>
+            <div class="btn-app-sub">가족과 함께한 운동 장면을 올려보세요</div>
           </div>
           <div class="btn-app-arr">›</div>
         </button>
