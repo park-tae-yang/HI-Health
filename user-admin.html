@@ -53,6 +53,7 @@
     .sb-item:hover{background:var(--bg);color:var(--t1);}
     .sb-item.active{background:var(--pl);color:var(--p);font-weight:700;}
     .sb-icon{width:20px;text-align:center;font-size:14px;flex-shrink:0;}
+    .sb-badge{margin-left:auto;background:#e53e3e;color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px;line-height:16px;}
     .sb-footer{padding:12px 14px;border-top:1px solid var(--border);}
     .ah-status{display:inline-flex;align-items:center;gap:6px;font-size:11px;padding:5px 10px;border-radius:20px;font-weight:600;}
     .ah-status.ok{background:var(--gl);color:var(--green);}
@@ -307,7 +308,7 @@
       <button class="sb-item" id="tab-btn-challenge" data-tab="challenge" onclick="switchTab('challenge',this)"><span class="sb-icon">🏆</span>챌린지</button>
       <button class="sb-item" id="tab-btn-famcert" data-tab="famcert" onclick="switchTab('famcert',this)"><span class="sb-icon">📸</span>가족인증</button>
       <div class="sb-section" style="margin-top:4px">운영</div>
-      <button class="sb-item" id="tab-btn-orders" data-tab="orders" onclick="switchTab('orders',this)"><span class="sb-icon">🛒</span>구매</button>
+      <button class="sb-item" id="tab-btn-orders" data-tab="orders" onclick="switchTab('orders',this)"><span class="sb-icon">🛒</span>구매<span class="sb-badge" id="orders-badge" style="display:none"></span></button>
       <button class="sb-item" id="tab-btn-content" data-tab="content" onclick="switchTab('content',this)"><span class="sb-icon">📝</span>콘텐츠 작성</button>
       <button class="sb-item" id="tab-btn-settings" data-tab="settings" onclick="switchTab('settings',this)"><span class="sb-icon">⚙️</span>설정</button>
     </nav>
@@ -3196,9 +3197,14 @@ function renderOrders() {
     return true;
   });
 
+  // 탭 배지 (pending 주문 있으면 표시)
+  const pendingCount = all.filter(o => o.status === 'pending').length;
+  const badge = document.getElementById('orders-badge');
+  if (badge) { badge.textContent = pendingCount; badge.style.display = pendingCount > 0 ? '' : 'none'; }
+
   // 현황
   document.getElementById('ord-total').textContent = all.length;
-  document.getElementById('ord-pend').textContent  = all.filter(o => o.status === 'pending').length;
+  document.getElementById('ord-pend').textContent  = pendingCount;
   document.getElementById('ord-conf').textContent  = all.filter(o => o.status === 'confirmed').length;
   document.getElementById('ord-done').textContent  = all.filter(o => o.status === 'completed').length;
   document.getElementById('ord-can').textContent   = all.filter(o => o.status === 'cancelled').length;
