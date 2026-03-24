@@ -2856,8 +2856,8 @@
     .fc-media-preview { width:100%; display:block; border-radius:10px; }
     .fc-file-label { display:flex; align-items:center; justify-content:center; gap:6px; width:100%; padding:10px; border-radius:10px; background:#f5f3ff; border:1px solid #ddd6fe; color:#6d28d9; font-size:13px; font-weight:700; cursor:pointer; margin-bottom:10px; }
     .fc-file-label:active { background:#ede9fe; }
-    .fc-reward-note { display:flex; align-items:flex-start; gap:8px; padding:11px 12px; border-radius:12px; background:#fff7ed; border:1px solid #fed7aa; color:#9a3412; font-size:12px; font-weight:700; line-height:1.55; margin-bottom:10px; }
-    .fc-reward-note strong { color:#c2410c; }
+    .fc-reward-note { display:flex; align-items:flex-start; gap:8px; padding:11px 12px; border-radius:12px; background:#f5f3ff; border:1px solid #ddd6fe; color:#5b21b6; font-size:12px; font-weight:700; line-height:1.55; margin-bottom:10px; }
+    .fc-reward-note strong { color:#4c1d95; }
     .fc-memo { width:100%; padding:9px 12px; border:1.5px solid var(--border); border-radius:10px; font-family:inherit; font-size:13px; outline:none; resize:none; margin-bottom:12px; background:var(--card); color:var(--text); box-sizing:border-box; }
     .fc-memo:focus { border-color:#7c3aed; }
     .fc-consent { margin-bottom:12px; padding:12px; border-radius:12px; background:#fff; border:1px solid var(--border); }
@@ -16772,7 +16772,7 @@ async function init() {
 <div id="fc-overlay" class="fc-overlay pm-hidden" onclick="if(event.target===this)closeFamilyCertModal()">
   <div class="fc-sheet">
     <div class="fc-head">
-      <span class="fc-title">📸 가족 운동 인증</span>
+      <span class="fc-title">가족 운동 인증</span>
       <button type="button" onclick="closeFamilyCertModal()" style="background:none;border:none;font-size:20px;color:var(--text-secondary);cursor:pointer;padding:0">✕</button>
     </div>
     <div class="fc-sub">가족과 함께 운동하는 사진 또는 영상을 올려주세요.<br>제출 완료 시 추가 <strong>100포인트</strong>가 지급됩니다.</div>
@@ -16784,7 +16784,7 @@ async function init() {
       📁 사진 / 영상 선택
       <input type="file" id="fc-file-input" accept="image/*,video/*" style="display:none" onchange="handleFcFileSelect(this)">
     </label>
-    <div class="fc-reward-note"><span>🎁</span><span>가족 운동 인증을 제출하면 챌린지 보너스 <strong>100포인트</strong>가 추가 지급됩니다.</span></div>
+    <div class="fc-reward-note"><span>가족 운동 인증을 제출하면 챌린지 보너스 <strong>100포인트</strong>가 추가 지급됩니다.</span></div>
     <textarea class="fc-memo" id="fc-memo" rows="2" placeholder="한 줄 메모 (선택사항)"></textarea>
     <div class="fc-consent">
       <div class="fc-consent-copy">제출한 사진 및 영상은 병원 홍보 영상 또는 관련 홍보 콘텐츠에 활용될 수 있습니다.</div>
