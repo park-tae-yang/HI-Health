@@ -13897,9 +13897,9 @@ let _challengePeopleSyncPromise = null;
 async function fetchChallengePeopleRows(options = {}) {
   if (_challengePeopleSyncPromise) return _challengePeopleSyncPromise;
   const run = async () => {
-    const selectWithAvatar = 'id,deviceid,name,dept,empid,avatar,status';
-    const selectFallback = 'id,deviceid,name,dept,empid,status';
-    const normalizeRegRow = r => ({ ...r, empId: r.empId ?? r.empid ?? '', deviceId: r.deviceId ?? r.deviceid ?? '' });
+    const selectWithAvatar = 'id,deviceid,name,dept,empid,avatar,status,registeredat';
+    const selectFallback = 'id,deviceid,name,dept,empid,status,registeredat';
+    const normalizeRegRow = r => ({ ...r, empId: r.empId ?? r.empid ?? '', deviceId: r.deviceId ?? r.deviceid ?? '', registeredAt: r.registeredAt ?? r.registeredat ?? '' });
     const fetchRows = async (selectClause) => {
       const res = await fetch(
         SUPABASE_URL + '/rest/v1/registrations?select=' + encodeURIComponent(selectClause) + '&order=id.desc&_=' + Date.now(),
