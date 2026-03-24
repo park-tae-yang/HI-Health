@@ -87,9 +87,10 @@
     @media(max-width:600px){.stat-grid{grid-template-columns:repeat(2,1fr);}}
 
     /* ── TABS ── */
-    .sub-tab-bar{display:flex;gap:6px;padding:12px 16px 0;border-bottom:1px solid var(--border);}
-    .sub-tab{padding:6px 18px;border:none;border-radius:20px;font-family:inherit;font-size:13px;font-weight:600;color:var(--t3);background:var(--bg);cursor:pointer;transition:all .2s;}
-    .sub-tab.active{background:var(--p);color:#fff;}
+    .sub-tab-bar{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:16px;}
+    .sub-tab{padding:9px 16px;border:none;border-radius:0;font-family:inherit;font-size:13px;font-weight:600;color:var(--t3);background:none;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .15s,border-color .15s;}
+    .sub-tab:hover{color:var(--t1);}
+    .sub-tab.active{color:var(--p);border-bottom-color:var(--p);}
     .panel{display:none;}
     .panel.active{display:block;}
 
@@ -108,7 +109,7 @@
     }
 
     /* ── CONTROLS ── */
-    .ctrl-bar{background:var(--card);border-radius:var(--r);padding:12px 16px;box-shadow:var(--shadow);margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+    .ctrl-bar{padding:0 0 14px;margin-bottom:14px;border-bottom:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
     .ctrl-inp{flex:1;min-width:160px;padding:8px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:inherit;font-size:13px;outline:none;background:var(--bg);}
     .ctrl-inp:focus{border-color:var(--p);background:#fff;}
     .ctrl-sel{padding:8px 30px 8px 11px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:inherit;font-size:13px;outline:none;background:var(--bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236B7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E") no-repeat right 7px center/15px;appearance:none;cursor:pointer;}
@@ -253,9 +254,10 @@
     .rank.g3{background:#FEF3C7;color:#B45309;}
 
     /* ── SELECTED USER BAR ── */
-    .sel-bar{background:var(--pl);border-radius:var(--rs);padding:10px 16px;display:flex;align-items:center;gap:10px;margin-bottom:14px;font-size:13px;font-weight:600;color:var(--p);}
-    .sel-bar button{background:none;border:none;color:var(--p);cursor:pointer;font-size:16px;line-height:1;padding:0 4px;}
-    .wo-guide{background:#F8FAFC;border:1px dashed #CBD5E1;border-radius:var(--rs);padding:14px 16px;margin-bottom:14px;font-size:13px;color:var(--t2);line-height:1.55;}
+    .sel-bar{display:inline-flex;align-items:center;gap:6px;background:var(--pl);border-radius:20px;padding:4px 8px 4px 12px;font-size:12px;font-weight:600;color:var(--p);}
+    .sel-bar button{background:none;border:none;color:var(--p);cursor:pointer;font-size:13px;line-height:1;padding:2px 4px;border-radius:50%;transition:background .1s;}
+    .sel-bar button:hover{background:rgba(79,70,229,.12);}
+    .wo-guide{font-size:12px;color:var(--t3);margin-bottom:14px;line-height:1.5;}
     .wo-summary-grid{margin-bottom:14px;}
     .wo-inline-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
 
@@ -345,12 +347,6 @@
         <button class="sub-tab"        id="utab-ch"   onclick="switchUserTab('ch',this)">챌린저</button>
       </div>
 
-      <!-- SELECTED USER BAR -->
-      <div class="sel-bar" id="sel-bar" style="display:none">
-        <span id="sel-bar-name"></span> 선택됨
-        <button onclick="clearSel()" title="선택 해제">✕</button>
-      </div>
-
       <div class="ctrl-bar">
         <input class="ctrl-inp" id="u-search" placeholder="이름·닉네임·계정 ID·신청번호·부서 검색" oninput="onUserSearch()">
         <select class="ctrl-sel" id="u-filter" onchange="renderUsers()">
@@ -365,6 +361,10 @@
           <option value="workouts">운동횟수순</option>
           <option value="streak">연속일순</option>
         </select>
+        <div class="sel-bar" id="sel-bar" style="display:none">
+          <span id="sel-bar-name"></span> 선택됨
+          <button onclick="clearSel()" title="선택 해제">✕</button>
+        </div>
         <span class="ctrl-count" id="u-count">0명</span>
         <button class="cbtn amb" id="restore-users-btn" style="display:none" onclick="restoreUsersFromActivity()">users 복구</button>
         <button class="cbtn dan" id="dup-btn" style="display:none" onclick="deleteDuplicates()">중복 삭제</button>
@@ -484,11 +484,11 @@
           <option value="100">100건씩</option>
           <option value="200">200건씩</option>
         </select>
+        <div class="sel-bar" id="wo-sel-bar" style="display:none">
+          <span id="wo-sel-name"></span> 운동기록 보는 중
+          <button onclick="clearWorkoutUserFilter()" title="선택 해제">✕</button>
+        </div>
         <span class="ctrl-count" id="wo-count">최근 활동 이용자 상위 보기</span>
-      </div>
-      <div class="sel-bar" id="wo-sel-bar" style="display:none">
-        <span id="wo-sel-name"></span> 운동기록 보는 중
-        <button onclick="clearWorkoutUserFilter()" title="선택 해제">✕</button>
       </div>
       <div class="tbl-wrap" id="wo-overview-wrap">
         <div class="tbl-scroll">
@@ -543,11 +543,11 @@
           <button class="cbtn sky" onclick="useSelectedUserForPosts()">선택 이용자 보기</button>
           <button class="cbtn" style="background:var(--bg);color:var(--t2)" onclick="clearPostUserFilter()">선택 해제</button>
         </div>
+        <div class="sel-bar" id="po-sel-bar" style="display:none">
+          <span id="po-sel-name"></span> 게시글 보는 중
+          <button onclick="clearPostUserFilter()" title="선택 해제">✕</button>
+        </div>
         <span class="ctrl-count" id="po-count">최근 작성 이용자 상위 보기</span>
-      </div>
-      <div class="sel-bar" id="po-sel-bar" style="display:none">
-        <span id="po-sel-name"></span> 게시글 보는 중
-        <button onclick="clearPostUserFilter()" title="선택 해제">✕</button>
       </div>
       <div class="tbl-wrap" id="po-overview-wrap">
         <div class="tbl-scroll">
