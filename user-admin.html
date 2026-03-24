@@ -152,11 +152,11 @@
     .empty-cell{text-align:center;padding:40px!important;color:var(--t3);}
 
     /* ── ACTION BTNS ── */
-    .abtn{padding:4px 10px;border-radius:6px;border:none;font-family:inherit;font-size:11px;font-weight:600;cursor:pointer;transition:all .2s;}
+    .abtn{padding:4px 8px;border-radius:6px;border:none;font-family:inherit;font-size:13px;cursor:pointer;transition:all .2s;line-height:1;}
     .abtn.det{background:var(--pl);color:var(--p);}
-    .abtn.del{background:var(--rl);color:var(--red);}
+    .abtn.del{background:transparent;color:var(--t3);}
     .abtn.det:hover{background:var(--p);color:#fff;}
-    .abtn.del:hover{background:var(--red);color:#fff;}
+    .abtn.del:hover{color:var(--red);}
     .abtn.grn{background:var(--gl);color:var(--green);}
     .abtn.grn:hover{background:var(--green);color:#fff;}
     .abtn.pri{background:#EDE9FE;color:#7C3AED;}
@@ -1999,8 +1999,8 @@ function renderUsers() {
       <td>${actCell}</td>
       <td>
         <div style="display:flex;gap:4px">
-          <button class="abtn det" onclick="selectUser('${safeId}','${safeName}')">상세</button>
-          <button class="abtn del" onclick="deleteUser('${safeId}','${safeName}')">삭제</button>
+          <button class="abtn det" onclick="selectUser('${safeId}','${safeName}')" title="상세보기">↗</button>
+          <button class="abtn del" onclick="deleteUser('${safeId}','${safeName}')" title="삭제">✕</button>
         </div>
       </td>
     </tr>`;
