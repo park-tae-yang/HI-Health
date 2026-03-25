@@ -580,17 +580,9 @@
       </div>
       <!-- 신발 사이즈 취합 -->
       <div id="ch-shoe-summary" style="margin-bottom:16px;padding:14px 16px;background:var(--bg2,#f8f9fa);border:1px solid var(--border);border-radius:10px;display:none">
-        <div style="font-size:12px;font-weight:700;color:var(--t2);margin-bottom:10px">러닝화 사이즈 취합</div>
-        <div style="margin-bottom:8px">
-          <span style="font-size:11px;font-weight:600;color:var(--t3);margin-right:8px">본인</span>
-          <span id="ch-shoe-own-chips" style="display:inline-flex;flex-wrap:wrap;gap:6px"></span>
-          <span id="ch-shoe-own-none" style="font-size:12px;color:var(--t3);display:none">없음</span>
-        </div>
-        <div>
-          <span style="font-size:11px;font-weight:600;color:var(--t3);margin-right:8px">가족</span>
-          <span id="ch-shoe-fam-chips" style="display:inline-flex;flex-wrap:wrap;gap:6px"></span>
-          <span id="ch-shoe-fam-none" style="font-size:12px;color:var(--t3);display:none">없음</span>
-        </div>
+        <div style="font-size:12px;font-weight:700;color:var(--t2);margin-bottom:10px">러닝화 사이즈 취합 (본인)</div>
+        <div style="display:inline-flex;flex-wrap:wrap;gap:6px" id="ch-shoe-own-chips"></div>
+        <span id="ch-shoe-own-none" style="font-size:12px;color:var(--t3);display:none">입력된 사이즈 없음</span>
       </div>
       <span id="ch-live" style="display:none"></span>
       <span id="ch-donation" style="display:none"></span>
@@ -2947,33 +2939,23 @@ function renderChallenge() {
   document.getElementById('ch-cgm').textContent     = activeParts.filter(getRegCgmParticipation).length;
   document.getElementById('ch-count').textContent   = list.length + '건';
 
-  // ── 신발 사이즈 취합 ──
+  // ── 신발 사이즈 취합 (본인만) ──
   (function() {
-    const ownMap = {}, famMap = {};
+    const ownMap = {};
     activeParts.forEach(r => {
       const own = withMm(r.shoeSize || getRegNoteLine(r, '신발사이즈') || '').replace('mm','').trim();
       if (own) ownMap[own] = (ownMap[own] || 0) + 1;
-      const fam = withMm(r.familyShoeSize || getRegNoteLine(r, '가족신발') || '').replace('mm','').trim();
-      if (fam) famMap[fam] = (famMap[fam] || 0) + 1;
     });
-    function renderChips(map, chipsId, noneId) {
-      const chips = document.getElementById(chipsId);
-      const none  = document.getElementById(noneId);
-      const entries = Object.entries(map).sort((a,b) => Number(a[0])-Number(b[0]));
-      if (!entries.length) { chips.innerHTML = ''; none.style.display = ''; return; }
-      none.style.display = 'none';
-      chips.innerHTML = entries.map(([sz, cnt]) =>
-        `<span style="display:inline-flex;align-items:center;gap:4px;padding:3px 9px;background:#fff;border:1px solid var(--border);border-radius:20px;font-size:12px;font-weight:600;color:var(--t1)">${sz}mm <span style="color:var(--primary);font-weight:700">${cnt}켤레</span></span>`
-      ).join('');
-    }
-    const wrap = document.getElementById('ch-shoe-summary');
-    if (Object.keys(ownMap).length || Object.keys(famMap).length) {
-      wrap.style.display = '';
-      renderChips(ownMap, 'ch-shoe-own-chips', 'ch-shoe-own-none');
-      renderChips(famMap, 'ch-shoe-fam-chips', 'ch-shoe-fam-none');
-    } else {
-      wrap.style.display = 'none';
-    }
+    const wrap  = document.getElementById('ch-shoe-summary');
+    const chips = document.getElementById('ch-shoe-own-chips');
+    const none  = document.getElementById('ch-shoe-own-none');
+    const entries = Object.entries(ownMap).sort((a,b) => Number(a[0])-Number(b[0]));
+    if (!entries.length) { wrap.style.display = 'none'; return; }
+    wrap.style.display = '';
+    none.style.display = 'none';
+    chips.innerHTML = entries.map(([sz, cnt]) =>
+      `<span style="display:inline-flex;align-items:center;gap:4px;padding:3px 9px;background:#fff;border:1px solid var(--border);border-radius:20px;font-size:12px;font-weight:600;color:var(--t1)">${sz}mm <span style="color:var(--primary);font-weight:700">${cnt}켤레</span></span>`
+    ).join('');
   })();
 
   const tbody = document.getElementById('ch-tbody');
