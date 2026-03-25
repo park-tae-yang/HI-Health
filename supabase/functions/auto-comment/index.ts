@@ -8,7 +8,7 @@ const json = (data: unknown, status = 200) =>
   new Response(JSON.stringify(data), { status, headers: { ...CORS, "Content-Type": "application/json" } });
 
 const BOT_DEVICE_ID = "hi_ai_bot";
-const BOT_NAME = "HI AI";
+const BOT_NAME = "하이롤라";
 
 // 20~40초 사이 랜덤 딜레이 (자연스럽게)
 function randomDelay() {
