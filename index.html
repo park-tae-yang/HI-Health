@@ -5028,8 +5028,8 @@
         <button class="btn btn-primary btn-full glucose-log-btn btn-inactive" id="log-glucose-btn" onclick="logGlucoseStandalone()">혈당 기록하기</button>
         <div id="log-glucose-hint" style="display:none;text-align:center;font-size:12px;color:var(--primary);margin-top:6px;animation:fadeIn 0.15s ease"></div>
         <div id="glucose-daily-info" class="daily-limit-info daily-limit-info--center" style="margin-top:6px;margin-bottom:8px"></div>
-        <hr style="border:none;border-top:1px solid var(--border);margin:14px 0 10px">
-        <div class="record-history-head">
+        <hr id="gl-history-divider" style="display:none;border:none;border-top:1px solid var(--border);margin:14px 0 10px">
+        <div class="record-history-head" id="gl-history-head" style="display:none">
           <span class="record-history-count" id="glucose-total-badge">총 0회</span>
           <div class="record-view-tabs" aria-label="혈당 기록 보기 전환">
             <button type="button" class="record-view-tab active" id="gl-tab-list" onclick="setGlucoseView('list')">목록</button>
@@ -11208,6 +11208,11 @@ function renderGlucose() {
   const badge = document.getElementById('glucose-total-badge');
   if (!el) return;
   const recs = S.glucoseRecords;
+  const hasAny = recs.length > 0;
+  const glHead = document.getElementById('gl-history-head');
+  const glDivider = document.getElementById('gl-history-divider');
+  if (glHead) glHead.style.display = hasAny ? '' : 'none';
+  if (glDivider) glDivider.style.display = hasAny ? '' : 'none';
   if (badge) badge.textContent = '총 ' + recs.length + '회';
   // 일일 현황 표시
   const infoEl = document.getElementById('glucose-daily-info');
@@ -11217,6 +11222,8 @@ function renderGlucose() {
     if (rem <= 0) {
       infoEl.textContent = `오늘 혈당 기록 한도(${DAILY_GLUCOSE_LIMIT}회) 도달 · +${todayGl.length * GLUCOSE_POINTS}p 획득`;
       infoEl.classList.add('warn');
+    } else if (todayGl.length === 0) {
+      infoEl.textContent = '';
     } else {
       infoEl.textContent = `오늘 ${todayGl.length}회 기록 · 기록당 +${GLUCOSE_POINTS}p`;
       infoEl.classList.remove('warn');
@@ -11229,7 +11236,7 @@ function renderGlucose() {
   }
 
   if (recs.length === 0) {
-    el.innerHTML = '<div class="wo-empty">아직 혈당 기록이 없어요</div>';
+    el.innerHTML = '';
     return;
   }
   const visible = recs.slice(0, _glShowCount);
