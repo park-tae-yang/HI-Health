@@ -6876,6 +6876,76 @@ const MOCK_USERS = [];
 
 const MOCK_POSTS_SEED = [];
 
+const COMMUNITY_SAMPLE_POSTS = [
+  {
+    id: Date.parse('2026-03-25T08:40:00+09:00'),
+    userId: 101,
+    name: '달빛러너',
+    avatar: 'images/avatars/av11.png',
+    lv: 4,
+    isChallenger: false,
+    body: '출근 전에 가볍게 25분 걷고 왔어요. 짧게 몸 풀고 하루 시작하니까 컨디션이 훨씬 안정적이네요.',
+    exTag: null,
+    userTags: ['가볍게 시작', '아침 루틴'],
+    time: '방금 전',
+    stickers: { cheer: 3, love: 2, congrats: 1, cool: 1, together: 2 },
+    myReactions: [],
+    commentList: [
+      { id: 96011, name: '노을핏', avatar: 'images/avatars/av12.png', lv: 3, body: '아침 루틴 잡히면 하루가 진짜 다르죠.', time: '방금 전' },
+    ],
+  },
+  {
+    id: Date.parse('2026-03-24T19:10:00+09:00'),
+    userId: 102,
+    name: '초록심박',
+    avatar: 'images/avatars/av13.png',
+    lv: 5,
+    isChallenger: false,
+    body: '오늘은 실내 자전거 40분 하고 스트레칭까지 마무리했어요. 무리하지 않는 날도 꾸준함으로 채우는 중입니다.',
+    exTag: null,
+    userTags: ['꾸준한 루틴', '실내운동'],
+    time: '어제',
+    stickers: { cheer: 5, love: 4, congrats: 1, cool: 2, together: 1 },
+    myReactions: [],
+    commentList: [
+      { id: 96021, name: '바람호흡', avatar: 'images/avatars/av15.png', lv: 2, body: '실내 자전거 하고 스트레칭까지 딱 좋네요.', time: '어제' },
+      { id: 96022, name: '모닝스텝', avatar: 'images/avatars/av16.png', lv: 4, body: '무리 안 하는 날을 만드는 것도 진짜 중요해요.', time: '어제' },
+    ],
+  },
+  {
+    id: Date.parse('2026-03-23T21:05:00+09:00'),
+    userId: 103,
+    name: '루틴메이커',
+    avatar: 'images/avatars/av18.png',
+    lv: 3,
+    isChallenger: false,
+    body: '퇴근 후 근력운동 30분 하고 커뮤니티 체크하러 왔어요. 짧게라도 기록 남기면 다음 운동 연결이 더 쉬워지는 것 같아요.',
+    exTag: null,
+    userTags: ['근력운동', '퇴근 후 운동'],
+    time: '2일 전',
+    stickers: { cheer: 4, love: 1, congrats: 2, cool: 3, together: 2 },
+    myReactions: [],
+    commentList: [],
+  },
+].map(post => ({ ...post, comments: (post.commentList || []).length }));
+
+function getCommunitySamplePosts() {
+  return JSON.parse(JSON.stringify(COMMUNITY_SAMPLE_POSTS));
+}
+
+function mergeCommunitySamplePosts(posts = []) {
+  const merged = new Map();
+  [...getCommunitySamplePosts(), ...(posts || [])].forEach(post => {
+    if (!post?.id) return;
+    merged.set(String(post.id), {
+      ...post,
+      commentList: Array.isArray(post.commentList) ? post.commentList : [],
+      comments: Array.isArray(post.commentList) ? post.commentList.length : Number(post.comments) || 0,
+    });
+  });
+  return [...merged.values()].sort((a, b) => (Number(b.id) || 0) - (Number(a.id) || 0));
+}
+
 const WEEK_DAYS = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
 
 /* ════════════════════════════════════════
@@ -6896,7 +6966,7 @@ let S = {
   myReactions: {},   // postId -> [stickerId,...]
   glucoseRecords: [], // { id, value, timing, userTime?, memo?, ts }
   adminPosts: [],    // admin-written column content
-  communityPosts: [], // other users' posts from Supabase
+  communityPosts: getCommunitySamplePosts(), // other users' posts from Supabase + local sample posts
   todayLog: null,    // { date, dietRating, mealTypes, sleepHours, sleepCard, suppTaken, suppList }
 };
 
@@ -12120,7 +12190,7 @@ function clearInMemoryAccountData(empId = ACTIVE_EMPID || S.user?.empId || '', f
   S.pendingRewards = [];
   S.rewardHistory = [];
   S.myReactions = {};
-  S.communityPosts = [];
+  S.communityPosts = getCommunitySamplePosts();
   S.adminPosts = [];
   S.todayLog = null;
   _dayNotes = {};
@@ -12162,7 +12232,7 @@ function resetToLoggedOutState() {
   S.pendingRewards = [];
   S.rewardHistory = [];
   S.myReactions = {};
-  S.communityPosts = [];
+  S.communityPosts = getCommunitySamplePosts();
   S.adminPosts = [];
   S.todayLog = null;
   const exMemo = document.getElementById('ex-memo');
@@ -12951,7 +13021,12 @@ async function fetchAdminPosts() {
   if (_adminPostsFetched || !_db) return;
   try {
     const ap = await _db.from('admin_posts').select('*').order('createdAt', { ascending: false });
-    if (ap.data) { S.adminPosts = ap.data; }
+    if (ap.data) {
+      S.adminPosts = ap.data;
+      const page = document.querySelector('.page.active');
+      const feedVisible = document.getElementById('comm-feed-panel')?.style.display !== 'none';
+      if (page?.id === 'page-community' && feedVisible) renderCommunity();
+    }
     _adminPostsFetched = true;
   } catch(e) {}
 }
@@ -13061,7 +13136,7 @@ async function fetchCommunityPosts() {
     // 커뮤니티 포스트 병합
     if (remotePosts.length) {
       const myIds = new Set(S.posts.map(p => String(p.id)));
-      S.communityPosts = remotePosts
+      S.communityPosts = mergeCommunitySamplePosts(remotePosts
         .filter(p => !myIds.has(String(p.id)))
         .map(p => {
           const pid = String(Number(p.id) || p.id);
@@ -13080,9 +13155,9 @@ async function fetchCommunityPosts() {
             comments: (commentMap[pid] || []).length,
             commentList: commentMap[pid] || [],
           };
-        });
+        }));
     } else {
-      S.communityPosts = [];
+      S.communityPosts = getCommunitySamplePosts();
     }
 
     renderCommunity();
@@ -16645,7 +16720,7 @@ function applyGuestSampleState() {
   S.pendingRewards = [];
   S.rewardHistory = [];
   S.myReactions = {};
-  S.communityPosts = [];
+  S.communityPosts = getCommunitySamplePosts();
   S.adminPosts = [];
   S.glucoseRecords = sample.glucoseRecords;
   S.todayLog = sample.todayLog;
