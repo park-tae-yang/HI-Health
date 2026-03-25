@@ -591,6 +591,11 @@
         </div>
         <div style="display:inline-flex;flex-wrap:wrap;gap:6px" id="ch-tshirt-own-chips"></div>
         <span id="ch-tshirt-own-none" style="font-size:12px;color:var(--t3);display:none">입력된 사이즈 없음</span>
+        <div style="margin:12px 0 8px;border-top:1px solid var(--border);padding-top:12px">
+          <span style="font-size:12px;font-weight:700;color:var(--t2)">티셔츠 사이즈 (가족)</span>
+        </div>
+        <div style="display:inline-flex;flex-wrap:wrap;gap:6px" id="ch-tshirt-fam-chips"></div>
+        <span id="ch-tshirt-fam-none" style="font-size:12px;color:var(--t3);display:none">입력된 사이즈 없음</span>
       </div>
       <span id="ch-live" style="display:none"></span>
       <span id="ch-donation" style="display:none"></span>
@@ -2947,35 +2952,39 @@ function renderChallenge() {
   document.getElementById('ch-cgm').textContent     = activeParts.filter(getRegCgmParticipation).length;
   document.getElementById('ch-count').textContent   = list.length + '건';
 
-  // ── 신발/티셔츠 사이즈 취합 (본인만) ──
+  // ── 신발/티셔츠 사이즈 취합 ──
   (function() {
-    const shoeMap = {}, tshirtMap = {};
+    const shoeMap = {}, tshirtOwnMap = {}, tshirtFamMap = {};
     const TSHIRT_ORDER = ['XS','S','M','L','XL','XXL','XXXL'];
     activeParts.forEach(r => {
       const shoe = withMm(r.shoeSize || getRegNoteLine(r, '신발사이즈') || '').replace('mm','').trim();
       if (shoe) shoeMap[shoe] = (shoeMap[shoe] || 0) + 1;
       const tshirt = String(getRegTshirtText(r) || '').trim().toUpperCase();
-      if (tshirt) tshirtMap[tshirt] = (tshirtMap[tshirt] || 0) + 1;
+      if (tshirt) tshirtOwnMap[tshirt] = (tshirtOwnMap[tshirt] || 0) + 1;
+      getRegFamilyMembers(r).forEach(m => {
+        const fts = String(m.tshirtSize || '').trim().toUpperCase();
+        if (fts) tshirtFamMap[fts] = (tshirtFamMap[fts] || 0) + 1;
+      });
     });
+    const tshirtSort = (a,b) => (TSHIRT_ORDER.indexOf(a[0]) + 99) % 99 - (TSHIRT_ORDER.indexOf(b[0]) + 99) % 99;
     function renderChips(map, chipsId, noneId, sortFn) {
       const chips = document.getElementById(chipsId);
       const none  = document.getElementById(noneId);
       const entries = Object.entries(map).sort(sortFn);
       if (!entries.length) { chips.innerHTML = ''; none.style.display = ''; return; }
       none.style.display = 'none';
-      const isMmChips = chipsId === 'ch-shoe-own-chips';
+      const isMm = chipsId === 'ch-shoe-own-chips';
       chips.innerHTML = entries.map(([sz, cnt]) =>
-        `<span style="display:inline-flex;align-items:center;gap:4px;padding:3px 9px;background:#fff;border:1px solid var(--border);border-radius:20px;font-size:12px;font-weight:600;color:var(--t1)">${sz}${isMmChips ? 'mm' : ''} <span style="color:var(--primary);font-weight:700">${cnt}개</span></span>`
+        `<span style="display:inline-flex;align-items:center;gap:4px;padding:3px 9px;background:#fff;border:1px solid var(--border);border-radius:20px;font-size:12px;font-weight:600;color:var(--t1)">${sz}${isMm ? 'mm' : ''} <span style="color:var(--primary);font-weight:700">${cnt}개</span></span>`
       ).join('');
     }
     const wrap = document.getElementById('ch-shoe-summary');
-    const hasData = Object.keys(shoeMap).length || Object.keys(tshirtMap).length;
+    const hasData = Object.keys(shoeMap).length || Object.keys(tshirtOwnMap).length || Object.keys(tshirtFamMap).length;
     if (!hasData) { wrap.style.display = 'none'; return; }
     wrap.style.display = '';
-    renderChips(shoeMap, 'ch-shoe-own-chips', 'ch-shoe-own-none',
-      (a,b) => Number(a[0]) - Number(b[0]));
-    renderChips(tshirtMap, 'ch-tshirt-own-chips', 'ch-tshirt-own-none',
-      (a,b) => (TSHIRT_ORDER.indexOf(a[0]) + 99) % 99 - (TSHIRT_ORDER.indexOf(b[0]) + 99) % 99);
+    renderChips(shoeMap,       'ch-shoe-own-chips',   'ch-shoe-own-none',   (a,b) => Number(a[0]) - Number(b[0]));
+    renderChips(tshirtOwnMap,  'ch-tshirt-own-chips', 'ch-tshirt-own-none', tshirtSort);
+    renderChips(tshirtFamMap,  'ch-tshirt-fam-chips', 'ch-tshirt-fam-none', tshirtSort);
   })();
 
   const tbody = document.getElementById('ch-tbody');
