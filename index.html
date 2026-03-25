@@ -10470,6 +10470,7 @@ function logExercise() {
   haptic('success');
   showToast(photoBonus ? `🎉 운동 기록 완료! +${pts}p (사진 인증 +5p 포함!)` : `🎉 운동 기록 완료! +${pts}p 획득!`);
   renderExercise();
+  refreshWorkoutLinkedSurfaces();
   updateSharePreview(); // 새 운동 포함한 메시지 즉시 재생성
 
   // Check new badges
@@ -10538,12 +10539,18 @@ function deleteWorkout(id) {
       save({ skipRemote: true });
       renderHeader();
       renderExercise();
+      refreshWorkoutLinkedSurfaces();
       renderRecordTabDots();
       _shareRewrite = false;
       updateSharePreview();
       if (_db) {
         try {
           await deleteRemoteRecordById('workouts', targetId, [wo?.deviceId, S.deviceId]);
+          // 포인트 차감을 users 테이블에 즉시 반영
+          if (S.deviceId) {
+            await _db.from('users').update({ points: S.user.points, streak: S.user.streak })
+              .eq('deviceId', S.deviceId);
+          }
         } catch (e) {
           console.error('[deleteWorkout]', e);
           S.workouts = prevWorkouts;
@@ -10553,6 +10560,7 @@ function deleteWorkout(id) {
           save({ skipRemote: true });
           renderHeader();
           renderExercise();
+          refreshWorkoutLinkedSurfaces();
           renderRecordTabDots();
           updateSharePreview();
           showToast('운동 기록 삭제를 서버에 반영하지 못했어요. 다시 시도해주세요.');
@@ -10560,6 +10568,7 @@ function deleteWorkout(id) {
         }
       }
       save();
+      refreshWorkoutLinkedSurfaces();
       showToast('운동 기록이 삭제되었습니다');
     },
   });
@@ -11675,6 +11684,14 @@ function rerenderProfileSurfaces() {
     if (document.getElementById('comm-league-panel')?.style.display !== 'none') renderLeague();
   }
   if (activePage === 'page-challenge') renderChallenge();
+}
+
+function refreshWorkoutLinkedSurfaces() {
+  const activePage = document.querySelector('.page.active')?.id || '';
+  if (activePage === 'page-home') renderHome();
+  if (activePage === 'page-community' && document.getElementById('comm-league-panel')?.style.display !== 'none') {
+    renderLeague();
+  }
 }
 
 function base64UrlToUint8Array(base64String) {
