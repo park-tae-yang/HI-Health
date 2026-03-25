@@ -6606,6 +6606,9 @@ async function syncAccountSettingsWithRemote(empId = ACTIVE_EMPID || S.user?.emp
     console.error('[syncAccountSettingsWithRemote]', error);
     return;
   }
+  // await 중 로컬 설정이 변경됐으면 원격 데이터 적용 건너뜀 (닉네임 등 덮어쓰기 방지)
+  const latestLocalModifiedAt = Number(buildAccountSettingsSnapshot(normalizedEmpId)?.modifiedAt) || 0;
+  if (latestLocalModifiedAt > localModifiedAt) return;
   const remoteSnapshot = data?.settings && typeof data.settings === 'object' ? data.settings : null;
   const remoteModifiedAt = Number(remoteSnapshot?.modifiedAt) || (data?.updated_at ? new Date(data.updated_at).getTime() : 0);
   if (remoteSnapshot && remoteModifiedAt > localModifiedAt) {
