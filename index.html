@@ -1974,8 +1974,14 @@
     /* ── Blood Glucose ── */
     .glucose-input-wrap { display:flex; align-items:center; justify-content:center; gap:16px; margin-bottom:12px; }
     .glucose-val-display { text-align:center; }
-    .glucose-val-num  { font-size:32px; font-weight:700; color:#D1D1D6; line-height:1; transition:color 0.15s; }
+    .glucose-val-num  {
+      font-size:32px; font-weight:700; color:#D1D1D6; line-height:1; transition:color 0.15s;
+      width:92px; border:none; background:transparent; text-align:center; outline:none; padding:0;
+      -moz-appearance:textfield; appearance:textfield; caret-color:var(--primary);
+    }
     .glucose-val-num.active { color:var(--primary); }
+    .glucose-val-num::placeholder { color:#D1D1D6; opacity:1; }
+    .glucose-val-num::-webkit-outer-spin-button, .glucose-val-num::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
     .glucose-val-unit { font-size:11px; color:var(--text-secondary); margin-top:2px; }
     .glucose-timing-row { display:flex; gap:6px; flex-wrap:wrap; }
     .glucose-timing-btn {
@@ -5024,12 +5030,16 @@
         <div class="glucose-input-wrap-sa" style="margin-top:6px">
           <button type="button" class="dur-btn" onclick="changeGlucoseVal(-1)">−</button>
           <div class="glucose-val-display">
-            <span class="glucose-val-num" id="sa-glucose-num">100</span>
+            <input type="number" class="glucose-val-num" id="sa-glucose-num" value="100" min="40" max="400"
+                   inputmode="numeric" placeholder="100"
+                   onfocus="this.select()"
+                   oninput="handleGlucoseValInput(this.value)"
+                   onblur="commitGlucoseValInput()">
             <span class="glucose-val-unit">mg/dL</span>
           </div>
           <button type="button" class="dur-btn" onclick="changeGlucoseVal(1)">+</button>
         </div>
-        <p id="glucose-hint" style="text-align:center;font-size:12px;color:#B0B4BC;margin:0 0 4px">버튼을 눌러 혈당수치를 기록해주세요</p>
+        <p id="glucose-hint" style="text-align:center;font-size:12px;color:#B0B4BC;margin:0 0 4px">버튼을 누르거나 숫자를 직접 입력해주세요</p>
         <p class="ex-section-label">메모</p>
         <div class="glucose-memo-inline" style="margin-top:0">
           <textarea class="form-textarea" id="glucose-memo" rows="1" maxlength="40" placeholder="혈당 메모를 남겨보세요(예: 아침 공복 측정)"></textarea>
@@ -9807,6 +9817,14 @@ function renderExercise() {
   _shareOn = true;
   document.getElementById('share-toggle-btn').classList.add('on');
   document.getElementById('share-expand').classList.add('show');
+  // 오늘 이미 공유한 글이 있으면 수정 모드 버튼으로 복원
+  if (getTodayMyPost()) {
+    _shareRewrite = true;
+    const _sBtn = document.getElementById('share-submit-btn');
+    if (_sBtn) _sBtn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a2 2 0 01-2-2v-1"/><path d="M15 3H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l4-4h4a2 2 0 002-2V5a2 2 0 00-2-2z"/></svg>수정하기';
+    const _sSub = document.getElementById('share-toggle-sub');
+    if (_sSub) _sSub.textContent = '오늘 이미 공유했어요 · 다시 작성하면 덮어씌워져요';
+  }
   renderMyDaySave();
   renderTodayTabDots();
   renderRecordTabDots();
@@ -10109,23 +10127,21 @@ function submitShareNow() {
   const shareMsg = msgEl.value.trim();
   if (!shareMsg) { showToast('공유할 메시지를 입력해주세요'); return; }
   const curLv = getLevel(S.user.points);
-  if (_shareRewrite) {
-    const existing = getTodayMyPost();
-    if (existing) {
-      existing.body = shareMsg;
-      existing.time = '방금 전';
-      existing.sharePhoto = _photoData || null;
-      apiSync('addPost', {
-        id: String(existing.id),
-        deviceId: S.deviceId,
-        userName: myDisplayName(),
-        body: shareMsg,
-        exTag: existing.exTag || '',
-        userTags: (S.user.tags || []).join(','),
-        ts: String(existing.id),
-      });
-      showToast('공유글이 수정되었어요!');
-    }
+  const existing = getTodayMyPost();
+  if (existing) {
+    existing.body = shareMsg;
+    existing.time = '방금 전';
+    existing.sharePhoto = _photoData || null;
+    apiSync('addPost', {
+      id: String(existing.id),
+      deviceId: S.deviceId,
+      userName: myDisplayName(),
+      body: shareMsg,
+      exTag: existing.exTag || '',
+      userTags: (S.user.tags || []).join(','),
+      ts: String(existing.id),
+    });
+    showToast('공유글이 수정되었어요!');
   } else {
     const sharedPostId = Date.now();
     S.posts.unshift({
@@ -11050,11 +11066,56 @@ function getGlucoseStatus(val, timing) {
   return               { label:'고혈당', cls:'glucose-status-high' };
 }
 
-function syncGlucoseUI() {
+function normalizeGlucoseVal(value) {
+  return Math.max(40, Math.min(400, Math.round(Number(value) || 0)));
+}
+
+function hideGlucoseHint() {
+  const hint = document.getElementById('glucose-hint');
+  if (hint) hint.style.display = 'none';
+}
+
+function handleGlucoseValInput(rawValue) {
+  const inputEl = document.getElementById('sa-glucose-num');
+  if (!inputEl) return;
+  const digits = String(rawValue ?? '').replace(/[^\d]/g, '').slice(0, 3);
+  if (inputEl.value !== digits) inputEl.value = digits;
+  if (!digits) {
+    _glucoseValTouched = false;
+    syncGlucoseUI({ preserveInput: true });
+    updateRecordBtnStates();
+    return;
+  }
+  _glucoseVal = Number(digits);
+  _glucoseValTouched = true;
+  hideGlucoseHint();
+  syncGlucoseUI({ preserveInput: true });
+  updateRecordBtnStates();
+}
+
+function commitGlucoseValInput() {
+  const inputEl = document.getElementById('sa-glucose-num');
+  if (!inputEl) return;
+  const digits = String(inputEl.value || '').replace(/[^\d]/g, '').slice(0, 3);
+  if (!digits) {
+    _glucoseVal = 100;
+    _glucoseValTouched = false;
+    syncGlucoseUI();
+    updateRecordBtnStates();
+    return;
+  }
+  _glucoseVal = normalizeGlucoseVal(digits);
+  _glucoseValTouched = true;
+  hideGlucoseHint();
+  syncGlucoseUI();
+  updateRecordBtnStates();
+}
+
+function syncGlucoseUI(options = {}) {
   const numEl = document.getElementById('sa-glucose-num');
   const active = _glucoseValTouched;
   if (numEl) {
-    numEl.textContent = _glucoseVal;
+    if (!options.preserveInput) numEl.value = String(_glucoseVal);
     numEl.classList.toggle('active', active);
   }
   renderGlucoseTimingButtons();
@@ -11066,10 +11127,9 @@ function syncGlucoseUI() {
 
 function changeGlucoseVal(delta) {
   haptic('light');
-  _glucoseVal = Math.max(40, Math.min(400, _glucoseVal + delta));
+  _glucoseVal = normalizeGlucoseVal(_glucoseVal + delta);
   _glucoseValTouched = true;
-  const h = document.getElementById('glucose-hint');
-  if (h) h.style.display = 'none';
+  hideGlucoseHint();
   syncGlucoseUI();
   updateRecordBtnStates();
 }
@@ -11132,6 +11192,7 @@ function logGlucoseStandalone() {
     return;
   }
   haptic('success');
+  const glucoseVal = normalizeGlucoseVal(_glucoseVal);
   let ts;
   if (_glucoseTime) {
     const [h, m] = _glucoseTime.split(':').map(Number);
@@ -11145,7 +11206,7 @@ function logGlucoseStandalone() {
     id: Date.now(),
     deviceId: String(S.deviceId || '').trim(),
     empId: String(S.user.empId || ACTIVE_EMPID || '').trim().toUpperCase(),
-    value: _glucoseVal,
+    value: glucoseVal,
     timing: _glucoseTiming,
     userTime: _glucoseTime || null,
     memo: glucoseMemo,
@@ -13184,6 +13245,30 @@ async function fetchCommunityPosts() {
 
     // 커뮤니티 포스트 병합
     if (remotePosts.length) {
+      // 내 deviceId와 일치하는 원격 글이 S.posts에 없으면 복원 (운동 삭제 후 재조회 시 삭제 버튼 유지)
+      if (S.deviceId) {
+        const myLocalIds = new Set(S.posts.map(p => String(p.id)));
+        remotePosts
+          .filter(rp => rp.deviceId === S.deviceId && !myLocalIds.has(String(rp.id)))
+          .forEach(rp => {
+            const rpid = String(Number(rp.id) || rp.id);
+            S.posts.unshift({
+              id: Number(rp.id) || rp.id,
+              userId: 0,
+              name: rp.userName || myDisplayName(),
+              avatar: S.user.avatar,
+              lv: (getLevel(S.user.points) || {}).lv || 1,
+              body: rp.body || '',
+              exTag: rp.exTag || null,
+              userTags: Array.isArray(rp.userTags) ? rp.userTags : typeof rp.userTags === 'string' ? rp.userTags.split(',').filter(Boolean) : [],
+              time: rp.ts ? new Date(Number(rp.ts)).toLocaleDateString('ko-KR') : '',
+              stickers: stickerMap[rpid] || { cheer:0, love:0, congrats:0, cool:0, together:0 },
+              myReactions: myReactionMap[rpid] || [],
+              comments: (commentMap[rpid] || []).length,
+              commentList: commentMap[rpid] || [],
+            });
+          });
+      }
       const myIds = new Set(S.posts.map(p => String(p.id)));
       S.communityPosts = mergeCommunitySamplePosts(remotePosts
         .filter(p => !myIds.has(String(p.id)))
