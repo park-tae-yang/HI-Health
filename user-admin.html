@@ -3583,7 +3583,7 @@ async function sendPushNotice(mode = 'all') {
   } finally {
     showLoading(false);
   }
-  loadPushLogs();
+  setTimeout(() => loadPushLogs(), 1500);
 }
 
 function getNoWorkoutUsers() {
@@ -3643,7 +3643,7 @@ async function sendNoWorkoutPush() {
   } finally {
     showLoading(false);
   }
-  loadPushLogs();
+  setTimeout(() => loadPushLogs(), 1500);
 }
 
 async function loadPushLogs() {
