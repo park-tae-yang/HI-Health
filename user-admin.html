@@ -458,6 +458,24 @@
         <div class="stat-card g"><div class="s-lbl">최근 7일 게시글</div><div class="s-val" id="po-sum-week">-</div><div class="s-sub">건</div></div>
         <div class="stat-card pu"><div class="s-lbl">작성 이용자</div><div class="s-val" id="po-sum-users">-</div><div class="s-sub">명</div></div>
       </div>
+      <!-- Hi-Rola 게시글 작성 -->
+      <div style="background:#F0F9FF;border:1px solid #BAE6FD;border-radius:10px;padding:14px;margin-bottom:12px">
+        <div style="font-size:13px;font-weight:700;color:#0369A1;margin-bottom:10px">🤖 Hi-Rola 게시글 작성</div>
+        <textarea id="hirola-post-draft" class="ctrl-inp" rows="3" style="width:100%;resize:vertical;font-size:13px;margin-bottom:8px" placeholder="초안을 입력하면 AI가 자연스럽게 다듬어 줍니다. 비워두면 AI가 자동으로 생성합니다."></textarea>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <select id="hirola-post-extag" class="ctrl-sel" style="font-size:12px">
+            <option value="">운동 태그 없음</option>
+            <option value="walking">걷기</option>
+            <option value="running">달리기</option>
+            <option value="cycling">자전거</option>
+            <option value="swimming">수영</option>
+            <option value="yoga">요가</option>
+            <option value="strength">근력운동</option>
+          </select>
+          <button class="cbtn pri" id="hirola-post-btn" onclick="createHirolaPost()" style="white-space:nowrap">✍️ Hi-Rola로 게시</button>
+        </div>
+        <div id="hirola-post-preview" style="display:none;margin-top:10px;padding:10px;background:#fff;border-radius:8px;border:1px solid #BAE6FD;font-size:13px;color:#334155;line-height:1.6"></div>
+      </div>
       <div class="wo-guide" id="po-guide" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
         <span>전체 게시글을 한 번에 나열하지 않고, 먼저 활동 요약과 최근 작성 이용자 상위 목록을 보여줍니다. 특정 이용자를 선택하면 그 사람 게시글만 자세히 볼 수 있습니다.</span>
         <button class="cbtn" id="batch-comment-btn" onclick="runBatchAutoComment()" style="white-space:nowrap;flex-shrink:0">🤖 Hi-Rola 어제·오늘 댓글 달기</button>
@@ -2821,6 +2839,38 @@ function clearPostUserFilter() {
 /* ── Hi-Rola 일괄 댓글 ── */
 const BOT_DEVICE_ID = 'hi_ai_bot';
 const AUTO_COMMENT_FN = SUPABASE_URL + '/functions/v1/auto-comment';
+
+async function createHirolaPost() {
+  if (!db) { toast('DB가 연결되지 않았어요'); return; }
+  const btn = document.getElementById('hirola-post-btn');
+  const draft = (document.getElementById('hirola-post-draft')?.value || '').trim();
+  const exTag = document.getElementById('hirola-post-extag')?.value || '';
+  const previewEl = document.getElementById('hirola-post-preview');
+
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ AI 작성 중...'; }
+  if (previewEl) previewEl.style.display = 'none';
+
+  try {
+    const res = await fetch(AUTO_COMMENT_FN, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY },
+      body: JSON.stringify({ type: 'CREATE_POST', draft, exTag }),
+    });
+    const result = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(result?.error || '게시 실패');
+
+    if (previewEl && result.body) {
+      previewEl.style.display = '';
+      previewEl.innerHTML = `<div style="font-size:11px;color:#0369A1;font-weight:700;margin-bottom:4px">✅ 게시 완료</div><div>${result.body}</div>`;
+    }
+    document.getElementById('hirola-post-draft').value = '';
+    toast('Hi-Rola 게시글이 등록됐어요 ✓');
+  } catch (e) {
+    toast('오류: ' + String(e));
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '✍️ Hi-Rola로 게시'; }
+  }
+}
 
 async function runBatchAutoComment() {
   if (!db) { toast('DB가 연결되지 않았어요'); return; }
