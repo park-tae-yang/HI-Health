@@ -456,8 +456,9 @@
         <div class="stat-card g"><div class="s-lbl">최근 7일 게시글</div><div class="s-val" id="po-sum-week">-</div><div class="s-sub">건</div></div>
         <div class="stat-card pu"><div class="s-lbl">작성 이용자</div><div class="s-val" id="po-sum-users">-</div><div class="s-sub">명</div></div>
       </div>
-      <div class="wo-guide" id="po-guide">
-        전체 게시글을 한 번에 나열하지 않고, 먼저 활동 요약과 최근 작성 이용자 상위 목록을 보여줍니다. 특정 이용자를 선택하면 그 사람 게시글만 자세히 볼 수 있습니다.
+      <div class="wo-guide" id="po-guide" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+        <span>전체 게시글을 한 번에 나열하지 않고, 먼저 활동 요약과 최근 작성 이용자 상위 목록을 보여줍니다. 특정 이용자를 선택하면 그 사람 게시글만 자세히 볼 수 있습니다.</span>
+        <button class="cbtn" id="batch-comment-btn" onclick="runBatchAutoComment()" style="white-space:nowrap;flex-shrink:0">🤖 Hi-Rola 어제·오늘 댓글 달기</button>
       </div>
       <div class="ctrl-bar">
         <input class="ctrl-inp" id="po-search" placeholder="이용자명·계정 ID 검색 또는 선택한 이용자의 게시글 내용 검색" oninput="renderPosts()">
@@ -2740,6 +2741,72 @@ function setPostUserFilter(deviceId = '', opts = {}) {
 
 function clearPostUserFilter() {
   setPostUserFilter('');
+}
+
+/* ── Hi-Rola 일괄 댓글 ── */
+const BOT_DEVICE_ID = 'hi_ai_bot';
+const BOT_NAME = 'Hi-Rola';
+const BOT_COMMENTS = {
+  walking: ['오늘도 꾸준히 걸으셨군요 🚶 천천히라도 매일 이렇게 하면 몸이 달라져요!','걷기만큼 좋은 운동이 없죠 😊 오늘 하루도 수고 많으셨어요!','꾸준한 걷기가 최고의 건강 비결이에요 🌿 멋져요!','한 걸음 한 걸음이 쌓여서 큰 변화가 생기죠 💪 오늘도 화이팅!'],
+  running:  ['달리기 완료! 정말 대단해요 🏃 오늘도 멋지게 해내셨네요!','힘차게 달리셨군요 🔥 이 기세 계속 유지해요!','러닝 완료 축하드려요 🎉 몸이 점점 강해지고 있을 거예요!','오늘도 달리셨다니 존경스러워요 😤 정말 대단합니다!'],
+  cycling:  ['자전거 라이딩 완료! 정말 멋진 하루네요 🚴 수고하셨어요!','씩씩하게 페달 밟으셨군요 💪 오늘도 건강 챙기셨네요!','라이딩 완료! 시원한 바람을 느끼며 달리셨겠어요 🌬️ 최고예요!'],
+  swimming: ['수영 완료! 전신 운동이라 더 값진 시간이었을 거예요 🏊 수고하셨어요!','물속에서도 열심히 하셨군요 💦 정말 대단해요!','수영은 관절에도 좋고 정말 좋은 운동이죠 😊 잘하셨어요!'],
+  yoga:     ['요가로 몸과 마음을 정돈하셨군요 🧘 오늘 하루도 수고하셨어요!','유연성도 키우고 마음도 편안해지는 시간이었겠어요 🌸 멋져요!','요가 완료! 내면의 평화를 찾는 시간이었겠네요 ✨'],
+  strength: ['근력 운동 완료! 오늘도 근육이 한 뼘 자랐겠어요 💪 수고하셨어요!','묵직하게 운동하셨군요 🏋️ 꾸준함이 진짜 실력이에요!','근력 운동은 배신이 없죠 🔥 오늘도 대단해요!'],
+  default:  ['오늘도 운동 완료! 정말 대단해요 💪 꾸준함이 최고예요!','건강을 위해 오늘도 열심히 하셨군요 😊 수고 많으셨어요!','하루하루 이렇게 쌓여가는 게 진짜 건강이죠 🌟 잘하셨어요!','오늘도 멋지게 해내셨네요 👏 이 기세로 계속 화이팅!','운동 완료! 오늘 하루도 건강하게 마무리하셨네요 🌿','꾸준히 하시는 모습이 정말 멋져요 ✨ 응원합니다!'],
+};
+function _botPickComment(exTag) {
+  const tag = (exTag || '').toLowerCase();
+  const pool = BOT_COMMENTS[tag] || BOT_COMMENTS['default'];
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+async function runBatchAutoComment() {
+  if (!db) { toast('DB가 연결되지 않았어요'); return; }
+  const btn = document.getElementById('batch-comment-btn');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ 처리 중...'; }
+  try {
+    // 어제 시작 ~ 지금까지 ts 범위
+    const now = Date.now();
+    const yesterdayStart = new Date();
+    yesterdayStart.setDate(yesterdayStart.getDate() - 1);
+    yesterdayStart.setHours(0, 0, 0, 0);
+    const tsFrom = String(yesterdayStart.getTime());
+
+    // 해당 기간 게시글 조회
+    const { data: posts, error: postsErr } = await db.from('posts').select('id,exTag,deviceId').gte('ts', tsFrom).neq('deviceId', BOT_DEVICE_ID);
+    if (postsErr) throw postsErr;
+    if (!posts || posts.length === 0) { toast('해당 기간에 게시글이 없어요'); return; }
+
+    // 이미 Hi-Rola 댓글이 달린 게시글 ID 조회
+    const postIds = posts.map(p => String(p.id));
+    const { data: existingComments } = await db.from('post_comments').select('postId').in('postId', postIds).eq('deviceId', BOT_DEVICE_ID);
+    const alreadyCommented = new Set((existingComments || []).map(c => String(c.postId)));
+
+    const targets = posts.filter(p => !alreadyCommented.has(String(p.id)));
+    if (targets.length === 0) { toast('모든 게시글에 이미 Hi-Rola 댓글이 있어요 ✅'); return; }
+
+    let done = 0;
+    for (const post of targets) {
+      const commentBody = _botPickComment(post.exTag || '');
+      const commentId = String(Date.now() + done);
+      await db.from('post_comments').insert({
+        id: commentId,
+        postId: String(post.id),
+        deviceId: BOT_DEVICE_ID,
+        userName: BOT_NAME,
+        body: commentBody,
+        ts: commentId,
+      });
+      done++;
+      if (btn) btn.textContent = `⏳ ${done}/${targets.length} 처리 중...`;
+    }
+    toast(`✅ ${done}개 게시글에 Hi-Rola 댓글을 달았어요!`);
+  } catch (e) {
+    console.error('[runBatchAutoComment]', e);
+    toast('오류가 발생했어요: ' + String(e));
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '🤖 Hi-Rola 어제·오늘 댓글 달기'; }
+  }
 }
 
 function openUserPosts(deviceId) {
