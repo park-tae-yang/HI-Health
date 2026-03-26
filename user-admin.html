@@ -461,20 +461,29 @@
       <!-- Hi-Rola 게시글 작성 -->
       <div style="background:#F0F9FF;border:1px solid #BAE6FD;border-radius:10px;padding:14px;margin-bottom:12px">
         <div style="font-size:13px;font-weight:700;color:#0369A1;margin-bottom:10px">🤖 Hi-Rola 게시글 작성</div>
-        <textarea id="hirola-post-draft" class="ctrl-inp" rows="3" style="width:100%;resize:vertical;font-size:13px;margin-bottom:8px" placeholder="초안을 입력하면 AI가 자연스럽게 다듬어 줍니다. 비워두면 AI가 자동으로 생성합니다."></textarea>
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-          <select id="hirola-post-extag" class="ctrl-sel" style="font-size:12px">
-            <option value="">운동 태그 없음</option>
-            <option value="walking">걷기</option>
-            <option value="running">달리기</option>
-            <option value="cycling">자전거</option>
-            <option value="swimming">수영</option>
-            <option value="yoga">요가</option>
-            <option value="strength">근력운동</option>
-          </select>
-          <button class="cbtn pri" id="hirola-post-btn" onclick="createHirolaPost()" style="white-space:nowrap">✍️ Hi-Rola로 게시</button>
+        <div id="hirola-step1">
+          <textarea id="hirola-post-draft" class="ctrl-inp" rows="3" style="width:100%;resize:vertical;font-size:13px;margin-bottom:8px" placeholder="초안을 입력하면 AI가 자연스럽게 다듬어 줍니다. 비워두면 AI가 자동으로 생성합니다."></textarea>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <select id="hirola-post-extag" class="ctrl-sel" style="font-size:12px">
+              <option value="">운동 태그 없음</option>
+              <option value="walking">걷기</option>
+              <option value="running">달리기</option>
+              <option value="cycling">자전거</option>
+              <option value="swimming">수영</option>
+              <option value="yoga">요가</option>
+              <option value="strength">근력운동</option>
+            </select>
+            <button class="cbtn pri" id="hirola-preview-btn" onclick="previewHirolaPost()" style="white-space:nowrap">✨ AI 초안 생성</button>
+          </div>
         </div>
-        <div id="hirola-post-preview" style="display:none;margin-top:10px;padding:10px;background:#fff;border-radius:8px;border:1px solid #BAE6FD;font-size:13px;color:#334155;line-height:1.6"></div>
+        <div id="hirola-step2" style="display:none;margin-top:10px">
+          <div style="font-size:11px;color:#0369A1;font-weight:700;margin-bottom:6px">✏️ 내용을 확인하고 수정하세요</div>
+          <textarea id="hirola-post-body" class="ctrl-inp" rows="4" style="width:100%;resize:vertical;font-size:13px;margin-bottom:8px"></textarea>
+          <div style="display:flex;gap:8px">
+            <button class="cbtn pri" id="hirola-post-btn" onclick="submitHirolaPost()" style="white-space:nowrap">📤 게시하기</button>
+            <button class="cbtn" onclick="cancelHirolaPost()" style="white-space:nowrap">취소</button>
+          </div>
+        </div>
       </div>
       <div class="wo-guide" id="po-guide" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
         <span>전체 게시글을 한 번에 나열하지 않고, 먼저 활동 요약과 최근 작성 이용자 상위 목록을 보여줍니다. 특정 이용자를 선택하면 그 사람 게시글만 자세히 볼 수 있습니다.</span>
@@ -922,6 +931,7 @@
       </div>
     </div>
     <div class="modal-footer">
+      <button class="mfbtn pri" id="po-edit-btn">게시글 수정</button>
       <button class="mfbtn del" id="po-del-btn">게시글 삭제</button>
       <button class="mfbtn close" onclick="closeModal('po-modal')">닫기</button>
     </div>
@@ -2502,9 +2512,9 @@ function buildExTypes() {
   if (puSel) {
     const prevPoUser = puSel.value;
     puSel.innerHTML = '<option value="">이용자 선택</option>';
-    [...GD.users].sort((a,b) => (a.name||'').localeCompare(b.name||'','ko')).forEach(u => {
+    getPostAuthorEntries().forEach(u => {
       const o = document.createElement('option');
-      o.value = u.deviceId; o.textContent = u.name || u.deviceId;
+      o.value = u.postAuthorKey || u.deviceId; o.textContent = u.name || u.deviceId;
       puSel.appendChild(o);
     });
     puSel.value = [...puSel.options].some(opt => opt.value === prevPoUser) ? prevPoUser : '';
@@ -2812,7 +2822,7 @@ function syncPostSelectionUI(deviceId = getPostSelectedUserId()) {
   const nameEl = document.getElementById('po-sel-name');
   const guideEl = document.getElementById('po-guide');
   const countEl = document.getElementById('po-count');
-  const user = GD.users.find(u => u.deviceId === deviceId);
+  const user = getPostAuthorEntries().find(u => (u.postAuthorKey || u.deviceId) === deviceId);
   if (deviceId && user) {
     if (wrap) wrap.style.display = '';
     if (nameEl) nameEl.textContent = user.name || user.deviceId;
@@ -2840,36 +2850,92 @@ function clearPostUserFilter() {
 const BOT_DEVICE_ID = 'hi_ai_bot';
 const AUTO_COMMENT_FN = SUPABASE_URL + '/functions/v1/auto-comment';
 
-async function createHirolaPost() {
-  if (!db) { toast('DB가 연결되지 않았어요'); return; }
-  const btn = document.getElementById('hirola-post-btn');
+function isHiRolaAuthor(post) {
+  const deviceId = String(post?.deviceId || '').trim();
+  const userName = String(post?.userName || '').trim().toLowerCase().replace(/\s+/g, '');
+  return deviceId === BOT_DEVICE_ID || userName === 'hi-rola' || userName === '하이로라';
+}
+
+function getPostAuthorKey(row) {
+  const deviceId = String(row?.deviceId || '').trim();
+  if (deviceId) return deviceId;
+  const userName = String(row?.userName || row?.name || '').trim().toLowerCase().replace(/\s+/g, '');
+  if (!userName) return '';
+  return userName === 'hi-rola' || userName === '하이로라' ? BOT_DEVICE_ID : `name:${userName}`;
+}
+
+function getPostAuthorEntries() {
+  const byAuthorKey = new Map();
+  (GD.users || []).forEach(user => {
+    const authorKey = getPostAuthorKey(user);
+    if (!authorKey) return;
+    byAuthorKey.set(authorKey, { ...user, postAuthorKey: authorKey });
+  });
+  (GD.posts || []).forEach(post => {
+    const authorKey = getPostAuthorKey(post);
+    if (!authorKey || byAuthorKey.has(authorKey)) return;
+    byAuthorKey.set(authorKey, {
+      deviceId: String(post?.deviceId || '').trim(),
+      name: post?.userName || authorKey,
+      empId: '',
+      dept: isHiRolaAuthor(post) ? '시스템' : '',
+      postAuthorKey: authorKey,
+    });
+  });
+  return [...byAuthorKey.values()].sort((a, b) => (a.name || '').localeCompare(b.name || '', 'ko'));
+}
+
+async function previewHirolaPost() {
+  const btn = document.getElementById('hirola-preview-btn');
   const draft = (document.getElementById('hirola-post-draft')?.value || '').trim();
   const exTag = document.getElementById('hirola-post-extag')?.value || '';
-  const previewEl = document.getElementById('hirola-post-preview');
-
-  if (btn) { btn.disabled = true; btn.textContent = '⏳ AI 작성 중...'; }
-  if (previewEl) previewEl.style.display = 'none';
-
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ AI 생성 중...'; }
   try {
     const res = await fetch(AUTO_COMMENT_FN, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY },
-      body: JSON.stringify({ type: 'CREATE_POST', draft, exTag }),
+      body: JSON.stringify({ type: 'PREVIEW_POST', draft, exTag }),
+    });
+    const result = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(result?.error || '생성 실패');
+    document.getElementById('hirola-post-body').value = result.body || '';
+    document.getElementById('hirola-step1').style.display = 'none';
+    document.getElementById('hirola-step2').style.display = '';
+  } catch (e) {
+    toast('오류: ' + String(e));
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '✨ AI 초안 생성'; }
+  }
+}
+
+async function submitHirolaPost() {
+  const btn = document.getElementById('hirola-post-btn');
+  const body = (document.getElementById('hirola-post-body')?.value || '').trim();
+  const exTag = document.getElementById('hirola-post-extag')?.value || '';
+  if (!body) { toast('내용을 입력해주세요'); return; }
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ 게시 중...'; }
+  try {
+    const res = await fetch(AUTO_COMMENT_FN, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY },
+      body: JSON.stringify({ type: 'CREATE_POST', body, exTag }),
     });
     const result = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(result?.error || '게시 실패');
-
-    if (previewEl && result.body) {
-      previewEl.style.display = '';
-      previewEl.innerHTML = `<div style="font-size:11px;color:#0369A1;font-weight:700;margin-bottom:4px">✅ 게시 완료</div><div>${result.body}</div>`;
-    }
-    document.getElementById('hirola-post-draft').value = '';
+    cancelHirolaPost();
     toast('Hi-Rola 게시글이 등록됐어요 ✓');
   } catch (e) {
     toast('오류: ' + String(e));
   } finally {
-    if (btn) { btn.disabled = false; btn.textContent = '✍️ Hi-Rola로 게시'; }
+    if (btn) { btn.disabled = false; btn.textContent = '📤 게시하기'; }
   }
+}
+
+function cancelHirolaPost() {
+  document.getElementById('hirola-step2').style.display = 'none';
+  document.getElementById('hirola-step1').style.display = '';
+  document.getElementById('hirola-post-draft').value = '';
+  document.getElementById('hirola-post-body').value = '';
 }
 
 async function runBatchAutoComment() {
@@ -2884,16 +2950,17 @@ async function runBatchAutoComment() {
     const tsFrom = String(rangeStart.getTime());
 
     // 해당 기간 게시글 조회 (body 포함)
-    const { data: posts, error: postsErr } = await db.from('posts').select('id,body,exTag,deviceId').gte('ts', tsFrom).neq('deviceId', BOT_DEVICE_ID);
+    const { data: posts, error: postsErr } = await db.from('posts').select('id,body,exTag,deviceId,userName').gte('ts', tsFrom).neq('deviceId', BOT_DEVICE_ID);
     if (postsErr) throw postsErr;
-    if (!posts || posts.length === 0) { toast('해당 기간에 게시글이 없어요'); return; }
+    const eligiblePosts = (posts || []).filter(post => !isHiRolaAuthor(post));
+    if (eligiblePosts.length === 0) { toast('해당 기간에 자동 댓글 대상 게시글이 없어요'); return; }
 
     // 이미 Hi-Rola 댓글이 달린 게시글 ID 조회
-    const postIds = posts.map(p => String(p.id));
+    const postIds = eligiblePosts.map(p => String(p.id));
     const { data: existingComments } = await db.from('post_comments').select('postId').in('postId', postIds).eq('deviceId', BOT_DEVICE_ID);
     const alreadyCommented = new Set((existingComments || []).map(c => String(c.postId)));
 
-    const targets = posts.filter(p => !alreadyCommented.has(String(p.id)));
+    const targets = eligiblePosts.filter(p => !alreadyCommented.has(String(p.id)));
     if (targets.length === 0) { toast('모든 게시글에 이미 Hi-Rola 댓글이 있어요 ✅'); return; }
 
     let done = 0;
@@ -2934,7 +3001,7 @@ function buildPostUserStats() {
   const weekStart = Date.now() - 7 * 24 * 60 * 60 * 1000;
   const stats = new Map();
   GD.posts.forEach(p => {
-    const deviceId = String(p.deviceId || '').trim();
+    const deviceId = getPostAuthorKey(p);
     if (!deviceId) return;
     const ts = Number(p.ts || 0);
     const stat = stats.get(deviceId) || { count: 0, latestTs: 0, weekCount: 0 };
@@ -2951,7 +3018,7 @@ function renderPostSummary() {
   const todayStart = new Date(); todayStart.setHours(0,0,0,0);
   const todayCount = GD.posts.filter(p => Number(p.ts||0) >= todayStart.getTime()).length;
   const weekPosts = GD.posts.filter(p => Number(p.ts||0) >= weekStart);
-  const weekUsers = new Set(weekPosts.map(p => String(p.deviceId||'').trim()).filter(Boolean));
+  const weekUsers = new Set(weekPosts.map(p => getPostAuthorKey(p)).filter(Boolean));
   document.getElementById('po-sum-today').textContent = todayCount.toLocaleString();
   document.getElementById('po-sum-week').textContent = weekPosts.length.toLocaleString();
   document.getElementById('po-sum-users').textContent = weekUsers.size.toLocaleString();
@@ -2961,8 +3028,8 @@ function renderPostOverview() {
   const tbody = document.getElementById('po-overview-body');
   const q = (document.getElementById('po-search')?.value || '').toLowerCase();
   const stats = buildPostUserStats();
-  const allRows = GD.users
-    .map(u => ({ user: u, stat: stats.get(u.deviceId) || { count: 0, latestTs: 0, weekCount: 0 } }))
+  const allRows = getPostAuthorEntries()
+    .map(u => ({ user: u, stat: stats.get(u.postAuthorKey || u.deviceId) || { count: 0, latestTs: 0, weekCount: 0 } }))
     .filter(({ user, stat }) => {
       if (!stat.count) return false;
       if (!q) return true;
@@ -2973,7 +3040,7 @@ function renderPostOverview() {
       if (b.stat.latestTs !== a.stat.latestTs) return b.stat.latestTs - a.stat.latestTs;
       return b.stat.count - a.stat.count;
     });
-  const rows = allRows.slice(0, 30);
+  const rows = allRows;
 
   document.getElementById('po-list-wrap').style.display = 'none';
   document.getElementById('po-overview-wrap').style.display = '';
@@ -2985,9 +3052,9 @@ function renderPostOverview() {
     return;
   }
 
-  document.getElementById('po-count').textContent = `작성 이용자 ${allRows.length}명 · 상위 ${rows.length}명 표시`;
+  document.getElementById('po-count').textContent = `작성 이용자 ${allRows.length}명`;
   tbody.innerHTML = rows.map(({ user, stat }, idx) => {
-    const safeId = String(user.deviceId || '').replace(/'/g, "\\'");
+    const safeId = String(user.postAuthorKey || user.deviceId || '').replace(/'/g, "\\'");
     const latestText = stat.latestTs
       ? new Date(stat.latestTs).toLocaleString('ko-KR', { year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' })
       : '-';
@@ -3016,7 +3083,7 @@ function renderPosts() {
   const q = (document.getElementById('po-search')?.value || '').toLowerCase();
   const list = GD.posts
     .filter(p => {
-      if (p.deviceId !== selectedUserId) return false;
+      if (getPostAuthorKey(p) !== selectedUserId) return false;
       if (!q) return true;
       return [(p.body||''), (p.userName||'')].some(s => s.toLowerCase().includes(q));
     })
@@ -3049,6 +3116,7 @@ function renderPosts() {
       <td>
         <div style="display:flex;gap:4px">
           <button class="abtn det" onclick="showPostDetail('${safeId}')">상세</button>
+          <button class="abtn det" onclick="editPost('${safeId}')">수정</button>
           <button class="abtn del" onclick="deletePost('${safeId}')">삭제</button>
         </div>
       </td>
@@ -3072,6 +3140,7 @@ async function showPostDetail(id) {
   ];
   document.getElementById('po-modal-body').innerHTML = rows.map(([l,v]) =>
     `<div class="detail-row"><div class="detail-label">${l}</div><div class="detail-value">${v}</div></div>`).join('');
+  document.getElementById('po-edit-btn').onclick = () => editPost(id);
   document.getElementById('po-del-btn').onclick = () => { deletePost(id); closeModal('po-modal'); };
   document.getElementById('po-comment-input').value = '';
   document.getElementById('po-modal').classList.add('open');
@@ -3140,6 +3209,25 @@ async function deletePost(id) {
   GD.posts = GD.posts.filter(p => String(p.id) !== String(id));
   renderStats(); renderPosts();
   toast('게시글 삭제 완료');
+}
+
+async function editPost(id) {
+  const post = GD.posts.find(p => String(p.id) === String(id));
+  if (!post) return;
+  const currentBody = String(post.body || '');
+  const nextBody = window.prompt('게시글 내용을 수정하세요.', currentBody);
+  if (nextBody == null) return;
+  const trimmed = nextBody.trim();
+  if (!trimmed) { toast('내용을 입력해주세요'); return; }
+  if (trimmed === currentBody) return;
+  showLoading(true);
+  const { error } = await db.from('posts').update({ body: trimmed }).eq('id', String(id));
+  showLoading(false);
+  if (error) { toast('수정 실패: ' + error.message); return; }
+  post.body = trimmed;
+  renderPosts();
+  if (_poModalPostId === String(id)) await showPostDetail(id);
+  toast('게시글 수정 완료');
 }
 
 

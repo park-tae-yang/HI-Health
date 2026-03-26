@@ -10,6 +10,7 @@ const json = (data: unknown, status = 200) =>
 
 const BOT_DEVICE_ID = "hi_ai_bot";
 const BOT_NAME = "Hi-Rola";
+const BOT_NAME_ALIASES = new Set(["hi-rola", "하이로라"]);
 
 const FALLBACK_COMMENTS = [
   "오늘도 운동 완료! 정말 대단해요 💪 꾸준함이 최고예요!",
@@ -108,6 +109,16 @@ function delay(ms: number) {
   return new Promise(r => setTimeout(r, ms));
 }
 
+function normalizeAuthorName(value: unknown): string {
+  return String(value || "").trim().toLowerCase().replace(/\s+/g, "");
+}
+
+function isHiRolaAuthor(record: { deviceId?: unknown; userName?: unknown; username?: unknown } | null | undefined) {
+  const deviceId = String(record?.deviceId || "").trim();
+  const userName = normalizeAuthorName(record?.userName || record?.username || "");
+  return deviceId === BOT_DEVICE_ID || BOT_NAME_ALIASES.has(userName);
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
 
@@ -123,22 +134,25 @@ Deno.serve(async (req) => {
 
     const db = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    // ── Hi-Rola 게시글 작성 모드 ──
-    if (payload?.type === "CREATE_POST") {
+    // ── Hi-Rola 게시글 미리보기 (생성만, DB 저장 없음) ──
+    if (payload?.type === "PREVIEW_POST") {
       const draft = String(payload?.draft || "").trim();
       const exTag = String(payload?.exTag || "").trim();
-
       let body: string;
       if (ANTHROPIC_API_KEY) {
-        try {
-          body = await generatePost(ANTHROPIC_API_KEY, draft, exTag);
-        } catch (e) {
-          console.warn("[auto-comment] 게시글 생성 실패:", e);
-          body = draft || "오늘도 건강한 하루 보내세요! 💪";
-        }
+        try { body = await generatePost(ANTHROPIC_API_KEY, draft, exTag); }
+        catch (e) { body = draft || "오늘도 건강한 하루 보내세요! 💪"; }
       } else {
         body = draft || "오늘도 건강한 하루 보내세요! 💪";
       }
+      return json({ ok: true, body });
+    }
+
+    // ── Hi-Rola 게시글 확정 게시 ──
+    if (payload?.type === "CREATE_POST") {
+      const body = String(payload?.body || "").trim();
+      const exTag = String(payload?.exTag || "").trim();
+      if (!body) return json({ error: "body required" }, 400);
 
       const postId = String(Date.now());
       const { error: insertErr } = await db.from("posts").insert({
@@ -166,6 +180,7 @@ Deno.serve(async (req) => {
     const exTag = String(record.exTag || record.extag || "").trim();
 
     if (!postId || !postBody) return json({ ok: true, skipped: "empty post" });
+    if (isHiRolaAuthor(record)) return json({ ok: true, skipped: "hi-rola post" });
 
     // 웹훅(INSERT)일 때만 딜레이, 직접 호출(DIRECT)은 즉시 처리
     if (payload?.type === "INSERT") {
@@ -173,8 +188,9 @@ Deno.serve(async (req) => {
     }
 
     // 글이 삭제됐는지 확인
-    const { data: existing } = await db.from("posts").select("id").eq("id", postId).single();
+    const { data: existing } = await db.from("posts").select("id,deviceId,userName").eq("id", postId).single();
     if (!existing) return json({ ok: true, skipped: "post deleted" });
+    if (isHiRolaAuthor(existing)) return json({ ok: true, skipped: "hi-rola post" });
 
     // AI 댓글 생성 (API 키 없으면 fallback)
     let commentBody: string;
