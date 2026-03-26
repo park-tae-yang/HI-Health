@@ -6088,10 +6088,16 @@ async function refreshUserPointsFromServer() {
     if (!data) return;
     const srvPts   = Number(data.points)       || 0;
     const srvTotal = Number(data.totalPoints || data.points) || 0;
-    if (srvPts !== S.user.points || srvTotal !== S.user.totalPoints) {
+    const hasTrackedPointRecords = !!localStorage.getItem(STORAGE_KEY)
+      && Array.isArray(S.workouts)
+      && Array.isArray(S.glucoseRecords);
+    const nextTotal = hasTrackedPointRecords
+      ? Math.max(srvTotal, srvPts, getRecordDerivedTotalPoints())
+      : srvTotal;
+    if (srvPts !== S.user.points || nextTotal !== S.user.totalPoints) {
       const gained = srvPts - S.user.points;
       S.user.points      = srvPts;
-      S.user.totalPoints = srvTotal;
+      S.user.totalPoints = nextTotal;
       save({ skipRemote: true });
       renderHeader();
       renderHome();
@@ -7084,11 +7090,36 @@ function save(opts = {}) {
   }
 }
 
+function getRecordDerivedTotalPoints() {
+  const workoutPoints = (S.workouts || []).reduce((sum, workout) => sum + (Number(workout?.points) || 0), 0);
+  const glucosePoints = (S.glucoseRecords || []).reduce((sum, record) => sum + (Number(record?.points) || 0), 0);
+  return workoutPoints + glucosePoints;
+}
+
+function reconcileTotalPointsFromRecords(opts = {}) {
+  if (IS_GUEST) return false;
+  const derivedTotal = getRecordDerivedTotalPoints();
+  const nextTotal = Math.max(
+    derivedTotal,
+    Number(S.user.points || 0),
+    Number(S.user.totalPoints || 0),
+  );
+  if (nextTotal === Number(S.user.totalPoints || 0)) return false;
+  S.user.totalPoints = nextTotal;
+  save({ skipRemote: true });
+  if (opts.syncRemote) forceSyncPoints({ includePoints: false });
+  return true;
+}
+
 // 삭제 시 포인트 강제 동기화 (lte 조건 없이 직접 업데이트)
-function forceSyncPoints() {
+function forceSyncPoints(opts = {}) {
   if (!_db || !S.deviceId) return;
+  const includePoints = opts.includePoints !== false;
+  const payload = includePoints
+    ? { points: S.user.points, totalPoints: S.user.totalPoints || S.user.points }
+    : { totalPoints: S.user.totalPoints || S.user.points };
   _db.from('users')
-    .update({ points: S.user.points, totalPoints: S.user.totalPoints || S.user.points })
+    .update(payload)
     .eq('deviceId', S.deviceId)
     .then(({ error }) => { if (error) console.error('[forceSyncPoints]', error); });
 }
@@ -7760,6 +7791,7 @@ async function hydrateAccountFromRemote(empId, fallbackName = '') {
       }
     }
     S.glucoseRecords = mergeGlucoseRecords(g.data || [], S.glucoseRecords);
+    reconcileTotalPointsFromRecords({ syncRemote: true });
     applyProfileOverride(normalizedEmpId);
     return { user: u, deviceId: resolvedDid, relatedDeviceIds };
   } catch (e) {
@@ -7827,6 +7859,7 @@ function load() {
     S.myReactions = d.myReactions || {};
     S.glucoseRecords = mapGlucoseRecords(d.glucoseRecords || [], []);
     S.todayLog = d.todayLog || null;
+    reconcileTotalPointsFromRecords();
   } catch(e) {}
 }
 
@@ -10458,6 +10491,7 @@ function logExercise() {
   const prevEarnedIds = new Set(earnedAchs().map(a => a.id));
   S.user.points += pts;
   S.user.totalPoints = (S.user.totalPoints || 0) + pts;
+  reconcileTotalPointsFromRecords();
   updateStreak();
   // 운동 기록 완료 후 공유 패널 초기화 (자동 게시 없음 — 수동 "지금 공유하기" 전용)
   _shareRewrite = false;
@@ -10563,6 +10597,7 @@ function deleteWorkout(id) {
       S.workouts.splice(idx, 1);
       S.user.points = Math.max(0, S.user.points - wo.points);
       S.user.totalPoints = Math.max(0, (S.user.totalPoints || 0) - wo.points);
+      reconcileTotalPointsFromRecords();
       updateStreak();
       save({ skipRemote: true });
       renderHeader();
@@ -11228,6 +11263,7 @@ function logGlucoseStandalone() {
   S.glucoseRecords.unshift(rec);
   S.user.points += GLUCOSE_POINTS;
   S.user.totalPoints = (S.user.totalPoints || 0) + GLUCOSE_POINTS;
+  reconcileTotalPointsFromRecords();
   save();
   apiSync('addGlucose', {
     id: rec.id,
@@ -11276,6 +11312,7 @@ function deleteGlucose(id) {
       S.glucoseRecords = S.glucoseRecords.filter(r => r.id !== id);
       S.user.points = Math.max(0, S.user.points - (rec.points || GLUCOSE_POINTS));
       S.user.totalPoints = Math.max(0, (S.user.totalPoints || 0) - (rec.points || GLUCOSE_POINTS));
+      reconcileTotalPointsFromRecords();
       save({ skipRemote: true });
       renderHeader();
       renderGlucose();

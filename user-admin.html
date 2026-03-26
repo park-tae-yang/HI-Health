@@ -458,43 +458,6 @@
         <div class="stat-card g"><div class="s-lbl">최근 7일 게시글</div><div class="s-val" id="po-sum-week">-</div><div class="s-sub">건</div></div>
         <div class="stat-card pu"><div class="s-lbl">작성 이용자</div><div class="s-val" id="po-sum-users">-</div><div class="s-sub">명</div></div>
       </div>
-      <!-- Hi-Rola 게시글 작성 -->
-      <div style="background:#F0F9FF;border:1px solid #BAE6FD;border-radius:10px;padding:14px;margin-bottom:12px">
-        <div style="font-size:13px;font-weight:700;color:#0369A1;margin-bottom:10px">🤖 Hi-Rola 게시글 작성</div>
-        <div id="hirola-step1">
-          <textarea id="hirola-post-draft" class="ctrl-inp" rows="3" style="width:100%;resize:vertical;font-size:13px;margin-bottom:8px" placeholder="초안을 입력하면 AI가 자연스럽게 다듬어 줍니다. 비워두면 AI가 자동으로 생성합니다."></textarea>
-          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-            <select id="hirola-post-extag" class="ctrl-sel" style="font-size:12px">
-              <option value="">운동 태그 없음</option>
-              <option value="walking">걷기</option>
-              <option value="running">달리기</option>
-              <option value="cycling">자전거</option>
-              <option value="swimming">수영</option>
-              <option value="yoga">요가</option>
-              <option value="strength">근력운동</option>
-            </select>
-            <button class="cbtn pri" id="hirola-preview-btn" onclick="previewHirolaPost()" style="white-space:nowrap">✨ AI 초안 생성</button>
-          </div>
-        </div>
-        <div id="hirola-step2" style="display:none;margin-top:10px">
-          <div style="font-size:11px;color:#0369A1;font-weight:700;margin-bottom:6px">✏️ 내용을 확인하고 수정하세요</div>
-          <textarea id="hirola-post-body" class="ctrl-inp" rows="4" style="width:100%;resize:vertical;font-size:13px;margin-bottom:8px"></textarea>
-          <div style="display:flex;gap:8px">
-            <button class="cbtn pri" id="hirola-post-btn" onclick="submitHirolaPost()" style="white-space:nowrap">📤 게시하기</button>
-            <button class="cbtn" onclick="cancelHirolaPost()" style="white-space:nowrap">취소</button>
-          </div>
-        </div>
-      </div>
-      <!-- Hi-Rola 게시글 목록 -->
-      <div style="background:#F0F9FF;border:1px solid #BAE6FD;border-radius:10px;padding:14px;margin-bottom:12px">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-          <div style="font-size:13px;font-weight:700;color:#0369A1">🤖 Hi-Rola 게시글 목록</div>
-          <button class="cbtn" style="font-size:11px;padding:4px 10px" onclick="loadHirolaPostList()">새로고침</button>
-        </div>
-        <div id="hirola-post-list" style="display:flex;flex-direction:column;gap:8px;max-height:300px;overflow-y:auto">
-          <div style="font-size:12px;color:#94A3B8;text-align:center;padding:12px">불러오는 중...</div>
-        </div>
-      </div>
       <div class="wo-guide" id="po-guide" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
         <span>전체 게시글을 한 번에 나열하지 않고, 먼저 활동 요약과 최근 작성 이용자 상위 목록을 보여줍니다. 특정 이용자를 선택하면 그 사람 게시글만 자세히 볼 수 있습니다.</span>
         <button class="cbtn" id="batch-comment-btn" onclick="runBatchAutoComment()" style="white-space:nowrap;flex-shrink:0">🤖 Hi-Rola 어제·오늘 댓글 달기</button>
@@ -541,6 +504,41 @@
           </table>
         </div>
         <div class="pagination" id="po-pager"></div>
+      </div>
+      <div style="margin-top:16px;background:#F0F9FF;border:1px solid #BAE6FD;border-radius:10px;padding:14px">
+        <div style="font-size:13px;font-weight:700;color:#0369A1;margin-bottom:10px">🤖 Hi-Rola 게시글 작성</div>
+        <div id="hirola-step1">
+          <textarea id="hirola-post-draft" class="ctrl-inp" rows="3" style="width:100%;resize:vertical;font-size:13px;margin-bottom:8px" placeholder="초안을 입력하면 AI가 자연스럽게 다듬어 줍니다. 비워두면 AI가 자동으로 생성합니다."></textarea>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <select id="hirola-post-extag" class="ctrl-sel" style="font-size:12px">
+              <option value="">운동 태그 없음</option>
+              <option value="walking">걷기</option>
+              <option value="running">달리기</option>
+              <option value="cycling">자전거</option>
+              <option value="swimming">수영</option>
+              <option value="yoga">요가</option>
+              <option value="strength">근력운동</option>
+            </select>
+            <button class="cbtn pri" id="hirola-preview-btn" onclick="previewHirolaPost()" style="white-space:nowrap">✨ AI 초안 생성</button>
+          </div>
+        </div>
+        <div id="hirola-step2" style="display:none;margin-top:10px">
+          <div style="font-size:11px;color:#0369A1;font-weight:700;margin-bottom:6px">✏️ 내용을 확인하고 수정하세요</div>
+          <textarea id="hirola-post-body" class="ctrl-inp" rows="4" style="width:100%;resize:vertical;font-size:13px;margin-bottom:8px"></textarea>
+          <div style="display:flex;gap:8px">
+            <button class="cbtn pri" id="hirola-post-btn" onclick="submitHirolaPost()" style="white-space:nowrap">📤 게시하기</button>
+            <button class="cbtn" onclick="cancelHirolaPost()" style="white-space:nowrap">취소</button>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:12px;background:#F0F9FF;border:1px solid #BAE6FD;border-radius:10px;padding:14px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div style="font-size:13px;font-weight:700;color:#0369A1">🤖 Hi-Rola 게시글 목록</div>
+          <button class="cbtn" style="font-size:11px;padding:4px 10px" onclick="loadHirolaPostList()">새로고침</button>
+        </div>
+        <div id="hirola-post-list" style="display:flex;flex-direction:column;gap:8px;max-height:300px;overflow-y:auto">
+          <div style="font-size:12px;color:#94A3B8;text-align:center;padding:12px">불러오는 중...</div>
+        </div>
       </div>
     </div>
 
@@ -2145,11 +2143,14 @@ async function adjPoints(sign) {
   if (!u) return;
   if (u.__derived) { toast('임시 이용자는 포인트 조정이 불가합니다. users 생성 후 진행해주세요.'); return; }
   const newPts = Math.max(0, (Number(u.points)||0) + sign * v);
+  const baseTotalPoints = Math.max(Number(u.totalPoints || 0), Number(u.points) || 0);
+  const newTotalPoints = Math.max(0, baseTotalPoints + sign * v);
   showLoading(true);
-  const { error } = await db.from('users').update({ points: newPts }).eq('deviceId', selDeviceId);
+  const { error } = await db.from('users').update({ points: newPts, totalPoints: newTotalPoints }).eq('deviceId', selDeviceId);
   showLoading(false);
   if (error) { toast('실패: ' + error.message); return; }
   u.points = newPts;
+  u.totalPoints = newTotalPoints;
   document.getElementById('pts-popup-cur').textContent = newPts.toLocaleString() + 'p';
   document.getElementById('adj-val').value = '';
   renderStats(); renderUsers();
@@ -2879,12 +2880,12 @@ function getPostAuthorEntries() {
   const byAuthorKey = new Map();
   (GD.users || []).forEach(user => {
     const authorKey = getPostAuthorKey(user);
-    if (!authorKey) return;
+    if (!authorKey || authorKey === BOT_DEVICE_ID) return;
     byAuthorKey.set(authorKey, { ...user, postAuthorKey: authorKey });
   });
   (GD.posts || []).forEach(post => {
     const authorKey = getPostAuthorKey(post);
-    if (!authorKey || byAuthorKey.has(authorKey)) return;
+    if (!authorKey || authorKey === BOT_DEVICE_ID || byAuthorKey.has(authorKey)) return;
     byAuthorKey.set(authorKey, {
       deviceId: String(post?.deviceId || '').trim(),
       name: post?.userName || authorKey,
@@ -3077,7 +3078,7 @@ function buildPostUserStats() {
   const stats = new Map();
   GD.posts.forEach(p => {
     const deviceId = getPostAuthorKey(p);
-    if (!deviceId) return;
+    if (!deviceId || deviceId === BOT_DEVICE_ID) return;
     const ts = Number(p.ts || 0);
     const stat = stats.get(deviceId) || { count: 0, latestTs: 0, weekCount: 0 };
     stat.count += 1;
@@ -3091,8 +3092,8 @@ function buildPostUserStats() {
 function renderPostSummary() {
   const weekStart = Date.now() - 7 * 24 * 60 * 60 * 1000;
   const todayStart = new Date(); todayStart.setHours(0,0,0,0);
-  const todayCount = GD.posts.filter(p => Number(p.ts||0) >= todayStart.getTime()).length;
-  const weekPosts = GD.posts.filter(p => Number(p.ts||0) >= weekStart);
+  const todayCount = GD.posts.filter(p => !isHiRolaAuthor(p) && Number(p.ts||0) >= todayStart.getTime()).length;
+  const weekPosts = GD.posts.filter(p => !isHiRolaAuthor(p) && Number(p.ts||0) >= weekStart);
   const weekUsers = new Set(weekPosts.map(p => getPostAuthorKey(p)).filter(Boolean));
   document.getElementById('po-sum-today').textContent = todayCount.toLocaleString();
   document.getElementById('po-sum-week').textContent = weekPosts.length.toLocaleString();
@@ -4155,7 +4156,7 @@ async function resolveFamCertRewardTarget(certRow) {
 
   const userRes = await db
     .from('users')
-    .select('deviceId,empId,name,points,lastactiveat')
+    .select('deviceId,empId,name,points,totalPoints,lastactiveat')
     .or(filters.join(','));
   if (userRes.error) return { error: userRes.error };
 
@@ -4250,9 +4251,11 @@ async function reviewFamCert(id, status) {
     }
     const prevPoints = Number(targetRes.user.points) || 0;
     const nextPoints = prevPoints + FAMILY_CERT_REWARD_POINTS;
+    const prevTotalPoints = Math.max(Number(targetRes.user.totalPoints || 0), prevPoints);
+    const nextTotalPoints = prevTotalPoints + FAMILY_CERT_REWARD_POINTS;
     const userRes = await db
       .from('users')
-      .update({ points: nextPoints, lastactiveat: reviewedAt })
+      .update({ points: nextPoints, totalPoints: nextTotalPoints, lastactiveat: reviewedAt })
       .eq('deviceId', targetRes.user.deviceId);
     if (userRes.error) {
       showLoading(false);
@@ -4263,6 +4266,8 @@ async function reviewFamCert(id, status) {
       userDeviceId: targetRes.user.deviceId,
       prevPoints,
       nextPoints,
+      prevTotalPoints,
+      nextTotalPoints,
       rewardedAt: reviewedAt,
       rewardPoints: FAMILY_CERT_REWARD_POINTS,
       rewardMessage: `가족 운동 인증이 승인되어 ${FAMILY_CERT_REWARD_POINTS}포인트가 지급되었습니다!`,
@@ -4283,7 +4288,7 @@ async function reviewFamCert(id, status) {
     if (rewardMeta?.userDeviceId) {
       await db
         .from('users')
-        .update({ points: rewardMeta.prevPoints, lastactiveat: reviewedAt })
+        .update({ points: rewardMeta.prevPoints, totalPoints: rewardMeta.prevTotalPoints, lastactiveat: reviewedAt })
         .eq('deviceId', rewardMeta.userDeviceId);
     }
     showLoading(false);
@@ -4293,7 +4298,10 @@ async function reviewFamCert(id, status) {
 
   if (rewardMeta?.userDeviceId) {
     const linkedUser = GD.users.find(u => String(u?.deviceId || '').trim() === rewardMeta.userDeviceId);
-    if (linkedUser) linkedUser.points = rewardMeta.nextPoints;
+    if (linkedUser) {
+      linkedUser.points = rewardMeta.nextPoints;
+      linkedUser.totalPoints = rewardMeta.nextTotalPoints;
+    }
   }
   if (certRow) {
     certRow.status = status;
