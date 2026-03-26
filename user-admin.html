@@ -2790,11 +2790,11 @@ function syncPostSelectionUI(deviceId = getPostSelectedUserId()) {
   if (deviceId && user) {
     if (wrap) wrap.style.display = '';
     if (nameEl) nameEl.textContent = user.name || user.deviceId;
-    if (guideEl) guideEl.textContent = '선택한 이용자의 게시글만 표시합니다.';
+    if (guideEl) { const sp = guideEl.querySelector('span'); if (sp) sp.textContent = '선택한 이용자의 게시글만 표시합니다.'; }
   } else {
     if (wrap) wrap.style.display = 'none';
     if (nameEl) nameEl.textContent = '';
-    if (guideEl) guideEl.textContent = '전체 게시글을 한 번에 나열하지 않고, 먼저 활동 요약과 최근 작성 이용자 상위 목록을 보여줍니다. 특정 이용자를 선택하면 그 사람 게시글만 자세히 볼 수 있습니다.';
+    if (guideEl) { const sp = guideEl.querySelector('span'); if (sp) sp.textContent = '전체 게시글을 한 번에 나열하지 않고, 먼저 활동 요약과 최근 작성 이용자 상위 목록을 보여줍니다. 특정 이용자를 선택하면 그 사람 게시글만 자세히 볼 수 있습니다.'; }
     if (countEl) countEl.textContent = '최근 작성 이용자 상위 보기';
   }
 }
