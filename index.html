@@ -9212,7 +9212,7 @@ function navigate(page) {
   // Render the page
   if (page === 'home')      { renderHome(); fetchLeagueData({ needWeekly: false }); }
   if (page === 'exercise')  renderExercise();
-  if (page === 'community') { setCommunityTab('feed'); renderCommunity(); fetchAdminPosts(); fetchCommunityPosts(); markCommunityAsSeen(); }
+  if (page === 'community') { setCommunityTab('feed'); renderCommunity(); fetchAdminPosts(); fetchCommunityPosts(); markCommunityAsSeen(); fetchLeagueData({ needWeekly: false }); }
   if (page === 'rewards')   {
     setRewardsTab('rewards');
     renderRewards();
@@ -12732,6 +12732,11 @@ async function fetchLeagueData(opts = {}) {
 
     buildRealLeagueUsers(allUsers || [], allRegs || [], needWeekly ? wPtsByDevice : {});
     renderLeague();
+    // 커뮤니티 피드가 열려있고 챌린지 필터 중이면 재렌더
+    if (_feedFilter === '챌린지') {
+      const page = document.querySelector('.page.active');
+      if (page?.id === 'page-community') renderCommunity();
+    }
   } catch(e) {
     console.error('League fetch error:', e);
   } finally {
@@ -13299,8 +13304,9 @@ async function fetchCommunityPosts() {
           return {
             id: Number(p.id) || p.id,
             userId: 1,
+            deviceId: p.deviceId || '',
             name: p.userName || '익명',
-            avatar: AVATARS[0],
+            avatar: p.deviceId === 'hi_ai_bot' ? 'images/avatars/run_day_rola.png' : AVATARS[0],
             lv: 1,
             body: p.body || '',
             exTag: p.exTag || null,
