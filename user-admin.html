@@ -1538,7 +1538,19 @@ function findMatchingChallengeRegistrationForUser(u, registrations = GD.registra
 }
 
 function getEffectiveChallengeRegistrations() {
-  return [...(GD.registrations || [])].map(normalizeRegistrationRow);
+  // id 기준 중복 제거 — 같은 id가 여러 행으로 들어온 경우 최신(registeredAt 기준) 1건만 유지
+  const byId = new Map();
+  const anon = [];
+  for (const r of (GD.registrations || [])) {
+    const row = normalizeRegistrationRow(r);
+    const id = String(row?.id || '').trim();
+    if (!id) { anon.push(row); continue; }
+    const prev = byId.get(id);
+    if (!prev || new Date(row.registeredAt || 0) >= new Date(prev.registeredAt || 0)) {
+      byId.set(id, row);
+    }
+  }
+  return [...byId.values(), ...anon];
 }
 
 function buildAdminChallengeRegistrationPayload(r, overrides = {}) {
@@ -3191,10 +3203,9 @@ async function updateChStatus(id, status) {
   const target = getEffectiveChallengeRegistrations().find(x => String(x.id) === String(id));
   if (!target) { toast('신청 정보를 찾을 수 없습니다'); return; }
   showLoading(true);
-  const res = await db.from('registrations').upsert(
-    buildAdminChallengeRegistrationPayload(target, { status }),
-    { onConflict: 'id' }
-  );
+  const res = await db.from('registrations')
+    .update(buildAdminChallengeRegistrationPayload(target, { status }))
+    .eq('id', normRegIdValue(id));
   const error = res.error || null;
   if (error) {
     showLoading(false);
