@@ -13125,9 +13125,7 @@ function renderCommunity() {
             <div class="post-title-line">
               <span class="post-uname">${p.name}</span>
               <div class="post-meta">
-                <span class="post-lv-icon">${lv.icon}</span>
-                <span>${lv.name}</span>
-                <span>·</span>
+                ${p.deviceId !== 'hi_ai_bot' ? `<span class="post-lv-icon">${lv.icon}</span><span>${lv.name}</span><span>·</span>` : ''}
                 <span>${p.time}</span>
               </div>
             </div>
@@ -13384,7 +13382,7 @@ function renderCommentList() {
     return `<div class="cm-item">
       <span class="cm-av"${c.deviceId === 'hi_ai_bot' ? ' style="padding:3px;box-sizing:border-box"' : ''}>${avHTML(c.avatar)}</span>
       <div class="cm-bubble">
-        <div class="cm-name">${c.name} <span style="font-weight:400;color:var(--text-secondary)">${clv.icon}</span></div>
+        <div class="cm-name">${c.name}${c.deviceId !== 'hi_ai_bot' ? ` <span style="font-weight:400;color:var(--text-secondary)">${clv.icon}</span>` : ''}</div>
         <div class="cm-body">${c.body}</div>
         <div class="cm-time">${c.time}</div>
       </div>
