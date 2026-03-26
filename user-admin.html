@@ -991,6 +991,7 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const CH_REG_KEY = 'hi_health_registrations_v2';
 const CHALLENGE_DONATION_PER_PERSON = 43000;
 const SEND_PUSH_FN = SUPABASE_URL + '/functions/v1/send-push';
+const ADMIN_POINTS_FN = SUPABASE_URL + '/functions/v1/admin-user-points';
 
 const EX_MAP = {
   walking:'걷기', running:'달리기', swimming:'수영', cycling:'자전거',
@@ -1241,6 +1242,7 @@ let ADMIN_PW = localStorage.getItem('hi_admin_pw') || '1111'; // 비밀번호 �
 let db = null;
 let GD = { users:[], workouts:[], posts:[], glucose:[], registrations:[], orders:[], adminPosts:[] };
 let selDeviceId = '';
+let ADMIN_AUTH_KEY = '';
 let _userDetailDirty = false;
 let uPage = 0, wPage = 0, poPage = 0;
 const PAGE = 20;
@@ -1263,6 +1265,7 @@ function doLogin() {
   const matchesAdminEmpId = ADMIN_EMPIDS.includes(normalized);
   const matchesAdminPw = !!raw && raw === String(ADMIN_PW || '');
   if (matchesAdminEmpId || matchesAdminPw) {
+    ADMIN_AUTH_KEY = matchesAdminEmpId ? normalized : (ADMIN_EMPIDS[0] || raw);
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('admin').style.display = 'flex';
     initSupabase();
@@ -1288,6 +1291,7 @@ function doLogout() {
   _queuedLoadOpts = null;
   _loadInFlight = null;
   _userDetailDirty = false;
+  ADMIN_AUTH_KEY = '';
   db = null;
 }
 
@@ -1725,7 +1729,19 @@ function sortedRows(rows, keys) {
 
 function buildDataSignature(data) {
   return JSON.stringify({
-    users: sortedRows(data.users, ['deviceId', 'registrationId', 'empId', 'name']),
+    users: sortedRows(data.users, [
+      'deviceId',
+      'registrationId',
+      'empId',
+      'name',
+      'nickname',
+      'dept',
+      'points',
+      'totalPoints',
+      'streak',
+      'lastActiveAt',
+      'updatedAt',
+    ]),
     workouts: sortedRows(data.workouts, ['id', 'deviceId', 'ts', 'createdAt']),
     posts: sortedRows(data.posts, ['id', 'deviceId', 'ts', 'createdAt']),
     glucose: sortedRows(data.glucose, ['id', 'deviceId', 'ts', 'createdAt']),
@@ -2135,6 +2151,58 @@ function closePtsPopup() {
   document.getElementById('pts-popup').style.display = 'none';
 }
 
+async function updateUserPointsFields(deviceId, nextPoints, nextTotalPoints, touchedAt = new Date().toISOString()) {
+  const currentUser = GD.users.find(x => String(x?.deviceId || '').trim() === String(deviceId || '').trim()) || null;
+  const currentPoints = Number(currentUser?.points) || 0;
+  const delta = (Number(nextPoints) || 0) - currentPoints;
+  if (ADMIN_AUTH_KEY) {
+    try {
+      const res = await fetch(ADMIN_POINTS_FN, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+        },
+        body: JSON.stringify({
+          adminKey: ADMIN_AUTH_KEY,
+          deviceId,
+          delta,
+          touchedAt,
+        }),
+      });
+      const result = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(result?.error || '포인트 조정 실패');
+      return {
+        error: null,
+        appliedTotalPoints: !!result?.appliedTotalPoints,
+        points: Number(result?.points) || Math.max(0, Number(nextPoints) || 0),
+        totalPoints: Number(result?.totalPoints) || Math.max(0, Number(nextTotalPoints) || 0),
+      };
+    } catch (e) {
+      console.warn('[points] admin function fallback:', e);
+    }
+  }
+
+  const pointsPayload = {
+    points: Math.max(0, Number(nextPoints) || 0),
+    lastactiveat: touchedAt,
+  };
+  const pointsRes = await db.from('users').update(pointsPayload).eq('deviceId', deviceId);
+  if (pointsRes.error) {
+    return { error: pointsRes.error, appliedTotalPoints: false };
+  }
+
+  const totalPayload = {
+    totalPoints: Math.max(0, Number(nextTotalPoints) || 0),
+    lastactiveat: touchedAt,
+  };
+  const totalRes = await db.from('users').update(totalPayload).eq('deviceId', deviceId);
+  if (!totalRes.error) return { error: null, appliedTotalPoints: true };
+  console.warn('[points] totalPoints sync skipped:', totalRes.error);
+  return { error: null, appliedTotalPoints: false, totalPointsError: totalRes.error };
+}
+
 async function adjPoints(sign) {
   if (!selDeviceId) { toast('이용자를 먼저 선택해주세요'); return; }
   const v = parseInt(document.getElementById('adj-val').value)||0;
@@ -2146,15 +2214,15 @@ async function adjPoints(sign) {
   const baseTotalPoints = Math.max(Number(u.totalPoints || 0), Number(u.points) || 0);
   const newTotalPoints = Math.max(0, baseTotalPoints + sign * v);
   showLoading(true);
-  const { error } = await db.from('users').update({ points: newPts, totalPoints: newTotalPoints }).eq('deviceId', selDeviceId);
+  const result = await updateUserPointsFields(selDeviceId, newPts, newTotalPoints);
   showLoading(false);
-  if (error) { toast('실패: ' + error.message); return; }
-  u.points = newPts;
-  u.totalPoints = newTotalPoints;
-  document.getElementById('pts-popup-cur').textContent = newPts.toLocaleString() + 'p';
+  if (result.error) { toast('실패: ' + result.error.message); return; }
+  u.points = Number(result.points) || newPts;
+  if (result.appliedTotalPoints) u.totalPoints = Number(result.totalPoints) || newTotalPoints;
+  document.getElementById('pts-popup-cur').textContent = (Number(u.points) || 0).toLocaleString() + 'p';
   document.getElementById('adj-val').value = '';
   renderStats(); renderUsers();
-  toast((sign > 0 ? '+' : '') + (sign * v) + 'p 조정 완료');
+  toast((sign > 0 ? '+' : '') + (sign * v) + 'p 조정 완료' + (result.appliedTotalPoints ? '' : ' (누적포인트 동기화는 제외됨)'));
 }
 
 function buildAdminEmpIdFilters(column, values = []) {
@@ -4253,10 +4321,7 @@ async function reviewFamCert(id, status) {
     const nextPoints = prevPoints + FAMILY_CERT_REWARD_POINTS;
     const prevTotalPoints = Math.max(Number(targetRes.user.totalPoints || 0), prevPoints);
     const nextTotalPoints = prevTotalPoints + FAMILY_CERT_REWARD_POINTS;
-    const userRes = await db
-      .from('users')
-      .update({ points: nextPoints, totalPoints: nextTotalPoints, lastactiveat: reviewedAt })
-      .eq('deviceId', targetRes.user.deviceId);
+    const userRes = await updateUserPointsFields(targetRes.user.deviceId, nextPoints, nextTotalPoints, reviewedAt);
     if (userRes.error) {
       showLoading(false);
       toast('포인트 지급 실패: ' + formatFamCertReviewError(userRes.error));
@@ -4265,9 +4330,10 @@ async function reviewFamCert(id, status) {
     rewardMeta = {
       userDeviceId: targetRes.user.deviceId,
       prevPoints,
-      nextPoints,
+      nextPoints: Number(userRes.points) || nextPoints,
       prevTotalPoints,
-      nextTotalPoints,
+      nextTotalPoints: Number(userRes.totalPoints) || nextTotalPoints,
+      appliedTotalPoints: userRes.appliedTotalPoints,
       rewardedAt: reviewedAt,
       rewardPoints: FAMILY_CERT_REWARD_POINTS,
       rewardMessage: `가족 운동 인증이 승인되어 ${FAMILY_CERT_REWARD_POINTS}포인트가 지급되었습니다!`,
@@ -4286,10 +4352,12 @@ async function reviewFamCert(id, status) {
     .eq('id', id);
   if (error) {
     if (rewardMeta?.userDeviceId) {
-      await db
-        .from('users')
-        .update({ points: rewardMeta.prevPoints, totalPoints: rewardMeta.prevTotalPoints, lastactiveat: reviewedAt })
-        .eq('deviceId', rewardMeta.userDeviceId);
+      await updateUserPointsFields(
+        rewardMeta.userDeviceId,
+        rewardMeta.prevPoints,
+        rewardMeta.prevTotalPoints,
+        reviewedAt,
+      );
     }
     showLoading(false);
     toast('처리 실패: ' + formatFamCertReviewError(error));
@@ -4300,7 +4368,7 @@ async function reviewFamCert(id, status) {
     const linkedUser = GD.users.find(u => String(u?.deviceId || '').trim() === rewardMeta.userDeviceId);
     if (linkedUser) {
       linkedUser.points = rewardMeta.nextPoints;
-      linkedUser.totalPoints = rewardMeta.nextTotalPoints;
+      if (rewardMeta.appliedTotalPoints) linkedUser.totalPoints = rewardMeta.nextTotalPoints;
     }
   }
   if (certRow) {
