@@ -13180,7 +13180,7 @@ function renderCommunity() {
         ${p.sharePhoto ? `<div class="post-photo-wrap"><img class="post-photo" src="${p.sharePhoto}" alt="운동 사진"></div>` : ''}
         ${p.shareHealth ? buildPostHealthHtml(p.shareHealth) : ''}
         <div class="sticker-row">${stickersHtml}</div>
-        <button type="button" class="comment-btn" onclick="openComments(${p.id})">${renderNamedSvgIcon('chat', { size:'12px', color:'currentColor' })}<span>댓글 ${cmCount}개</span></button>
+        <button type="button" class="comment-btn" onclick="openComments(${p.id})">${renderNamedSvgIcon('chat', { size:'12px', color:'currentColor' })}<span class="cm-count">댓글 ${cmCount}개</span></button>
       </div>
     `;
   }).join('');
@@ -13209,6 +13209,9 @@ async function fetchAdminPosts() {
   } catch(e) {}
 }
 
+let _communityReactionCache = { stickerMap: {}, myReactionMap: {}, commentMap: {}, ts: 0 };
+const COMMUNITY_CACHE_TTL = 2 * 60 * 1000; // 2분
+
 async function fetchCommunityPosts() {
   if (!_db) return;
   try {
@@ -13217,34 +13220,49 @@ async function fetchCommunityPosts() {
     const remotePosts = postsData || [];
     const targetPostIds = remotePosts.map(p => String(Number(p?.id) || p?.id)).filter(Boolean);
     const targetPostIdSet = new Set(targetPostIds);
-    _applyRemotePostsToState(remotePosts, {}, {}, targetPostIdSet);
+
+    const cacheAge = Date.now() - _communityReactionCache.ts;
+    if (cacheAge < COMMUNITY_CACHE_TTL && _communityReactionCache.ts > 0) {
+      // 캐시 유효 → 캐시된 반응·댓글로 바로 렌더
+      const { stickerMap, myReactionMap, commentMap } = _communityReactionCache;
+      targetPostIds.forEach(pid => {
+        if (myReactionMap[pid]?.length) S.myReactions[pid] = [...myReactionMap[pid]];
+        else delete S.myReactions[pid];
+      });
+      _applyRemotePostsToState(remotePosts, stickerMap, commentMap, targetPostIdSet);
+    } else {
+      // 캐시 없거나 만료 → posts 먼저 즉시 렌더 후 백그라운드 fetch
+      _applyRemotePostsToState(remotePosts, {}, {}, targetPostIdSet);
+      renderCommunity();
+      updateCommunityDot();
+
+      if (!targetPostIds.length) return;
+      const [rp, cmp] = await Promise.all([
+        _db.from('reactions').select('*').in('postId', targetPostIds),
+        _db.from('post_comments').select('postId,id,userName,body,ts,deviceId').in('postId', targetPostIds).order('ts', { ascending: true }),
+      ]);
+      const stickerMap = {}, myReactionMap = {}, commentMap = {};
+      (rp.data || []).forEach(r => {
+        const pid = String(r.postId);
+        if (!stickerMap[pid]) stickerMap[pid] = { cheer:0, love:0, congrats:0, cool:0, together:0 };
+        if (r.stickerId in stickerMap[pid]) stickerMap[pid][r.stickerId]++;
+        if (r.deviceId === S.deviceId) { if (!myReactionMap[pid]) myReactionMap[pid] = []; myReactionMap[pid].push(r.stickerId); }
+      });
+      (cmp.data || []).forEach(c => {
+        const pid = String(c.postId);
+        if (!commentMap[pid]) commentMap[pid] = [];
+        commentMap[pid].push({ id: c.id, name: c.userName || '익명', avatar: botAvatar(c.deviceId) || AVATARS[0], lv: 1, body: c.body || '', time: c.ts ? new Date(Number(c.ts)).toLocaleDateString('ko-KR') : '', ts: c.ts ? Number(c.ts) : Date.now(), deviceId: c.deviceId || '' });
+      });
+      targetPostIds.forEach(pid => {
+        if (myReactionMap[pid]?.length) S.myReactions[pid] = [...myReactionMap[pid]];
+        else delete S.myReactions[pid];
+      });
+      _communityReactionCache = { stickerMap, myReactionMap, commentMap, ts: Date.now() };
+      _applyRemotePostsToState(remotePosts, stickerMap, commentMap, targetPostIdSet);
+    }
+
     renderCommunity();
     updateCommunityDot();
-
-    // 2단계: 반응·댓글 백그라운드 로드 → 카드 조용히 업데이트
-    if (!targetPostIds.length) return;
-    const [rp, cmp] = await Promise.all([
-      _db.from('reactions').select('*').in('postId', targetPostIds),
-      _db.from('post_comments').select('postId,id,userName,body,ts,deviceId').in('postId', targetPostIds).order('ts', { ascending: true }),
-    ]);
-    const stickerMap = {}, myReactionMap = {}, commentMap = {};
-    (rp.data || []).forEach(r => {
-      const pid = String(r.postId);
-      if (!stickerMap[pid]) stickerMap[pid] = { cheer:0, love:0, congrats:0, cool:0, together:0 };
-      if (r.stickerId in stickerMap[pid]) stickerMap[pid][r.stickerId]++;
-      if (r.deviceId === S.deviceId) { if (!myReactionMap[pid]) myReactionMap[pid] = []; myReactionMap[pid].push(r.stickerId); }
-    });
-    (cmp.data || []).forEach(c => {
-      const pid = String(c.postId);
-      if (!commentMap[pid]) commentMap[pid] = [];
-      commentMap[pid].push({ id: c.id, name: c.userName || '익명', avatar: botAvatar(c.deviceId) || AVATARS[0], lv: 1, body: c.body || '', time: c.ts ? new Date(Number(c.ts)).toLocaleDateString('ko-KR') : '', ts: c.ts ? Number(c.ts) : Date.now(), deviceId: c.deviceId || '' });
-    });
-    targetPostIds.forEach(pid => {
-      if (myReactionMap[pid]?.length) S.myReactions[pid] = [...myReactionMap[pid]];
-      else delete S.myReactions[pid];
-    });
-    _applyRemotePostsToState(remotePosts, stickerMap, commentMap, targetPostIdSet);
-    renderCommunity();
   } catch(e) { console.error('[fetchCommunityPosts]', e); }
 }
 
@@ -13420,7 +13438,7 @@ async function openComments(postId) {
       // 피드 카드 스티커·댓글 수 업데이트
       const card = document.getElementById(`post-${postId}`);
       if (card) {
-        const cmBtn = card.querySelector('.comment-btn span');
+        const cmBtn = card.querySelector('.comment-btn .cm-count');
         if (cmBtn) cmBtn.textContent = `댓글 ${post.comments}개`;
         STICKERS.forEach(s => {
           const btn = card.querySelector(`.sticker-btn[onclick*="'${s.id}'"]`);
@@ -13461,6 +13479,7 @@ function submitComment() {
   const body = input.value.trim();
   if (!body) return;
   haptic('medium');
+  _communityReactionCache.ts = 0; // 캐시 무효화
   const post = S.posts.find(p => p.id === _commentPostId) || (S.communityPosts || []).find(p => p.id === _commentPostId);
   if (!post) return;
   if (!post.commentList) post.commentList = [];
@@ -13542,6 +13561,7 @@ function updateStickerButtonUi(buttonEl, count, isActive) {
 
 function react(buttonEl, postId, stickerId) {
   haptic('light');
+  _communityReactionCache.ts = 0; // 캐시 무효화
   const post = S.posts.find(p => p.id === postId) || (S.communityPosts || []).find(p => p.id === postId);
   if (!post) return;
   playStickerButtonFeedback(buttonEl);
