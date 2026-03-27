@@ -5724,7 +5724,7 @@ function normalizeAvatar(src) {
   if (!raw) return AVATARS[0];
   const cleaned = raw.replace(/[?#].*$/, '');
   if (AVATAR_SET.has(cleaned)) return cleaned;
-  if (/run_day_rola/.test(cleaned)) return 'images/avatars/run_day_rola.png';
+  if (/run_day_rola/.test(cleaned)) return 'images/avatars/run_day_rola_2.png';
   if (/hi_bla/.test(cleaned)) return 'images/hi_bla.png';
   const avatarMatch = cleaned.match(/(?:^|\/)images\/avatars\/av(\d+)\.png$/i) || cleaned.match(/(?:^|\/)av(\d+)\.png$/i);
   if (avatarMatch) {
@@ -13349,7 +13349,7 @@ function markCommunityAsSeen() {
 }
 
 function botAvatar(deviceId) {
-  if (deviceId === 'hi_ai_bot') return 'images/avatars/run_day_rola.png';
+  if (deviceId === 'hi_ai_bot') return 'images/avatars/run_day_rola_2.png';
   if (deviceId === 'hi_ai_bot_bla') return 'images/hi_bla.png';
   return null;
 }
