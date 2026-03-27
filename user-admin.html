@@ -460,7 +460,6 @@
       </div>
       <div class="wo-guide" id="po-guide" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
         <span>전체 게시글을 한 번에 나열하지 않고, 먼저 활동 요약과 최근 작성 이용자 상위 목록을 보여줍니다. 특정 이용자를 선택하면 그 사람 게시글만 자세히 볼 수 있습니다.</span>
-        <button class="cbtn" id="batch-comment-btn" onclick="runBatchAutoComment()" style="white-space:nowrap;flex-shrink:0">🤖 Hi-Rola 어제·오늘 댓글 달기</button>
       </div>
       <div class="ctrl-bar">
         <input class="ctrl-inp" id="po-search" placeholder="이용자명·계정 ID 검색 또는 선택한 이용자의 게시글 내용 검색" oninput="renderPosts()">
@@ -2961,11 +2960,14 @@ function clearPostUserFilter() {
 const BOT_DEVICE_ID = 'hi_ai_bot';
 const AUTO_COMMENT_FN = SUPABASE_URL + '/functions/v1/auto-comment';
 
-function isHiRolaAuthor(post) {
+function isBotAuthor(post) {
   const deviceId = String(post?.deviceId || '').trim();
   const userName = String(post?.userName || '').trim().toLowerCase().replace(/\s+/g, '');
-  return deviceId === BOT_DEVICE_ID || userName === 'hi-rola' || userName === '하이로라';
+  return deviceId === BOT_DEVICE_ID || deviceId === 'hi_ai_bot_bla'
+    || userName === 'hi-rola' || userName === '하이로라'
+    || userName === 'hi-bla' || userName === '하이블라';
 }
+function isHiRolaAuthor(post) { return isBotAuthor(post); }
 
 function getPostAuthorKey(row) {
   const deviceId = String(row?.deviceId || '').trim();
@@ -3209,50 +3211,6 @@ async function deleteHiblaPost(id) {
   toast('삭제됐어요');
 }
 
-async function runBatchAutoComment() {
-  if (!db) { toast('DB가 연결되지 않았어요'); return; }
-  const btn = document.getElementById('batch-comment-btn');
-  if (btn) { btn.disabled = true; btn.textContent = '⏳ 처리 중...'; }
-  try {
-    // 2일 전 시작 ~ 지금
-    const rangeStart = new Date();
-    rangeStart.setDate(rangeStart.getDate() - 1);
-    rangeStart.setHours(0, 0, 0, 0);
-    const tsFrom = String(rangeStart.getTime());
-
-    // 해당 기간 게시글 조회 (body 포함)
-    const { data: posts, error: postsErr } = await db.from('posts').select('id,body,exTag,deviceId,userName').gte('ts', tsFrom).neq('deviceId', BOT_DEVICE_ID);
-    if (postsErr) throw postsErr;
-    const eligiblePosts = (posts || []).filter(post => !isHiRolaAuthor(post));
-    if (eligiblePosts.length === 0) { toast('해당 기간에 자동 댓글 대상 게시글이 없어요'); return; }
-
-    // 이미 Hi-Rola 댓글이 달린 게시글 ID 조회
-    const postIds = eligiblePosts.map(p => String(p.id));
-    const { data: existingComments } = await db.from('post_comments').select('postId').in('postId', postIds).eq('deviceId', BOT_DEVICE_ID);
-    const alreadyCommented = new Set((existingComments || []).map(c => String(c.postId)));
-
-    const targets = eligiblePosts.filter(p => !alreadyCommented.has(String(p.id)));
-    if (targets.length === 0) { toast('모든 게시글에 이미 Hi-Rola 댓글이 있어요 ✅'); return; }
-
-    let done = 0;
-    for (const post of targets) {
-      if (btn) btn.textContent = `⏳ ${done}/${targets.length} AI 댓글 생성 중...`;
-      await fetch(AUTO_COMMENT_FN, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY },
-        body: JSON.stringify({ type: 'DIRECT', record: { id: post.id, body: post.body, exTag: post.exTag || '' } }),
-      });
-      done++;
-      if (btn) btn.textContent = `⏳ ${done}/${targets.length} 처리 중...`;
-    }
-    toast(`✅ ${done}개 게시글에 Hi-Rola AI 댓글을 달았어요!`);
-  } catch (e) {
-    console.error('[runBatchAutoComment]', e);
-    toast('오류가 발생했어요: ' + String(e));
-  } finally {
-    if (btn) { btn.disabled = false; btn.textContent = '🤖 Hi-Rola 어제·오늘 댓글 달기'; }
-  }
-}
 
 function openUserPosts(deviceId) {
   if (!deviceId) { toast('이용자를 먼저 선택해주세요'); return; }
@@ -3273,7 +3231,7 @@ function buildPostUserStats() {
   const stats = new Map();
   GD.posts.forEach(p => {
     const deviceId = getPostAuthorKey(p);
-    if (!deviceId || deviceId === BOT_DEVICE_ID) return;
+    if (!deviceId || deviceId === BOT_DEVICE_ID || deviceId === 'hi_ai_bot_bla') return;
     const ts = Number(p.ts || 0);
     const stat = stats.get(deviceId) || { count: 0, latestTs: 0, weekCount: 0 };
     stat.count += 1;
