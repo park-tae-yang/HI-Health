@@ -9245,7 +9245,7 @@ function navigate(page) {
   // Render the page
   if (page === 'home')      { renderHome(); fetchLeagueData({ needWeekly: false }); }
   if (page === 'exercise')  renderExercise();
-  if (page === 'community') { setCommunityTab('feed'); renderCommunity(); fetchAdminPosts(); fetchCommunityPosts(); markCommunityAsSeen(); fetchLeagueData({ needWeekly: false }); }
+  if (page === 'community') { setCommunityTab('feed'); renderCommunity(); _adminPostsFetched = false; fetchAdminPosts(); fetchCommunityPosts(); markCommunityAsSeen(); fetchLeagueData({ needWeekly: false }); }
   if (page === 'rewards')   {
     setRewardsTab('rewards');
     renderRewards();
@@ -13207,11 +13207,11 @@ async function fetchCommunityPosts() {
   if (!_db) return;
   try {
     const emptyStickers = () => ({ cheer:0, love:0, congrats:0, cool:0, together:0 });
-    const { data: postsData } = await _db.from('posts').select('*').order('ts', { ascending: false }).limit(100);
+    const { data: postsData } = await _db.from('posts').select('*').order('ts', { ascending: false }).limit(30);
     const remotePosts = postsData || [];
     const localPostIds = [...(S.posts || [])]
       .sort((a, b) => (Number(b?.id) || 0) - (Number(a?.id) || 0))
-      .slice(0, 100)
+      .slice(0, 30)
       .map(p => String(Number(p?.id) || p?.id));
     const targetPostIds = [...new Set([
       ...remotePosts.map(p => String(Number(p?.id) || p?.id)),
@@ -13219,6 +13219,11 @@ async function fetchCommunityPosts() {
     ])].filter(Boolean);
     const targetPostIdSet = new Set(targetPostIds);
 
+    // ── 1차 렌더링: 게시글만 먼저 표시 (반응/댓글은 빈 값으로) ──
+    _applyRemotePostsToState(remotePosts, {}, {}, targetPostIdSet);
+    renderCommunity();
+
+    // ── 반응·댓글 병렬 fetch ──
     let reactionsData = [];
     let commentsData = [];
     if (targetPostIds.length) {
@@ -13286,11 +13291,62 @@ async function fetchCommunityPosts() {
     });
     if (seenChanged || !hasSeenState) saveSeenMyPostCommentIds(seenCommentIds);
 
-    // 동기화 대상 포스트만 최신 스티커/댓글/내 리액션 상태로 덮어쓴다.
+    // 내 리액션 상태 업데이트
     targetPostIds.forEach(pid => {
       if (myReactionMap[pid]?.length) S.myReactions[pid] = [...myReactionMap[pid]];
       else delete S.myReactions[pid];
     });
+
+    // ── 2차 렌더링: 반응·댓글 포함 최종 업데이트 ──
+    _applyRemotePostsToState(remotePosts, stickerMap, commentMap, targetPostIdSet);
+    renderCommunity();
+    updateCommunityDot();
+    if (notifAdded) loadNotifList();
+  } catch(e) { console.error('[fetchCommunityPosts]', e); }
+}
+
+// posts 데이터를 S.posts / S.communityPosts 에 병합한다.
+// stickerMap / commentMap 이 비어있으면 기존 값 유지.
+function _applyRemotePostsToState(remotePosts, stickerMap, commentMap, targetPostIdSet) {
+  const emptyStickers = () => ({ cheer:0, love:0, congrats:0, cool:0, together:0 });
+  const noReactions = Object.keys(stickerMap).length === 0;
+
+  if (!remotePosts.length) {
+    if (noReactions) S.communityPosts = getCommunitySamplePosts();
+    return;
+  }
+
+  // 서버에 없는 내 글 제거
+  const remoteIds = new Set(remotePosts.map(p => String(p.id)));
+  S.posts = S.posts.filter(p => remoteIds.has(String(p.id)));
+
+  // 내 deviceId 글 복원
+  if (S.deviceId) {
+    const myLocalIds = new Set(S.posts.map(p => String(p.id)));
+    remotePosts
+      .filter(rp => rp.deviceId === S.deviceId && !myLocalIds.has(String(rp.id)))
+      .forEach(rp => {
+        const rpid = String(Number(rp.id) || rp.id);
+        S.posts.unshift({
+          id: Number(rp.id) || rp.id,
+          userId: 0,
+          name: rp.userName || myDisplayName(),
+          avatar: S.user.avatar,
+          lv: (getLevel(S.user.points) || {}).lv || 1,
+          body: rp.body || '',
+          exTag: rp.exTag || null,
+          userTags: Array.isArray(rp.userTags) ? rp.userTags : typeof rp.userTags === 'string' ? rp.userTags.split(',').filter(Boolean) : [],
+          time: rp.ts ? new Date(Number(rp.ts)).toLocaleDateString('ko-KR') : '',
+          stickers: stickerMap[rpid] || emptyStickers(),
+          myReactions: [],
+          comments: (commentMap[rpid] || []).length,
+          commentList: commentMap[rpid] || [],
+        });
+      });
+  }
+
+  // S.posts 스티커·댓글 업데이트 (반응 데이터 있을 때만)
+  if (!noReactions) {
     S.posts.forEach(p => {
       const pid = String(p.id);
       if (!targetPostIdSet.has(pid)) return;
@@ -13298,69 +13354,31 @@ async function fetchCommunityPosts() {
       p.commentList = commentMap[pid] || [];
       p.comments = p.commentList.length;
     });
+  }
 
-    // 관리자가 삭제한 내 글 제거 (S.posts에서 서버에 없는 글 걸러냄)
-    if (remotePosts.length) {
-      const remoteIds = new Set(remotePosts.map(p => String(p.id)));
-      S.posts = S.posts.filter(p => remoteIds.has(String(p.id)));
-    }
-
-    // 커뮤니티 포스트 병합
-    if (remotePosts.length) {
-      // 내 deviceId와 일치하는 원격 글이 S.posts에 없으면 복원 (운동 삭제 후 재조회 시 삭제 버튼 유지)
-      if (S.deviceId) {
-        const myLocalIds = new Set(S.posts.map(p => String(p.id)));
-        remotePosts
-          .filter(rp => rp.deviceId === S.deviceId && !myLocalIds.has(String(rp.id)))
-          .forEach(rp => {
-            const rpid = String(Number(rp.id) || rp.id);
-            S.posts.unshift({
-              id: Number(rp.id) || rp.id,
-              userId: 0,
-              name: rp.userName || myDisplayName(),
-              avatar: S.user.avatar,
-              lv: (getLevel(S.user.points) || {}).lv || 1,
-              body: rp.body || '',
-              exTag: rp.exTag || null,
-              userTags: Array.isArray(rp.userTags) ? rp.userTags : typeof rp.userTags === 'string' ? rp.userTags.split(',').filter(Boolean) : [],
-              time: rp.ts ? new Date(Number(rp.ts)).toLocaleDateString('ko-KR') : '',
-              stickers: stickerMap[rpid] || { cheer:0, love:0, congrats:0, cool:0, together:0 },
-              myReactions: myReactionMap[rpid] || [],
-              comments: (commentMap[rpid] || []).length,
-              commentList: commentMap[rpid] || [],
-            });
-          });
-      }
-      const myIds = new Set(S.posts.map(p => String(p.id)));
-      S.communityPosts = mergeCommunitySamplePosts(remotePosts
-        .filter(p => !myIds.has(String(p.id)))
-        .map(p => {
-          const pid = String(Number(p.id) || p.id);
-          return {
-            id: Number(p.id) || p.id,
-            userId: 1,
-            deviceId: p.deviceId || '',
-            name: p.userName || '익명',
-            avatar: p.deviceId === 'hi_ai_bot' ? 'images/avatars/run_day_rola.png' : AVATARS[0],
-            lv: 1,
-            body: p.body || '',
-            exTag: p.exTag || null,
-            userTags: Array.isArray(p.userTags) ? p.userTags : typeof p.userTags === 'string' ? p.userTags.split(',').filter(Boolean) : [],
-            time: p.ts ? new Date(Number(p.ts)).toLocaleDateString('ko-KR') : '',
-            stickers: stickerMap[pid] || emptyStickers(),
-            myReactions: myReactionMap[pid] || [],
-            comments: (commentMap[pid] || []).length,
-            commentList: commentMap[pid] || [],
-          };
-        }));
-    } else {
-      S.communityPosts = getCommunitySamplePosts();
-    }
-
-    renderCommunity();
-    updateCommunityDot();
-    if (notifAdded) loadNotifList();
-  } catch(e) { console.error('[fetchCommunityPosts]', e); }
+  const myIds = new Set(S.posts.map(p => String(p.id)));
+  S.communityPosts = mergeCommunitySamplePosts(remotePosts
+    .filter(p => !myIds.has(String(p.id)))
+    .map(p => {
+      const pid = String(Number(p.id) || p.id);
+      const existing = noReactions ? (S.communityPosts || []).find(ep => String(ep.id) === pid) : null;
+      return {
+        id: Number(p.id) || p.id,
+        userId: 1,
+        deviceId: p.deviceId || '',
+        name: p.userName || '익명',
+        avatar: p.deviceId === 'hi_ai_bot' ? 'images/avatars/run_day_rola.png' : AVATARS[0],
+        lv: 1,
+        body: p.body || '',
+        exTag: p.exTag || null,
+        userTags: Array.isArray(p.userTags) ? p.userTags : typeof p.userTags === 'string' ? p.userTags.split(',').filter(Boolean) : [],
+        time: p.ts ? new Date(Number(p.ts)).toLocaleDateString('ko-KR') : '',
+        stickers: noReactions ? (existing?.stickers || emptyStickers()) : (stickerMap[pid] || emptyStickers()),
+        myReactions: noReactions ? (existing?.myReactions || []) : [],
+        comments: noReactions ? (existing?.comments || 0) : (commentMap[pid] || []).length,
+        commentList: noReactions ? (existing?.commentList || []) : (commentMap[pid] || []),
+      };
+    }));
 }
 
 const COMM_SEEN_KEY = 'hi_health_comm_seen';
