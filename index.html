@@ -3029,15 +3029,15 @@
 
     /* Podium */
     .podium {
-      display: flex; align-items: flex-end; justify-content: center; gap: 14px;
-      padding: 18px 0 20px;
+      display: flex; align-items: flex-end; justify-content: center; gap: 10px;
+      padding: 18px 8px 20px;
       background: linear-gradient(180deg, var(--primary-light) 0%, transparent 100%);
       border-radius: var(--radius); margin-bottom: 14px;
     }
     .podium.challenger {
       background: linear-gradient(180deg, #fef0f7 0%, #fff7fb 60%, transparent 100%);
     }
-    .podium-item { display: flex; flex-direction: column; align-items: center; gap: 5px; width: 92px; flex: 0 0 92px; }
+    .podium-item { display: flex; flex-direction: column; align-items: center; gap: 6px; flex: 1 1 0; min-width: 0; max-width: 98px; }
     .podium-av-wrap { display: flex; flex-direction: column; align-items: center; gap: 4px; }
     .podium-bubble {
       background: linear-gradient(135deg, #fff 0%, #f5f0ff 100%);
@@ -3068,9 +3068,13 @@
     .podium-item.podium-first .podium-avatar { width:68px; height:68px; }
     .podium-item.podium-second .podium-avatar,
     .podium-item.podium-third .podium-avatar { width:58px; height:58px; }
-    .podium-name { font-size: 11px; font-weight: 600; text-align: center; max-width: 70px; }
+    .podium-name {
+      width: 100%; min-height: 34px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 600; line-height: 1.2; text-align: center;
+    }
     .podium-name .ui-svg-icon { --ui-icon-size: 12px; vertical-align: -0.14em; }
-    .podium-pts { font-size: 10px; color: var(--warning); font-weight: 700; }
+    .podium-pts { font-size: 11px; line-height: 1.2; color: var(--warning); font-weight: 700; text-align: center; }
     .podium-stand {
       border-radius: 8px 8px 0 0;
       display: flex; align-items: center; justify-content: center;
@@ -3079,6 +3083,12 @@
     .stand-gold   { background: linear-gradient(180deg, #FFD700, #FFA500); width: 68px; height: 76px; }
     .stand-silver { background: linear-gradient(180deg, #D0D0D0, #A8A8A8); width: 58px; height: 58px; }
     .stand-bronze { background: linear-gradient(180deg, #CD7F32, #9A5A2A); width: 58px; height: 44px; }
+    @media (max-width: 360px) {
+      .podium { gap: 8px; padding: 16px 4px 18px; }
+      .podium-item { max-width: 92px; }
+      .podium-name { min-height: 32px; font-size: 13px; }
+      .podium-pts { font-size: 10px; }
+    }
 
     .lb-item {
       display: flex; align-items: center; gap: 12px;
@@ -12746,7 +12756,7 @@ async function fetchLeagueData(opts = {}) {
       canReuseUsers
         ? Promise.resolve(null)
         : Promise.all([
-            _db.from('users').select('empId,name,avatar,points,tags,deviceId'),
+            _db.from('users').select('empId,name,nickname,avatar,points,tags,deviceId'),
             _db.from('registrations').select('id,empId,deviceId,status'),
           ]),
       needWeekly && !canReuseWeekly
