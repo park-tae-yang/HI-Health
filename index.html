@@ -5725,6 +5725,7 @@ function normalizeAvatar(src) {
   const cleaned = raw.replace(/[?#].*$/, '');
   if (AVATAR_SET.has(cleaned)) return cleaned;
   if (/run_day_rola/.test(cleaned)) return 'images/avatars/run_day_rola.png';
+  if (/hi_bla/.test(cleaned)) return 'images/hi_bla.png';
   const avatarMatch = cleaned.match(/(?:^|\/)images\/avatars\/av(\d+)\.png$/i) || cleaned.match(/(?:^|\/)av(\d+)\.png$/i);
   if (avatarMatch) {
     const mapped = `images/avatars/av${Math.max(1, Math.min(20, Number(avatarMatch[1]) || 1))}.png`;
@@ -13167,7 +13168,7 @@ function renderCommunity() {
             <div class="post-title-line">
               <span class="post-uname">${p.name}</span>
               <div class="post-meta">
-                ${p.deviceId !== 'hi_ai_bot' ? `<span class="post-lv-icon">${lv.icon}</span><span>${lv.name}</span><span>·</span>` : ''}
+                ${!isBotDeviceId(p.deviceId) ? `<span class="post-lv-icon">${lv.icon}</span><span>${lv.name}</span><span>·</span>` : ''}
                 <span>${p.time}</span>
               </div>
             </div>
@@ -13236,7 +13237,7 @@ async function fetchCommunityPosts() {
     (cmp.data || []).forEach(c => {
       const pid = String(c.postId);
       if (!commentMap[pid]) commentMap[pid] = [];
-      commentMap[pid].push({ id: c.id, name: c.userName || '익명', avatar: c.deviceId === 'hi_ai_bot' ? './images/avatars/run_day_rola.png' : AVATARS[0], lv: 1, body: c.body || '', time: c.ts ? new Date(Number(c.ts)).toLocaleDateString('ko-KR') : '', ts: c.ts ? Number(c.ts) : Date.now(), deviceId: c.deviceId || '' });
+      commentMap[pid].push({ id: c.id, name: c.userName || '익명', avatar: botAvatar(c.deviceId) || AVATARS[0], lv: 1, body: c.body || '', time: c.ts ? new Date(Number(c.ts)).toLocaleDateString('ko-KR') : '', ts: c.ts ? Number(c.ts) : Date.now(), deviceId: c.deviceId || '' });
     });
     targetPostIds.forEach(pid => {
       if (myReactionMap[pid]?.length) S.myReactions[pid] = [...myReactionMap[pid]];
@@ -13309,7 +13310,7 @@ function _applyRemotePostsToState(remotePosts, stickerMap, commentMap, targetPos
         userId: 1,
         deviceId: p.deviceId || '',
         name: p.userName || '익명',
-        avatar: p.deviceId === 'hi_ai_bot' ? 'images/avatars/run_day_rola.png' : AVATARS[0],
+        avatar: botAvatar(p.deviceId) || AVATARS[0],
         lv: 1,
         body: p.body || '',
         exTag: p.exTag || null,
@@ -13347,6 +13348,14 @@ function markCommunityAsSeen() {
   if (dot) dot.classList.add('hidden');
 }
 
+function botAvatar(deviceId) {
+  if (deviceId === 'hi_ai_bot') return 'images/avatars/run_day_rola.png';
+  if (deviceId === 'hi_ai_bot_bla') return 'images/hi_bla.png';
+  return null;
+}
+function isBotDeviceId(deviceId) {
+  return deviceId === 'hi_ai_bot' || deviceId === 'hi_ai_bot_bla';
+}
 function escHtmlComm(s) {
   return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
@@ -13386,7 +13395,7 @@ async function openComments(postId) {
     post.commentList = (cmp.data || []).map(c => ({
       id: c.id,
       name: c.userName || '익명',
-      avatar: c.deviceId === 'hi_ai_bot' ? './images/avatars/run_day_rola.png' : AVATARS[0],
+      avatar: botAvatar(c.deviceId) || AVATARS[0],
       lv: 1,
       body: c.body || '',
       time: c.ts ? new Date(Number(c.ts)).toLocaleDateString('ko-KR') : '',
@@ -13437,9 +13446,9 @@ function renderCommentList() {
   el.innerHTML = list.map(c => {
     const clv = LEVELS[Math.min((c.lv || 1) - 1, LEVELS.length - 1)];
     return `<div class="cm-item">
-      <span class="cm-av"${c.deviceId === 'hi_ai_bot' ? ' style="padding:3px;box-sizing:border-box"' : ''}>${avHTML(c.avatar)}</span>
+      <span class="cm-av"${isBotDeviceId(c.deviceId) ? ' style="padding:3px;box-sizing:border-box"' : ''}>${avHTML(c.avatar)}</span>
       <div class="cm-bubble">
-        <div class="cm-name">${c.name}${c.deviceId !== 'hi_ai_bot' ? ` <span style="font-weight:400;color:var(--text-secondary)">${clv.icon}</span>` : ''}</div>
+        <div class="cm-name">${c.name}${!isBotDeviceId(c.deviceId) ? ` <span style="font-weight:400;color:var(--text-secondary)">${clv.icon}</span>` : ''}</div>
         <div class="cm-body">${c.body}</div>
         <div class="cm-time">${c.time}</div>
       </div>

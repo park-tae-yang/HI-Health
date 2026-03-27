@@ -540,6 +540,36 @@
           <div style="font-size:12px;color:#94A3B8;text-align:center;padding:12px">불러오는 중...</div>
         </div>
       </div>
+
+      <!-- Hi-Bla 게시글 작성 -->
+      <div style="margin-top:16px;background:#F0FDF4;border:1px solid #86EFAC;border-radius:10px;padding:14px">
+        <div style="font-size:13px;font-weight:700;color:#15803D;margin-bottom:10px">🥗 Hi-Bla 게시글 작성 <span style="font-size:11px;font-weight:400;color:#16A34A">(영양 코치)</span></div>
+        <div id="hibla-step1">
+          <textarea id="hibla-post-draft" class="ctrl-inp" rows="3" style="width:100%;resize:vertical;font-size:13px;margin-bottom:8px" placeholder="초안을 입력하면 AI가 자연스럽게 다듬어 줍니다. 비워두면 AI가 자동으로 생성합니다."></textarea>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <input id="hibla-post-topic" class="ctrl-inp" style="font-size:12px;flex:1;min-width:120px" placeholder="주제 (예: 단백질 섭취, 수분 보충…)">
+            <button class="cbtn" id="hibla-preview-btn" onclick="previewHiblaPost()" style="white-space:nowrap;background:#16A34A;color:#fff;border-color:#16A34A">✨ AI 초안 생성</button>
+          </div>
+        </div>
+        <div id="hibla-step2" style="display:none;margin-top:10px">
+          <div style="font-size:11px;color:#15803D;font-weight:700;margin-bottom:6px">✏️ 내용을 확인하고 수정하세요</div>
+          <textarea id="hibla-post-body" class="ctrl-inp" rows="4" style="width:100%;resize:vertical;font-size:13px;margin-bottom:8px"></textarea>
+          <div style="display:flex;gap:8px">
+            <button class="cbtn" id="hibla-post-btn" onclick="submitHiblaPost()" style="white-space:nowrap;background:#16A34A;color:#fff;border-color:#16A34A">📤 게시하기</button>
+            <button class="cbtn" onclick="cancelHiblaPost()" style="white-space:nowrap">취소</button>
+          </div>
+        </div>
+      </div>
+      <!-- Hi-Bla 게시글 목록 -->
+      <div style="margin-top:12px;background:#F0FDF4;border:1px solid #86EFAC;border-radius:10px;padding:14px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div style="font-size:13px;font-weight:700;color:#15803D">🥗 Hi-Bla 게시글 목록</div>
+          <button class="cbtn" style="font-size:11px;padding:4px 10px" onclick="loadHiblaPostList()">새로고침</button>
+        </div>
+        <div id="hibla-post-list" style="display:flex;flex-direction:column;gap:8px;max-height:300px;overflow-y:auto">
+          <div style="font-size:12px;color:#94A3B8;text-align:center;padding:12px">불러오는 중...</div>
+        </div>
+      </div>
     </div>
 
     <!-- ── PANEL: GLUCOSE ── -->
@@ -1878,6 +1908,7 @@ function renderAll() {
   renderWorkouts();
   renderPosts();
   loadHirolaPostList();
+  loadHiblaPostList();
   renderChallenge();
   renderOrders();
   renderRewards();
@@ -3079,6 +3110,102 @@ async function deleteHirolaPost(id) {
   const { error } = await db.from('posts').delete().eq('id', id);
   if (error) { toast('삭제 실패: ' + error.message); return; }
   document.getElementById(`hirola-post-item-${id}`)?.remove();
+  toast('삭제됐어요');
+}
+
+// ── Hi-Bla 게시글 관리 ──
+async function previewHiblaPost() {
+  const btn = document.getElementById('hibla-preview-btn');
+  const draft = (document.getElementById('hibla-post-draft')?.value || '').trim();
+  const topic = document.getElementById('hibla-post-topic')?.value || '';
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ 생성 중...'; }
+  try {
+    const res = await fetch(AUTO_COMMENT_FN, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }, body: JSON.stringify({ type: 'PREVIEW_POST_BLA', draft, topic }) });
+    const result = await res.json();
+    if (!result.ok) throw new Error(result.error || '생성 실패');
+    document.getElementById('hibla-post-body').value = result.body || '';
+    document.getElementById('hibla-step1').style.display = 'none';
+    document.getElementById('hibla-step2').style.display = '';
+  } catch(e) { toast('생성 실패: ' + e.message); }
+  finally { if (btn) { btn.disabled = false; btn.textContent = '✨ AI 초안 생성'; } }
+}
+
+async function submitHiblaPost() {
+  const btn = document.getElementById('hibla-post-btn');
+  const body = (document.getElementById('hibla-post-body')?.value || '').trim();
+  const topic = document.getElementById('hibla-post-topic')?.value || '';
+  if (!body) { toast('내용을 입력해주세요'); return; }
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ 게시 중...'; }
+  try {
+    const res = await fetch(AUTO_COMMENT_FN, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }, body: JSON.stringify({ type: 'CREATE_POST_BLA', body, topic }) });
+    const result = await res.json();
+    if (!result.ok) throw new Error(result.error || '게시 실패');
+    toast('Hi-Bla 게시글이 올라갔어요 ✓');
+    cancelHiblaPost();
+    setTimeout(() => loadHiblaPostList(), 800);
+  } catch(e) { toast('게시 실패: ' + e.message); }
+  finally { if (btn) { btn.disabled = false; btn.textContent = '📤 게시하기'; } }
+}
+
+function cancelHiblaPost() {
+  document.getElementById('hibla-step2').style.display = 'none';
+  document.getElementById('hibla-step1').style.display = '';
+  document.getElementById('hibla-post-draft').value = '';
+  document.getElementById('hibla-post-body').value = '';
+}
+
+async function loadHiblaPostList() {
+  const listEl = document.getElementById('hibla-post-list');
+  if (!listEl || !db) return;
+  listEl.innerHTML = '<div style="font-size:12px;color:#94A3B8;text-align:center;padding:12px">불러오는 중...</div>';
+  const { data, error } = await db.from('posts').select('id,body,ts').eq('deviceId', 'hi_ai_bot_bla').order('ts', { ascending: false }).limit(30);
+  if (error || !data?.length) { listEl.innerHTML = '<div style="font-size:12px;color:#94A3B8;text-align:center;padding:12px">게시글이 없어요</div>'; return; }
+  listEl.innerHTML = data.map(p => {
+    const safeId = String(p.id).replace(/[^a-zA-Z0-9_-]/g,'_');
+    const preview = (p.body || '').replace(/</g,'&lt;').replace(/\n/g,' ');
+    const date = p.ts ? new Date(Number(p.ts)).toLocaleDateString('ko-KR') : '';
+    return `<div style="padding:10px;background:#fff;border-radius:8px;border:1px solid #86EFAC" id="hibla-post-item-${safeId}">
+      <div style="font-size:11px;color:#15803D;margin-bottom:4px">${date}</div>
+      <div id="hibla-post-view-${safeId}" style="font-size:13px;color:#334155;line-height:1.6;margin-bottom:8px">${preview}</div>
+      <textarea id="hibla-post-edit-${safeId}" style="display:none;width:100%;font-size:13px;padding:6px;border:1px solid #86EFAC;border-radius:6px;resize:vertical;margin-bottom:6px" rows="3">${(p.body||'').replace(/</g,'&lt;')}</textarea>
+      <div id="hibla-post-actions-${safeId}" style="display:flex;gap:6px">
+        <button class="abtn" onclick="startEditHiblaPost('${safeId}')" style="font-size:11px">수정</button>
+        <button class="abtn del" onclick="deleteHiblaPost('${safeId}')" style="font-size:11px">삭제</button>
+      </div>
+      <div id="hibla-post-edit-actions-${safeId}" style="display:none;gap:6px">
+        <button class="abtn" onclick="saveHiblaPost('${safeId}')" style="font-size:11px;background:#16A34A;color:#fff;border-color:#16A34A">저장</button>
+        <button class="abtn" onclick="cancelEditHiblaPost('${safeId}')" style="font-size:11px">취소</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function startEditHiblaPost(id) {
+  document.getElementById(`hibla-post-view-${id}`).style.display = 'none';
+  document.getElementById(`hibla-post-edit-${id}`).style.display = '';
+  document.getElementById(`hibla-post-actions-${id}`).style.display = 'none';
+  document.getElementById(`hibla-post-edit-actions-${id}`).style.display = 'flex';
+}
+function cancelEditHiblaPost(id) {
+  document.getElementById(`hibla-post-view-${id}`).style.display = '';
+  document.getElementById(`hibla-post-edit-${id}`).style.display = 'none';
+  document.getElementById(`hibla-post-actions-${id}`).style.display = 'flex';
+  document.getElementById(`hibla-post-edit-actions-${id}`).style.display = 'none';
+}
+async function saveHiblaPost(id) {
+  const body = (document.getElementById(`hibla-post-edit-${id}`)?.value || '').trim();
+  if (!body) { toast('내용을 입력해주세요'); return; }
+  const { error } = await db.from('posts').update({ body }).eq('id', id);
+  if (error) { toast('수정 실패: ' + error.message); return; }
+  document.getElementById(`hibla-post-view-${id}`).textContent = body;
+  cancelEditHiblaPost(id);
+  toast('수정됐어요 ✓');
+}
+async function deleteHiblaPost(id) {
+  if (!confirm('Hi-Bla 게시글을 삭제하시겠습니까?')) return;
+  const { error } = await db.from('posts').delete().eq('id', id);
+  if (error) { toast('삭제 실패: ' + error.message); return; }
+  document.getElementById(`hibla-post-item-${id}`)?.remove();
   toast('삭제됐어요');
 }
 
