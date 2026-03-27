@@ -2062,7 +2062,7 @@
     #wo-history,
     .glucose-history-list {
       margin-top: 14px;
-      padding: 6px 14px 18px;
+      padding: 8px 14px 10px;
       border: 1px solid rgba(241,245,249,0.95);
       border-radius: 18px;
       background: linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%);
@@ -5954,6 +5954,7 @@ let _realLeagueUsers = null; // Supabase에서 가져온 실제 유저 목록
 let _challengerDeviceIds = new Set(); // 챌린지 신청자 deviceId 세트
 let _leagueFetching = false;
 const LEAGUE_CACHE_TTL_MS = 2 * 60 * 1000;
+const LEAGUE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 let _leagueCache = {
   users: null,
   regs: null,
@@ -5961,6 +5962,9 @@ let _leagueCache = {
   wPtsByDevice: null,
   weeklyWeekStartTs: 0,
   weeklyFetchedAt: 0,
+  prevWPtsByDevice: null,
+  prevWeeklyWeekStartTs: 0,
+  prevWeeklyFetchedAt: 0,
 };
 
 const EX_TYPES = [
@@ -6993,7 +6997,7 @@ const COMMUNITY_SAMPLE_POSTS = [
     myReactions: [],
     commentList: [],
   },
-].map(post => ({ ...post, comments: (post.commentList || []).length }));
+].map(post => ({ ...post, isSample: true, comments: (post.commentList || []).length }));
 
 function getCommunitySamplePosts() {
   return JSON.parse(JSON.stringify(COMMUNITY_SAMPLE_POSTS));
@@ -8769,18 +8773,78 @@ function myLeagueRank() {
   if (!canJoinLeagueRanking()) return null;
   const tab = S.leagueTab;
   const base = (_realLeagueUsers && _realLeagueUsers.length) ? _realLeagueUsers : [];
-  if (tab === 'level') {
-    const myLv = getLevel(S.user.totalPoints || S.user.points).lv;
-    const myPtsVal = S.user.totalPoints || S.user.points;
-    return base.filter(u => u.lv === myLv && u.pts > myPtsVal).length + 1;
-  }
-  const myPts = tab === 'weekly' ? weekData().reduce((s,d) => s+Math.round(d.mins*0.8),0)
-               : (S.user.totalPoints || S.user.points);
-  const others = base.map(u => tab === 'weekly' ? u.wPts : u.pts);
-  return others.filter(p => p > myPts).length + 1;
+  const myPtsVal = S.user.totalPoints || S.user.points;
+  const myLv = getLevel(myPtsVal).lv;
+  const me = {
+    id: (S.user.empId || S.deviceId || 'me').toString(),
+    name: myDisplayName() + ' (나)',
+    lv: myLv,
+    pts: myPtsVal,
+    wPts: myWeekPts(),
+  };
+  const entries = [
+    ...base.filter(u => tab === 'level' ? u.lv === myLv : true),
+    me
+  ];
+  if (!entries.length) return null;
+  const metric = tab === 'weekly' ? 'wPts' : 'pts';
+  const ranked = [...entries].sort((a, b) => compareLeagueEntriesByMetric(a, b, metric));
+  const myIndex = ranked.findIndex(u => getLeagueEntryKey(u) === getLeagueEntryKey(me));
+  return myIndex >= 0 ? myIndex + 1 : null;
 }
-function myWeekPts() {
-  return weekData().reduce((s,d) => s + Math.round(d.mins*0.8), 0);
+
+function sumWorkoutPointsInRange(startTs, endTs = startTs + LEAGUE_WEEK_MS) {
+  return (S.workouts || []).reduce((sum, workout) => {
+    const ts = Number(workout?.ts);
+    if (!Number.isFinite(ts) || ts < startTs || ts >= endTs) return sum;
+    return sum + (Number(workout?.points) || 0);
+  }, 0);
+}
+
+function myWeekPts(baseDate = new Date()) {
+  const weekStartTs = getLeagueWeekStartTs(baseDate);
+  return sumWorkoutPointsInRange(weekStartTs, weekStartTs + LEAGUE_WEEK_MS);
+}
+
+function getLeagueEntryKey(entry) {
+  return String(entry?.id ?? entry?.deviceId ?? entry?.empId ?? entry?.name ?? '');
+}
+
+function compareLeagueEntriesByMetric(a, b, metric = 'pts') {
+  const primary = (Number(b?.[metric]) || 0) - (Number(a?.[metric]) || 0);
+  if (primary) return primary;
+  const secondary = (Number(b?.pts) || 0) - (Number(a?.pts) || 0);
+  if (secondary) return secondary;
+  return String(a?.name || '').localeCompare(String(b?.name || ''), 'ko');
+}
+
+function applyWeeklyLeagueChanges(entries) {
+  const currentRankByKey = new Map(
+    [...entries]
+      .sort((a, b) => compareLeagueEntriesByMetric(a, b, 'wPts'))
+      .map((entry, idx) => [getLeagueEntryKey(entry), idx + 1])
+  );
+  const prevRankByKey = new Map(
+    [...entries]
+      .filter(entry => (Number(entry?.prevWPts) || 0) > 0)
+      .sort((a, b) => compareLeagueEntriesByMetric(a, b, 'prevWPts'))
+      .map((entry, idx) => [getLeagueEntryKey(entry), idx + 1])
+  );
+  return entries.map(entry => {
+    const currentRank = currentRankByKey.get(getLeagueEntryKey(entry));
+    const prevRank = prevRankByKey.get(getLeagueEntryKey(entry));
+    return {
+      ...entry,
+      change: Number.isFinite(currentRank) && Number.isFinite(prevRank) ? prevRank - currentRank : 0,
+    };
+  });
+}
+
+function renderLeagueChangeHtml(change) {
+  const delta = Number(change) || 0;
+  if (delta > 0) return `<span class="lb-change ch-up">▲${delta}</span>`;
+  if (delta < 0) return `<span class="lb-change ch-dn">▼${Math.abs(delta)}</span>`;
+  return `<span class="lb-change ch-eq">−</span>`;
 }
 
 function canJoinLeagueRanking() {
@@ -12697,10 +12761,13 @@ function resetLeagueCache() {
     wPtsByDevice: null,
     weeklyWeekStartTs: 0,
     weeklyFetchedAt: 0,
+    prevWPtsByDevice: null,
+    prevWeeklyWeekStartTs: 0,
+    prevWeeklyFetchedAt: 0,
   };
 }
 
-function buildRealLeagueUsers(allUsers, allRegs, wPtsByDevice = {}) {
+function buildRealLeagueUsers(allUsers, allRegs, wPtsByDevice = {}, prevWPtsByDevice = {}) {
   if (!allUsers || !allUsers.length) {
     _realLeagueUsers = null;
     return;
@@ -12732,12 +12799,14 @@ function buildRealLeagueUsers(allUsers, allRegs, wPtsByDevice = {}) {
   });
 
   _realLeagueUsers = filtered.map(u => ({
-    id: u.empId,
+    id: u.empId || u.deviceId,
+    deviceId: u.deviceId,
     name: u.nickname || u.name,
     avatar: u.avatar || AVATARS[0],
     lv: getLevel(Number(u.points) || 0).lv,
     pts: Number(u.points) || 0,
     wPts: wPtsByDevice[u.deviceId] || 0,
+    prevWPts: prevWPtsByDevice[u.deviceId] || 0,
     change: 0,
     isMe: false,
     isChallenger:
@@ -12752,6 +12821,7 @@ async function fetchLeagueData(opts = {}) {
   const needWeekly = opts.needWeekly ?? S.leagueTab === 'weekly';
   const force = !!opts.force;
   const weekStartTs = getLeagueWeekStartTs();
+  const prevWeekStartTs = weekStartTs - LEAGUE_WEEK_MS;
   const canReuseUsers = !force
     && Array.isArray(_leagueCache.users)
     && Array.isArray(_leagueCache.regs)
@@ -12761,9 +12831,19 @@ async function fetchLeagueData(opts = {}) {
     && _leagueCache.weeklyWeekStartTs === weekStartTs
     && _leagueCache.wPtsByDevice
     && isLeagueCacheFresh(_leagueCache.weeklyFetchedAt);
+  const canReusePrevWeekly = !force
+    && needWeekly
+    && _leagueCache.prevWeeklyWeekStartTs === prevWeekStartTs
+    && _leagueCache.prevWPtsByDevice
+    && isLeagueCacheFresh(_leagueCache.prevWeeklyFetchedAt);
 
-  if (canReuseUsers && (!needWeekly || canReuseWeekly)) {
-    buildRealLeagueUsers(_leagueCache.users, _leagueCache.regs, needWeekly ? (_leagueCache.wPtsByDevice || {}) : {});
+  if (canReuseUsers && (!needWeekly || (canReuseWeekly && canReusePrevWeekly))) {
+    buildRealLeagueUsers(
+      _leagueCache.users,
+      _leagueCache.regs,
+      needWeekly ? (_leagueCache.wPtsByDevice || {}) : {},
+      needWeekly ? (_leagueCache.prevWPtsByDevice || {}) : {}
+    );
     renderLeague();
     return;
   }
@@ -12773,8 +12853,9 @@ async function fetchLeagueData(opts = {}) {
     let allUsers = canReuseUsers ? (_leagueCache.users || []) : null;
     let allRegs = canReuseUsers ? (_leagueCache.regs || []) : null;
     let wPtsByDevice = canReuseWeekly ? (_leagueCache.wPtsByDevice || {}) : {};
+    let prevWPtsByDevice = canReusePrevWeekly ? (_leagueCache.prevWPtsByDevice || {}) : {};
 
-    const [userBundle, weeklyRes] = await Promise.all([
+    const [userBundle, weeklyRes, prevWeeklyRes] = await Promise.all([
       canReuseUsers
         ? Promise.resolve(null)
         : Promise.all([
@@ -12783,6 +12864,9 @@ async function fetchLeagueData(opts = {}) {
           ]),
       needWeekly && !canReuseWeekly
         ? _db.from('workouts').select('deviceId,points').gte('ts', String(weekStartTs))
+        : Promise.resolve(null),
+      needWeekly && !canReusePrevWeekly
+        ? _db.from('workouts').select('deviceId,points').gte('ts', String(prevWeekStartTs)).lt('ts', String(weekStartTs))
         : Promise.resolve(null),
     ]);
 
@@ -12808,7 +12892,23 @@ async function fetchLeagueData(opts = {}) {
       _leagueCache.weeklyFetchedAt = Date.now();
     }
 
-    buildRealLeagueUsers(allUsers || [], allRegs || [], needWeekly ? wPtsByDevice : {});
+    if (needWeekly && !canReusePrevWeekly) {
+      if (prevWeeklyRes?.error) throw prevWeeklyRes.error;
+      prevWPtsByDevice = {};
+      (prevWeeklyRes?.data || []).forEach(w => {
+        prevWPtsByDevice[w.deviceId] = (prevWPtsByDevice[w.deviceId] || 0) + (Number(w.points) || 0);
+      });
+      _leagueCache.prevWPtsByDevice = prevWPtsByDevice;
+      _leagueCache.prevWeeklyWeekStartTs = prevWeekStartTs;
+      _leagueCache.prevWeeklyFetchedAt = Date.now();
+    }
+
+    buildRealLeagueUsers(
+      allUsers || [],
+      allRegs || [],
+      needWeekly ? wPtsByDevice : {},
+      needWeekly ? prevWPtsByDevice : {}
+    );
     renderLeague();
     // 커뮤니티 피드가 열려있고 챌린지 필터 중이면 재렌더
     if (_feedFilter === '챌린지') {
@@ -12931,24 +13031,45 @@ function renderLeague() {
   // ── 일반 랭킹 ──
   const baseUsers = (_realLeagueUsers && _realLeagueUsers.length) ? _realLeagueUsers : MOCK_USERS;
   const myPts  = currentTab === 'weekly' ? myWeekPts() : (S.user.totalPoints || S.user.points);
-  const myLvObj = getLevel(S.user.totalPoints || S.user.points);
   const myRank = myLeagueRank();
   const myLv   = getLevel(S.user.points);
   const myLvNumCard = getLevel(S.user.totalPoints || S.user.points).lv;
   const total  = currentTab === 'level' ? baseUsers.filter(u => u.lv === myLvNumCard).length + (canJoinLeague ? 1 : 0) : baseUsers.length + (canJoinLeague ? 1 : 0);
   const pct    = (canJoinLeague && myRank && total > 0) ? Math.round((myRank / total) * 100) : null;
 
+  const me = {
+    id:(S.user.empId || S.deviceId || 'me').toString(), name: myDisplayName() + ' (나)', avatar: S.user.avatar,
+    lv: getLevel(S.user.totalPoints || S.user.points).lv, pts: S.user.totalPoints || S.user.points,
+    wPts: myWeekPts(),
+    prevWPts: myWeekPts(new Date(Date.now() - LEAGUE_WEEK_MS)),
+    change:0, isMe: true, tags: S.user.tags || [],
+  };
+  const myLvNum = getLevel(S.user.totalPoints || S.user.points).lv;
+  const rawList = [
+    ...baseUsers
+      .filter(u => currentTab === 'level' ? u.lv === myLvNum : true)
+      .map(u => ({ ...u, isMe: false })),
+    ...(!canJoinLeague || LEAGUE_EXCLUDE_EMPIDS.includes((S.user.empId || ACTIVE_EMPID || '').trim().toUpperCase()) ? [] : [me])
+  ];
+  const list = (currentTab === 'weekly' ? applyWeeklyLeagueChanges(rawList) : rawList)
+   .sort((a,b) => compareLeagueEntriesByMetric(a, b, currentTab === 'weekly' ? 'wPts' : 'pts'))
+   .map((u,i) => ({ ...u, rank: i+1 }));
+  const meEntry = list.find(u => u.isMe);
+  const displayMyRank = meEntry?.rank || myRank;
+  const displayPct = (canJoinLeague && displayMyRank && total > 0) ? Math.round((displayMyRank / total) * 100) : pct;
+  const myChangeHtml = currentTab === 'weekly' ? renderLeagueChangeHtml(meEntry?.change || 0) : `<span class="lb-change ch-eq">−</span>`;
+
   if (canJoinLeague) {
     document.getElementById('my-rank-card').innerHTML = `
       <div class="mrc-stat">
         <div class="mrc-label">내 순위</div>
-        <div class="mrc-value">${myRank}위</div>
-        <div class="mrc-sub">${currentTab === 'level' ? '같은 레벨 ' + total + '명' : '상위 ' + pct + '%'}</div>
+        <div class="mrc-value">${displayMyRank}위</div>
+        <div class="mrc-sub">${currentTab === 'level' ? '같은 레벨 ' + total + '명' : '상위 ' + displayPct + '%'}</div>
       </div>
       <div class="mrc-stat">
         <div class="mrc-label">${currentTab === 'weekly' ? '주간 획득 포인트' : currentTab === 'level' ? '레벨별 포인트' : '누적 포인트'}</div>
         <div class="mrc-value pts">${myPts}p</div>
-        <div class="mrc-sub"><span class="lb-change ch-eq">−</span></div>
+        <div class="mrc-sub">${myChangeHtml}</div>
       </div>
       <div class="mrc-stat">
         <div class="mrc-label">내 레벨</div>
@@ -12962,20 +13083,6 @@ function renderLeague() {
         ${renderExerciseIcon('running', { size:'16px', color:'var(--primary)' })} 운동 기록을 남기면 리그에 진입할 수 있어요
       </div>`;
   }
-
-  const me = {
-    id:0, name: myDisplayName() + ' (나)', avatar: S.user.avatar,
-    lv: getLevel(S.user.totalPoints || S.user.points).lv, pts: S.user.totalPoints || S.user.points,
-    wPts: myWeekPts(), change:0, isMe: true, tags: S.user.tags || [],
-  };
-  const myLvNum = getLevel(S.user.totalPoints || S.user.points).lv;
-  const list = [
-    ...baseUsers
-      .filter(u => currentTab === 'level' ? u.lv === myLvNum : true)
-      .map(u => ({ ...u, isMe: false })),
-    ...(!canJoinLeague || LEAGUE_EXCLUDE_EMPIDS.includes((S.user.empId || ACTIVE_EMPID || '').trim().toUpperCase()) ? [] : [me])
-  ].sort((a,b) => currentTab === 'weekly' ? b.wPts - a.wPts : b.pts - a.pts)
-   .map((u,i) => ({ ...u, rank: i+1 }));
 
   document.getElementById('podium').className = 'podium';
   const top3 = list.slice(0,3);
@@ -13001,15 +13108,11 @@ function renderLeague() {
   }).join('');
 
   const lbSlice = list.slice(3, 20);
-  const meEntry = list.find(u => u.isMe);
   const showList = meEntry && !lbSlice.find(u => u.isMe) && meEntry.rank > 3
     ? [...lbSlice, meEntry] : lbSlice;
   document.getElementById('lb-list').innerHTML = showList.map(u => {
     const lv    = LEVELS[Math.min(u.lv-1, LEVELS.length-1)];
-    const chg   = currentTab === 'weekly' ? u.change : 0;
-    const chgHtml = chg > 0 ? `<span class="lb-change ch-up">▲${chg}</span>`
-                  : chg < 0 ? `<span class="lb-change ch-dn">▼${Math.abs(chg)}</span>`
-                  :           `<span class="lb-change ch-eq">−</span>`;
+    const chgHtml = currentTab === 'weekly' ? renderLeagueChangeHtml(u.change) : `<span class="lb-change ch-eq">−</span>`;
     return `
       <div class="lb-item ${u.isMe ? 'me' : ''}">
         <div class="lb-rank ${u.rank<=3?'top3':''}">${u.rank}</div>
@@ -13435,7 +13538,9 @@ async function openComments(postId) {
   document.getElementById('comment-overlay').classList.remove('pm-hidden');
   setTimeout(() => document.getElementById('cm-input').focus(), 300);
 
-  // 최신 댓글·반응 fetch (백그라운드 업데이트)
+  // 최신 댓글·반응 fetch (백그라운드 업데이트) — 샘플 게시글은 DB 없으므로 스킵
+  const _openedPost = S.posts.find(p => String(p.id) === String(postId)) || (S.communityPosts || []).find(p => String(p.id) === String(postId));
+  if (_openedPost?.isSample) return;
   if (!_db) return;
   try {
     const pid = String(postId);
@@ -13485,7 +13590,8 @@ async function openComments(postId) {
     }
   } catch(e) { console.error('[openComments fetch]', e); }
 
-  // 패널이 열려 있는 동안 새 댓글 자동 감지 (30초간 4초마다)
+  // 패널이 열려 있는 동안 새 댓글 자동 감지 (30초간 4초마다) — 샘플 글은 폴링 불필요
+  if (_openedPost?.isSample) return;
   if (_commentPollTimer) clearInterval(_commentPollTimer);
   let _pollCount = 0;
   _commentPollTimer = setInterval(async () => {
