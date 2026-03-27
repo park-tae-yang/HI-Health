@@ -13334,7 +13334,7 @@ async function openComments(postId) {
   _commentPostId = postId;
   document.getElementById('cm-av').innerHTML = avHTML(S.user.avatar);
   document.getElementById('cm-input').value = '';
-  renderCommentList();
+  document.getElementById('cm-list').innerHTML = '<div class="cm-empty" style="color:var(--text-secondary)">불러오는 중…</div>';
   document.getElementById('comment-overlay').classList.remove('pm-hidden');
   setTimeout(() => document.getElementById('cm-input').focus(), 300);
 
