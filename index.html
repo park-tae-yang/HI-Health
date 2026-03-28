@@ -3006,11 +3006,20 @@
     ══════════════════════════════ */
     .league-tabs { margin-bottom: 16px; }
     .league-tab.active { background: #fff; color: var(--primary); box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .league-guide {
+      margin: -2px 0 12px;
+      padding: 0 4px;
+      font-size: 11px;
+      font-weight: 500;
+      line-height: 1.45;
+      letter-spacing: -0.01em;
+      color: var(--text-secondary);
+    }
 
     .my-rank-card {
       background: #fff;
       border-radius: var(--radius); padding: 16px 0 12px;
-      box-shadow: var(--shadow); margin-bottom: 14px;
+      box-shadow: var(--shadow); margin-bottom: 8px;
       display: flex; align-items: stretch;
     }
     .mrc-stat {
@@ -3026,6 +3035,79 @@
     }
     .mrc-value.pts { color: #f59e0b; }
     .mrc-sub { font-size: 11px; color: var(--text-secondary); line-height: 1.2; }
+    .league-alert-card {
+      position: relative;
+      margin: 0 0 12px;
+      padding: 10px 14px 10px 54px;
+      min-height: 50px;
+      background: #fff;
+      border: 1px solid rgba(15,23,42,0.06);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+    }
+    .league-alert-card::before {
+      content: '';
+      position: absolute;
+      top: -6px;
+      left: 36px;
+      width: 12px;
+      height: 12px;
+      background: #fff;
+      border-left: 1px solid rgba(15,23,42,0.06);
+      border-top: 1px solid rgba(15,23,42,0.06);
+      transform: rotate(45deg);
+      border-top-left-radius: 4px;
+    }
+    .league-alert-head {
+      position: absolute;
+      left: 12px;
+      bottom: -7px;
+      margin-bottom: 0;
+    }
+    .league-alert-av {
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+      width:32px;
+      height:32px;
+      padding: 2px;
+      box-sizing: border-box;
+      border: none;
+    }
+    .league-alert-content {
+      min-width:0;
+      display:flex;
+      align-items:center;
+      min-height:30px;
+    }
+    .league-alert-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: #f8fafc;
+      color: var(--text-secondary);
+      border: 1px solid rgba(15,23,42,0.06);
+      font-size: 10px;
+      font-weight: 700;
+      line-height: 1;
+    }
+    .league-alert-body {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text);
+      line-height: 1.2;
+      letter-spacing: -0.01em;
+      min-width:0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .league-alert-meta {
+      font-size: 11px;
+      line-height: 1.35;
+      color: var(--text-secondary);
+      letter-spacing: -0.01em;
+    }
 
     /* Podium */
     .podium {
@@ -3037,38 +3119,34 @@
     .podium.challenger {
       background: linear-gradient(180deg, #fef0f7 0%, #fff7fb 60%, transparent 100%);
     }
-    .podium-item { display: flex; flex-direction: column; align-items: center; gap: 6px; flex: 1 1 0; min-width: 0; max-width: 98px; }
+    .podium-item { display: flex; flex-direction: column; align-items: center; gap: 5px; flex: 1 1 0; min-width: 0; max-width: 98px; }
     .podium-item.podium-first { max-width: 108px; }
     .podium-item.podium-second,
     .podium-item.podium-third { max-width: 94px; }
-    .podium-av-wrap { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+    .podium-av-wrap { display: flex; flex-direction: column; align-items: center; gap: 6px; width:100%; }
     .podium-bubble {
-      background: linear-gradient(135deg, #fff 0%, #f5f0ff 100%);
-      border: 1px solid rgba(139,92,246,0.15);
-      border-radius: 12px; padding: 5px 9px;
-      box-shadow: 0 3px 10px rgba(139,92,246,0.12), 0 1px 3px rgba(0,0,0,0.07);
-      font-size: 10px;
-      display: flex; flex-direction: column; align-items: center; gap: 3px;
-      position: relative; min-width: 56px; max-width: 110px;
+      background: rgba(255,255,255,0.98);
+      border: 1px solid rgba(15,23,42,0.07);
+      border-radius: 999px;
+      padding: 3px 8px;
+      box-shadow: none;
+      font-size: 9px;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      position: static;
+      min-width: 0;
+      max-width: 100%;
+      margin-top: -1px;
     }
-    .podium-bubble-tags { display: flex; align-items: center; gap: 3px; flex-wrap: wrap; justify-content: center; }
-    .podium-bubble::after {
-      content: ''; position: absolute;
-      left: 50%; transform: translateX(-50%);
-      bottom: -7px;
-      border: 7px solid transparent;
-      border-top-color: #f0ebff; border-bottom: 0;
-    }
-    .podium-bubble::before {
-      content: ''; position: absolute;
-      left: 50%; transform: translateX(-50%);
-      bottom: -9px;
-      border: 7px solid transparent;
-      border-top-color: rgba(139,92,246,0.2); border-bottom: 0;
-    }
+    .podium-bubble-tags { display: flex; align-items: center; gap: 3px; flex-wrap: nowrap; justify-content: center; max-width:100%; overflow:hidden; }
     .podium-bubble-lv { font-size: 20px; line-height: 1; display:inline-flex; align-items:center; justify-content:center; }
-    .podium-avatar { width:56px; height:56px; border-radius:50%; overflow:hidden; background:var(--bg); margin:0 auto; }
-    .podium-item.podium-first .podium-avatar { width:68px; height:68px; }
+    .podium-avatar {
+      width:56px; height:56px; border-radius:50%; overflow:hidden; background:var(--bg); margin:0 auto;
+      border: 2px solid rgba(255,255,255,0.94);
+      box-shadow: 0 6px 14px rgba(15,23,42,0.08);
+    }
+    .podium-item.podium-first .podium-avatar { width:68px; height:68px; border-color:rgba(255,255,255,0.98); }
     .podium-item.podium-second .podium-avatar,
     .podium-item.podium-third .podium-avatar { width:58px; height:58px; }
     .podium-name {
@@ -3076,12 +3154,12 @@
       display: flex; align-items: center; justify-content: center; align-content: center; gap: 4px; flex-wrap: wrap;
       font-size: 14px; font-weight: 600; line-height: 1.2; text-align: center;
     }
-    .podium-item.podium-first .podium-name { min-height: 36px; font-size: 15px; }
+    .podium-item.podium-first .podium-name { min-height: 36px; font-size: 14px; }
     .podium-item.podium-second .podium-name,
-    .podium-item.podium-third .podium-name { font-size: 13px; }
+    .podium-item.podium-third .podium-name { font-size: 14px; }
     .podium-name .ui-svg-icon { --ui-icon-size: 12px; vertical-align: -0.14em; }
     .podium-name .rank-medal { margin-right: 0; flex-shrink: 0; }
-    .podium-pts { min-height: 14px; font-size: 11px; line-height: 1.2; color: var(--warning); font-weight: 700; text-align: center; }
+    .podium-pts { min-height: 14px; font-size: 11px; line-height: 1.2; color: var(--warning); font-weight: 800; text-align: center; margin-top: 1px; }
     .podium-stand {
       border-radius: 8px 8px 0 0;
       display: flex; align-items: center; justify-content: center;
@@ -3095,9 +3173,9 @@
       .podium-item { max-width: 92px; }
       .podium-item.podium-first { max-width: 96px; }
       .podium-name { min-height: 32px; font-size: 13px; }
-      .podium-item.podium-first .podium-name { min-height: 34px; font-size: 14px; }
+      .podium-item.podium-first .podium-name { min-height: 34px; font-size: 13px; }
       .podium-item.podium-second .podium-name,
-      .podium-item.podium-third .podium-name { font-size: 12px; }
+      .podium-item.podium-third .podium-name { font-size: 13px; }
       .podium-pts { font-size: 10px; }
     }
 
@@ -3109,12 +3187,84 @@
       transition: all 0.2s;
     }
     .lb-item.me { background: var(--primary-light); border: 1.5px solid var(--primary); }
-    .lb-rank { font-size: 15px; font-weight: 700; width: 26px; text-align: center; color: var(--text-secondary); }
-    .lb-rank.top3 { color: var(--warning); }
+    .lb-rank {
+      width: 28px;
+      min-width: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      color: var(--text-secondary);
+    }
+    .lb-rank.top3 { color: inherit; }
+    .lb-rank-num {
+      font-size: 15px;
+      font-weight: 700;
+      line-height: 1;
+      color: var(--text-secondary);
+    }
+    .lb-rank-medal {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
+    .lb-rank-medal .rank-medal {
+      --ui-icon-size: 24px;
+      display: inline-flex;
+      transform-origin: center;
+      animation: medalGrow 1.8s ease-in-out infinite;
+    }
+    @keyframes medalGrow {
+      0%, 100% { transform: scale(1); }
+      55% { transform: scale(1.16); }
+    }
     .lb-avatar { width:38px; height:38px; border-radius:50%; overflow:hidden; flex-shrink:0; background:var(--bg); }
     .lb-info { flex: 1; min-width: 0; }
-    .lb-name { font-size: 14px; font-weight: 600; display:flex; align-items:center; gap:6px; line-height:1.25; }
+    .lb-name { font-size: 14px; font-weight: 600; display:flex; align-items:center; gap:6px; line-height:1.25; flex-wrap:wrap; }
     .lb-name span { display:block; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .league-rank-badges { display:inline-flex; align-items:center; gap:4px; flex-wrap:wrap; }
+    .league-rank-badge {
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:4px;
+      padding:3px 8px;
+      border-radius:999px;
+      font-size:10px;
+      font-weight:700;
+      line-height:1.2;
+      letter-spacing:-0.01em;
+      white-space:nowrap;
+      border:1px solid rgba(15,23,42,0.08);
+      background:#fff;
+      color:var(--text-secondary);
+    }
+    .league-rank-badge::before {
+      font-size:10px;
+      line-height:1;
+      flex:0 0 auto;
+    }
+    .league-rank-badge.rise {
+      color:var(--text);
+    }
+    .league-rank-badge.new {
+      color:var(--text);
+    }
+    .league-rank-badge.streak {
+      color:var(--text);
+    }
+    .league-rank-badge.rise::before {
+      content:'▲';
+    }
+    .league-rank-badge.new::before {
+      content:'•';
+      font-size:12px;
+      margin-top:-1px;
+    }
+    .league-rank-badge.streak::before {
+      content:'⌁';
+    }
     .lb-level-icon {
       width:22px; height:22px; flex-shrink:0;
       display:inline-flex; align-items:center; justify-content:center;
@@ -3123,8 +3273,10 @@
     .lb-level { font-size: 11px; color: var(--text-secondary); display: flex; align-items: center; gap: 3px; }
     .lb-right { min-width: 64px; text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
     .lb-pts { font-size: 14px; line-height: 1.2; font-weight: 700; color: var(--warning); }
-    .lb-change { min-height: 13px; font-size: 11px; font-weight: 600; }
-    .ch-up { color: var(--secondary); } .ch-dn { color: var(--accent); } .ch-eq { color: var(--text-secondary); }
+    .lb-change { min-height: 13px; font-size: 10px; font-weight: 700; letter-spacing: -0.01em; }
+    .ch-up { color: #94a3b8; }
+    .ch-dn { color: #94a3b8; }
+    .ch-eq { color: #94a3b8; }
 
     /* ══════════════════════════════
        COMMUNITY
@@ -5373,11 +5525,12 @@
         <button class="league-tab"        data-tab="alltime"    onclick="setTab(this,'alltime')">전체기록</button>
         <button class="league-tab" id="league-tab-challenger" data-tab="challenger" onclick="setTab(this,'challenger')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle"><path d="M6 9H3V5h3M18 9h3V5h-3M6 9c0 3.31 2.69 6 6 6s6-2.69 6-6V5H6v4z"/><line x1="12" y1="15" x2="12" y2="19"/><line x1="8" y1="19" x2="16" y2="19"/></svg> 챌린지</button>
       </div>
+      <div class="league-guide" id="league-guide"></div>
 
-      <div class="my-rank-card" id="my-rank-card"></div>
-      <div class="podium" id="podium"></div>
-      <div id="lb-list"></div>
-    </div>
+	      <div class="my-rank-card" id="my-rank-card"></div>
+	      <div class="league-alert-card" id="league-alert-card" hidden></div>
+	      <div id="lb-list"></div>
+	    </div>
 
   </section>
 
@@ -5955,15 +6108,35 @@ let _challengerDeviceIds = new Set(); // 챌린지 신청자 deviceId 세트
 let _leagueFetching = false;
 const LEAGUE_CACHE_TTL_MS = 2 * 60 * 1000;
 const LEAGUE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
-const LEAGUE_RANK_SNAPSHOT_KEY = 'hi_league_weekly_rank_snapshot';
+const LEAGUE_RANK_SNAPSHOT_KEY = 'hi_league_weekly_rank_snapshot_v3';
 let _leagueCache = {
   users: null,
   regs: null,
+  familyCertRows: null,
   usersFetchedAt: 0,
   wPtsByDevice: null,
   weeklyWeekStartTs: 0,
   weeklyFetchedAt: 0,
 };
+
+function renderLeagueLoadingState() {
+  const myRankCard = document.getElementById('my-rank-card');
+  const alertCard = document.getElementById('league-alert-card');
+  const list = document.getElementById('lb-list');
+  if (myRankCard) {
+    myRankCard.innerHTML = `
+      <div style="padding:16px;text-align:center;color:var(--text-secondary);font-size:13px">
+        리그 불러오는 중이에요
+      </div>
+    `;
+  }
+  if (alertCard) {
+    alertCard.hidden = true;
+    alertCard.innerHTML = '';
+    delete alertCard.dataset.tone;
+  }
+  if (list) list.innerHTML = '';
+}
 
 const EX_TYPES = [
   { id:'walking',   name:'걷기',    icon:'🚶', ppm:0.5,  bg:'#DCFCE7' },
@@ -8775,7 +8948,7 @@ function myLeagueRank() {
   if (!canJoinLeagueRanking()) return null;
   const tab = S.leagueTab;
   const base = (_realLeagueUsers && _realLeagueUsers.length) ? _realLeagueUsers : [];
-  const myPtsVal = S.user.totalPoints || S.user.points;
+  const myPtsVal = tab === 'weekly' ? myWeekPts() : getCurrentLeaguePoints();
   const myLv = getLevel(myPtsVal).lv;
   const me = {
     id: (S.user.empId || S.deviceId || 'me').toString(),
@@ -8810,6 +8983,45 @@ function myWeekPts(baseDate = new Date()) {
 
 function getLeagueEntryKey(entry) {
   return String(entry?.id ?? entry?.deviceId ?? entry?.empId ?? entry?.name ?? '');
+}
+
+function captureLeagueListPositions() {
+  const list = document.getElementById('lb-list');
+  if (!list) return new Map();
+  return new Map(
+    [...list.querySelectorAll('.lb-item[data-league-key]')]
+      .map(el => [el.dataset.leagueKey, el.getBoundingClientRect().top])
+  );
+}
+
+function animateLeagueListReorder(previousPositions) {
+  const list = document.getElementById('lb-list');
+  if (!list || !previousPositions?.size) return;
+  const items = [...list.querySelectorAll('.lb-item[data-league-key]')];
+  items.forEach(el => {
+    const prevTop = previousPositions.get(el.dataset.leagueKey);
+    if (typeof prevTop !== 'number') return;
+    const nextTop = el.getBoundingClientRect().top;
+    const delta = prevTop - nextTop;
+    if (!delta) return;
+    el.style.transition = 'none';
+    el.style.transform = `translateY(${delta}px)`;
+    el.style.zIndex = '1';
+  });
+  requestAnimationFrame(() => {
+    items.forEach(el => {
+      if (!el.style.transform) return;
+      el.style.transition = 'transform 420ms cubic-bezier(0.22, 1, 0.36, 1)';
+      el.style.transform = 'translateY(0)';
+      const cleanup = () => {
+        el.style.transition = '';
+        el.style.transform = '';
+        el.style.zIndex = '';
+        el.removeEventListener('transitionend', cleanup);
+      };
+      el.addEventListener('transitionend', cleanup);
+    });
+  });
 }
 
 function compareLeagueEntriesByMetric(a, b, metric = 'pts') {
@@ -8896,6 +9108,7 @@ function applyWeeklyLeagueChanges(entries, prevRanks = {}) {
     return {
       ...entry,
       change: Number.isFinite(currentRank) && Number.isFinite(prevRank) ? prevRank - currentRank : 0,
+      isNew: Number.isFinite(currentRank) && !Number.isFinite(prevRank),
     };
   });
 }
@@ -8905,6 +9118,318 @@ function renderLeagueChangeHtml(change) {
   if (delta > 0) return `<span class="lb-change ch-up">▲${delta}</span>`;
   if (delta < 0) return `<span class="lb-change ch-dn">▼${Math.abs(delta)}</span>`;
   return `<span class="lb-change ch-eq">−</span>`;
+}
+
+function getLeagueMetricForTab(tab = S.leagueTab) {
+  return tab === 'weekly' ? 'wPts' : 'pts';
+}
+
+function getLeagueMetricValue(entry, tab = S.leagueTab) {
+  const metric = getLeagueMetricForTab(tab);
+  return Number(entry?.[metric]) || 0;
+}
+
+function getLeagueBadgeState(entries = [], tab = S.leagueTab) {
+  const badgeState = {
+    risingKingKey: '',
+    streakKingKey: '',
+    newKeys: new Set(),
+  };
+  if (!Array.isArray(entries) || !entries.length) return badgeState;
+
+  if (tab === 'weekly') {
+    entries
+      .filter(entry => entry?.isNew)
+      .forEach(entry => badgeState.newKeys.add(getLeagueEntryKey(entry)));
+
+    const risingKing = [...entries]
+      .filter(entry => (Number(entry?.change) || 0) > 0)
+      .sort((a, b) => {
+        const diff = (Number(b?.change) || 0) - (Number(a?.change) || 0);
+        if (diff) return diff;
+        return compareLeagueEntriesByMetric(a, b, 'wPts');
+      })[0];
+    if (risingKing) badgeState.risingKingKey = getLeagueEntryKey(risingKing);
+  }
+
+  const streakKing = [...entries]
+    .filter(entry => (Number(entry?.streak) || 0) > 0)
+    .sort((a, b) => {
+      const diff = (Number(b?.streak) || 0) - (Number(a?.streak) || 0);
+      if (diff) return diff;
+      return compareLeagueEntriesByMetric(a, b, getLeagueMetricForTab(tab));
+    })[0];
+  if (streakKing) badgeState.streakKingKey = getLeagueEntryKey(streakKing);
+
+  return badgeState;
+}
+
+function renderLeagueEntryBadgesHtml(entry, badgeState = {}, tab = S.leagueTab) {
+  const key = getLeagueEntryKey(entry);
+  const badges = [];
+  if (tab === 'weekly' && key && badgeState.risingKingKey === key) {
+    badges.push('<span class="league-rank-badge rise">상승왕</span>');
+  }
+  if (tab === 'weekly' && key && badgeState.newKeys instanceof Set && badgeState.newKeys.has(key)) {
+    badges.push('<span class="league-rank-badge new">NEW</span>');
+  }
+  if (key && badgeState.streakKingKey === key) {
+    badges.push('<span class="league-rank-badge streak">연속운동왕</span>');
+  }
+  return badges.length ? `<span class="league-rank-badges">${badges.join('')}</span>` : '';
+}
+
+function getLeagueNextLevelInfo(points = 0) {
+  const current = getLevel(Math.max(0, Number(points) || 0));
+  const idx = LEVELS.findIndex(level => level.lv === current.lv);
+  const next = idx >= 0 ? LEVELS[idx + 1] : null;
+  if (!next) return null;
+  return {
+    current,
+    next,
+    remaining: Math.max(0, next.min - (Math.max(0, Number(points) || 0))),
+  };
+}
+
+function getLeagueTierState(rank = 0, total = 0) {
+  const safeRank = Number(rank) || 0;
+  const safeTotal = Number(total) || 0;
+  if (!safeRank || !safeTotal) return { key: 'mid', label: '중위권' };
+  const ratio = safeRank / safeTotal;
+  if (ratio <= 0.33) return { key: 'high', label: '상위권' };
+  if (ratio <= 0.66) return { key: 'mid', label: '중위권' };
+  return { key: 'low', label: '하위권' };
+}
+
+function getLeagueAlertMessage(entries = [], meEntry = null, tab = S.leagueTab) {
+  const myName = escHtmlComm((myDisplayName() || '회원').replace(/\s*\(나\)\s*$/, ''));
+  const myLeaguePoints = getCurrentLeaguePoints();
+  const nextLevel = getLeagueNextLevelInfo(myLeaguePoints);
+  if (!canJoinLeagueRanking()) {
+    return {
+      tone: 'info',
+      chip: tab === 'level' ? '다음 레벨' : tab === 'alltime' ? '응원' : tab === 'challenger' ? '챌린지' : '순위 체크',
+      text: `${myName}님, 첫 운동만 찍히면 제가 제일 먼저 부산 떨 준비는 끝났어요`,
+      meta: tab === 'level'
+        ? '레벨별은 다음 레벨까지 얼마나 남았는지 같이 볼게요.'
+        : tab === 'alltime'
+          ? '전체기록은 지금 위치에 맞는 응원으로 바꿔서 들려드릴게요.'
+          : tab === 'challenger'
+            ? '챌린지는 끝날 때까지 판이 계속 바뀌니까 지금 들어와도 늦지 않아요.'
+            : '이번주는 움직이는 순간 분위기가 먼저 달라져요.',
+    };
+  }
+  if (_leagueFetching && (!_realLeagueUsers || !_realLeagueUsers.length)) {
+    return {
+      tone: 'info',
+      chip: tab === 'level' ? '다음 레벨' : tab === 'alltime' ? '응원' : tab === 'challenger' ? '챌린지' : '순위 체크',
+      text: `${myName}님, 순위판 정리 중이에요. 눈 한 번만 깜빡이면 거의 끝나요`,
+      meta: '잠깐만요. 곧 누가 앞에 있는지 딱 보여드릴게요.',
+    };
+  }
+  if (!Array.isArray(entries) || !entries.length) {
+    return {
+      tone: 'info',
+      chip: tab === 'level' ? '다음 레벨' : tab === 'alltime' ? '응원' : tab === 'challenger' ? '챌린지' : '순위 체크',
+      text: `${myName}님, 아직 조용해요. 지금 들어가면 첫 장면 센터는 거의 예약이에요`,
+      meta: tab === 'challenger'
+        ? '챌린지는 초반 페이스가 은근 오래 남아요.'
+        : '기록이 들어오면 지금 탭에 맞는 흐름으로 바로 바꿔드릴게요.',
+    };
+  }
+  const myIndex = entries.findIndex(entry => getLeagueEntryKey(entry) === getLeagueEntryKey(meEntry));
+  if (!meEntry || myIndex < 0) {
+    if (tab === 'level') {
+      return {
+        tone: 'info',
+        chip: '다음 레벨',
+        text: nextLevel
+          ? `${myName}님, 다음 레벨 ${nextLevel.next.name}까지 ${nextLevel.remaining}p예요. 이 정도면 금방 치고 올라가요`
+          : `${myName}님, 지금은 최고 레벨 구간이에요. 여기선 존재감으로 한 판이에요`,
+        meta: nextLevel
+          ? '레벨별은 같은 레벨 안에서 어디쯤인지 제가 같이 봐드릴게요.'
+          : '이제는 점수 차이로 존재감을 더 키우는 구간이에요.',
+      };
+    }
+    if (tab === 'alltime') {
+      return {
+        tone: 'info',
+        chip: '응원',
+        text: `${myName}님, 전체기록은 한 번 탄력 붙으면 쭉 가요. 오늘이 그날 같기도 해요`,
+        meta: '상위권, 중위권, 하위권 흐름에 맞춰 제가 계속 응원멘트 바꿔드릴게요.',
+      };
+    }
+    if (tab === 'challenger') {
+      return {
+        tone: 'info',
+        chip: '챌린지',
+        text: `${myName}님, 챌린지는 끝나기 전까진 몰라요. 지금 슬쩍 올라타도 아직 안 늦었어요`,
+        meta: '챌린지는 한 번 흐름 타기 시작하면 생각보다 오래 갑니다.',
+      };
+    }
+    return {
+      tone: 'info',
+      chip: '순위 체크',
+      text: `${myName}님, 오늘 한 번만 움직여도 이번주 순위판 바로 술렁여요`,
+      meta: '이번주는 숫자보다 흐름 타는 게 더 빨라요.',
+    };
+  }
+  const above = myIndex > 0 ? entries[myIndex - 1] : null;
+  const below = myIndex < entries.length - 1 ? entries[myIndex + 1] : null;
+  const myPoints = getLeagueMetricValue(meEntry, tab);
+  const myRank = Number(meEntry.rank || (myIndex + 1)) || (myIndex + 1);
+  const totalEntries = entries.length;
+
+  if (tab === 'level') {
+    if (!nextLevel) {
+      return {
+        tone: 'lead',
+        chip: '최고 레벨',
+        text: `${myName}님, 지금은 최고 레벨 구간이에요. 슬슬 레전드 흉내 내도 되겠어요`,
+        meta: `같은 레벨 안에서는 ${myRank}위예요. 이쯤이면 이미 존재감 충분해요.`,
+      };
+    }
+    return {
+      tone: 'info',
+      chip: '다음 레벨',
+      text: `${myName}님, ${nextLevel.next.name}까지 ${nextLevel.remaining}p예요. 레벨업 알림도 슬슬 몸 풀고 있어요`,
+      meta: `지금 같은 레벨에서는 ${myRank}위예요. 한 번 더 쌓으면 레벨창이 먼저 반응할 거예요.`,
+    };
+  }
+
+  if (tab === 'alltime') {
+    const tier = getLeagueTierState(myRank, totalEntries);
+    if (tier.key === 'high') {
+      return {
+        tone: 'lead',
+        chip: tier.label,
+        text: `${myName}님, 지금 상위권이에요. 이름이 슬슬 윗줄 자리 맡아두는 중이에요`,
+        meta: above
+          ? `${escHtmlComm(String(above.name || '바로 위 사용자').replace(/\s*\(나\)\s*$/, ''))}님까지 ${Math.max(1, getLeagueMetricValue(above, tab) - myPoints + 1)}p예요. 더 위도 보여요.`
+          : '이 페이스면 이름이 꽤 오래 위쪽에 남을 거예요.',
+      };
+    }
+    if (tier.key === 'mid') {
+      return {
+        tone: 'info',
+        chip: tier.label,
+        text: `${myName}님, 지금 중위권이에요. 여기선 한 번만 툭 치고 올라가도 판이 확 바뀌어요`,
+        meta: '여기는 한 번만 치고 나가도 분위기가 확 바뀌는 자리예요.',
+      };
+    }
+    return {
+      tone: 'info',
+      chip: tier.label,
+      text: `${myName}님, 아직 하위권이어도 괜찮아요. 여기선 두 번만 움직여도 분위기 바로 바뀌어요`,
+      meta: '이 구간은 기록 한두 번만 들어와도 순위가 꽤 크게 움직여요.',
+    };
+  }
+
+  if (tab === 'challenger') {
+    if (above) {
+      const targetPoints = getLeagueMetricValue(above, tab);
+      const diff = Math.max(1, targetPoints - myPoints + 1);
+      const rivalName = escHtmlComm(String(above.name || '바로 위 사용자').replace(/\s*\(나\)\s*$/, ''));
+      return {
+        tone: 'chase',
+        chip: '챌린지',
+        text: `${myName}님, 챌린지는 꾸준한 쪽이 은근 무서워요. ${rivalName}님까지 ${diff}p예요`,
+        meta: `${rivalName}님까지 ${diff}p예요. 챌린지는 막판에도 충분히 뒤집혀요.`,
+      };
+    }
+    if (below) {
+      const gap = Math.max(0, myPoints - getLeagueMetricValue(below, tab));
+      return {
+        tone: 'lead',
+        chip: '챌린지',
+        text: `${myName}님, 챌린지에서도 선두예요. 이 흐름이면 끝까지 꽤 얄미워질 수 있어요`,
+        meta: '이 페이스만 유지해도 꽤 오래 앞에서 보일 거예요.',
+      };
+    }
+    return {
+      tone: 'lead',
+      chip: '챌린지',
+      text: `${myName}님, 챌린지 판은 아직 열려 있어요. 막판 뒤집기 슬쩍 예약해둘까요`,
+      meta: '한 번 올라탄 흐름이 끝까지 가는 경우가 많아요.',
+    };
+  }
+
+  if (above) {
+    const targetPoints = getLeagueMetricValue(above, tab);
+    const diff = Math.max(1, targetPoints - myPoints + 1);
+    const nextRank = Math.max(1, myRank - 1);
+    const rivalName = escHtmlComm(String(above.name || '바로 위 사용자').replace(/\s*\(나\)\s*$/, ''));
+    return {
+      tone: 'chase',
+      chip: '순위 체크',
+      text: `${myName}님, 이번주 분위기 좋아요. ${rivalName}님 바로 뒤까지 붙었어요`,
+      meta: `${diff}p만 더하면 바로 앞줄이에요. 이번주는 흐름이 진짜 빨라요.`,
+    };
+  }
+  if (below) {
+    const gap = Math.max(0, myPoints - getLeagueMetricValue(below, tab));
+    const rivalName = escHtmlComm(String(below.name || '2위 사용자').replace(/\s*\(나\)\s*$/, ''));
+    return {
+      tone: 'lead',
+      chip: '순위 체크',
+      text: `${myName}님, 이번주 흐름 제일 좋아요. 뒤는 제가 살펴볼게요`,
+      meta: `${rivalName}님과 ${gap}p 차이예요. 이 정도면 꽤 오래 앞줄이에요.`,
+    };
+  }
+  return {
+    tone: 'lead',
+    chip: '순위 체크',
+    text: `${myName}님, 이번주 흐름이 아주 좋아요. 이름이 위에 잘 붙어 있어요`,
+    meta: '이 페이스면 한동안 분위기 안 뺏길 것 같아요.',
+  };
+}
+
+function getLeagueGuideText(tab = S.leagueTab) {
+  if (tab === 'weekly') return '이번주는 운동 포인트 기준으로 순위가 매겨져요.';
+  if (tab === 'challenger') return '챌린지는 운동+혈당 누적 포인트 기준, 가족인증 제외예요.';
+  return '리그는 운동+혈당 누적 포인트 기준으로 순위가 매겨져요. 가족인증은 제외돼요.';
+}
+
+function renderLeagueGuide(tab = S.leagueTab) {
+  const guide = document.getElementById('league-guide');
+  if (!guide) return;
+  guide.textContent = '';
+  guide.hidden = true;
+}
+
+function getNearbyLeagueEntries(entries = [], meEntry = null, limit = 5) {
+  if (!Array.isArray(entries) || !entries.length) return [];
+  if (!meEntry) return entries.slice(3, 3 + limit);
+  const meRank = Number(meEntry.rank) || (entries.findIndex(entry => getLeagueEntryKey(entry) === getLeagueEntryKey(meEntry)) + 1);
+  if (!Number.isFinite(meRank) || meRank <= 3) return entries.slice(3, 3 + limit);
+  let start = Math.max(3, meRank - 1 - Math.floor(limit / 2));
+  let end = Math.min(entries.length, start + limit);
+  start = Math.max(3, end - limit);
+  return entries.slice(start, end);
+}
+
+function renderLeagueAlert(message) {
+  const card = document.getElementById('league-alert-card');
+  if (!card) return;
+  if (!message?.text) {
+    card.hidden = true;
+    card.innerHTML = '';
+    delete card.dataset.tone;
+    return;
+  }
+  card.hidden = false;
+  if (message.tone) card.dataset.tone = message.tone;
+  else delete card.dataset.tone;
+  card.innerHTML = `
+    <div class="post-head league-alert-head">
+      <div class="post-av league-alert-av">
+        <img src="images/avatars/league.png" alt="하이롤라" style="width:100%;height:100%;object-fit:cover">
+      </div>
+    </div>
+    <div class="league-alert-content">
+      <div class="league-alert-body">${message.text || ''}</div>
+    </div>
+  `;
 }
 
 function canJoinLeagueRanking() {
@@ -9588,7 +10113,7 @@ function renderHome() {
     document.getElementById('my-rank-quick').textContent = '확인 중…';
   } else if (hasActiveChallengeRegistration()) {
     const chTotal = _base.filter(u => u.isChallenger).length + 1;
-    const chRank  = _base.filter(u => u.isChallenger && u.pts > (S.user.totalPoints || S.user.points)).length + 1;
+    const chRank  = _base.filter(u => u.isChallenger && u.pts > getCurrentLeaguePoints()).length + 1;
     document.getElementById('rank-quick-label').textContent = '(챌린지)';
     document.getElementById('my-rank-quick').innerHTML = formatRankSummary(chRank, chTotal);
   } else {
@@ -9945,6 +10470,13 @@ function renderMedalIcon(rank, opts = {}) {
   if (![1, 2, 3].includes(numericRank)) return '';
   const medals = { 1:'🥇', 2:'🥈', 3:'🥉' };
   return renderSvgIcon(medals[numericRank], { ...opts, className: ['rank-medal', opts.className].filter(Boolean).join(' ') });
+}
+
+function renderLeagueRankHtml(rank) {
+  const numericRank = Number(rank);
+  const medal = renderMedalIcon(numericRank, { size:'17px' });
+  if (medal) return `<span class="lb-rank-medal">${medal}</span>`;
+  return `<span class="lb-rank-num">${numericRank}</span>`;
 }
 
 function formatRankSummary(rank, total) {
@@ -12818,6 +13350,7 @@ function resetLeagueCache() {
   _leagueCache = {
     users: null,
     regs: null,
+    familyCertRows: null,
     usersFetchedAt: 0,
     wPtsByDevice: null,
     weeklyWeekStartTs: 0,
@@ -12825,7 +13358,52 @@ function resetLeagueCache() {
   };
 }
 
-function buildRealLeagueUsers(allUsers, allRegs, wPtsByDevice = {}) {
+function getLeagueFamilyCertPointsMap(familyCertRows = [], allRegs = []) {
+  const regById = new Map();
+  (allRegs || []).forEach(reg => {
+    const regId = String(reg?.id || '').trim();
+    if (!regId) return;
+    regById.set(regId, {
+      empId: normalizeEmpIdValue(reg?.empId || ''),
+      deviceId: String(reg?.deviceId || '').trim(),
+    });
+  });
+  const byEmpId = new Map();
+  const byDeviceId = new Map();
+  (familyCertRows || []).forEach(row => {
+    if (String(row?.status || '').trim().toLowerCase() !== 'approved') return;
+    const rewardPoints = Math.max(0, Number(row?.reward_points) || FAMILY_CERT_REWARD_POINTS);
+    if (!rewardPoints) return;
+    const regMeta = regById.get(String(row?.reg_id || row?.regId || '').trim());
+    const empId = normalizeEmpIdValue(row?.emp_id || row?.empId || '') || regMeta?.empId || '';
+    const deviceId = regMeta?.deviceId || '';
+    if (empId) {
+      byEmpId.set(empId, (byEmpId.get(empId) || 0) + rewardPoints);
+    } else if (deviceId) {
+      byDeviceId.set(deviceId, (byDeviceId.get(deviceId) || 0) + rewardPoints);
+    }
+  });
+  return { byEmpId, byDeviceId };
+}
+
+function getCurrentLeagueFamilyCertDeduction() {
+  const cachedRows = Array.isArray(_leagueCache.familyCertRows) ? _leagueCache.familyCertRows : [];
+  if (cachedRows.length) {
+    const map = getLeagueFamilyCertPointsMap(cachedRows, _leagueCache.regs || []);
+    const empId = normalizeEmpIdValue(S.user?.empId || ACTIVE_EMPID || '');
+    const deviceId = String(S.deviceId || '').trim();
+    return (empId && map.byEmpId.get(empId)) || ((!empId && deviceId) ? (map.byDeviceId.get(deviceId) || 0) : 0) || 0;
+  }
+  const latest = getCurrentFamilyCertLatestRow();
+  if (String(latest?.status || '').trim().toLowerCase() !== 'approved') return 0;
+  return Math.max(0, Number(latest?.reward_points || latest?.rewardPoints) || FAMILY_CERT_REWARD_POINTS);
+}
+
+function getCurrentLeaguePoints() {
+  return Math.max(0, getCurrentRewardPoints() - getCurrentLeagueFamilyCertDeduction());
+}
+
+function buildRealLeagueUsers(allUsers, allRegs, wPtsByDevice = {}, familyCertRows = []) {
   if (!allUsers || !allUsers.length) {
     _realLeagueUsers = null;
     return;
@@ -12856,15 +13434,32 @@ function buildRealLeagueUsers(allUsers, allRegs, wPtsByDevice = {}) {
     if (isChallenger && u.deviceId) _challengerDeviceIds.add(u.deviceId);
   });
 
+  const familyCertPointsMap = getLeagueFamilyCertPointsMap(familyCertRows, allRegs);
   _realLeagueUsers = filtered.map(u => ({
     id: u.empId || u.deviceId,
     deviceId: u.deviceId,
     name: u.nickname || u.name,
     avatar: u.avatar || AVATARS[0],
-    lv: getLevel(Number(u.points) || 0).lv,
-    pts: Number(u.points) || 0,
+    lv: getLevel(Math.max(
+      0,
+      (Number(u.points) || 0)
+      - (
+        familyCertPointsMap.byEmpId.get(normalizeEmpIdValue(u.empId || ''))
+        || (!normalizeEmpIdValue(u.empId || '') ? (familyCertPointsMap.byDeviceId.get(String(u.deviceId || '').trim()) || 0) : 0)
+      )
+    )).lv,
+    pts: Math.max(
+      0,
+      (Number(u.points) || 0)
+      - (
+        familyCertPointsMap.byEmpId.get(normalizeEmpIdValue(u.empId || ''))
+        || (!normalizeEmpIdValue(u.empId || '') ? (familyCertPointsMap.byDeviceId.get(String(u.deviceId || '').trim()) || 0) : 0)
+      )
+    ),
     wPts: wPtsByDevice[u.deviceId] || 0,
+    streak: Number(u.streak) || 0,
     change: 0,
+    isNew: false,
     isMe: false,
     isChallenger:
       regEmpIds.has(normChallengeEmpId(u.empId)) ||
@@ -12881,6 +13476,7 @@ async function fetchLeagueData(opts = {}) {
   const canReuseUsers = !force
     && Array.isArray(_leagueCache.users)
     && Array.isArray(_leagueCache.regs)
+    && Array.isArray(_leagueCache.familyCertRows)
     && isLeagueCacheFresh(_leagueCache.usersFetchedAt);
   const canReuseWeekly = !force
     && needWeekly
@@ -12902,14 +13498,16 @@ async function fetchLeagueData(opts = {}) {
   try {
     let allUsers = canReuseUsers ? (_leagueCache.users || []) : null;
     let allRegs = canReuseUsers ? (_leagueCache.regs || []) : null;
+    let familyCertRows = canReuseUsers ? (_leagueCache.familyCertRows || []) : null;
     let wPtsByDevice = canReuseWeekly ? (_leagueCache.wPtsByDevice || {}) : {};
 
     const [userBundle, weeklyRes] = await Promise.all([
       canReuseUsers
         ? Promise.resolve(null)
         : Promise.all([
-            _db.from('users').select('empId,name,nickname,avatar,points,tags,deviceId'),
+            _db.from('users').select('empId,name,nickname,avatar,points,tags,deviceId,streak'),
             _db.from('registrations').select('id,empId,deviceId,status'),
+            _db.from('family_certifications').select('emp_id,reg_id,reward_points,status').eq('status', 'approved'),
           ]),
       needWeekly && !canReuseWeekly
         ? _db.from('workouts').select('deviceId,points').gte('ts', String(weekStartTs))
@@ -12917,13 +13515,16 @@ async function fetchLeagueData(opts = {}) {
     ]);
 
     if (userBundle) {
-      const [usersRes, regsRes] = userBundle;
+      const [usersRes, regsRes, familyCertRes] = userBundle;
       if (usersRes?.error) throw usersRes.error;
       if (regsRes?.error) throw regsRes.error;
+      if (familyCertRes?.error) throw familyCertRes.error;
       allUsers = usersRes?.data || [];
       allRegs = regsRes?.data || [];
+      familyCertRows = familyCertRes?.data || [];
       _leagueCache.users = allUsers;
       _leagueCache.regs = allRegs;
+      _leagueCache.familyCertRows = familyCertRows;
       _leagueCache.usersFetchedAt = Date.now();
     }
 
@@ -12941,7 +13542,8 @@ async function fetchLeagueData(opts = {}) {
     buildRealLeagueUsers(
       allUsers || [],
       allRegs || [],
-      needWeekly ? wPtsByDevice : {}
+      needWeekly ? wPtsByDevice : {},
+      familyCertRows || []
     );
     renderLeague();
     // 커뮤니티 피드가 열려있고 챌린지 필터 중이면 재렌더
@@ -12951,6 +13553,7 @@ async function fetchLeagueData(opts = {}) {
     }
   } catch(e) {
     console.error('League fetch error:', e);
+    if (document.getElementById('comm-league-panel')?.style.display !== 'none') renderLeague();
   } finally {
     _leagueFetching = false;
   }
@@ -12968,14 +13571,18 @@ function renderLeague() {
     }
   }
   const currentTab = S.leagueTab;
+  const previousListPositions = captureLeagueListPositions();
+  renderLeagueGuide(currentTab);
 
   // ── 챌린지 전용 랭킹 ──
   if (currentTab === 'challenger') {
     const isRegistered = hasActiveChallengeRegistration();
+    const myLeaguePts = getCurrentLeaguePoints();
+    const myLeagueLv = getLevel(myLeaguePts);
     const me = {
       id:0, name: myDisplayName() + ' (나)', avatar: S.user.avatar,
-      lv: getLevel(S.user.totalPoints || S.user.points).lv, pts: S.user.totalPoints || S.user.points,
-      wPts: myWeekPts(), change:0, isMe: true, isChallenger: isRegistered,
+      lv: myLeagueLv.lv, pts: myLeaguePts,
+      wPts: myWeekPts(), streak: Number(S.user.streak) || 0, change:0, isNew:false, isMe: true, isChallenger: isRegistered,
       tags: S.user.tags || [],
     };
     const baseUsers = (_realLeagueUsers && _realLeagueUsers.length) ? _realLeagueUsers : [];
@@ -12983,11 +13590,11 @@ function renderLeague() {
       ...baseUsers.filter(u => u.isChallenger).map(u => ({ ...u, isMe: false })),
       ...(isRegistered && canJoinLeague && !LEAGUE_EXCLUDE_EMPIDS.includes((S.user.empId || ACTIVE_EMPID || '').trim().toUpperCase()) ? [me] : []),
     ].sort((a, b) => b.pts - a.pts).map((u, i) => ({ ...u, rank: i + 1 }));
+    const challengerBadgeState = getLeagueBadgeState(challengers, currentTab);
 
     // My rank card
     if (isRegistered && canJoinLeague) {
       const myRankCh = challengers.find(u => u.isMe)?.rank || '-';
-      const myLv = getLevel(S.user.points);
       document.getElementById('my-rank-card').innerHTML = `
         <div class="mrc-stat">
           <div class="mrc-label">챌린지 순위</div>
@@ -12995,14 +13602,14 @@ function renderLeague() {
           <div class="mrc-sub">참가자 ${challengers.length}명</div>
         </div>
         <div class="mrc-stat">
-          <div class="mrc-label">누적 포인트</div>
-          <div class="mrc-value pts">${S.user.totalPoints || S.user.points}p</div>
+          <div class="mrc-label">운동+혈당 포인트</div>
+          <div class="mrc-value pts">${myLeaguePts}p</div>
           <div class="mrc-sub"><span class="lb-change ch-eq">−</span></div>
         </div>
         <div class="mrc-stat">
           <div class="mrc-label">내 레벨</div>
-          <div class="mrc-value" style="font-size:48px">${myLv.icon}</div>
-          <div class="mrc-sub">Level ${myLv.lv}</div>
+          <div class="mrc-value" style="font-size:48px">${myLeagueLv.icon}</div>
+          <div class="mrc-sub">Level ${myLeagueLv.lv}</div>
         </div>
       `;
     } else if (isRegistered) {
@@ -13017,39 +13624,28 @@ function renderLeague() {
         </div>`;
     }
 
-    document.getElementById('podium').className = 'podium challenger';
-    const top3 = challengers.slice(0, 3);
-    const podOrder = [top3[0], top3[1], top3[2]];
-    const standClass = ['stand-gold','stand-silver','stand-bronze'];
-    const standLabel = ['1위','2위','3위'];
-    document.getElementById('podium').innerHTML = podOrder.map((u, i) => {
-      const sizeClass = i === 0 ? 'podium-first' : i === 1 ? 'podium-second' : 'podium-third';
-      if (!u) return `<div class="podium-item ${sizeClass}"><div class="podium-av-wrap"><div class="podium-avatar"></div></div><div class="podium-stand ${standClass[i]}">${standLabel[i]}</div></div>`;
-      const tags = (u.tags || []).slice(0, 2).map(t => `<span class="profile-tag" style="font-size:9px;padding:1px 5px">${t}</span>`).join('');
-      return `
-        <div class="podium-item ${sizeClass}">
-          <div class="podium-av-wrap">
-            ${tags ? `<div class="podium-bubble"><div class="podium-bubble-tags">${tags}</div></div>` : ''}
-            <div class="podium-avatar">${avHTML(u.avatar)}</div>
-          </div>
-          <div class="podium-name">${renderMedalIcon(i + 1, { size:'12px' })} ${escHtmlComm(u.name)}</div>
-          <div class="podium-pts">${u.pts}p</div>
-          <div class="podium-stand ${standClass[i]}">${standLabel[i]}</div>
-        </div>`;
-    }).join('');
-
-    const chSlice = challengers.slice(3, 20);
+    const chSlice = challengers.slice(0, 20);
     const chMe = challengers.find(u => u.isMe);
-    const showChList = chMe && !chSlice.find(u => u.isMe) && chMe.rank > 3
+    const showChList = chMe && !chSlice.find(u => u.isMe) && chMe.rank > 20
       ? [...chSlice, chMe] : chSlice;
+    renderLeagueAlert(
+      !isRegistered
+        ? {
+            tone: 'info',
+            kicker: '챌린지 안내',
+            text: '챌린지 신청 후 운동+혈당 포인트로 경쟁할 수 있어요.',
+          }
+        : getLeagueAlertMessage(challengers, chMe, currentTab)
+    );
     document.getElementById('lb-list').innerHTML = showChList.map(u => {
       const lv = LEVELS[Math.min(u.lv - 1, LEVELS.length - 1)];
+      const badgeHtml = renderLeagueEntryBadgesHtml(u, challengerBadgeState, currentTab);
       return `
-        <div class="lb-item ${u.isMe ? 'me' : ''}">
-          <div class="lb-rank ${u.rank <= 3 ? 'top3' : ''}">${u.rank}</div>
+        <div class="lb-item ${u.isMe ? 'me' : ''} ${u.rank <= 3 ? 'rank-top3' : ''}" data-league-key="${escHtmlComm(getLeagueEntryKey(u))}">
+          <div class="lb-rank ${u.rank <= 3 ? 'top3' : ''}">${renderLeagueRankHtml(u.rank)}</div>
           <div class="lb-avatar">${avHTML(u.avatar)}</div>
           <div class="lb-info">
-            <div class="lb-name"><span>${u.name}</span></div>
+            <div class="lb-name"><span>${u.name}</span>${badgeHtml}</div>
             ${(u.tags || []).length ? `<div class="lb-tags">${u.tags.slice(0,2).map(t => `<span class="profile-tag">${t}</span>`).join('')}${u.tags.length > 2 ? `<span class="profile-tag" style="letter-spacing:1px">···</span>` : ''}</div>` : ''}
           </div>
           <div class="lb-right">
@@ -13059,25 +13655,28 @@ function renderLeague() {
         </div>
       `;
     }).join('');
+    animateLeagueListReorder(previousListPositions);
     return;
   }
 
   // ── 일반 랭킹 ──
   const baseUsers = (_realLeagueUsers && _realLeagueUsers.length) ? _realLeagueUsers : MOCK_USERS;
-  const myPts  = currentTab === 'weekly' ? myWeekPts() : (S.user.totalPoints || S.user.points);
+  const myPts  = currentTab === 'weekly' ? myWeekPts() : getCurrentLeaguePoints();
   const myRank = myLeagueRank();
-  const myLv   = getLevel(S.user.points);
-  const myLvNumCard = getLevel(S.user.totalPoints || S.user.points).lv;
+  const myLv   = getLevel(getCurrentLeaguePoints());
+  const myLvNumCard = getLevel(getCurrentLeaguePoints()).lv;
   const total  = currentTab === 'level' ? baseUsers.filter(u => u.lv === myLvNumCard).length + (canJoinLeague ? 1 : 0) : baseUsers.length + (canJoinLeague ? 1 : 0);
   const pct    = (canJoinLeague && myRank && total > 0) ? Math.round((myRank / total) * 100) : null;
 
   const me = {
     id:(S.user.empId || S.deviceId || 'me').toString(), name: myDisplayName() + ' (나)', avatar: S.user.avatar,
-    lv: getLevel(S.user.totalPoints || S.user.points).lv, pts: S.user.totalPoints || S.user.points,
+    lv: getLevel(getCurrentLeaguePoints()).lv,
+    pts: getCurrentLeaguePoints(),
     wPts: myWeekPts(),
-    change:0, isMe: true, tags: S.user.tags || [],
+    streak: Number(S.user.streak) || 0,
+    change:0, isNew:false, isMe: true, tags: S.user.tags || [],
   };
-  const myLvNum = getLevel(S.user.totalPoints || S.user.points).lv;
+  const myLvNum = getLevel(getCurrentLeaguePoints()).lv;
   const rawList = [
     ...baseUsers
       .filter(u => currentTab === 'level' ? u.lv === myLvNum : true)
@@ -13088,7 +13687,9 @@ function renderLeague() {
   const list = (currentTab === 'weekly' ? applyWeeklyLeagueChanges(rawList, weeklySnapshot) : rawList)
    .sort((a,b) => compareLeagueEntriesByMetric(a, b, currentTab === 'weekly' ? 'wPts' : 'pts'))
    .map((u,i) => ({ ...u, rank: i+1 }));
+  const badgeState = getLeagueBadgeState(list, currentTab);
   const meEntry = list.find(u => u.isMe);
+  renderLeagueAlert(getLeagueAlertMessage(list, meEntry, currentTab));
   const displayMyRank = meEntry?.rank || myRank;
   const displayPct = (canJoinLeague && displayMyRank && total > 0) ? Math.round((displayMyRank / total) * 100) : pct;
   const myChangeHtml = currentTab === 'weekly' ? renderLeagueChangeHtml(meEntry?.change || 0) : `<span class="lb-change ch-eq">−</span>`;
@@ -13101,7 +13702,7 @@ function renderLeague() {
         <div class="mrc-sub">${currentTab === 'level' ? '같은 레벨 ' + total + '명' : '상위 ' + displayPct + '%'}</div>
       </div>
       <div class="mrc-stat">
-        <div class="mrc-label">${currentTab === 'weekly' ? '주간 획득 포인트' : currentTab === 'level' ? '레벨별 포인트' : '누적 포인트'}</div>
+        <div class="mrc-label">${currentTab === 'weekly' ? '주간 획득 포인트' : currentTab === 'level' ? '레벨별 포인트' : '운동+혈당 포인트'}</div>
         <div class="mrc-value pts">${myPts}p</div>
         <div class="mrc-sub">${myChangeHtml}</div>
       </div>
@@ -13114,45 +13715,24 @@ function renderLeague() {
   } else {
     document.getElementById('my-rank-card').innerHTML = `
       <div style="padding:16px;text-align:center;color:var(--text-secondary);font-size:13px">
-        ${renderExerciseIcon('running', { size:'16px', color:'var(--primary)' })} 운동 기록을 남기면 리그에 진입할 수 있어요
+        ${renderExerciseIcon('running', { size:'16px', color:'var(--primary)' })} 언제 운동 시작하실거예요~ 첫 기록을 남기면 리그에 바로 참여할 수 있어요
       </div>`;
   }
 
-  document.getElementById('podium').className = 'podium';
-  const top3 = list.slice(0,3);
-  const podOrder = [top3[0], top3[1], top3[2]];
-  const standClass = ['stand-gold','stand-silver','stand-bronze'];
-  const standLabel = ['1위','2위','3위'];
-  document.getElementById('podium').innerHTML = podOrder.map((u,i) => {
-    const sizeClass = i === 0 ? 'podium-first' : i === 1 ? 'podium-second' : 'podium-third';
-    if (!u) return `<div class="podium-item ${sizeClass}"><div class="podium-av-wrap"><div class="podium-avatar"></div></div><div class="podium-stand ${standClass[i]}">${standLabel[i]}</div></div>`;
-    const tags = (u.tags || []).slice(0, 2).map(t => `<span class="profile-tag" style="font-size:9px;padding:1px 5px">${t}</span>`).join('');
-    const pts = currentTab === 'weekly' ? u.wPts : u.pts;
-    const lv2 = LEVELS[Math.min(u.lv - 1, LEVELS.length - 1)];
-    return `
-      <div class="podium-item ${sizeClass}">
-        <div class="podium-av-wrap">
-          ${tags ? `<div class="podium-bubble"><div class="podium-bubble-tags">${tags}</div></div>` : ''}
-          <div class="podium-avatar">${avHTML(u.avatar)}</div>
-        </div>
-        <div class="podium-name">${renderMedalIcon(i + 1, { size:'12px' })} ${escHtmlComm(u.name)}</div>
-        <div class="podium-pts">${currentTab === 'level' ? lv2.name : pts + 'p'}</div>
-        <div class="podium-stand ${standClass[i]}">${standLabel[i]}</div>
-      </div>`;
-  }).join('');
-
-  const lbSlice = list.slice(3, 20);
-  const showList = meEntry && !lbSlice.find(u => u.isMe) && meEntry.rank > 3
-    ? [...lbSlice, meEntry] : lbSlice;
+  const lbSlice = list.slice(0, 20);
+  const showList = meEntry && !lbSlice.find(u => u.isMe) && meEntry.rank > 20
+    ? [...lbSlice, meEntry]
+    : lbSlice;
   document.getElementById('lb-list').innerHTML = showList.map(u => {
-    const lv    = LEVELS[Math.min(u.lv-1, LEVELS.length-1)];
     const chgHtml = currentTab === 'weekly' ? renderLeagueChangeHtml(u.change) : `<span class="lb-change ch-eq">−</span>`;
+    const lv = LEVELS[Math.min(u.lv-1, LEVELS.length-1)];
+    const badgeHtml = renderLeagueEntryBadgesHtml(u, badgeState, currentTab);
     return `
-      <div class="lb-item ${u.isMe ? 'me' : ''}">
-        <div class="lb-rank ${u.rank<=3?'top3':''}">${u.rank}</div>
+      <div class="lb-item ${u.isMe ? 'me' : ''} ${u.rank <= 3 ? 'rank-top3' : ''}" data-league-key="${escHtmlComm(getLeagueEntryKey(u))}">
+        <div class="lb-rank ${u.rank<=3?'top3':''}">${renderLeagueRankHtml(u.rank)}</div>
         <div class="lb-avatar">${avHTML(u.avatar)}</div>
         <div class="lb-info">
-          <div class="lb-name"><span>${u.name}</span></div>
+          <div class="lb-name"><span>${u.name}</span>${badgeHtml}</div>
           ${(u.tags || []).length ? `<div class="lb-tags">${u.tags.slice(0,2).map(t => `<span class="profile-tag">${t}</span>`).join('')}${u.tags.length > 2 ? `<span class="profile-tag" style="letter-spacing:1px">···</span>` : ''}</div>` : ''}
         </div>
         <div class="lb-right">
@@ -13162,6 +13742,7 @@ function renderLeague() {
       </div>
     `;
   }).join('');
+  animateLeagueListReorder(previousListPositions);
 }
 
 function setTab(el, tab) {
@@ -13174,8 +13755,10 @@ function setTab(el, tab) {
 }
 
 function setCommunityTab(tab) {
+  const leaguePanel = document.getElementById('comm-league-panel');
+  const wasLeagueVisible = leaguePanel?.style.display !== 'none';
   document.getElementById('comm-feed-panel').style.display   = tab === 'feed'   ? '' : 'none';
-  document.getElementById('comm-league-panel').style.display = tab === 'league' ? '' : 'none';
+  if (leaguePanel) leaguePanel.style.display = tab === 'league' ? '' : 'none';
   document.getElementById('comm-tab-feed').classList.toggle('active', tab === 'feed');
   document.getElementById('comm-tab-league').classList.toggle('active', tab === 'league');
   // 챌린지 신청 완료 시에만 리그의 챌린지 탭 표시
@@ -13190,7 +13773,15 @@ function setCommunityTab(tab) {
       weeklyTab.classList.add('active');
     }
   }
-  if (tab === 'league') { renderLeague(); fetchLeagueData({ needWeekly: S.leagueTab === 'weekly' }); }
+  if (tab === 'league') {
+    if (!wasLeagueVisible) {
+      renderLeagueLoadingState();
+      fetchLeagueData({ force: true, needWeekly: S.leagueTab === 'weekly' });
+      return;
+    }
+    renderLeague();
+    fetchLeagueData({ needWeekly: S.leagueTab === 'weekly' });
+  }
 }
 
 function setRewardsTab(tab) {
