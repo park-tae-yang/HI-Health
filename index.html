@@ -3037,13 +3037,14 @@
     .mrc-sub { font-size: 11px; color: var(--text-secondary); line-height: 1.2; }
     .league-alert-card {
       position: relative;
-      margin: 0 0 12px;
+      margin: 0 0 18px;
       padding: 10px 14px 10px 54px;
       min-height: 50px;
-      background: #fff;
-      border: 1px solid rgba(15,23,42,0.06);
+      background: rgba(255, 236, 242, 0.72);
+      border: 1px solid rgba(244, 114, 182, 0.18);
       border-radius: 18px;
-      box-shadow: var(--shadow);
+      box-shadow: 0 10px 24px rgba(244, 114, 182, 0.08);
+      backdrop-filter: blur(10px);
     }
     .league-alert-card::before {
       content: '';
@@ -3052,9 +3053,9 @@
       left: 36px;
       width: 12px;
       height: 12px;
-      background: #fff;
-      border-left: 1px solid rgba(15,23,42,0.06);
-      border-top: 1px solid rgba(15,23,42,0.06);
+      background: rgba(255, 236, 242, 0.72);
+      border-left: 1px solid rgba(244, 114, 182, 0.18);
+      border-top: 1px solid rgba(244, 114, 182, 0.18);
       transform: rotate(45deg);
       border-top-left-radius: 4px;
     }
@@ -3065,10 +3066,9 @@
       margin-bottom: 0;
     }
     .league-alert-av {
-      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
       width:32px;
       height:32px;
-      padding: 2px;
+      padding: 0;
       box-sizing: border-box;
       border: none;
     }
@@ -3084,9 +3084,9 @@
       gap: 5px;
       padding: 3px 8px;
       border-radius: 999px;
-      background: #f8fafc;
+      background: rgba(255, 255, 255, 0.62);
       color: var(--text-secondary);
-      border: 1px solid rgba(15,23,42,0.06);
+      border: 1px solid rgba(244, 114, 182, 0.14);
       font-size: 10px;
       font-weight: 700;
       line-height: 1;
@@ -3108,6 +3108,7 @@
       color: var(--text-secondary);
       letter-spacing: -0.01em;
     }
+    #lb-list { margin-top: 6px; }
 
     /* Podium */
     .podium {
@@ -6109,6 +6110,8 @@ let _leagueFetching = false;
 const LEAGUE_CACHE_TTL_MS = 2 * 60 * 1000;
 const LEAGUE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 const LEAGUE_RANK_SNAPSHOT_KEY = 'hi_league_weekly_rank_snapshot_v3';
+const CHALLENGER_RANK_SNAPSHOT_KEY = 'hi_league_challenger_rank_snapshot_v1';
+const CHALLENGER_RANK_SNAPSHOT_MAX_AGE_MS = 45 * 24 * 60 * 60 * 1000;
 let _leagueCache = {
   users: null,
   regs: null,
@@ -9036,6 +9039,10 @@ function getLeagueWeeklySnapshotStorageKey(empId = ACTIVE_EMPID || S.user?.empId
   return getAccountScopedStorageKey(LEAGUE_RANK_SNAPSHOT_KEY, empId);
 }
 
+function getLeagueChallengerSnapshotStorageKey(empId = ACTIVE_EMPID || S.user?.empId || '') {
+  return getAccountScopedStorageKey(CHALLENGER_RANK_SNAPSHOT_KEY, empId);
+}
+
 function buildLeagueRankMap(entries, metric = 'wPts') {
   return Object.fromEntries(
     [...entries]
@@ -9069,6 +9076,24 @@ function writeLeagueWeeklySnapshotData(snapshot, empId = ACTIVE_EMPID || S.user?
   } catch (e) {}
 }
 
+function readLeagueChallengerSnapshotData(empId = ACTIVE_EMPID || S.user?.empId || '') {
+  try {
+    const raw = localStorage.getItem(getLeagueChallengerSnapshotStorageKey(empId));
+    return JSON.parse(raw || 'null');
+  } catch (e) {
+    return null;
+  }
+}
+
+function writeLeagueChallengerSnapshotData(snapshot, empId = ACTIVE_EMPID || S.user?.empId || '') {
+  try {
+    localStorage.setItem(
+      getLeagueChallengerSnapshotStorageKey(empId),
+      JSON.stringify(snapshot)
+    );
+  } catch (e) {}
+}
+
 function syncLeagueWeeklySnapshot(entries, weekStartTs = getLeagueWeekStartTs(), empId = ACTIVE_EMPID || S.user?.empId || '') {
   const currentRanks = buildLeagueRankMap(entries, 'wPts');
   const snapshot = readLeagueWeeklySnapshotData(empId);
@@ -9095,10 +9120,54 @@ function syncLeagueWeeklySnapshot(entries, weekStartTs = getLeagueWeekStartTs(),
   return baselineRanks;
 }
 
+function syncLeagueChallengerSnapshot(entries, empId = ACTIVE_EMPID || S.user?.empId || '') {
+  const currentRanks = buildLeagueRankMap(entries, 'pts');
+  const snapshot = readLeagueChallengerSnapshotData(empId);
+  const savedAt = Number(snapshot?.savedAt) || 0;
+  const isStale = !savedAt || (Date.now() - savedAt) > CHALLENGER_RANK_SNAPSHOT_MAX_AGE_MS;
+  if (!snapshot || isStale) {
+    writeLeagueChallengerSnapshotData({
+      savedAt: Date.now(),
+      baselineRanks: currentRanks,
+      latestRanks: currentRanks,
+    }, empId);
+    return currentRanks;
+  }
+  const latestRanks = snapshot.latestRanks && typeof snapshot.latestRanks === 'object' ? snapshot.latestRanks : {};
+  const baselineRanks = snapshot.baselineRanks && typeof snapshot.baselineRanks === 'object' ? snapshot.baselineRanks : latestRanks;
+  if (!areLeagueRankMapsEqual(currentRanks, latestRanks)) {
+    writeLeagueChallengerSnapshotData({
+      savedAt: Date.now(),
+      baselineRanks: latestRanks,
+      latestRanks: currentRanks,
+    }, empId);
+    return latestRanks;
+  }
+  return baselineRanks;
+}
+
 function applyWeeklyLeagueChanges(entries, prevRanks = {}) {
   const currentRankByKey = new Map(
     [...entries]
       .sort((a, b) => compareLeagueEntriesByMetric(a, b, 'wPts'))
+      .map((entry, idx) => [getLeagueEntryKey(entry), idx + 1])
+  );
+  return entries.map(entry => {
+    const key = getLeagueEntryKey(entry);
+    const currentRank = currentRankByKey.get(key);
+    const prevRank = Number(prevRanks?.[key]);
+    return {
+      ...entry,
+      change: Number.isFinite(currentRank) && Number.isFinite(prevRank) ? prevRank - currentRank : 0,
+      isNew: Number.isFinite(currentRank) && !Number.isFinite(prevRank),
+    };
+  });
+}
+
+function applyChallengerLeagueChanges(entries, prevRanks = {}) {
+  const currentRankByKey = new Map(
+    [...entries]
+      .sort((a, b) => compareLeagueEntriesByMetric(a, b, 'pts'))
       .map((entry, idx) => [getLeagueEntryKey(entry), idx + 1])
   );
   return entries.map(entry => {
@@ -9208,9 +9277,9 @@ function getLeagueAlertRankBand(rank = 0, total = 0) {
 
 function getLeagueTierDisplayLabel(rank = 0, total = 0) {
   const band = getLeagueAlertRankBand(rank, total);
-  if (band === 'mid') return '중위권';
-  if (band === 'low') return '하위권';
-  return '상위권';
+  if (band === 'mid') return '추격권';
+  if (band === 'low') return '도약권';
+  return '선두권';
 }
 
 function renderLeagueTierHtml(rank = 0, total = 0) {
@@ -9307,7 +9376,7 @@ function getLeagueAlertMessage(entries = [], meEntry = null, tab = S.leagueTab) 
           ? '전체기록은 지금 위치에 맞는 응원으로 바꿔서 들려드릴게요.'
           : tab === 'challenger'
             ? '챌린지는 끝날 때까지 판이 계속 바뀌니까 지금 들어와도 늦지 않아요.'
-            : '이번주는 움직이는 순간 분위기가 먼저 달라져요.',
+            : '이번주는 기록이 들어오면 순위에 바로 반영돼요.',
     };
   }
   if (_leagueFetching && (!_realLeagueUsers || !_realLeagueUsers.length)) {
@@ -9361,8 +9430,8 @@ function getLeagueAlertMessage(entries = [], meEntry = null, tab = S.leagueTab) 
     return {
       tone: 'info',
       chip,
-      text: `${myName}님, 오늘 ${sport.session} 한 번만 더 쌓아도 이번주 순위판 바로 술렁여요`,
-      meta: '이번주는 숫자보다 흐름 타는 게 더 빨라요.',
+      text: `${myName}님, 오늘 ${sport.session} 한 번만 더 쌓아도 이번주 순위가 바로 움직일 수 있어요`,
+      meta: '이번주는 한 번의 기록에도 순위가 빠르게 반영돼요.',
     };
   }
   const above = myIndex > 0 ? entries[myIndex - 1] : null;
@@ -9380,7 +9449,7 @@ function getLeagueAlertMessage(entries = [], meEntry = null, tab = S.leagueTab) 
         tone: 'lead',
         chip: '최고 레벨',
         text: `${myName}님, 지금은 최고 레벨 구간이에요. ${sport.momentum}까지 붙어서 존재감이 진해졌어요`,
-        meta: `같은 레벨 안에서는 ${myRank}위예요. 지금 ${sport.hold}만 유지해도 오래 앞줄이에요.`,
+        meta: `같은 레벨 안에서는 ${myRank}위예요. 지금 ${sport.hold}만 유지해도 오래 상위권이에요.`,
       };
     }
     if (rankBand === 'leader' || rankBand === 'top3' || rankBand === 'high') {
@@ -9395,7 +9464,7 @@ function getLeagueAlertMessage(entries = [], meEntry = null, tab = S.leagueTab) 
       tone: 'info',
       chip,
       text: `${myName}님, ${sport.session} 몇 번만 더 쌓이면 ${nextLevel.next.name}까지 금방 닿아요. 지금은 따라붙는 구간이에요`,
-      meta: `같은 레벨 ${myRank}위예요. 한 번 더 리듬 타면 레벨창이 먼저 반응할 거예요.`,
+      meta: `같은 레벨 ${myRank}위예요. 한 번 더 쌓으면 다음 레벨까지 남은 점수가 더 확 줄어들어요.`,
     };
   }
 
@@ -9413,22 +9482,22 @@ function getLeagueAlertMessage(entries = [], meEntry = null, tab = S.leagueTab) 
         tone: 'lead',
         chip: '상위권',
         text: `${myName}님, 전체기록 상위권에서 ${sport.momentum}이 좋아요. 더 위도 충분히 보여요`,
-        meta: above ? `앞줄까지 ${aboveDiff}p예요. ${sport.session} 한 번만 더 쌓아도 윗줄이 바로 가까워져요.` : '이 흐름이면 상위권 자리가 더 단단해질 거예요.',
+        meta: above ? `윗순위까지 ${aboveDiff}p예요. ${sport.session} 한 번만 더 쌓아도 더 위 순위가 바로 가까워져요.` : '이 흐름이면 상위권 자리가 더 단단해질 거예요.',
       };
     }
     if (rankBand === 'mid') {
       return {
         tone: 'info',
         chip: '중위권',
-        text: `${myName}님, 지금 중위권이에요. ${sport.momentum}만 한 번 더 붙으면 판이 확 바뀌어요`,
-        meta: above ? `앞줄까지 ${aboveDiff}p예요. 여기선 ${sport.session} 한 번이 생각보다 크게 먹혀요.` : '여기는 한 번만 치고 나가도 분위기가 확 바뀌는 자리예요.',
+        text: `${myName}님, 지금 중위권이에요. ${sport.momentum}만 한 번 더 붙으면 윗순위와 간격이 확 줄어요`,
+        meta: above ? `윗순위까지 ${aboveDiff}p예요. 여기선 ${sport.session} 한 번이 생각보다 크게 먹혀요.` : '여기는 한 번만 더 쌓아도 순위가 꽤 올라갈 수 있는 자리예요.',
       };
     }
     return {
       tone: 'info',
       chip: '하위권',
-      text: `${myName}님, 아직 하위권이어도 괜찮아요. ${sport.session} 두 번만 더 들어와도 분위기 바로 바뀌어요`,
-      meta: above ? `앞줄까지 ${aboveDiff}p예요. 이 구간은 기록 몇 번만 들어와도 순위가 꽤 크게 움직여요.` : '이 구간은 기록 한두 번만 들어와도 순위가 크게 움직여요.',
+      text: `${myName}님, 아직 하위권이어도 괜찮아요. ${sport.session} 두 번만 더 들어와도 순위가 바로 올라갈 수 있어요`,
+      meta: above ? `윗순위까지 ${aboveDiff}p예요. 이 구간은 기록 몇 번만 들어와도 순위가 꽤 크게 움직여요.` : '이 구간은 기록 한두 번만 들어와도 순위가 크게 움직여요.',
     };
   }
 
@@ -9445,7 +9514,7 @@ function getLeagueAlertMessage(entries = [], meEntry = null, tab = S.leagueTab) 
       return {
         tone: 'chase',
         chip,
-        text: `${myName}님, 챌린지에서 ${sport.momentum} 살아 있어요. 앞줄까지 ${aboveDiff}p예요`,
+        text: `${myName}님, 챌린지에서 ${sport.momentum} 살아 있어요. 윗순위까지 ${aboveDiff}p예요`,
         meta: `${sport.session} 한 번만 더 잘 쌓아도 바로 붙어요. 챌린지는 막판에도 충분히 뒤집혀요.`,
       };
     }
@@ -9454,14 +9523,14 @@ function getLeagueAlertMessage(entries = [], meEntry = null, tab = S.leagueTab) 
         tone: 'info',
         chip,
         text: `${myName}님, 챌린지는 지금부터예요. ${sport.momentum} 한 번만 더 붙으면 위가 바로 보여요`,
-        meta: above ? `앞줄까지 ${aboveDiff}p예요. 이 정도 차이는 금방 줄어들어요.` : '챌린지는 한 번 흐름 타기 시작하면 생각보다 오래 갑니다.',
+        meta: above ? `윗순위까지 ${aboveDiff}p예요. 이 정도 차이는 금방 줄어들어요.` : '챌린지는 한 번 흐름 타기 시작하면 생각보다 오래 갑니다.',
       };
     }
     return {
       tone: 'info',
       chip,
       text: `${myName}님, 챌린지 판은 아직 열려 있어요. ${sport.session} 몇 번만 더 들어오면 막판 뒤집기 충분해요`,
-      meta: above ? `앞줄까지 ${aboveDiff}p예요. 한 번 올라탄 흐름이 끝까지 가는 경우가 많아요.` : '한 번 올라탄 흐름이 끝까지 가는 경우가 많아요.',
+      meta: above ? `윗순위까지 ${aboveDiff}p예요. 한 번 올라탄 흐름이 끝까지 가는 경우가 많아요.` : '한 번 올라탄 흐름이 끝까지 가는 경우가 많아요.',
     };
   }
 
@@ -9469,15 +9538,15 @@ function getLeagueAlertMessage(entries = [], meEntry = null, tab = S.leagueTab) 
     return {
       tone: 'lead',
       chip,
-      text: `${myName}님, 이번주 ${sport.momentum}이 제일 좋아요. 이름이 맨 앞줄에 딱 붙었어요`,
-      meta: below ? `${belowGap}p 여유예요. 이번주는 ${sport.hold}만 유지해도 선두를 오래 지킬 수 있어요.` : '이 페이스면 한동안 분위기 안 뺏길 것 같아요.',
+      text: `${myName}님, 이번주 ${sport.momentum}이 제일 좋아요. 지금 1위 자리를 잘 지키고 있어요`,
+      meta: below ? `${belowGap}p 여유예요. 이번주는 ${sport.hold}만 유지해도 선두를 오래 지킬 수 있어요.` : '이 페이스면 한동안 선두권을 지킬 수 있어요.',
     };
   }
   if (rankBand === 'top3' || rankBand === 'high') {
     return {
       tone: 'chase',
       chip,
-      text: `${myName}님, 이번주 ${sport.momentum} 좋아요. 앞줄까지 ${aboveDiff}p예요`,
+      text: `${myName}님, 이번주 ${sport.momentum} 좋아요. 윗순위까지 ${aboveDiff}p예요`,
       meta: `${sport.session} 한 번만 더 쌓아도 바로 순위가 출렁일 수 있어요. 이번주는 흐름이 특히 빨라요.`,
     };
   }
@@ -9485,15 +9554,15 @@ function getLeagueAlertMessage(entries = [], meEntry = null, tab = S.leagueTab) 
     return {
       tone: 'info',
       chip,
-      text: `${myName}님, 지금 중간 구간이에요. ${sport.momentum} 한 번만 더 붙으면 판이 바로 달라져요`,
-      meta: above ? `앞줄까지 ${aboveDiff}p예요. 이번주 순위판은 한 번의 기록에도 꽤 크게 흔들려요.` : '이번주는 숫자보다 흐름 타는 게 더 빨라요.',
+      text: `${myName}님, 지금 중간 구간이에요. ${sport.momentum} 한 번만 더 붙으면 윗순위가 바로 가까워져요`,
+      meta: above ? `윗순위까지 ${aboveDiff}p예요. 이번주 순위는 한 번의 기록에도 꽤 크게 움직일 수 있어요.` : '이번주는 한 번의 기록에도 순위가 빠르게 반영돼요.',
     };
   }
   return {
     tone: 'info',
     chip,
-    text: `${myName}님, 아직 아래쪽이어도 괜찮아요. 이번주는 ${sport.session} 두 번만 더 들어와도 분위기 바로 바뀌어요`,
-    meta: above ? `앞줄까지 ${aboveDiff}p예요. 주간판은 생각보다 훨씬 빨리 요동쳐요.` : '이번주는 숫자보다 흐름 타는 게 더 빨라요.',
+    text: `${myName}님, 아직 아래쪽이어도 괜찮아요. 이번주는 ${sport.session} 두 번만 더 들어와도 순위가 바로 올라갈 수 있어요`,
+    meta: above ? `윗순위까지 ${aboveDiff}p예요. 주간판은 기록 한두 번에도 순위가 꽤 빨리 움직여요.` : '이번주는 한 번의 기록에도 순위가 빠르게 반영돼요.',
   };
 }
 
@@ -13704,21 +13773,26 @@ function renderLeague() {
       ...baseUsers.filter(u => u.isChallenger).map(u => ({ ...u, isMe: false })),
       ...(isRegistered && canJoinLeague && !LEAGUE_EXCLUDE_EMPIDS.includes((S.user.empId || ACTIVE_EMPID || '').trim().toUpperCase()) ? [me] : []),
     ].sort((a, b) => b.pts - a.pts).map((u, i) => ({ ...u, rank: i + 1 }));
-    const challengerBadgeState = getLeagueBadgeState(challengers, currentTab);
+    const challengerSnapshot = syncLeagueChallengerSnapshot(challengers);
+    const challengerList = applyChallengerLeagueChanges(challengers, challengerSnapshot)
+      .sort((a, b) => compareLeagueEntriesByMetric(a, b, 'pts'))
+      .map((u, i) => ({ ...u, rank: i + 1 }));
+    const challengerBadgeState = getLeagueBadgeState(challengerList, currentTab);
 
     // My rank card
     if (isRegistered && canJoinLeague) {
-      const myRankCh = challengers.find(u => u.isMe)?.rank || '-';
+      const chMe = challengerList.find(u => u.isMe);
+      const myRankCh = chMe?.rank || '-';
       document.getElementById('my-rank-card').innerHTML = `
         <div class="mrc-stat">
           <div class="mrc-label">챌린지 순위</div>
           <div class="mrc-value">${myRankCh}위</div>
-          <div class="mrc-sub">참가자 ${challengers.length}명</div>
+          <div class="mrc-sub">참가자 ${challengerList.length}명</div>
         </div>
         <div class="mrc-stat">
           <div class="mrc-label">운동+혈당 포인트</div>
           <div class="mrc-value pts">${myLeaguePts}p</div>
-          <div class="mrc-sub"><span class="lb-change ch-eq">−</span></div>
+          <div class="mrc-sub">${renderLeagueChangeHtml(chMe?.change || 0)}</div>
         </div>
         <div class="mrc-stat">
           <div class="mrc-label">내 레벨</div>
@@ -13738,8 +13812,8 @@ function renderLeague() {
         </div>`;
     }
 
-    const chSlice = challengers.slice(0, 20);
-    const chMe = challengers.find(u => u.isMe);
+    const chSlice = challengerList.slice(0, 20);
+    const chMe = challengerList.find(u => u.isMe);
     const showChList = chMe && !chSlice.find(u => u.isMe) && chMe.rank > 20
       ? [...chSlice, chMe] : chSlice;
     renderLeagueAlert(
@@ -13749,7 +13823,7 @@ function renderLeague() {
             kicker: '챌린지 안내',
             text: '챌린지 신청 후 운동+혈당 포인트로 경쟁할 수 있어요.',
           }
-        : getLeagueAlertMessage(challengers, chMe, currentTab)
+        : getLeagueAlertMessage(challengerList, chMe, currentTab)
     );
     document.getElementById('lb-list').innerHTML = showChList.map(u => {
       const lv = LEVELS[Math.min(u.lv - 1, LEVELS.length - 1)];
@@ -13763,7 +13837,7 @@ function renderLeague() {
             ${(u.tags || []).length ? `<div class="lb-tags">${u.tags.slice(0,2).map(t => `<span class="profile-tag">${t}</span>`).join('')}${u.tags.length > 2 ? `<span class="profile-tag" style="letter-spacing:1px">···</span>` : ''}</div>` : ''}
           </div>
           <div class="lb-right">
-            <span class="lb-change ch-eq">−</span>
+            ${renderLeagueChangeHtml(u.change)}
             <div class="lb-pts">${u.pts}p</div>
           </div>
         </div>
