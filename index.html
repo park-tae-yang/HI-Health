@@ -8820,31 +8820,63 @@ function getLeagueWeeklySnapshotStorageKey(empId = ACTIVE_EMPID || S.user?.empId
   return getAccountScopedStorageKey(LEAGUE_RANK_SNAPSHOT_KEY, empId);
 }
 
-function readLeagueWeeklySnapshot(weekStartTs = getLeagueWeekStartTs(), empId = ACTIVE_EMPID || S.user?.empId || '') {
+function buildLeagueRankMap(entries, metric = 'wPts') {
+  return Object.fromEntries(
+    [...entries]
+      .sort((a, b) => compareLeagueEntriesByMetric(a, b, metric))
+      .map((entry, idx) => [getLeagueEntryKey(entry), idx + 1])
+  );
+}
+
+function areLeagueRankMapsEqual(a, b) {
+  const aKeys = Object.keys(a || {});
+  const bKeys = Object.keys(b || {});
+  if (aKeys.length !== bKeys.length) return false;
+  return aKeys.every(key => Number(a[key]) === Number(b[key]));
+}
+
+function readLeagueWeeklySnapshotData(empId = ACTIVE_EMPID || S.user?.empId || '') {
   try {
     const raw = localStorage.getItem(getLeagueWeeklySnapshotStorageKey(empId));
-    const parsed = JSON.parse(raw || 'null');
-    if (!parsed || Number(parsed.weekStartTs) !== Number(weekStartTs) || !parsed.ranks || typeof parsed.ranks !== 'object') {
-      return {};
-    }
-    return parsed.ranks;
+    return JSON.parse(raw || 'null');
   } catch (e) {
-    return {};
+    return null;
   }
 }
 
-function writeLeagueWeeklySnapshot(entries, weekStartTs = getLeagueWeekStartTs(), empId = ACTIVE_EMPID || S.user?.empId || '') {
+function writeLeagueWeeklySnapshotData(snapshot, empId = ACTIVE_EMPID || S.user?.empId || '') {
   try {
-    const ranks = Object.fromEntries(
-      [...entries]
-        .sort((a, b) => compareLeagueEntriesByMetric(a, b, 'wPts'))
-        .map((entry, idx) => [getLeagueEntryKey(entry), idx + 1])
-    );
     localStorage.setItem(
       getLeagueWeeklySnapshotStorageKey(empId),
-      JSON.stringify({ weekStartTs, savedAt: Date.now(), ranks })
+      JSON.stringify(snapshot)
     );
   } catch (e) {}
+}
+
+function syncLeagueWeeklySnapshot(entries, weekStartTs = getLeagueWeekStartTs(), empId = ACTIVE_EMPID || S.user?.empId || '') {
+  const currentRanks = buildLeagueRankMap(entries, 'wPts');
+  const snapshot = readLeagueWeeklySnapshotData(empId);
+  if (!snapshot || Number(snapshot.weekStartTs) !== Number(weekStartTs)) {
+    writeLeagueWeeklySnapshotData({
+      weekStartTs,
+      savedAt: Date.now(),
+      baselineRanks: currentRanks,
+      latestRanks: currentRanks,
+    }, empId);
+    return currentRanks;
+  }
+  const latestRanks = snapshot.latestRanks && typeof snapshot.latestRanks === 'object' ? snapshot.latestRanks : {};
+  const baselineRanks = snapshot.baselineRanks && typeof snapshot.baselineRanks === 'object' ? snapshot.baselineRanks : latestRanks;
+  if (!areLeagueRankMapsEqual(currentRanks, latestRanks)) {
+    writeLeagueWeeklySnapshotData({
+      weekStartTs,
+      savedAt: Date.now(),
+      baselineRanks: latestRanks,
+      latestRanks: currentRanks,
+    }, empId);
+    return latestRanks;
+  }
+  return baselineRanks;
 }
 
 function applyWeeklyLeagueChanges(entries, prevRanks = {}) {
@@ -13047,7 +13079,7 @@ function renderLeague() {
       .map(u => ({ ...u, isMe: false })),
     ...(!canJoinLeague || LEAGUE_EXCLUDE_EMPIDS.includes((S.user.empId || ACTIVE_EMPID || '').trim().toUpperCase()) ? [] : [me])
   ];
-  const weeklySnapshot = currentTab === 'weekly' ? readLeagueWeeklySnapshot() : {};
+  const weeklySnapshot = currentTab === 'weekly' ? syncLeagueWeeklySnapshot(rawList) : {};
   const list = (currentTab === 'weekly' ? applyWeeklyLeagueChanges(rawList, weeklySnapshot) : rawList)
    .sort((a,b) => compareLeagueEntriesByMetric(a, b, currentTab === 'weekly' ? 'wPts' : 'pts'))
    .map((u,i) => ({ ...u, rank: i+1 }));
@@ -13125,9 +13157,6 @@ function renderLeague() {
       </div>
     `;
   }).join('');
-  if (currentTab === 'weekly' && Array.isArray(_realLeagueUsers) && _realLeagueUsers.length) {
-    writeLeagueWeeklySnapshot(list);
-  }
 }
 
 function setTab(el, tab) {
