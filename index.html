@@ -7134,12 +7134,16 @@ function getRecordDerivedTotalPoints() {
   return workoutPoints + glucosePoints;
 }
 
+function getCurrentRewardPoints() {
+  return Math.max(0, Number(S.user?.points || 0));
+}
+
 function reconcileTotalPointsFromRecords(opts = {}) {
   if (IS_GUEST) return false;
   const derivedTotal = getRecordDerivedTotalPoints();
   const nextTotal = Math.max(
     derivedTotal,
-    Number(S.user.points || 0),
+    getCurrentRewardPoints(),
     Number(S.user.totalPoints || 0),
   );
   if (nextTotal === Number(S.user.totalPoints || 0)) return false;
@@ -9456,7 +9460,7 @@ function placeGuestBanner(page = null) {
 }
 
 function renderHeader() {
-  const _hptsEl = document.getElementById('hpts-val'); if (_hptsEl) _hptsEl.textContent = S.user.points;
+  const _hptsEl = document.getElementById('hpts-val'); if (_hptsEl) _hptsEl.textContent = getCurrentRewardPoints();
   renderHeaderAvatar(S.user.avatar);
   const activePage = document.querySelector('.page.active')?.id?.replace('page-', '') || 'home';
   placeGuestBanner(activePage);
@@ -9593,8 +9597,9 @@ function renderHome() {
     document.getElementById('rank-quick-label').textContent = '';
     document.getElementById('my-rank-quick').innerHTML = formatRankSummary(lgRank, lgTotal);
   }
-  const canRedeem = REWARDS_DATA.some(r => !S.redeemedRewards.includes(r.id) && !S.pendingRewards.includes(r.id) && S.user.points >= r.cost);
-  document.getElementById('pts-quick').textContent = '보유 ' + S.user.points + 'p' + (canRedeem ? ' · 교환 가능' : '');
+  const rewardPoints = getCurrentRewardPoints();
+  const canRedeem = REWARDS_DATA.some(r => !S.redeemedRewards.includes(r.id) && !S.pendingRewards.includes(r.id) && rewardPoints >= r.cost);
+  document.getElementById('pts-quick').textContent = '총 보유 ' + rewardPoints + 'p' + (canRedeem ? ' · 교환 가능' : '');
   const woCnt = (S.workouts || []).length;
   const glCnt = (S.glucoseRecords || []).length;
   document.getElementById('rec-quick').textContent = (woCnt === 0 && glCnt === 0) ? '기록을 시작해보세요' : '운동 ' + woCnt + '회 · 혈당 ' + glCnt + '회';
@@ -14226,7 +14231,7 @@ function submitShopOrder() {
    RENDER: REWARDS
 ════════════════════════════════════════ */
 function renderRewards() {
-  const points = Number(S.user.points || 0);
+  const points = getCurrentRewardPoints();
   document.getElementById('bal-display').textContent = points;
   const balSub = document.getElementById('bal-sub');
   const balChallengeBadge = document.getElementById('bal-challenge-badge');
@@ -14305,7 +14310,7 @@ function renderRewards() {
   document.getElementById('reward-grid').innerHTML = REWARDS_DATA.map(r => {
     const done    = S.redeemedRewards.includes(r.id);
     const pending = !done && S.pendingRewards.includes(r.id);
-    const can     = !done && !pending && S.user.points >= r.cost;
+    const can     = !done && !pending && points >= r.cost;
     const shortfall = Math.max(0, r.cost - points);
     const visual = getRewardVisual(r);
     let cardClass = 'reward-card';
@@ -14411,7 +14416,7 @@ function redeemReward(id) {
   if (!r) return;
   if (S.redeemedRewards.includes(id)) { haptic('error'); showToast('이미 신청한 보상이에요'); return; }
   if (S.pendingRewards.includes(id))  { haptic('error'); showToast('이미 신청 처리 중이에요'); return; }
-  if (S.user.points < r.cost) { haptic('error'); showToast('⚠️ 포인트가 부족해요 (필요: ' + r.cost + 'p)'); return; }
+  if (getCurrentRewardPoints() < r.cost) { haptic('error'); showToast('⚠️ 포인트가 부족해요 (필요: ' + r.cost + 'p)'); return; }
 
   if (!_challengeRewardMode) S.user.points -= r.cost;
   S.pendingRewards.push(id);
@@ -14419,6 +14424,7 @@ function redeemReward(id) {
   const orderId = 'REW-' + String(Date.now()).slice(-8);
   S.rewardHistory.unshift({ id, name: r.name, cost: r.cost, status: 'pending', ts: Date.now(), orderId });
   save();
+  if (!_challengeRewardMode) forceSyncPoints();
   renderHeader();
   haptic('success');
 
