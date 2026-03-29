@@ -6107,7 +6107,7 @@ const PUSH_PUBLIC_KEY   = 'BEaMexe-bw1jM31PgeQdkkZeqs29Ls1KIMY-TViYgH2dPqg_v7tRR
 const PUSH_TABLE        = 'push_subscriptions';
 const PUSH_DEFAULT_URL  = './index.html#community';
 const AUTO_COMMENT_FN   = 'https://nbnmvvobehjitophkqmu.supabase.co/functions/v1/auto-comment';
-const SW_VERSION        = '20260329-96';
+const SW_VERSION        = '20260329-97';
 const CHALLENGE_PEOPLE_CACHE_KEY = 'hi_health_people_cache_v1';
 let _db = null; // Supabase 클라이언트
 let _lastKnownServerPts = null; // 마지막으로 서버에서 확인한 포인트 (delta 병합용)
@@ -7299,6 +7299,7 @@ function restorePersistedUserTags(empId = ACTIVE_EMPID || S.user?.empId || '', o
 function save(opts = {}) {
   if (IS_GUEST) return;
   const skipRemote = !!opts.skipRemote;
+  const syncTagsToUsers = !!opts.syncTagsToUsers;
   const resolvedNickname = getResolvedProfileNickname();
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
@@ -7339,12 +7340,12 @@ function save(opts = {}) {
       totalPoints: S.user.totalPoints || S.user.points,
       streak: S.user.streak,
       nickname: resolvedNickname,
-      tags: (S.user.tags || []).join(','),
       registrationId: S.user.registrationId || '',
       lastactiveat: new Date().toISOString(),
       pendingrewards:  (S.pendingRewards  || []).join(','),
       redeemedrewards: (S.redeemedRewards || []).join(','),
     };
+    if (syncTagsToUsers) payload.tags = normalizeUserTags(S.user.tags).join(',');
     const syncedKey = 'hi_synced_' + S.deviceId;
     if (localStorage.getItem(syncedKey)) {
       // 기존 유저 — UPDATE 시도, 0행이면 upsert로 재등록 (관리자가 삭제 후 재가입 허용)
@@ -7894,6 +7895,7 @@ const ACCOUNT_SETTINGS_META_KEY = 'hi_account_settings_meta';
 let _accountSettingsSyncTimer = null;
 let _accountSettingsApplyingRemote = false;
 let _profileNicknameSyncTimer = null;
+let _profileTagsDirty = false;
 
 function getAccountSettingsMetaKey(empId = ACTIVE_EMPID || S.user?.empId || '') {
   return getAccountScopedStorageKey(ACCOUNT_SETTINGS_META_KEY, empId);
@@ -9387,6 +9389,11 @@ function getLeagueNextLevelInfo(points = 0) {
     next,
     remaining: Math.max(0, next.min - (Math.max(0, Number(points) || 0))),
   };
+}
+
+function getLeagueNextLevelThresholdText(points = 0) {
+  const nextLevel = getLeagueNextLevelInfo(points);
+  return nextLevel ? `다음 레벨 ${nextLevel.next.min}p부터` : '최고 레벨';
 }
 
 function getLeagueAlertChip(tab = S.leagueTab) {
@@ -12958,21 +12965,28 @@ function refreshChallengePeopleProfileCache(options = {}) {
   return merged.rows;
 }
 
-function syncProfileToRemote() {
+function syncProfileToRemote(opts = {}) {
   const normalizedEmpId = normalizeEmpIdValue(S.user.empId || ACTIVE_EMPID);
   const nextAvatar = normalizeAvatar(S.user.avatar);
   const nextNickname = getResolvedProfileNickname(normalizedEmpId);
   const nextName = String(S.user.name || '').trim();
+  const includeTags = opts.includeTags === true;
   if (!_db || !normalizedEmpId) return;
 
   const userFilters = [`"empId".eq.${normalizedEmpId}`];
   if (normalizedEmpId.toLowerCase() !== normalizedEmpId) userFilters.push(`"empId".eq.${normalizedEmpId.toLowerCase()}`);
-  _db.from('users').update({
+  const userPayload = {
     avatar: nextAvatar,
     nickname: nextNickname,
     lastactiveat: new Date().toISOString(),
-  }).or(userFilters.join(',')).then(({ error }) => {
-    if (error) console.error('[syncProfileToRemote/users]', error);
+  };
+  if (includeTags) userPayload.tags = normalizeUserTags(S.user.tags).join(',');
+  _db.from('users').update(userPayload).or(userFilters.join(',')).then(({ error }) => {
+    if (error) {
+      console.error('[syncProfileToRemote/users]', error);
+      return;
+    }
+    if (includeTags) _profileTagsDirty = false;
   });
 
   const currentReg = syncStoredChallengeProfile();
@@ -13310,8 +13324,9 @@ function saveProfileModal() {
   S.user.avatar = normalizeAvatar(_selAvatar);
   S.user.tags = [...new Set([..._preservedProfileTags, ..._selTags])];
   markAccountSettingsDirty();
-  persistProfileNickname({ skipRemote: false });
-  save();
+  persistProfileNickname({ skipRemote: true });
+  save({ syncTagsToUsers: true });
+  syncProfileToRemote({ includeTags: true });
   if (modal) modal.classList.add('pm-hidden');
   postToRunday({
     type: 'AVATAR_CHANGE',
@@ -13354,6 +13369,7 @@ function togglePmTag(ci, ti) {
   const idx = _selTags.indexOf(tag);
   if (idx === -1) _selTags.push(tag); else _selTags.splice(idx, 1);
   S.user.tags = [...new Set([..._preservedProfileTags, ..._selTags])];
+  _profileTagsDirty = true;
   markAccountSettingsDirty();
   save();
   renderPmTags();
@@ -14174,7 +14190,7 @@ function renderLeague() {
   const myChangeHtml = currentTab === 'weekly'
     ? renderLeagueChangeHtml(meEntry?.change || 0)
     : currentTab === 'level'
-      ? ''
+      ? getLeagueNextLevelThresholdText(myPts)
       : currentTab === 'alltime'
         ? myTierHtml
         : `<span class="lb-change ch-eq">−</span>`;
@@ -14219,8 +14235,9 @@ function renderLeague() {
         : `<span class="lb-change ch-eq">−</span>`;
     const lv = LEVELS[Math.min(u.lv-1, LEVELS.length-1)];
     const badgeHtml = renderLeagueEntryBadgesHtml(u, badgeState, currentTab);
+    const nextLevelThresholdText = getLeagueNextLevelThresholdText(Number(u.pts) || 0);
     const trailingHtml = currentTab === 'level'
-      ? `<div class="lb-motion-icon" title="${escHtmlComm(lv.name)}" aria-label="${escHtmlComm(lv.name)}">${lv.icon}</div><div class="lb-pts">${Number(u.pts) || 0}p</div>`
+      ? `<div class="lb-motion-icon" title="${escHtmlComm(lv.name)}" aria-label="${escHtmlComm(lv.name)}">${lv.icon}</div><div class="lb-pts">${Number(u.pts) || 0}p</div><div class="lb-submeta">${escHtmlComm(nextLevelThresholdText)}</div>`
       : currentTab === 'alltime'
         ? `<div class="lb-pts">${Number(u.pts) || 0}p</div>`
         : `<div class="lb-pts">${currentTab === 'weekly' ? `${Number(u.wPts) || 0}p` : `${Number(u.pts) || 0}p`}</div>`;
