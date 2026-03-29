@@ -6109,6 +6109,8 @@ const PUSH_DEFAULT_URL  = './index.html#community';
 const AUTO_COMMENT_FN   = 'https://nbnmvvobehjitophkqmu.supabase.co/functions/v1/auto-comment';
 const SW_VERSION        = '20260329-98';
 const CHALLENGE_PEOPLE_CACHE_KEY = 'hi_health_people_cache_v1';
+let _swControllerReloaded = false;
+let _swUpdateCheckQueued = false;
 let _db = null; // Supabase 클라이언트
 let _lastKnownServerPts = null; // 마지막으로 서버에서 확인한 포인트 (delta 병합용)
 let _realLeagueUsers = null; // Supabase에서 가져온 실제 유저 목록
@@ -13025,6 +13027,39 @@ function isPushSupported() {
   return 'Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window;
 }
 
+async function checkForServiceWorkerUpdate() {
+  if (!('serviceWorker' in navigator) || _swUpdateCheckQueued) return null;
+  _swUpdateCheckQueued = true;
+  try {
+    const reg = await navigator.serviceWorker.getRegistration();
+    if (reg) await reg.update();
+    return reg || null;
+  } catch (e) {
+    console.warn('SW 업데이트 확인 실패:', e);
+    return null;
+  } finally {
+    setTimeout(() => { _swUpdateCheckQueued = false; }, 1200);
+  }
+}
+
+function bindServiceWorkerAutoRefresh() {
+  if (!('serviceWorker' in navigator) || window.__hiSwAutoRefreshBound) return;
+  window.__hiSwAutoRefreshBound = true;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (_swControllerReloaded) return;
+    _swControllerReloaded = true;
+    window.location.reload();
+  });
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      checkForServiceWorkerUpdate();
+    }
+  });
+  window.addEventListener('focus', () => {
+    checkForServiceWorkerUpdate();
+  });
+}
+
 function getPushIdentity() {
   const identity = getProfileIdentity();
   return {
@@ -19485,7 +19520,9 @@ async function init() {
 
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
+      bindServiceWorkerAutoRefresh();
       navigator.serviceWorker.register('./sw.js?v=' + SW_VERSION)
+        .then(() => checkForServiceWorkerUpdate())
         .catch(err => console.warn('SW 등록 실패:', err));
     });
   }
