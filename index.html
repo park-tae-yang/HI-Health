@@ -6107,7 +6107,7 @@ const PUSH_PUBLIC_KEY   = 'BEaMexe-bw1jM31PgeQdkkZeqs29Ls1KIMY-TViYgH2dPqg_v7tRR
 const PUSH_TABLE        = 'push_subscriptions';
 const PUSH_DEFAULT_URL  = './index.html#community';
 const AUTO_COMMENT_FN   = 'https://nbnmvvobehjitophkqmu.supabase.co/functions/v1/auto-comment';
-const SW_VERSION        = '20260329-97';
+const SW_VERSION        = '20260329-98';
 const CHALLENGE_PEOPLE_CACHE_KEY = 'hi_health_people_cache_v1';
 let _db = null; // Supabase 클라이언트
 let _lastKnownServerPts = null; // 마지막으로 서버에서 확인한 포인트 (delta 병합용)
@@ -14226,9 +14226,8 @@ function renderLeague() {
         : `<span class="lb-change ch-eq">−</span>`;
     const lv = LEVELS[Math.min(u.lv-1, LEVELS.length-1)];
     const badgeHtml = renderLeagueEntryBadgesHtml(u, badgeState, currentTab);
-    const nextLevelThresholdText = getLeagueNextLevelThresholdText(Number(u.pts) || 0);
     const trailingHtml = currentTab === 'level'
-      ? `<div class="lb-motion-icon" title="${escHtmlComm(lv.name)}" aria-label="${escHtmlComm(lv.name)}">${lv.icon}</div><div class="lb-pts">${Number(u.pts) || 0}p</div><div class="lb-submeta">${escHtmlComm(nextLevelThresholdText)}</div>`
+      ? `<div class="lb-motion-icon" title="${escHtmlComm(lv.name)}" aria-label="${escHtmlComm(lv.name)}">${lv.icon}</div><div class="lb-pts">${Number(u.pts) || 0}p</div>`
       : currentTab === 'alltime'
         ? `<div class="lb-pts">${Number(u.pts) || 0}p</div>`
         : `<div class="lb-pts">${currentTab === 'weekly' ? `${Number(u.wPts) || 0}p` : `${Number(u.pts) || 0}p`}</div>`;
