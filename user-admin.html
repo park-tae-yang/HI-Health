@@ -345,6 +345,7 @@
         <select class="ctrl-sel" id="u-sort" onchange="renderUsers()">
           <option value="name">이름순</option>
           <option value="points">포인트순</option>
+          <option value="lastActive">마지막활동순</option>
           <option value="workouts">운동횟수순</option>
           <option value="streak">연속일순</option>
         </select>
@@ -417,13 +418,15 @@
               <th>계정 ID</th>
               <th>부서</th>
               <th>레벨</th>
+              <th>운동</th>
+              <th>혈당</th>
               <th>이번주</th>
               <th>전체기록</th>
               <th>상태</th>
               <th>마지막 활동</th>
             </tr></thead>
             <tbody id="lg-tbody">
-              <tr><td class="empty-cell" colspan="9">불러오는 중...</td></tr>
+              <tr><td class="empty-cell" colspan="11">불러오는 중...</td></tr>
             </tbody>
           </table>
         </div>
@@ -820,6 +823,27 @@
         </select>
         <button class="cbtn pri" onclick="postAdminNotice()">콘텐츠 게시</button>
       </div>
+      <div style="margin-top:18px;border-top:1px dashed #E2E8F0;padding-top:14px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div style="font-size:14px;font-weight:700">콘텐츠 기록</div>
+          <button class="cbtn" style="font-size:11px;padding:4px 10px" onclick="renderAdminPosts()">새로고침</button>
+        </div>
+        <div class="tbl-wrap">
+          <div class="tbl-scroll">
+            <table>
+              <thead><tr>
+                <th>날짜</th>
+                <th>분류</th>
+                <th>제목</th>
+                <th>내용</th>
+                <th>링크 게시물</th>
+                <th>관리</th>
+              </tr></thead>
+              <tbody id="ap-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
       <div class="ap-compose" style="margin-top:14px;border-top:1px dashed #E2E8F0;padding-top:14px">
         <div style="font-size:14px;font-weight:700;margin-bottom:10px">푸시 알림 발송</div>
         <div style="display:flex;gap:8px;margin-bottom:8px">
@@ -860,22 +884,6 @@
               <th style="text-align:center">실패</th>
             </tr></thead>
             <tbody id="push-logs-tbody"><tr><td colspan="7" style="text-align:center;color:#94A3B8;padding:16px">불러오는 중...</td></tr></tbody>
-          </table>
-        </div>
-      </div>
-
-      <div class="tbl-wrap">
-        <div class="tbl-scroll">
-          <table>
-            <thead><tr>
-              <th>날짜</th>
-              <th>분류</th>
-              <th>제목</th>
-              <th>내용</th>
-              <th>링크 게시물</th>
-              <th>관리</th>
-            </tr></thead>
-            <tbody id="ap-tbody"></tbody>
           </table>
         </div>
       </div>
@@ -2004,6 +2012,22 @@ function getAdminWeeklyPointsMap(workouts = GD.workouts, weekStartTs = getAdminL
   return byDeviceId;
 }
 
+function getAdminRecordCountMaps(workouts = GD.workouts, glucose = GD.glucose) {
+  const workoutCountByDeviceId = {};
+  const glucoseCountByDeviceId = {};
+  (workouts || []).forEach(w => {
+    const deviceId = String(w?.deviceId || '').trim();
+    if (!deviceId) return;
+    workoutCountByDeviceId[deviceId] = (workoutCountByDeviceId[deviceId] || 0) + 1;
+  });
+  (glucose || []).forEach(g => {
+    const deviceId = String(g?.deviceId || '').trim();
+    if (!deviceId) return;
+    glucoseCountByDeviceId[deviceId] = (glucoseCountByDeviceId[deviceId] || 0) + 1;
+  });
+  return { workoutCountByDeviceId, glucoseCountByDeviceId };
+}
+
 function getAdminActivityPointsMap(workouts = GD.workouts, glucose = GD.glucose) {
   const byDeviceId = {};
   (workouts || []).forEach(w => {
@@ -2052,15 +2076,19 @@ function populateAdminLeagueLevelFilter() {
 
 function getAdminLeagueEntries() {
   const weekPts = getAdminWeeklyPointsMap();
+  const { workoutCountByDeviceId, glucoseCountByDeviceId } = getAdminRecordCountMaps();
   return GD.users
     .filter(u => !USER_LIST_EXCLUDE_EMPIDS.includes((u.empId || '').trim().toUpperCase()))
     .map(u => {
       const pts = getAdminAlltimeLeaguePoints(u);
       const level = getAdminLevel(pts);
+      const deviceId = String(u.deviceId || '').trim();
       return {
         ...u,
         pts,
-        wPts: weekPts[u.deviceId] || 0,
+        wPts: weekPts[deviceId] || 0,
+        workoutCount: workoutCountByDeviceId[deviceId] || 0,
+        glucoseCount: glucoseCountByDeviceId[deviceId] || 0,
         level,
         isChallenger: isChallenger(u),
       };
@@ -2116,7 +2144,7 @@ function renderAdminLeague() {
 
   if (!tbody) return;
   if (!rows.length) {
-    tbody.innerHTML = '<tr><td class="empty-cell" colspan="9">표시할 리그 이용자가 없습니다</td></tr>';
+    tbody.innerHTML = '<tr><td class="empty-cell" colspan="11">표시할 리그 이용자가 없습니다</td></tr>';
     return;
   }
 
@@ -2131,6 +2159,8 @@ function renderAdminLeague() {
       <td>${escHtml(u.empId || '-')}</td>
       <td>${escHtml(u.dept || '-')}</td>
       <td><span class="badge ex">Lv.${u.level.lv} ${escHtml(u.level.name)}</span></td>
+      <td>${(Number(u.workoutCount) || 0).toLocaleString('ko-KR')}건</td>
+      <td>${(Number(u.glucoseCount) || 0).toLocaleString('ko-KR')}건</td>
       <td><span class="badge pts">+${(Number(u.wPts) || 0).toLocaleString()}p</span></td>
       <td><span class="badge pts">+${(Number(u.pts) || 0).toLocaleString()}p</span></td>
       <td>${stateBadge}</td>
@@ -2142,15 +2172,23 @@ function renderAdminLeague() {
 /* ══════════════════════════════════════════════
    USERS
 ══════════════════════════════════════════════ */
-function activeCell(u) {
-  // lastActiveAt 우선, 없으면 최근 운동 기록으로 추정
+function getUserLastActiveTs(u, lastWorkoutTsMap = null) {
   const activeAt = u.lastActiveAt || u.lastactiveat;
   let ts = activeAt ? new Date(activeAt).getTime() : 0;
   if (!ts) {
-    const lastWo = GD.workouts.filter(w => w.deviceId === u.deviceId)
-      .sort((a,b) => Number(b.ts||0) - Number(a.ts||0))[0];
-    ts = lastWo ? Number(lastWo.ts||0) : 0;
+    if (lastWorkoutTsMap) {
+      ts = Number(lastWorkoutTsMap[u.deviceId] || 0);
+    } else {
+      const lastWo = GD.workouts.filter(w => w.deviceId === u.deviceId)
+        .sort((a,b) => Number(b.ts||0) - Number(a.ts||0))[0];
+      ts = lastWo ? Number(lastWo.ts||0) : 0;
+    }
   }
+  return ts;
+}
+
+function activeCell(u, lastWorkoutTsMap = null) {
+  const ts = getUserLastActiveTs(u, lastWorkoutTsMap);
   if (!ts) return '<span class="act-time" style="color:#D1D5DB">-</span>';
   const now = Date.now();
   const diff = now - ts;
@@ -2257,12 +2295,16 @@ function filteredUsers() {
 
 function sortedUsers(arr) {
   const sort = document.getElementById('u-sort')?.value || 'name';
-  const woCnt = {}, strk = {};
+  const woCnt = {}, strk = {}, lastWorkoutTsMap = {};
   const activityPointsMap = getAdminActivityPointsMap();
-  GD.workouts.forEach(w => woCnt[w.deviceId] = (woCnt[w.deviceId]||0)+1);
+  GD.workouts.forEach(w => {
+    woCnt[w.deviceId] = (woCnt[w.deviceId]||0)+1;
+    lastWorkoutTsMap[w.deviceId] = Math.max(lastWorkoutTsMap[w.deviceId] || 0, Number(w.ts || 0));
+  });
   GD.users.forEach(u => strk[u.deviceId] = u.streak||0);
   return [...arr].sort((a, b) => {
     if (sort === 'points')   return getAdminEffectivePoints(b, activityPointsMap) - getAdminEffectivePoints(a, activityPointsMap);
+    if (sort === 'lastActive') return getUserLastActiveTs(b, lastWorkoutTsMap) - getUserLastActiveTs(a, lastWorkoutTsMap);
     if (sort === 'workouts') return (woCnt[b.deviceId]||0) - (woCnt[a.deviceId]||0);
     if (sort === 'streak')   return (strk[b.deviceId]||0) - (strk[a.deviceId]||0);
     return (a.name||'').localeCompare(b.name||'', 'ko');
@@ -2271,9 +2313,12 @@ function sortedUsers(arr) {
 
 function renderUsers() {
   const dupIds = getDupEmpIds();
-  const woCnt = {};
+  const woCnt = {}, lastWorkoutTsMap = {};
   const activityPointsMap = getAdminActivityPointsMap();
-  GD.workouts.forEach(w => woCnt[w.deviceId] = (woCnt[w.deviceId]||0)+1);
+  GD.workouts.forEach(w => {
+    woCnt[w.deviceId] = (woCnt[w.deviceId]||0)+1;
+    lastWorkoutTsMap[w.deviceId] = Math.max(lastWorkoutTsMap[w.deviceId] || 0, Number(w.ts || 0));
+  });
 
   // 서브탭 카운트 업데이트 (관리자 계정 제외)
   const visibleUsers = GD.users.filter(u => !USER_LIST_EXCLUDE_EMPIDS.includes((u.empId||'').trim().toUpperCase()));
@@ -2325,7 +2370,7 @@ function renderUsers() {
     const rowClass = bad ? ' row-bad' : dup ? ' row-dup' : '';
     const safeName = (u.name||'').replace(/'/g, "\\'");
     const safeId = (u.deviceId||'').replace(/'/g, "\\'");
-    const actCell = activeCell(u);
+    const actCell = activeCell(u, lastWorkoutTsMap);
     return `<tr class="${rowClass}">
       <td><span class="rank ${rc}">${rank}</span></td>
       <td class="td-name" title="클릭하여 이름 수정" style="cursor:pointer" onclick="editUserName('${safeId}','${safeName}')">
@@ -4458,6 +4503,7 @@ function switchTab(name, btn) {
   if (name === 'posts') renderPosts();
   if (name === 'challenge') renderChallenge();
   if (name === 'orders') { renderOrders(); loadShopConfig(); }
+  if (name === 'content') { renderAdminPosts(); loadPushLogs(); }
   if (name === 'settings') loadSettingsTab();
   if (name === 'famcert') loadFamCerts();
 }

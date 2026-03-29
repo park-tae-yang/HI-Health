@@ -3279,6 +3279,7 @@
     .lb-right { min-width: 64px; text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
     .lb-pts { font-size: 14px; line-height: 1.2; font-weight: 700; color: var(--warning); }
     .lb-submeta { font-size: 11px; line-height: 1.15; font-weight: 700; color: var(--text-secondary); }
+    .lb-motion-icon { min-height: 22px; display: flex; align-items: center; justify-content: flex-end; font-size: 22px; line-height: 1; }
     .lb-change { min-height: 13px; font-size: 10px; font-weight: 700; letter-spacing: -0.01em; }
     .ch-up { color: #94a3b8; }
     .ch-dn { color: #94a3b8; }
@@ -6121,7 +6122,7 @@ const CHALLENGER_RANK_SNAPSHOT_MAX_AGE_MS = 45 * 24 * 60 * 60 * 1000;
 let _leagueCache = {
   users: null,
   regs: null,
-  familyCertRows: null,
+  totalPtsByDevice: null,
   usersFetchedAt: 0,
   wPtsByDevice: null,
   weeklyWeekStartTs: 0,
@@ -13677,7 +13678,7 @@ function resetLeagueCache() {
   _leagueCache = {
     users: null,
     regs: null,
-    familyCertRows: null,
+    totalPtsByDevice: null,
     usersFetchedAt: 0,
     wPtsByDevice: null,
     weeklyWeekStartTs: 0,
@@ -13685,52 +13686,30 @@ function resetLeagueCache() {
   };
 }
 
-function getLeagueFamilyCertPointsMap(familyCertRows = [], allRegs = []) {
-  const regById = new Map();
-  (allRegs || []).forEach(reg => {
-    const regId = String(reg?.id || '').trim();
-    if (!regId) return;
-    regById.set(regId, {
-      empId: normalizeEmpIdValue(reg?.empId || ''),
-      deviceId: String(reg?.deviceId || '').trim(),
-    });
+function buildLeagueAlltimePointsMap(workoutRows = [], glucoseRows = []) {
+  const byDeviceId = {};
+  (workoutRows || []).forEach(row => {
+    const deviceId = String(row?.deviceId || '').trim();
+    if (!deviceId) return;
+    byDeviceId[deviceId] = (byDeviceId[deviceId] || 0) + (Number(row?.points) || 0);
   });
-  const byEmpId = new Map();
-  const byDeviceId = new Map();
-  (familyCertRows || []).forEach(row => {
-    if (String(row?.status || '').trim().toLowerCase() !== 'approved') return;
-    const rewardPoints = Math.max(0, Number(row?.reward_points) || FAMILY_CERT_REWARD_POINTS);
-    if (!rewardPoints) return;
-    const regMeta = regById.get(String(row?.reg_id || row?.regId || '').trim());
-    const empId = normalizeEmpIdValue(row?.emp_id || row?.empId || '') || regMeta?.empId || '';
-    const deviceId = regMeta?.deviceId || '';
-    if (empId) {
-      byEmpId.set(empId, (byEmpId.get(empId) || 0) + rewardPoints);
-    } else if (deviceId) {
-      byDeviceId.set(deviceId, (byDeviceId.get(deviceId) || 0) + rewardPoints);
-    }
+  (glucoseRows || []).forEach(row => {
+    const deviceId = String(row?.deviceId || '').trim();
+    if (!deviceId) return;
+    byDeviceId[deviceId] = (byDeviceId[deviceId] || 0) + (Number(row?.points) || 0);
   });
-  return { byEmpId, byDeviceId };
+  return byDeviceId;
 }
 
 function getCurrentLeagueFamilyCertDeduction() {
-  const cachedRows = Array.isArray(_leagueCache.familyCertRows) ? _leagueCache.familyCertRows : [];
-  if (cachedRows.length) {
-    const map = getLeagueFamilyCertPointsMap(cachedRows, _leagueCache.regs || []);
-    const empId = normalizeEmpIdValue(S.user?.empId || ACTIVE_EMPID || '');
-    const deviceId = String(S.deviceId || '').trim();
-    return (empId && map.byEmpId.get(empId)) || ((!empId && deviceId) ? (map.byDeviceId.get(deviceId) || 0) : 0) || 0;
-  }
-  const latest = getCurrentFamilyCertLatestRow();
-  if (String(latest?.status || '').trim().toLowerCase() !== 'approved') return 0;
-  return Math.max(0, Number(latest?.reward_points || latest?.rewardPoints) || FAMILY_CERT_REWARD_POINTS);
+  return 0;
 }
 
 function getCurrentLeaguePoints() {
-  return Math.max(0, getCurrentRewardPoints() - getCurrentLeagueFamilyCertDeduction());
+  return Math.max(0, getRecordDerivedTotalPoints());
 }
 
-function buildRealLeagueUsers(allUsers, allRegs, wPtsByDevice = {}, familyCertRows = []) {
+function buildRealLeagueUsers(allUsers, allRegs, alltimePtsByDevice = {}, wPtsByDevice = {}) {
   if (!allUsers || !allUsers.length) {
     _realLeagueUsers = null;
     return;
@@ -13761,28 +13740,13 @@ function buildRealLeagueUsers(allUsers, allRegs, wPtsByDevice = {}, familyCertRo
     if (isChallenger && u.deviceId) _challengerDeviceIds.add(u.deviceId);
   });
 
-  const familyCertPointsMap = getLeagueFamilyCertPointsMap(familyCertRows, allRegs);
   _realLeagueUsers = filtered.map(u => ({
     id: u.empId || u.deviceId,
     deviceId: u.deviceId,
     name: u.nickname || u.name,
     avatar: u.avatar || AVATARS[0],
-    lv: getLevel(Math.max(
-      0,
-      (Number(u.points) || 0)
-      - (
-        familyCertPointsMap.byEmpId.get(normalizeEmpIdValue(u.empId || ''))
-        || (!normalizeEmpIdValue(u.empId || '') ? (familyCertPointsMap.byDeviceId.get(String(u.deviceId || '').trim()) || 0) : 0)
-      )
-    )).lv,
-    pts: Math.max(
-      0,
-      (Number(u.points) || 0)
-      - (
-        familyCertPointsMap.byEmpId.get(normalizeEmpIdValue(u.empId || ''))
-        || (!normalizeEmpIdValue(u.empId || '') ? (familyCertPointsMap.byDeviceId.get(String(u.deviceId || '').trim()) || 0) : 0)
-      )
-    ),
+    lv: getLevel(Math.max(0, Number(alltimePtsByDevice[String(u.deviceId || '').trim()]) || 0)).lv,
+    pts: Math.max(0, Number(alltimePtsByDevice[String(u.deviceId || '').trim()]) || 0),
     wPts: wPtsByDevice[u.deviceId] || 0,
     streak: Number(u.streak) || 0,
     change: 0,
@@ -13803,7 +13767,7 @@ async function fetchLeagueData(opts = {}) {
   const canReuseUsers = !force
     && Array.isArray(_leagueCache.users)
     && Array.isArray(_leagueCache.regs)
-    && Array.isArray(_leagueCache.familyCertRows)
+    && _leagueCache.totalPtsByDevice
     && isLeagueCacheFresh(_leagueCache.usersFetchedAt);
   const canReuseWeekly = !force
     && needWeekly
@@ -13815,6 +13779,7 @@ async function fetchLeagueData(opts = {}) {
     buildRealLeagueUsers(
       _leagueCache.users,
       _leagueCache.regs,
+      _leagueCache.totalPtsByDevice || {},
       needWeekly ? (_leagueCache.wPtsByDevice || {}) : {}
     );
     renderLeague();
@@ -13825,7 +13790,7 @@ async function fetchLeagueData(opts = {}) {
   try {
     let allUsers = canReuseUsers ? (_leagueCache.users || []) : null;
     let allRegs = canReuseUsers ? (_leagueCache.regs || []) : null;
-    let familyCertRows = canReuseUsers ? (_leagueCache.familyCertRows || []) : null;
+    let totalPtsByDevice = canReuseUsers ? (_leagueCache.totalPtsByDevice || {}) : {};
     let wPtsByDevice = canReuseWeekly ? (_leagueCache.wPtsByDevice || {}) : {};
 
     const [userBundle, weeklyRes] = await Promise.all([
@@ -13834,7 +13799,8 @@ async function fetchLeagueData(opts = {}) {
         : Promise.all([
             _db.from('users').select('empId,name,nickname,avatar,points,tags,deviceId,streak'),
             _db.from('registrations').select('id,empId,deviceId,status'),
-            _db.from('family_certifications').select('emp_id,reg_id,reward_points,status').eq('status', 'approved'),
+            _db.from('workouts').select('deviceId,points'),
+            _db.from('glucose').select('deviceId,points'),
           ]),
       needWeekly && !canReuseWeekly
         ? _db.from('workouts').select('deviceId,points').gte('ts', String(weekStartTs))
@@ -13842,16 +13808,17 @@ async function fetchLeagueData(opts = {}) {
     ]);
 
     if (userBundle) {
-      const [usersRes, regsRes, familyCertRes] = userBundle;
+      const [usersRes, regsRes, workoutsRes, glucoseRes] = userBundle;
       if (usersRes?.error) throw usersRes.error;
       if (regsRes?.error) throw regsRes.error;
-      if (familyCertRes?.error) throw familyCertRes.error;
+      if (workoutsRes?.error) throw workoutsRes.error;
+      if (glucoseRes?.error) throw glucoseRes.error;
       allUsers = usersRes?.data || [];
       allRegs = regsRes?.data || [];
-      familyCertRows = familyCertRes?.data || [];
+      totalPtsByDevice = buildLeagueAlltimePointsMap(workoutsRes?.data || [], glucoseRes?.data || []);
       _leagueCache.users = allUsers;
       _leagueCache.regs = allRegs;
-      _leagueCache.familyCertRows = familyCertRows;
+      _leagueCache.totalPtsByDevice = totalPtsByDevice;
       _leagueCache.usersFetchedAt = Date.now();
     }
 
@@ -13869,8 +13836,8 @@ async function fetchLeagueData(opts = {}) {
     buildRealLeagueUsers(
       allUsers || [],
       allRegs || [],
-      needWeekly ? wPtsByDevice : {},
-      familyCertRows || []
+      totalPtsByDevice || {},
+      needWeekly ? wPtsByDevice : {}
     );
     renderLeague();
     // 커뮤니티 피드가 열려있고 챌린지 필터 중이면 재렌더
@@ -14074,7 +14041,7 @@ function renderLeague() {
     const lv = LEVELS[Math.min(u.lv-1, LEVELS.length-1)];
     const badgeHtml = renderLeagueEntryBadgesHtml(u, badgeState, currentTab);
     const trailingHtml = currentTab === 'level'
-      ? `<div class="lb-submeta">${escHtmlComm(lv.name)}</div><div class="lb-pts">${Number(u.pts) || 0}p</div>`
+      ? `<div class="lb-motion-icon" title="${escHtmlComm(lv.name)}" aria-label="${escHtmlComm(lv.name)}">${lv.icon}</div><div class="lb-pts">${Number(u.pts) || 0}p</div>`
       : currentTab === 'alltime'
         ? `<div class="lb-pts">${Number(u.pts) || 0}p</div>`
         : `<div class="lb-pts">${currentTab === 'weekly' ? `${Number(u.wPts) || 0}p` : `${Number(u.pts) || 0}p`}</div>`;
