@@ -9,7 +9,39 @@ const CORS = {
 const json = (data: unknown, status = 200) =>
   new Response(JSON.stringify(data), { status, headers: { ...CORS, "Content-Type": "application/json" } });
 
-type PushRow = { id: string; endpoint: string; device_id?: string | null; emp_id?: string | null; subscription?: Record<string, unknown> | null };
+type PushRow = {
+  id: string;
+  endpoint: string;
+  device_id?: string | null;
+  emp_id?: string | null;
+  subscription?: Record<string, unknown> | null;
+  updated_at?: string | null;
+  last_seen_at?: string | null;
+};
+
+function getPushRowSeenTs(row: PushRow) {
+  return Date.parse(String(row.last_seen_at || row.updated_at || "")) || 0;
+}
+
+function getPushRowTargetKey(row: PushRow) {
+  const empId = String(row.emp_id || "").trim().toUpperCase();
+  if (empId) return `emp:${empId}`;
+  const deviceId = String(row.device_id || "").trim();
+  if (deviceId) return `device:${deviceId}`;
+  return `endpoint:${String(row.endpoint || "").trim()}`;
+}
+
+function pickLatestPushRows(rows: PushRow[]) {
+  const latestByTarget = new Map<string, PushRow>();
+  for (const row of rows || []) {
+    const key = getPushRowTargetKey(row);
+    const prev = latestByTarget.get(key);
+    if (!prev || getPushRowSeenTs(row) >= getPushRowSeenTs(prev)) {
+      latestByTarget.set(key, row);
+    }
+  }
+  return [...latestByTarget.values()];
+}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
@@ -29,7 +61,10 @@ Deno.serve(async (req) => {
     if (!title || !body) return json({ error: "title and body are required." }, 400);
 
     const db = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false, autoRefreshToken: false } });
-    let query = db.from("push_subscriptions").select("id,endpoint,device_id,emp_id,subscription").eq("enabled", true);
+    let query = db
+      .from("push_subscriptions")
+      .select("id,endpoint,device_id,emp_id,subscription,updated_at,last_seen_at")
+      .eq("enabled", true);
     if (deviceId) query = query.eq("device_id", String(deviceId));
     else if (empId) query = query.eq("emp_id", String(empId).toUpperCase());
     else if (Array.isArray(empIds) && empIds.length) query = query.in("emp_id", empIds.map((e: string) => String(e).toUpperCase()));
@@ -37,7 +72,7 @@ Deno.serve(async (req) => {
 
     const { data, error } = await query;
     if (error) return json({ error: error.message }, 500);
-    const rows = (data || []) as PushRow[];
+    const rows = pickLatestPushRows((data || []) as PushRow[]);
     if (!rows.length) return json({ sent: 0, failed: 0, invalid: 0, total: 0 });
 
     const pushPayload = JSON.stringify({

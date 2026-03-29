@@ -1985,7 +1985,8 @@ function renderAll() {
 function renderStats() {
   const effectiveRegs = getEffectiveChallengeRegistrations();
   const activeRegs = effectiveRegs.filter(r => r.status !== 'cancelled').length;
-  document.getElementById('st-users').textContent = GD.users.length;
+  const visibleUsers = GD.users.filter(u => !USER_LIST_EXCLUDE_EMPIDS.includes((u.empId || '').trim().toUpperCase()));
+  document.getElementById('st-users').textContent = visibleUsers.length;
   document.getElementById('st-regs').textContent = activeRegs;
   document.getElementById('st-wo').textContent = GD.workouts.length;
   document.getElementById('st-glc').textContent = GD.glucose.length;
@@ -4267,7 +4268,10 @@ async function sendPushNotice(mode = 'all') {
     const errors = result?.errors || [];
     const label = mode === 'selected' ? '선택 사용자 테스트' : '전체 푸시';
     const errSuffix = errors.length ? ` ⚠️ ${errors[0]}` : '';
-    toast(`${label} 완료 ✓ (총 ${total}건 / 발송 ${sent}건${failed ? ` / 실패 ${failed}건` : ''}${invalid ? ` / 정리 ${invalid}건` : ''})${errSuffix}`);
+    const summary = mode === 'selected'
+      ? `대상 1명 / 최종기기 ${total}건 / 발송 ${sent}건${failed ? ` / 실패 ${failed}건` : ''}${invalid ? ` / 정리 ${invalid}건` : ''}`
+      : `총 ${total}건 / 발송 ${sent}건${failed ? ` / 실패 ${failed}건` : ''}${invalid ? ` / 정리 ${invalid}건` : ''}`;
+    toast(`${label} 완료 ✓ (${summary})${errSuffix}`);
     if (mode === 'all') {
       document.getElementById('push-title').value = '';
       document.getElementById('push-body').value = '';
