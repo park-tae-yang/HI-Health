@@ -3278,6 +3278,7 @@
     .lb-level { font-size: 11px; color: var(--text-secondary); display: flex; align-items: center; gap: 3px; }
     .lb-right { min-width: 64px; text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
     .lb-pts { font-size: 14px; line-height: 1.2; font-weight: 700; color: var(--warning); }
+    .lb-submeta { font-size: 11px; line-height: 1.15; font-weight: 700; color: var(--text-secondary); }
     .lb-change { min-height: 13px; font-size: 10px; font-weight: 700; letter-spacing: -0.01em; }
     .ch-up { color: #94a3b8; }
     .ch-dn { color: #94a3b8; }
@@ -6105,9 +6106,10 @@ const PUSH_PUBLIC_KEY   = 'BEaMexe-bw1jM31PgeQdkkZeqs29Ls1KIMY-TViYgH2dPqg_v7tRR
 const PUSH_TABLE        = 'push_subscriptions';
 const PUSH_DEFAULT_URL  = './index.html#community';
 const AUTO_COMMENT_FN   = 'https://nbnmvvobehjitophkqmu.supabase.co/functions/v1/auto-comment';
-const SW_VERSION        = '20260329-94';
+const SW_VERSION        = '20260329-95';
 const CHALLENGE_PEOPLE_CACHE_KEY = 'hi_health_people_cache_v1';
 let _db = null; // Supabase 클라이언트
+let _lastKnownServerPts = null; // 마지막으로 서버에서 확인한 포인트 (delta 병합용)
 let _realLeagueUsers = null; // Supabase에서 가져온 실제 유저 목록
 let _challengerDeviceIds = new Set(); // 챌린지 신청자 deviceId 세트
 let _leagueFetching = false;
@@ -6306,19 +6308,24 @@ async function refreshUserPointsFromServer() {
     if (!data) return;
     const srvPts   = Number(data.points)       || 0;
     const srvTotal = Number(data.totalPoints || data.points) || 0;
+    const prevPts = Number(S.user.points || 0);
+    const prevTotal = Number(S.user.totalPoints || 0);
     const hasTrackedPointRecords = !!localStorage.getItem(STORAGE_KEY)
       && Array.isArray(S.workouts)
       && Array.isArray(S.glucoseRecords);
     const nextTotal = hasTrackedPointRecords
       ? Math.max(srvTotal, srvPts, getRecordDerivedTotalPoints())
       : srvTotal;
-    if (srvPts !== S.user.points || nextTotal !== S.user.totalPoints) {
-      const gained = srvPts - S.user.points;
-      S.user.points      = srvPts;
-      S.user.totalPoints = nextTotal;
-      save({ skipRemote: true });
-      renderHeader();
-      renderHome();
+    S.user.points = srvPts;
+    S.user.totalPoints = nextTotal;
+    _lastKnownServerPts = srvPts;
+    const reconciled = reconcileTotalPointsFromRecords({ syncRemote: true });
+    const finalPts = Number(S.user.points || 0);
+    const finalTotal = Number(S.user.totalPoints || 0);
+    if (finalPts !== prevPts || finalTotal !== prevTotal) {
+      const gained = srvPts - prevPts;
+      if (!reconciled) save({ skipRemote: true });
+      refreshVisiblePointUi();
       if (gained > 0) {
         showCelebration('bonuspoints', { gained, message: '추가 포인트를 받았어요~' });
       }
@@ -7276,6 +7283,7 @@ function save(opts = {}) {
       _db.from('users').update(payload).eq('deviceId', S.deviceId).lte('points', payload.points).select('deviceId')
         .then(({ data, error }) => {
           if (error) { console.error('[syncUser/update]', error); return; }
+          if (data && data.length > 0) { _lastKnownServerPts = payload.points; }
           if (!data || data.length === 0) {
             // 서버 포인트가 더 높거나 행이 없음 — 존재 여부 확인
             _db.from('users').select('deviceId').eq('deviceId', S.deviceId).maybeSingle()
@@ -7289,10 +7297,35 @@ function save(opts = {}) {
                       else console.error('[syncUser/re-upsert]', e2);
                     });
                 } else {
-                  // 행은 있으나 서버 포인트가 더 높음 — 포인트 제외하고 나머지만 업데이트
+                  // 행은 있으나 서버 포인트가 더 높음 (관리자 보너스 등)
+                  // 클라이언트가 새로 획득한 포인트 delta를 서버 값에 더해 병합
                   const { points: _p, totalPoints: _tp, ...payloadNoPts } = payload;
-                  _db.from('users').update(payloadNoPts).eq('deviceId', S.deviceId)
-                    .then(({ error: e3 }) => { if (e3) console.error('[syncUser/update-no-pts]', e3); });
+                  const earnedDelta = (_lastKnownServerPts !== null)
+                    ? Math.max(0, payload.points - _lastKnownServerPts)
+                    : 0;
+                  if (earnedDelta > 0) {
+                    _db.from('users').select('points').eq('deviceId', S.deviceId).maybeSingle()
+                      .then(({ data: srvRow }) => {
+                        const srvPts = Number(srvRow?.points) || 0;
+                        const mergedPts = srvPts + earnedDelta;
+                        const mergedPayload = {
+                          ...payloadNoPts,
+                          points: mergedPts,
+                          totalPoints: Math.max(mergedPts, Number(payload.totalPoints) || mergedPts),
+                        };
+                        _db.from('users').update(mergedPayload).eq('deviceId', S.deviceId)
+                          .then(({ error: e3 }) => {
+                            if (e3) { console.error('[syncUser/merge-pts]', e3); return; }
+                            S.user.points = mergedPts;
+                            _lastKnownServerPts = mergedPts;
+                            save({ skipRemote: true });
+                            refreshVisiblePointUi();
+                          });
+                      });
+                  } else {
+                    _db.from('users').update(payloadNoPts).eq('deviceId', S.deviceId)
+                      .then(({ error: e3 }) => { if (e3) console.error('[syncUser/update-no-pts]', e3); });
+                  }
                 }
               });
           }
@@ -7314,22 +7347,38 @@ function getRecordDerivedTotalPoints() {
   return workoutPoints + glucosePoints;
 }
 
+function hasPointSpendHistory() {
+  if ((S.pendingRewards || []).length > 0) return true;
+  if ((S.redeemedRewards || []).length > 0) return true;
+  return (S.rewardHistory || []).some(item => Number(item?.cost || 0) > 0);
+}
+
 function getCurrentRewardPoints() {
-  return Math.max(0, Number(S.user?.points || 0));
+  const currentPoints = Math.max(0, Number(S.user?.points || 0));
+  if (IS_GUEST || hasPointSpendHistory()) return currentPoints;
+  return Math.max(currentPoints, getRecordDerivedTotalPoints());
 }
 
 function reconcileTotalPointsFromRecords(opts = {}) {
   if (IS_GUEST) return false;
   const derivedTotal = getRecordDerivedTotalPoints();
+  const canTrustDerivedCurrentPoints = !hasPointSpendHistory();
+  const currentPoints = Number(S.user.points || 0);
+  const nextPoints = canTrustDerivedCurrentPoints
+    ? Math.max(currentPoints, derivedTotal)
+    : currentPoints;
+  const pointsChanged = nextPoints !== currentPoints;
+  if (pointsChanged) S.user.points = nextPoints;
   const nextTotal = Math.max(
     derivedTotal,
-    getCurrentRewardPoints(),
+    nextPoints,
     Number(S.user.totalPoints || 0),
   );
-  if (nextTotal === Number(S.user.totalPoints || 0)) return false;
+  const totalChanged = nextTotal !== Number(S.user.totalPoints || 0);
+  if (!pointsChanged && !totalChanged) return false;
   S.user.totalPoints = nextTotal;
   save({ skipRemote: true });
-  if (opts.syncRemote) forceSyncPoints({ includePoints: false });
+  if (opts.syncRemote) forceSyncPoints({ includePoints: pointsChanged });
   return true;
 }
 
@@ -7343,7 +7392,13 @@ function forceSyncPoints(opts = {}) {
   _db.from('users')
     .update(payload)
     .eq('deviceId', S.deviceId)
-    .then(({ error }) => { if (error) console.error('[forceSyncPoints]', error); });
+    .then(({ error }) => {
+      if (error) {
+        console.error('[forceSyncPoints]', error);
+        return;
+      }
+      if (includePoints) _lastKnownServerPts = Number(payload.points) || 0;
+    });
 }
 
 /* ── Supabase 비동기 동기화 ── */
@@ -7982,6 +8037,7 @@ async function hydrateAccountFromRemote(empId, fallbackName = '') {
       streak: Number(u.streak) || 0,
       tags: typeof u.tags === 'string' ? u.tags.split(',').filter(Boolean) : (u.tags || []),
     };
+    _lastKnownServerPts = Number(u.points) || 0;
     S.workouts = mergeWorkoutRecords(w.data || [], S.workouts);
 
     // 로컬에만 있던 기록을 Supabase에 재동기화 (오프라인/네트워크 오류로 누락된 경우)
@@ -10245,6 +10301,16 @@ function renderHeader() {
   }
 }
 
+function refreshVisiblePointUi() {
+  renderHeader();
+  if (document.getElementById('page-home')?.classList.contains('active')) renderHome();
+  if (document.getElementById('page-rewards')?.classList.contains('active')) {
+    const currentRewardsTab = document.getElementById('rew-toggle')?.dataset.tab || 'rewards';
+    if (currentRewardsTab === 'shop') renderShop();
+    else renderRewards();
+  }
+}
+
 function resetEntryUiState() {
   closeNotifPanel?.();
   closeCartPanel?.();
@@ -11520,7 +11586,19 @@ async function deleteRemoteRecordById(table, id, deviceId) {
       if ((count || 0) > 0) return count;
     }
   }
-  console.warn(`[deleteRemoteRecordById] no remote row matched ${table} id=${idText}`);
+
+  // 삭제 결과 count가 비어 있거나 0이어도 실제 행이 이미 없으면 성공으로 본다.
+  for (const applyScope of scopes) {
+    for (const candidate of idCandidates) {
+      const { count, error } = await applyScope(
+        _db.from(table).select('id', { head: true, count: 'exact' }).eq('id', candidate)
+      );
+      if (error) throw error;
+      if ((count || 0) > 0) {
+        throw new Error(`${table} id=${idText} 삭제가 서버에 반영되지 않았습니다.`);
+      }
+    }
+  }
   return 0;
 }
 
@@ -13988,15 +14066,17 @@ function renderLeague() {
     const tierHtml = renderLeagueTierHtml(u.rank, list.length);
     const chgHtml = currentTab === 'weekly'
       ? renderLeagueChangeHtml(u.change)
-      : currentTab === 'level' || currentTab === 'alltime'
+      : currentTab === 'level'
         ? ''
+        : currentTab === 'alltime'
+          ? tierHtml
         : `<span class="lb-change ch-eq">−</span>`;
     const lv = LEVELS[Math.min(u.lv-1, LEVELS.length-1)];
     const badgeHtml = renderLeagueEntryBadgesHtml(u, badgeState, currentTab);
     const trailingHtml = currentTab === 'level'
-      ? `<div class="lb-pts"><span title="${escHtmlComm(lv.name)}" aria-label="${escHtmlComm(lv.name)}">${lv.icon}</span></div>`
+      ? `<div class="lb-submeta">${escHtmlComm(lv.name)}</div><div class="lb-pts">${Number(u.pts) || 0}p</div>`
       : currentTab === 'alltime'
-        ? tierHtml
+        ? `<div class="lb-pts">${Number(u.pts) || 0}p</div>`
         : `<div class="lb-pts">${currentTab === 'weekly' ? `${Number(u.wPts) || 0}p` : `${Number(u.pts) || 0}p`}</div>`;
     return `
       <div class="lb-item ${u.isMe ? 'me' : ''} ${u.rank <= 3 ? 'rank-top3' : ''}" data-league-key="${escHtmlComm(getLeagueEntryKey(u))}">
@@ -14045,6 +14125,7 @@ function setCommunityTab(tab) {
     }
   }
   if (tab === 'league') {
+    refreshUserPointsFromServer();
     if (!wasLeagueVisible) {
       renderLeagueLoadingState();
       fetchLeagueData({ force: true, needWeekly: S.leagueTab === 'weekly' });

@@ -292,6 +292,7 @@
     <nav class="sb-nav">
       <div class="sb-section">데이터</div>
       <button class="sb-item active" id="tab-btn-users" data-tab="users" onclick="switchTab('users',this)"><span class="sb-icon">👥</span>이용자</button>
+      <button class="sb-item" id="tab-btn-league" data-tab="league" onclick="switchTab('league',this)"><span class="sb-icon">🏅</span>리그</button>
       <button class="sb-item" id="tab-btn-workouts" data-tab="workouts" onclick="switchTab('workouts',this)"><span class="sb-icon">🏋️</span>운동기록</button>
       <button class="sb-item" id="tab-btn-glucose" data-tab="glucose" onclick="switchTab('glucose',this)"><span class="sb-icon">🩸</span>혈당기록</button>
       <button class="sb-item" id="tab-btn-posts" data-tab="posts" onclick="switchTab('posts',this)"><span class="sb-icon">💬</span>커뮤니티</button>
@@ -381,6 +382,52 @@
         <div class="pagination" id="u-pager"></div>
       </div>
 
+    </div>
+
+    <!-- ── PANEL: LEAGUE ── -->
+    <div class="panel" id="panel-league">
+      <div class="sub-tab-bar">
+        <button class="sub-tab active" id="lg-tab-weekly" onclick="switchAdminLeagueTab('weekly',this)">이번주</button>
+        <button class="sub-tab" id="lg-tab-level" onclick="switchAdminLeagueTab('level',this)">레벨별</button>
+        <button class="sub-tab" id="lg-tab-alltime" onclick="switchAdminLeagueTab('alltime',this)">전체기록</button>
+        <button class="sub-tab" id="lg-tab-challenger" onclick="switchAdminLeagueTab('challenger',this)">챌린지</button>
+      </div>
+
+      <div class="stat-grid wo-summary-grid">
+        <div class="stat-card a"><div class="s-lbl">표시 인원</div><div class="s-val" id="lg-sum-count">-</div><div class="s-sub">명</div></div>
+        <div class="stat-card g"><div class="s-lbl">챌린저</div><div class="s-val" id="lg-sum-challenger">-</div><div class="s-sub">명</div></div>
+        <div class="stat-card pu"><div class="s-lbl">이번주 1위</div><div class="s-val" id="lg-sum-weekly-top">-</div><div class="s-sub">p</div></div>
+        <div class="stat-card"><div class="s-lbl">전체기록 1위</div><div class="s-val" id="lg-sum-alltime-top">-</div><div class="s-sub">p</div></div>
+      </div>
+
+      <div class="ctrl-bar">
+        <input class="ctrl-inp" id="lg-search" placeholder="이름·계정 ID·부서 검색" oninput="renderAdminLeague()">
+        <select class="ctrl-sel" id="lg-level-filter" onchange="renderAdminLeague()" style="display:none">
+          <option value="">전체 레벨</option>
+        </select>
+        <span class="ctrl-count" id="lg-count">0명</span>
+      </div>
+
+      <div class="tbl-wrap">
+        <div class="tbl-scroll">
+          <table>
+            <thead><tr>
+              <th>#</th>
+              <th>이름</th>
+              <th>계정 ID</th>
+              <th>부서</th>
+              <th>레벨</th>
+              <th>이번주</th>
+              <th>전체기록</th>
+              <th>상태</th>
+              <th>마지막 활동</th>
+            </tr></thead>
+            <tbody id="lg-tbody">
+              <tr><td class="empty-cell" colspan="9">불러오는 중...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
 
     <!-- ── PANEL: WORKOUTS ── -->
@@ -1267,12 +1314,21 @@ function getRegRequestSummaryText(r) {
 ══════════════════════════════════════════════ */
 const ADMIN_EMPIDS = ['1111','A1803'];
 const USER_LIST_EXCLUDE_EMPIDS = ['1111']; // 이용자 목록에서 제외할 관리자 전용 계정
+const ADMIN_LEAGUE_LEVELS = [
+  { lv: 1, name: '새싹', min: 0 },
+  { lv: 2, name: '햇살', min: 200 },
+  { lv: 3, name: '활동가', min: 500 },
+  { lv: 4, name: '도전자', min: 1000 },
+  { lv: 5, name: '챔피언', min: 2000 },
+  { lv: 6, name: '레전드', min: 4000 },
+];
 let ADMIN_PW = localStorage.getItem('hi_admin_pw') || '1111'; // 비밀번호 변경용 (하위호환)
 let db = null;
 let GD = { users:[], workouts:[], posts:[], glucose:[], registrations:[], orders:[], adminPosts:[] };
 let selDeviceId = '';
 let ADMIN_AUTH_KEY = '';
 let _userDetailDirty = false;
+let adminLeagueTab = 'weekly';
 let uPage = 0, wPage = 0, poPage = 0;
 const PAGE = 20;
 let uSearchTimer = null;
@@ -1904,6 +1960,7 @@ async function loadAll(opts = {}) {
 function renderAll() {
   renderStats();
   renderUsers();
+  renderAdminLeague();
   renderWorkouts();
   renderPosts();
   loadHirolaPostList();
@@ -1926,6 +1983,160 @@ function renderStats() {
   document.getElementById('st-glc').textContent = GD.glucose.length;
   document.getElementById('st-posts').textContent = GD.posts.length;
   document.getElementById('st-donation').textContent = (activeRegs * CHALLENGE_DONATION_PER_PERSON).toLocaleString('ko-KR') + '원';
+}
+
+function getAdminLeagueWeekStartTs(baseDate = new Date()) {
+  const weekStart = new Date(baseDate);
+  weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+  weekStart.setHours(0, 0, 0, 0);
+  return weekStart.getTime();
+}
+
+function getAdminWeeklyPointsMap(workouts = GD.workouts, weekStartTs = getAdminLeagueWeekStartTs()) {
+  const byDeviceId = {};
+  (workouts || []).forEach(w => {
+    const ts = Number(w?.ts) || Date.parse(String(w?.ts || '')) || 0;
+    if (!ts || ts < weekStartTs) return;
+    const deviceId = String(w?.deviceId || '').trim();
+    if (!deviceId) return;
+    byDeviceId[deviceId] = (byDeviceId[deviceId] || 0) + (Number(w?.points) || 0);
+  });
+  return byDeviceId;
+}
+
+function getAdminActivityPointsMap(workouts = GD.workouts, glucose = GD.glucose) {
+  const byDeviceId = {};
+  (workouts || []).forEach(w => {
+    const deviceId = String(w?.deviceId || '').trim();
+    if (!deviceId) return;
+    byDeviceId[deviceId] = (byDeviceId[deviceId] || 0) + (Number(w?.points) || 0);
+  });
+  (glucose || []).forEach(g => {
+    const deviceId = String(g?.deviceId || '').trim();
+    if (!deviceId) return;
+    byDeviceId[deviceId] = (byDeviceId[deviceId] || 0) + (Number(g?.points) || 0);
+  });
+  return byDeviceId;
+}
+
+function getAdminEffectivePoints(u, activityPointsMap = getAdminActivityPointsMap()) {
+  const deviceId = String(u?.deviceId || '').trim();
+  const rawPoints = Math.max(0, Number(u?.points) || 0);
+  const recordPoints = deviceId ? Math.max(0, Number(activityPointsMap[deviceId]) || 0) : 0;
+  return Math.max(rawPoints, recordPoints);
+}
+
+function getAdminAlltimeLeaguePoints(u) {
+  return getAdminEffectivePoints(u);
+}
+
+function getAdminLevelLeagueMeta(u) {
+  const pts = getAdminAlltimeLeaguePoints(u);
+  const level = getAdminLevel(pts);
+  return { pts, level };
+}
+
+function getAdminLevel(pts) {
+  return ADMIN_LEAGUE_LEVELS.slice().reverse().find(l => pts >= l.min) || ADMIN_LEAGUE_LEVELS[0];
+}
+
+function populateAdminLeagueLevelFilter() {
+  const sel = document.getElementById('lg-level-filter');
+  if (!sel) return;
+  const prev = sel.value;
+  sel.innerHTML = '<option value="">전체 레벨</option>' + ADMIN_LEAGUE_LEVELS.map(level =>
+    `<option value="${level.lv}">Lv.${level.lv} ${level.name}</option>`
+  ).join('');
+  sel.value = [...sel.options].some(o => o.value === prev) ? prev : '';
+}
+
+function getAdminLeagueEntries() {
+  const weekPts = getAdminWeeklyPointsMap();
+  return GD.users
+    .filter(u => !USER_LIST_EXCLUDE_EMPIDS.includes((u.empId || '').trim().toUpperCase()))
+    .map(u => {
+      const pts = getAdminAlltimeLeaguePoints(u);
+      const level = getAdminLevel(pts);
+      return {
+        ...u,
+        pts,
+        wPts: weekPts[u.deviceId] || 0,
+        level,
+        isChallenger: isChallenger(u),
+      };
+    })
+    .filter(u => (u.name || u.empId || u.deviceId));
+}
+
+function getAdminLeagueSortedEntries(tab = adminLeagueTab) {
+  const q = (document.getElementById('lg-search')?.value || '').toLowerCase();
+  const levelFilter = document.getElementById('lg-level-filter')?.value || '';
+  let rows = getAdminLeagueEntries().filter(u => {
+    if (q && ![(u.name || ''), (u.empId || ''), (u.dept || '')].some(s => String(s).toLowerCase().includes(q))) return false;
+    if (tab === 'challenger' && !u.isChallenger) return false;
+    if (tab === 'level' && levelFilter && String(u.level.lv) !== String(levelFilter)) return false;
+    return true;
+  });
+
+  if (tab === 'weekly') {
+    rows.sort((a, b) => (b.wPts - a.wPts) || (b.pts - a.pts) || (a.name || '').localeCompare(b.name || '', 'ko'));
+  } else if (tab === 'level') {
+    rows.sort((a, b) => (b.level.lv - a.level.lv) || (b.pts - a.pts) || (b.wPts - a.wPts) || (a.name || '').localeCompare(b.name || '', 'ko'));
+  } else {
+    rows.sort((a, b) => (b.pts - a.pts) || (b.wPts - a.wPts) || (a.name || '').localeCompare(b.name || '', 'ko'));
+  }
+  return rows;
+}
+
+function switchAdminLeagueTab(tab, btn) {
+  adminLeagueTab = tab;
+  document.querySelectorAll('#panel-league .sub-tab').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  const levelSel = document.getElementById('lg-level-filter');
+  if (levelSel) levelSel.style.display = tab === 'level' ? '' : 'none';
+  renderAdminLeague();
+}
+
+function renderAdminLeague() {
+  populateAdminLeagueLevelFilter();
+  const rows = getAdminLeagueSortedEntries(adminLeagueTab);
+  const tbody = document.getElementById('lg-tbody');
+  const countEl = document.getElementById('lg-count');
+  const sumCountEl = document.getElementById('lg-sum-count');
+  const sumChEl = document.getElementById('lg-sum-challenger');
+  const sumWEl = document.getElementById('lg-sum-weekly-top');
+  const sumAEl = document.getElementById('lg-sum-alltime-top');
+  const allEntries = getAdminLeagueEntries();
+
+  if (countEl) countEl.textContent = rows.length + '명';
+  if (sumCountEl) sumCountEl.textContent = rows.length;
+  if (sumChEl) sumChEl.textContent = allEntries.filter(u => u.isChallenger).length;
+  if (sumWEl) sumWEl.textContent = (allEntries.reduce((max, u) => Math.max(max, Number(u.wPts) || 0), 0)).toLocaleString('ko-KR');
+  if (sumAEl) sumAEl.textContent = (allEntries.reduce((max, u) => Math.max(max, Number(u.pts) || 0), 0)).toLocaleString('ko-KR');
+
+  if (!tbody) return;
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td class="empty-cell" colspan="9">표시할 리그 이용자가 없습니다</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = rows.map((u, idx) => {
+    const rankClass = idx === 0 ? 'g1' : idx === 1 ? 'g2' : idx === 2 ? 'g3' : '';
+    const stateBadge = u.isChallenger
+      ? '<span class="badge ch">챌린저</span>'
+      : '<span class="badge can">일반</span>';
+    return `<tr>
+      <td><span class="rank ${rankClass}">${idx + 1}</span></td>
+      <td class="td-name">${escHtml(u.name || '(이름없음)')}</td>
+      <td>${escHtml(u.empId || '-')}</td>
+      <td>${escHtml(u.dept || '-')}</td>
+      <td><span class="badge ex">Lv.${u.level.lv} ${escHtml(u.level.name)}</span></td>
+      <td><span class="badge pts">+${(Number(u.wPts) || 0).toLocaleString()}p</span></td>
+      <td><span class="badge pts">+${(Number(u.pts) || 0).toLocaleString()}p</span></td>
+      <td>${stateBadge}</td>
+      <td>${activeCell(u)}</td>
+    </tr>`;
+  }).join('');
 }
 
 /* ══════════════════════════════════════════════
@@ -2047,10 +2258,11 @@ function filteredUsers() {
 function sortedUsers(arr) {
   const sort = document.getElementById('u-sort')?.value || 'name';
   const woCnt = {}, strk = {};
+  const activityPointsMap = getAdminActivityPointsMap();
   GD.workouts.forEach(w => woCnt[w.deviceId] = (woCnt[w.deviceId]||0)+1);
   GD.users.forEach(u => strk[u.deviceId] = u.streak||0);
   return [...arr].sort((a, b) => {
-    if (sort === 'points')   return (Number(b.points)||0) - (Number(a.points)||0);
+    if (sort === 'points')   return getAdminEffectivePoints(b, activityPointsMap) - getAdminEffectivePoints(a, activityPointsMap);
     if (sort === 'workouts') return (woCnt[b.deviceId]||0) - (woCnt[a.deviceId]||0);
     if (sort === 'streak')   return (strk[b.deviceId]||0) - (strk[a.deviceId]||0);
     return (a.name||'').localeCompare(b.name||'', 'ko');
@@ -2060,6 +2272,7 @@ function sortedUsers(arr) {
 function renderUsers() {
   const dupIds = getDupEmpIds();
   const woCnt = {};
+  const activityPointsMap = getAdminActivityPointsMap();
   GD.workouts.forEach(w => woCnt[w.deviceId] = (woCnt[w.deviceId]||0)+1);
 
   // 서브탭 카운트 업데이트 (관리자 계정 제외)
@@ -2097,13 +2310,14 @@ function renderUsers() {
   const tbody = document.getElementById('u-tbody');
 
   if (!page.length) {
-    tbody.innerHTML = `<tr><td class="empty-cell" colspan="12">이용자가 없습니다</td></tr>`;
+    tbody.innerHTML = `<tr><td class="empty-cell" colspan="10">이용자가 없습니다</td></tr>`;
     document.getElementById('u-pager').innerHTML = '';
     return;
   }
 
   tbody.innerHTML = page.map((u, i) => {
     const rank = uPage * PAGE + i + 1;
+    const effectivePoints = getAdminEffectivePoints(u, activityPointsMap);
     const rc = rank === 1 ? 'g1' : rank === 2 ? 'g2' : rank === 3 ? 'g3' : '';
     const bad = isBadName(u.name);
     const dup = dupIds.has((u.empId||'').trim());
@@ -2125,7 +2339,7 @@ function renderUsers() {
       <td style="color:var(--t2)">${u.nickname||'-'}</td>
       <td>${u.empId||'-'}</td>
       <td>${u.dept||'-'}</td>
-      <td><span class="badge pts" onclick="openPtsPopup('${safeId}',event)">+${(Number(u.points)||0).toLocaleString()}p</span></td>
+      <td><span class="badge pts" onclick="openPtsPopup('${safeId}',event)">+${effectivePoints.toLocaleString()}p</span></td>
       <td>${woCnt[u.deviceId]||0}</td>
       <td>${Number(u.streak)||0}일</td>
       <td>${actCell}</td>
@@ -2160,10 +2374,11 @@ function openPtsPopup(deviceId, e) {
   selDeviceId = deviceId;
   const u = GD.users.find(x => x.deviceId === deviceId);
   if (!u) return;
+  const effectivePoints = getAdminEffectivePoints(u);
   selectUser(deviceId, u.name || '');
   const popup = document.getElementById('pts-popup');
   document.getElementById('pts-popup-name').textContent = u.name || '(이름없음)';
-  document.getElementById('pts-popup-cur').textContent = (Number(u.points)||0).toLocaleString() + 'p';
+  document.getElementById('pts-popup-cur').textContent = effectivePoints.toLocaleString() + 'p';
   document.getElementById('adj-val').value = '';
   popup.style.display = 'block';
   // 클릭 위치 기준으로 팝업 위치 결정
@@ -2240,8 +2455,9 @@ async function adjPoints(sign) {
   const u = GD.users.find(x => x.deviceId === selDeviceId);
   if (!u) return;
   if (u.__derived) { toast('임시 이용자는 포인트 조정이 불가합니다. users 생성 후 진행해주세요.'); return; }
-  const newPts = Math.max(0, (Number(u.points)||0) + sign * v);
-  const baseTotalPoints = Math.max(Number(u.totalPoints || 0), Number(u.points) || 0);
+  const effectivePoints = getAdminEffectivePoints(u);
+  const newPts = Math.max(0, effectivePoints + sign * v);
+  const baseTotalPoints = Math.max(Number(u.totalPoints || 0), effectivePoints);
   const newTotalPoints = Math.max(0, baseTotalPoints + sign * v);
   showLoading(true);
   const result = await updateUserPointsFields(selDeviceId, newPts, newTotalPoints);
@@ -2249,7 +2465,7 @@ async function adjPoints(sign) {
   if (result.error) { toast('실패: ' + result.error.message); return; }
   u.points = Number(result.points) || newPts;
   if (result.appliedTotalPoints) u.totalPoints = Number(result.totalPoints) || newTotalPoints;
-  document.getElementById('pts-popup-cur').textContent = (Number(u.points) || 0).toLocaleString() + 'p';
+  document.getElementById('pts-popup-cur').textContent = getAdminEffectivePoints(u).toLocaleString() + 'p';
   document.getElementById('adj-val').value = '';
   renderStats(); renderUsers();
   toast((sign > 0 ? '+' : '') + (sign * v) + 'p 조정 완료' + (result.appliedTotalPoints ? '' : ' (누적포인트 동기화는 제외됨)'));
@@ -2505,10 +2721,11 @@ async function restoreUsersFromActivity() {
 async function deleteDuplicates() {
   const dupIds = getDupEmpIds();
   if (!dupIds.size) { toast('중복 이용자 없음'); return; }
+  const activityPointsMap = getAdminActivityPointsMap();
   const toDelete = [];
   dupIds.forEach(empId => {
     const group = GD.users.filter(u => (u.empId||'').trim() === empId)
-      .sort((a,b) => (Number(b.points)||0) - (Number(a.points)||0));
+      .sort((a,b) => getAdminEffectivePoints(b, activityPointsMap) - getAdminEffectivePoints(a, activityPointsMap));
     group.slice(1).forEach(u => toDelete.push(u));
   });
   if (!confirm(`중복 계정 ID 이용자 ${toDelete.length}명 삭제\n(각 계정 ID별 포인트 최고 계정 유지)\n\n${toDelete.map(u => `• ${u.name||'(없음)'} (${u.empId})`).join('\n')}\n\n계속하시겠습니까?`)) return;
@@ -4223,7 +4440,7 @@ async function deleteAdminPost(id) {
 ══════════════════════════════════════════════ */
 const TAB_TITLES = {
   users: '이용자 관리', workouts: '운동 기록', glucose: '혈당 기록', posts: '커뮤니티',
-  challenge: '챌린지', orders: '구매 관리',
+  league: '리그', challenge: '챌린지', orders: '구매 관리',
   content: '콘텐츠 작성', settings: '설정', famcert: '가족인증',
 };
 function switchTab(name, btn) {
@@ -4235,6 +4452,7 @@ function switchTab(name, btn) {
   if (titleEl) titleEl.textContent = TAB_TITLES[name] || name;
   if (db && name !== 'settings') loadAll({ silent: true });
   if (name === 'users') renderUsers();
+  if (name === 'league') renderAdminLeague();
   if (name === 'workouts') renderWorkouts();
   if (name === 'glucose') renderGlucose();
   if (name === 'posts') renderPosts();

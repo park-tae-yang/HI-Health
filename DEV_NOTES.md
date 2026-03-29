@@ -7,6 +7,18 @@
 
 ## 🐛 오류 / 이슈
 
+### [2026-03-29] 보상 포인트 불일치 — 관리자 vs 리그
+**증상**: 관리자 이용자관리에서 보이는 포인트와 리그 "전체기록" 탭에서 보이는 내 포인트가 다름
+**원인**:
+1. 리그 내 카드는 클라이언트 `S.user.points`를 사용하고, 관리자는 Supabase `users.points`(서버 값)를 사용. 이 둘이 일치하지 않을 때 발생
+2. 관리자가 서버에서 보너스를 지급하면 `users.points`가 높아지는데, 클라이언트 `save()`에 `.lte('points', payload.points)` 가드가 있어 클라이언트가 서버를 덮어쓰지 못함 → 그 사이에 운동 기록을 하면 해당 포인트 delta가 서버에 반영되지 않음
+3. `refreshUserPointsFromServer`가 서버 값으로 클라이언트를 덮어쓰면 blocked 구간의 운동 포인트가 유실됨
+**해결**:
+1. `setCommunityTab('league')` 시 `refreshUserPointsFromServer()` 호출 → 리그 열 때마다 서버 값과 동기화
+2. `_lastKnownServerPts` 추적: `hydrateAccountFromRemote` 및 `refreshUserPointsFromServer` 실행 시 마지막으로 알려진 서버 포인트 저장
+3. `.lte` 가드 실패 시 delta 병합: `earnedDelta = clientPts - _lastKnownServerPts`를 계산해 서버 현재값에 더해 push → 보너스 + 운동 포인트 모두 반영
+**관련 파일**: `index.html` — `save()`, `hydrateAccountFromRemote()`, `refreshUserPointsFromServer()`, `setCommunityTab()`
+
 ### [2026-03-28] 프로필 태그가 재로그인 후 초기화됨
 **증상**: 프로필에서 태그를 선택해도 재로그인 후 태그가 사라짐
 **원인**: 로그인 흐름에서 localStorage 태그 복원이 `hydrateAccountFromRemote` 호출 전에 실행됨. 이후 `hydrateAccountFromRemote`가 서버의 빈 `tags` 값으로 `S.user.tags`를 덮어씌워 복원된 태그가 소멸. 이후 `save()` 호출로 빈 태그가 Supabase에 저장됨
