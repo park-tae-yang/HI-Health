@@ -6105,7 +6105,7 @@ const PUSH_PUBLIC_KEY   = 'BEaMexe-bw1jM31PgeQdkkZeqs29Ls1KIMY-TViYgH2dPqg_v7tRR
 const PUSH_TABLE        = 'push_subscriptions';
 const PUSH_DEFAULT_URL  = './index.html#community';
 const AUTO_COMMENT_FN   = 'https://nbnmvvobehjitophkqmu.supabase.co/functions/v1/auto-comment';
-const SW_VERSION        = '20260325-93';
+const SW_VERSION        = '20260329-94';
 const CHALLENGE_PEOPLE_CACHE_KEY = 'hi_health_people_cache_v1';
 let _db = null; // Supabase 클라이언트
 let _realLeagueUsers = null; // Supabase에서 가져온 실제 유저 목록
@@ -13997,7 +13997,7 @@ function renderLeague() {
       ? `<div class="lb-pts"><span title="${escHtmlComm(lv.name)}" aria-label="${escHtmlComm(lv.name)}">${lv.icon}</span></div>`
       : currentTab === 'alltime'
         ? tierHtml
-        : `<div class="lb-pts">${currentTab === 'weekly' ? u.wPts : u.pts + 'p'}</div>`;
+        : `<div class="lb-pts">${currentTab === 'weekly' ? `${Number(u.wPts) || 0}p` : `${Number(u.pts) || 0}p`}</div>`;
     return `
       <div class="lb-item ${u.isMe ? 'me' : ''} ${u.rank <= 3 ? 'rank-top3' : ''}" data-league-key="${escHtmlComm(getLeagueEntryKey(u))}">
         <div class="lb-rank ${u.rank<=3?'top3':''}">${renderLeagueRankHtml(u.rank)}</div>
@@ -18427,6 +18427,13 @@ async function init() {
     const autoLoadEl = document.getElementById('login-loading');
     if (autoLoadEl) autoLoadEl.style.display = 'block';
     await hydrateAccountFromRemote(savedEmpId, keepName || S.user.name || '');
+    // 태그 복구: 서버에 태그가 없을 때 localStorage에서 복원 (hydrateAccountFromRemote 이후)
+    if (!S.user.tags?.length) {
+      try {
+        const saved = JSON.parse(localStorage.getItem('hi_health_tags_' + savedEmpId));
+        if (saved?.length) S.user.tags = saved;
+      } catch(e) {}
+    }
     await syncAccountSettingsWithRemote(savedEmpId);
     await syncMyChallengeRegistrationWithOptions({ pruneMissingRemote: true });
     save();
