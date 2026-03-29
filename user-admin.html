@@ -2199,17 +2199,16 @@ function renderAdminLeague() {
 ══════════════════════════════════════════════ */
 function getUserLastActiveTs(u, lastWorkoutTsMap = null) {
   const activeAt = u.lastActiveAt || u.lastactiveat;
-  let ts = activeAt ? new Date(activeAt).getTime() : 0;
-  if (!ts) {
-    if (lastWorkoutTsMap) {
-      ts = Number(lastWorkoutTsMap[u.deviceId] || 0);
-    } else {
-      const lastWo = GD.workouts.filter(w => w.deviceId === u.deviceId)
-        .sort((a,b) => Number(b.ts||0) - Number(a.ts||0))[0];
-      ts = lastWo ? Number(lastWo.ts||0) : 0;
-    }
+  const activeTs = activeAt ? new Date(activeAt).getTime() : 0;
+  let workoutTs = 0;
+  if (lastWorkoutTsMap) {
+    workoutTs = Number(lastWorkoutTsMap[u.deviceId] || 0);
+  } else {
+    const lastWo = GD.workouts.filter(w => w.deviceId === u.deviceId)
+      .sort((a,b) => Number(b.ts||0) - Number(a.ts||0))[0];
+    workoutTs = lastWo ? Number(lastWo.ts||0) : 0;
   }
-  return ts;
+  return Math.max(activeTs || 0, workoutTs || 0);
 }
 
 function activeCell(u, lastWorkoutTsMap = null) {
