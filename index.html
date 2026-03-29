@@ -9591,32 +9591,32 @@ function getLeagueAlertMessage(entries = [], meEntry = null, tab = S.leagueTab) 
   const myKey = getLeagueEntryKey(meEntry);
   const tabCopy = {
     weekly: {
-      first: ['이번 주 활력 대장! 성장은 제가 책임질게요, 즐기기만 하세요!'],
+      first: ['이번 주 활력 대장! 성장은 제가 책임질게요, 즐기기만 하세요! ✨'],
       praise: ['컨디션 최고네요! 혹시 몰래 영양제 챙겨 드시는 거 아니죠?'],
       nudge: ['안정적인 분열 속도! 저도 곧 뒤따라갈게요'],
       push: ['소파랑 너무 친해진 거 아니죠? 딱 10분만 떨어져 봐요!'],
-      outside: ['똑똑, 회원님? 제 알림... 혹시 스팸함에 넣으신 건 아니죠?'],
+      outside: ['똑똑, 회원님? 제 알림... 혹시 스팸함에 넣으신 건 아니죠? 😅'],
     },
     level: {
       first: ['압도적 1위! 회원님은 이미 최상급 배아예요. 얼른 월반하시죠!'],
       praise: ['최상급을 향해! 기분 좋게 다음 레벨로 올라가 볼까요?'],
       nudge: ['흔들림 없는 편안함! 지금 딱 정석대로 가고 있어요.'],
       push: ['뒤에서 발소리가 들리는데... 조금만 더 속도를 내볼까요?'],
-      outside: ['착상은 제가 할게요, 운동은 누가 하실래요?'],
+      outside: ['착상은 제가 할게요, 운동은 누가 하실래요? 👀'],
     },
     alltime: {
-      first: ['기록 제조기 인정! 명예의 전당 주인공은 바로 당신입니다.'],
+      first: ['기록 제조기 인정! 명예의 전당 주인공은 바로 당신입니다. 🏅'],
       praise: ['기록 정리는 제가 다 해둘게요, 가벼워진 몸만 챙기세요!'],
       nudge: ['차곡차곡 건강 저금 중! 미래의 내가 고맙다고 할 거예요.'],
       push: ['기록장이 동결 중인가요? 해동은 제가 할게요, 가볍게 몸만 풀어보세요!'],
-      outside: ['삑-! 오늘 출석 도장 찍을 자리 비워놨어요. 기다릴게요!'],
+      outside: ['삑-! 오늘 출석 도장 찍을 자리 비워놨어요. 기다릴게요! 🙂'],
     },
     challenger: {
-      first: ['챌린지 1위 점령! 이 구역의 주인공은 바로 당신, 영광의 금메달을 수여합니다!'],
+      first: ['챌린지 1위 점령! 이 구역의 주인공은 바로 당신, 영광의 금메달을 수여합니다! 🏆'],
       praise: ['배지 닦아놓고 기다릴게요! 마지막 스퍼트로 멋지게 마침표 찍어볼까요?'],
       nudge: ['배지가 손을 흔드네요! 여기서 멈추면 제가 꿈에 나옵니다?'],
       push: ['참가에 의의를 두기엔... 흘린 에너지가 아깝잖아요'],
-      outside: ['혹시 "신청 버튼만 누르기" 챌린지는 아니었죠?'],
+      outside: ['혹시 "신청 버튼만 누르기" 챌린지는 아니었죠? 😏'],
     },
   };
   const copy = tabCopy[tab] || tabCopy.weekly;
@@ -9629,9 +9629,9 @@ function getLeagueAlertMessage(entries = [], meEntry = null, tab = S.leagueTab) 
   const isStreakKing = myKey && badgeState.streakKingKey === myKey;
   const specialChip = isRisingKing ? '상승왕' : isStreakKing ? '연속기록왕' : '';
   const specialLine = isRisingKing
-    ? '활력이 수직 상승 중! 오늘 기분 좋은 일이 있으셨나 봐요?'
+    ? '활력이 수직 상승 중! 오늘 기분 좋은 일이 있으셨나 봐요? 🚀'
     : isStreakKing
-      ? '작심삼일이 뭐죠? 당신을 "루틴 요정"으로 임명합니다!'
+      ? '작심삼일이 뭐죠? 당신을 "루틴 요정"으로 임명합니다! 🧚'
       : '';
 
   if (specialLine) {
