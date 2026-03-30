@@ -14128,7 +14128,7 @@ function renderLeague() {
     : currentTab === 'level'
       ? getLeagueNextLevelThresholdText(myPts)
       : currentTab === 'alltime'
-        ? myTierHtml
+        ? (Number(displayMyRank) > 20 ? `<span class="lb-change ch-eq">−</span>` : myTierHtml)
         : `<span class="lb-change ch-eq">−</span>`;
 
   if (canJoinLeague) {
@@ -14173,12 +14173,13 @@ function renderLeague() {
       : lbSlice;
   document.getElementById('lb-list').innerHTML = showList.map(u => {
     const tierHtml = renderLeagueTierHtml(u.rank, list.length);
+    const alltimeTierHtml = Number(u.rank) > 20 ? `<span class="lb-change ch-eq">−</span>` : tierHtml;
     const chgHtml = currentTab === 'weekly'
       ? renderLeagueChangeHtml(u.change)
       : currentTab === 'level'
         ? ''
         : currentTab === 'alltime'
-          ? tierHtml
+          ? alltimeTierHtml
         : `<span class="lb-change ch-eq">−</span>`;
     const lv = LEVELS[Math.min(u.lv-1, LEVELS.length-1)];
     const badgeHtml = renderLeagueEntryBadgesHtml(u, badgeState, currentTab);
