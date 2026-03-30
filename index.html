@@ -2497,6 +2497,14 @@
       cursor:zoom-in;
       touch-action:manipulation;
     }
+    .pm-summary-avatar-wrap {
+      display:flex; flex-direction:column; align-items:center; gap:6px;
+      flex-shrink:0;
+    }
+    .pm-summary-avatar-caption {
+      font-size:10px; line-height:1; color:#94A3B8; font-weight:600;
+      letter-spacing:0.01em;
+    }
     .header-avatar .av-wrap,
     .pm-summary-avatar .av-wrap,
     .avatar-opt .av-wrap {
@@ -9532,143 +9540,6 @@ function getLeagueAlertMessage(entries = [], meEntry = null, tab = S.leagueTab) 
     }
     return lines[Math.abs(hash) % lines.length];
   };
-  if (!canJoinLeagueRanking()) {
-    return {
-      tone: 'info',
-      chip,
-      text: coachLine(pickLine(
-        tab === 'level'
-          ? [
-              '첫 기록이면 충분해요. 레벨은 금방 좋아져요.',
-              '워밍업기간이 끝나가요. 슬슬 몸좀 풀어볼까요.',
-              '레벨은 시작만 하면 생각보다 빨라요.',
-              '오늘 한 번 움직이면 다음 레벨이 보일 거예요.',
-            ]
-          : tab === 'alltime'
-            ? [
-                '오늘부터 기록해두면 돼요.',
-                '꾸준한 기록이 보상을 낳는다.',
-                '하루 하나씩 기록하면 전체기록도 금방 달라져요.',
-                '오늘 남긴 기록이 나중엔 차이를 만들어요.',
-              ]
-            : tab === 'challenger'
-              ? [
-                  '지금 들어와도 늦지 않았어요.',
-                  '워밍업기간이 끝나가요. 슬슬 몸좀 풀어볼까요.',
-                  '챌린지는 지금부터예요.',
-                  '오늘 한 번만 달려도 바로 달라질 수 있어요.',
-                ]
-              : [
-                  '이번 주, 아직 안 끝났어요.',
-                  '오늘은 운동하기 딱 좋은날!',
-                  '이번 주는 지금부터 시작하면 돼요.',
-                  '오늘 기록 하나면 바로 순위가 달라질 수 있어요.',
-                ],
-        'prejoin'
-      ), { mentionName: true }),
-    };
-  }
-  if (_leagueFetching && (!_realLeagueUsers || !_realLeagueUsers.length)) {
-    return {
-      tone: 'info',
-      chip,
-      text: coachLine('순위표 정리 중이에요. 금방 보여드릴게요.'),
-    };
-  }
-  if (!Array.isArray(entries) || !entries.length) {
-    return {
-      tone: 'info',
-      chip,
-      text: coachLine(pickLine(
-        tab === 'challenger'
-          ? [
-              '아직 조용해요. 지금 시작하세요.',
-              '챌린지 시작하기 딱 좋은 타이밍이에요.',
-              '아직 늦지 않았어요. 지금부터 힘내면 돼요.',
-              '오늘 먼저 움직이면 바로 순위가 달라질 수 있어요.',
-            ]
-          : tab === 'alltime'
-            ? [
-                '아직 비어 있어요. 지금부터 채우면 돼요.',
-                '꾸준한 기록이 보상을 낳는다.',
-                '기록은 오늘부터 다시 시작해도 충분해요.',
-                '하루 한 줄씩 남기면 전체기록도 달라져요.',
-              ]
-            : tab === 'level'
-              ? [
-                  '오늘 하나면 바로 달라져요.',
-                  '저는 먼저 다음레벨로 가있을게요.',
-                  '레벨은 멈춰 있어도 금방 다시 좋아져요.',
-                  '오늘 기록 한 개면 금방 다음 단계에 닿아요.',
-                ]
-              : [
-                  '이번 주는 지금부터예요.',
-                  '오늘 기록 한개 더 해봐요.',
-                  '이번 주 순위는 아직 열려 있어요.',
-                  '오늘 움직이면 이번 주 순위도 달라질 수 있어요.',
-                ],
-        'empty'
-      )),
-    };
-  }
-  const myIndex = entries.findIndex(entry => getLeagueEntryKey(entry) === getLeagueEntryKey(meEntry));
-  if (!meEntry || myIndex < 0) {
-    if (tab === 'level') {
-      return {
-        tone: 'info',
-        chip,
-        text: coachLine(nextLevel
-          ? pickLine([
-              `다음 레벨까지 ${nextLevel.remaining}p 남았어요. 천천히 가도 괜찮아요.`,
-              `다음 레벨까지 ${nextLevel.remaining}p 남았어요. 오늘 하나면 금방이에요.`,
-              `레벨업까지 ${nextLevel.remaining}p 남았어요. 슬슬 몸좀 풀어볼까요.`,
-            ], 'level-ready')
-          : pickLine([
-              '지금은 최고 레벨이에요.',
-              '이미 최고 레벨이에요. 정말 잘하고 있어요.',
-            ], 'level-ready-max')),
-      };
-    }
-    if (tab === 'alltime') {
-      return {
-        tone: 'info',
-        chip,
-        text: coachLine(pickLine([
-          '오늘 기록부터 차근차근 남기면 돼요.',
-          '오늘 기록 하나면 전체기록도 다시 움직여요.',
-          '기록은 다시 이어가면 돼요. 오늘부터 가볼까요.',
-        ], 'alltime-ready')),
-      };
-    }
-    if (tab === 'challenger') {
-      return {
-        tone: 'info',
-        chip,
-        text: coachLine(pickLine([
-          '지금 시작해도 늦지 않았어요.',
-          '오늘부터 다시 달려도 충분해요.',
-          '챌린지는 지금 들어와도 재미있어요.',
-        ], 'challenger-ready')),
-      };
-    }
-    return {
-      tone: 'info',
-      chip,
-      text: coachLine(pickLine([
-        '오늘 기록 한개 더 해봐요.',
-        '오늘은 운동하기 딱 좋은날!',
-        '이번 주 순위는 아직 바뀔 수 있어요.',
-        '지금 한 번 움직이면 바로 달라져요.',
-      ], 'join-ready')),
-    };
-  }
-  const myRank = Number(meEntry.rank || (myIndex + 1)) || (myIndex + 1);
-  const totalEntries = entries.length;
-  const top20Entry = totalEntries >= 20 ? entries[19] : null;
-  const isOutsideTop20 = myRank > 20 && !!top20Entry;
-  const rankBucket = myRank <= 3 ? 'top3' : myRank <= 10 ? 'top10' : myRank <= 20 ? 'top20' : 'outside20';
-  const badgeState = getLeagueBadgeState(entries, tab);
-  const myKey = getLeagueEntryKey(meEntry);
   const tabCopy = {
     weekly: {
       first: ['이번 주 활력 대장! 성장은 제가 책임질게요, 즐기기만 하세요! ✨'],
@@ -9705,6 +9576,43 @@ function getLeagueAlertMessage(entries = [], meEntry = null, tab = S.leagueTab) 
   const pushLine = pickLine(copy.push, 'push');
   const outsideLine = pickLine(copy.outside, 'outside');
   const firstLine = pickLine(copy.first, 'first');
+  if (_leagueFetching && (!_realLeagueUsers || !_realLeagueUsers.length)) {
+    return {
+      tone: 'info',
+      chip,
+      text: coachLine('순위표 정리 중이에요. 금방 보여드릴게요.'),
+    };
+  }
+  if (!canJoinLeagueRanking()) {
+    return {
+      tone: 'info',
+      chip,
+      text: coachLine(outsideLine),
+    };
+  }
+  if (!Array.isArray(entries) || !entries.length) {
+    return {
+      tone: 'info',
+      chip,
+      text: coachLine(outsideLine),
+    };
+  }
+  const myIndex = entries.findIndex(entry => getLeagueEntryKey(entry) === getLeagueEntryKey(meEntry));
+  const totalEntries = entries.length;
+  const missingEntry = !meEntry || myIndex < 0;
+  if (missingEntry) {
+    return {
+      tone: 'info',
+      chip,
+      text: coachLine(outsideLine),
+    };
+  }
+  const myRank = Number(meEntry.rank || (myIndex + 1)) || (myIndex + 1);
+  const top20Entry = totalEntries >= 20 ? entries[19] : null;
+  const isOutsideTop20 = myRank > 20 && !!top20Entry;
+  const rankBucket = myRank <= 3 ? 'top3' : myRank <= 10 ? 'top10' : myRank <= 20 ? 'top20' : 'outside20';
+  const badgeState = getLeagueBadgeState(entries, tab);
+  const myKey = getLeagueEntryKey(meEntry);
   const isRisingKing = (tab === 'weekly' || tab === 'challenger') && myKey && badgeState.risingKingKey === myKey;
   const isStreakKing = myKey && badgeState.streakKingKey === myKey;
   const specialChip = isRisingKing ? '상승왕' : isStreakKing ? '연속기록왕' : '';
@@ -14158,15 +14066,7 @@ function renderLeague() {
     const chMe = challengerList.find(u => u.isMe);
     const showChList = chMe && !chSlice.find(u => u.isMe) && chMe.rank > 20
       ? [...chSlice, chMe] : chSlice;
-    renderLeagueAlert(
-      !isRegistered
-        ? {
-            tone: 'info',
-            kicker: '챌린지 안내',
-            text: '챌린지 신청 후 운동+혈당 포인트로 경쟁할 수 있어요.',
-          }
-        : getLeagueAlertMessage(challengerList, chMe, currentTab)
-    );
+    renderLeagueAlert(getLeagueAlertMessage(challengerList, chMe, currentTab));
     document.getElementById('lb-list').innerHTML = showChList.map(u => {
       const lv = LEVELS[Math.min(u.lv - 1, LEVELS.length - 1)];
       const badgeHtml = renderLeagueEntryBadgesHtml(u, challengerBadgeState, currentTab);
@@ -14257,9 +14157,20 @@ function renderLeague() {
   }
 
   const lbSlice = list.slice(0, 20);
+  const canShowEstimatedMeRow = canJoinLeague
+    && !LEAGUE_EXCLUDE_EMPIDS.includes((S.user.empId || ACTIVE_EMPID || '').trim().toUpperCase())
+    && !meEntry
+    && Number.isFinite(Number(displayMyRank))
+    && Number(displayMyRank) > 20;
+  const estimatedMeRow = canShowEstimatedMeRow ? {
+    ...me,
+    rank: Number(displayMyRank),
+  } : null;
   const showList = meEntry && !lbSlice.find(u => u.isMe) && meEntry.rank > 20
     ? [...lbSlice, meEntry]
-    : lbSlice;
+    : estimatedMeRow
+      ? [...lbSlice, estimatedMeRow]
+      : lbSlice;
   document.getElementById('lb-list').innerHTML = showList.map(u => {
     const tierHtml = renderLeagueTierHtml(u.rank, list.length);
     const chgHtml = currentTab === 'weekly'
@@ -18740,7 +18651,10 @@ async function init() {
       <button type="button" class="pm-close-btn" id="pm-close-btn" onclick="closeProfileModal()">✕</button>
     </div>
     <div class="pm-summary-card">
-      <div class="pm-summary-avatar" id="pm-avatar-preview" role="button" tabindex="0" title="현재 아바타 크게보기" onclick="openProfileAvatarPreview()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openProfileAvatarPreview();}"></div>
+      <div class="pm-summary-avatar-wrap">
+        <div class="pm-summary-avatar" id="pm-avatar-preview" role="button" tabindex="0" title="현재 아바타 크게보기" onclick="openProfileAvatarPreview()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openProfileAvatarPreview();}"></div>
+        <div class="pm-summary-avatar-caption">크게보기</div>
+      </div>
       <div class="pm-summary-main">
         <div class="pm-summary-label">My Profile<span id="pm-challenge-tag">챌린지 참여중</span></div>
         <div class="pm-summary-name" id="pm-preview-name">-</div>
@@ -18768,7 +18682,6 @@ async function init() {
       </div>
       <div class="pm-section-body pm-avatar-panel" id="pm-section-avatar">
         <div class="avatar-grid" id="pm-avatar-grid"></div>
-        <div class="pm-avatar-hint">위 현재 아바타를 탭하면 크게 볼 수 있고, 아래 아바타를 탭하면 바로 프로필에 적용됩니다.</div>
       </div>
     </div>
     <div id="pm-challenge-section"></div>
