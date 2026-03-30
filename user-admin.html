@@ -2010,11 +2010,12 @@ function renderStats() {
   const effectiveRegs = getEffectiveChallengeRegistrations();
   const activeRegs = effectiveRegs.filter(r => r.status !== 'cancelled').length;
   const visibleUsers = GD.users.filter(u => !USER_LIST_EXCLUDE_EMPIDS.includes((u.empId || '').trim().toUpperCase()));
+  const visiblePosts = GD.posts.filter(post => !isBotAuthor(post));
   document.getElementById('st-users').textContent = visibleUsers.length;
   document.getElementById('st-regs').textContent = activeRegs;
   document.getElementById('st-wo').textContent = GD.workouts.length;
   document.getElementById('st-glc').textContent = GD.glucose.length;
-  document.getElementById('st-posts').textContent = GD.posts.length;
+  document.getElementById('st-posts').textContent = visiblePosts.length;
   document.getElementById('st-donation').textContent = (activeRegs * CHALLENGE_DONATION_PER_PERSON).toLocaleString('ko-KR') + '원';
 }
 

@@ -2494,6 +2494,8 @@
       display:flex; align-items:center; justify-content:center;
       background:#fff; border:2px solid rgba(79,70,229,0.14);
       box-shadow:0 6px 16px rgba(79,70,229,0.10);
+      cursor:zoom-in;
+      touch-action:manipulation;
     }
     .header-avatar .av-wrap,
     .pm-summary-avatar .av-wrap,
@@ -9712,7 +9714,7 @@ function getLeagueAlertMessage(entries = [], meEntry = null, tab = S.leagueTab) 
       ? '작심삼일이 뭐죠? 당신을 "루틴 요정"으로 임명합니다! 🧚'
       : '';
 
-  if (specialLine && myRank !== 1) {
+  if (specialLine && myRank > 3) {
     return {
       tone: myRank <= 3 ? 'lead' : 'info',
       chip: specialChip || chip,
@@ -12842,6 +12844,10 @@ function renderProfileModalSummary() {
     const identity = getProfileIdentity();
     previewName.textContent = inputName || getResolvedProfileNickname() || identity.name || '내 프로필';
   }
+}
+
+function openProfileAvatarPreview() {
+  openAvatarPreview(_selAvatar, '현재 아바타');
 }
 
 function syncLocalProfileReferences(prevDisplayName = '') {
@@ -18734,7 +18740,7 @@ async function init() {
       <button type="button" class="pm-close-btn" id="pm-close-btn" onclick="closeProfileModal()">✕</button>
     </div>
     <div class="pm-summary-card">
-      <div class="pm-summary-avatar" id="pm-avatar-preview"></div>
+      <div class="pm-summary-avatar" id="pm-avatar-preview" role="button" tabindex="0" title="현재 아바타 크게보기" onclick="openProfileAvatarPreview()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openProfileAvatarPreview();}"></div>
       <div class="pm-summary-main">
         <div class="pm-summary-label">My Profile<span id="pm-challenge-tag">챌린지 참여중</span></div>
         <div class="pm-summary-name" id="pm-preview-name">-</div>
@@ -18757,12 +18763,12 @@ async function init() {
       <div class="pm-panel-head">
         <div>
           <div class="pm-panel-title">아바타</div>
-          <div class="pm-panel-sub">탭하면 크게 보고 선택할 수 있어요</div>
+          <div class="pm-panel-sub">아래 아바타를 탭하면 바로 적용돼요</div>
         </div>
       </div>
       <div class="pm-section-body pm-avatar-panel" id="pm-section-avatar">
         <div class="avatar-grid" id="pm-avatar-grid"></div>
-        <div class="pm-avatar-hint">아바타를 탭하면 바로 프로필에 적용됩니다.</div>
+        <div class="pm-avatar-hint">위 현재 아바타를 탭하면 크게 볼 수 있고, 아래 아바타를 탭하면 바로 프로필에 적용됩니다.</div>
       </div>
     </div>
     <div id="pm-challenge-section"></div>
