@@ -9336,17 +9336,21 @@ function getLeagueBadgeState(entries = [], tab = S.leagueTab) {
     newKeys: new Set(),
   };
   if (!Array.isArray(entries) || !entries.length) return badgeState;
+  const supportsRisingKing = tab === 'weekly' || tab === 'challenger';
 
   if (tab === 'weekly') {
     entries
       .filter(entry => entry?.isNew)
       .forEach(entry => badgeState.newKeys.add(getLeagueEntryKey(entry)));
+  }
+
+  if (supportsRisingKing) {
     const risingKing = [...entries]
       .filter(entry => (Number(entry?.change) || 0) > 0)
       .sort((a, b) => {
         const diff = (Number(b?.change) || 0) - (Number(a?.change) || 0);
         if (diff) return diff;
-        return compareLeagueEntriesByMetric(a, b, 'wPts');
+        return compareLeagueEntriesByMetric(a, b, getLeagueMetricForTab(tab));
       })[0];
     if (risingKing) badgeState.risingKingKey = getLeagueEntryKey(risingKing);
   }
@@ -9366,7 +9370,7 @@ function getLeagueBadgeState(entries = [], tab = S.leagueTab) {
 function renderLeagueEntryBadgesHtml(entry, badgeState = {}, tab = S.leagueTab) {
   const key = getLeagueEntryKey(entry);
   const badges = [];
-  if (tab === 'weekly' && key && badgeState.risingKingKey === key) {
+  if ((tab === 'weekly' || tab === 'challenger') && key && badgeState.risingKingKey === key) {
     badges.push('<span class="league-rank-badge rise">상승왕</span>');
   }
   if (tab === 'weekly' && key && badgeState.newKeys instanceof Set && badgeState.newKeys.has(key)) {
@@ -9699,7 +9703,7 @@ function getLeagueAlertMessage(entries = [], meEntry = null, tab = S.leagueTab) 
   const pushLine = pickLine(copy.push, 'push');
   const outsideLine = pickLine(copy.outside, 'outside');
   const firstLine = pickLine(copy.first, 'first');
-  const isRisingKing = tab === 'weekly' && myKey && badgeState.risingKingKey === myKey;
+  const isRisingKing = (tab === 'weekly' || tab === 'challenger') && myKey && badgeState.risingKingKey === myKey;
   const isStreakKing = myKey && badgeState.streakKingKey === myKey;
   const specialChip = isRisingKing ? '상승왕' : isStreakKing ? '연속기록왕' : '';
   const specialLine = isRisingKing
@@ -9708,7 +9712,7 @@ function getLeagueAlertMessage(entries = [], meEntry = null, tab = S.leagueTab) 
       ? '작심삼일이 뭐죠? 당신을 "루틴 요정"으로 임명합니다! 🧚'
       : '';
 
-  if (specialLine) {
+  if (specialLine && myRank !== 1) {
     return {
       tone: myRank <= 3 ? 'lead' : 'info',
       chip: specialChip || chip,
