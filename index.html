@@ -7435,8 +7435,15 @@ function hasPointSpendHistory() {
 
 function getCurrentRewardPoints() {
   const currentPoints = Math.max(0, Number(S.user?.points || 0));
+  const derivedTotal = getRecordDerivedTotalPoints();
+  const totalPoints = Math.max(
+    currentPoints,
+    Number(S.user?.totalPoints || 0),
+    derivedTotal
+  );
+  if (_challengeRewardMode) return totalPoints;
   if (IS_GUEST || hasPointSpendHistory()) return currentPoints;
-  return Math.max(currentPoints, getRecordDerivedTotalPoints());
+  return Math.max(currentPoints, derivedTotal);
 }
 
 function reconcileTotalPointsFromRecords(opts = {}) {
