@@ -2747,16 +2747,14 @@
     .install-skip { text-align:center; margin-top:10px; font-size:12px; color:var(--text-secondary); cursor:pointer; text-decoration:underline; }
     .install-kakao-notice { background:#FEF9C3; border-radius:10px; padding:12px 14px; margin-bottom:14px; font-size:13px; line-height:1.6; color:#78350F; }
     .install-kakao-notice strong { font-weight:700; }
-    .home-push-card { background:linear-gradient(180deg, #ffffff 0%, #f8fbff 100%); border-radius:22px; padding:24px 20px 20px; width:100%; max-width:360px; box-shadow:0 18px 42px rgba(15,23,42,0.18); }
-    .home-push-eyebrow { display:inline-flex; align-items:center; padding:6px 10px; border-radius:999px; background:#dbeafe; color:#1d4ed8; font-size:11px; font-weight:800; margin-bottom:12px; }
-    .home-push-copy { font-size:13px; line-height:1.65; color:#475569; margin-bottom:18px; }
-    .home-push-points { display:flex; flex-direction:column; gap:8px; margin-bottom:18px; }
-    .home-push-point { display:flex; align-items:flex-start; gap:10px; font-size:13px; line-height:1.5; color:#0f172a; }
-    .home-push-point-dot { width:22px; height:22px; border-radius:50%; background:#eff6ff; color:#2563eb; font-size:12px; font-weight:800; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:1px; }
+    #home-push-overlay { align-items:center; }
+    .home-push-card { position:relative; background:#fff; border-radius:22px; padding:28px 20px 20px; width:100%; max-width:320px; box-shadow:0 18px 42px rgba(15,23,42,0.18); text-align:center; }
+    .home-push-title { font-size:20px; font-weight:800; color:#0f172a; line-height:1.4; letter-spacing:-0.3px; margin-bottom:8px; }
+    .home-push-copy { min-height:20px; font-size:13px; line-height:1.55; color:#64748b; margin-bottom:18px; }
     .home-push-actions { display:flex; gap:8px; }
     .home-push-btn { flex:1 1 0; min-height:46px; border-radius:14px; border:1px solid rgba(148,163,184,0.18); font-size:14px; font-weight:800; cursor:pointer; }
     .home-push-btn.primary { background:#2563eb; border-color:#2563eb; color:#fff; }
-    .home-push-btn.secondary { background:#fff; color:#334155; }
+    .home-push-btn.secondary { background:#f8fafc; color:#334155; }
     .home-push-btn:disabled { opacity:0.55; cursor:not-allowed; }
     /* ── Run Tracker Card ── */
     .btn-run-tracker {
@@ -13133,36 +13131,29 @@ async function getPushPreferenceState() {
 }
 
 function updateHomePushPromptUI(state) {
-  const badgeEl = document.getElementById('home-push-status');
   const copyEl = document.getElementById('home-push-copy');
   const enableBtn = document.getElementById('home-push-enable-btn');
-  if (!badgeEl || !copyEl || !enableBtn) return;
+  if (!copyEl || !enableBtn) return;
 
   if (!state?.supported) {
-    badgeEl.textContent = '지원 안 됨';
-    badgeEl.style.background = '#e2e8f0';
-    badgeEl.style.color = '#475569';
-    copyEl.textContent = '이 기기에서는 앱 알림을 지원하지 않아요. 홈 화면 설치 후 Safari 또는 Chrome에서 다시 확인해주세요.';
-    enableBtn.textContent = '이 기기에서는 지원 안 됨';
+    copyEl.hidden = false;
+    copyEl.textContent = '이 기기에서는 앱 알림을 지원하지 않아요.';
+    enableBtn.textContent = 'ON';
     enableBtn.disabled = true;
     return;
   }
 
   if (state.blocked) {
-    badgeEl.textContent = '브라우저 허용 필요';
-    badgeEl.style.background = '#fee2e2';
-    badgeEl.style.color = '#b91c1c';
-    copyEl.textContent = '브라우저에서 알림 권한이 차단되어 있어요. 설정에서 허용하면 공지와 RUN DAY 안내를 바로 받아볼 수 있어요.';
-    enableBtn.textContent = '브라우저에서 허용 필요';
+    copyEl.hidden = false;
+    copyEl.textContent = '브라우저 설정에서 알림을 허용해주세요.';
+    enableBtn.textContent = 'ON';
     enableBtn.disabled = true;
     return;
   }
 
-  badgeEl.textContent = '앱 알림 꺼짐';
-  badgeEl.style.background = '#dbeafe';
-  badgeEl.style.color = '#1d4ed8';
-  copyEl.textContent = '관리자 공지, 챌린지 소식, RUN DAY 안내를 기기 알림으로 바로 받아볼 수 있어요.';
-  enableBtn.textContent = '앱 알림 켜기';
+  copyEl.hidden = true;
+  copyEl.textContent = '';
+  enableBtn.textContent = 'ON';
   enableBtn.disabled = false;
 }
 
@@ -19135,27 +19126,12 @@ async function init() {
 
 <div id="home-push-overlay" class="install-overlay pm-hidden">
   <div class="home-push-card">
-    <div class="install-header">
-      <div>
-        <div class="home-push-eyebrow" id="home-push-status">앱 알림 꺼짐</div>
-        <div class="install-title">홈에서 바로 앱 알림 켜기</div>
-      </div>
-      <button class="install-close" onclick="closeHomePushPrompt()" aria-label="앱 알림 켜기 팝업 닫기">✕</button>
-    </div>
-    <div class="home-push-copy" id="home-push-copy">관리자 공지, 챌린지 소식, RUN DAY 안내를 기기 알림으로 바로 받아볼 수 있어요.</div>
-    <div class="home-push-points">
-      <div class="home-push-point">
-        <div class="home-push-point-dot">1</div>
-        <div>관리자 공지나 이벤트 소식을 더 빨리 확인할 수 있어요.</div>
-      </div>
-      <div class="home-push-point">
-        <div class="home-push-point-dot">2</div>
-        <div>챌린지 일정이나 RUN DAY 안내를 놓치지 않게 도와드려요.</div>
-      </div>
-    </div>
+    <button class="install-close" onclick="closeHomePushPrompt()" aria-label="앱 알림 켜기 팝업 닫기" style="position:absolute;top:14px;right:14px">✕</button>
+    <div class="home-push-title">앱 알림 켜기를 설정해주세요!</div>
+    <div class="home-push-copy" id="home-push-copy" hidden></div>
     <div class="home-push-actions">
-      <button type="button" class="home-push-btn secondary" onclick="closeHomePushPrompt()">나중에</button>
-      <button type="button" class="home-push-btn primary" id="home-push-enable-btn" onclick="handleHomePushPromptPrimary()">앱 알림 켜기</button>
+      <button type="button" class="home-push-btn secondary" onclick="closeHomePushPrompt()">OFF</button>
+      <button type="button" class="home-push-btn primary" id="home-push-enable-btn" onclick="handleHomePushPromptPrimary()">ON</button>
     </div>
     <div class="install-skip" onclick="dismissHomePushPrompt()">다시 보지 않기</div>
   </div>
