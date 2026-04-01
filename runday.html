@@ -359,6 +359,11 @@
     .prog-guest-desc { font-size:12px; color:var(--sub); line-height:1.65; }
     #together-time-section { margin-top: 20px; }
     #together-time-section .section-title { margin-bottom: 8px; }
+    #together-time-av-stack {
+      padding: 12px 0 0;
+      margin-top: 12px;
+      border-top: 1px solid #f0f0f4;
+    }
     .together-time-card {
       background: #fff;
       border-radius: 20px;
@@ -1695,6 +1700,7 @@
     <div class="together-time-card">
       <div class="together-time-value" id="together-time-value2"></div>
       <div class="together-time-sub" id="together-time-sub2"></div>
+      <div id="together-time-av-stack" class="av-stack" style="display:none"></div>
     </div>
   </div>
 </div>
@@ -2294,6 +2300,22 @@
       const el = document.getElementById(id);
       if (el && el.textContent !== nextSub) { el.textContent = nextSub; changed = true; }
     }
+    const avStack = document.getElementById('together-time-av-stack');
+    if (avStack) {
+      const avatars = Array.isArray(summary?.activeAvatars) ? summary.activeAvatars : [];
+      if (avatars.length > 0) {
+        const MAX_SHOW = 8;
+        const visible = avatars.slice(0, MAX_SHOW);
+        const rest = avatars.length - visible.length;
+        avStack.innerHTML = visible.map(src =>
+          `<div class="av"><img src="${src}" alt="" onerror="if(this.dataset.err)return;this.dataset.err=1;this.src='${LIVE_AVATAR_FALLBACK}'"></div>`
+        ).join('') + (rest > 0 ? `<div class="av-more-circle">+${rest}</div>` : '');
+        avStack.style.display = '';
+      } else {
+        avStack.style.display = 'none';
+        avStack.innerHTML = '';
+      }
+    }
     return changed;
   }
 
@@ -2345,10 +2367,28 @@
           totalMinutes += duration;
           activeIds.add(deviceId);
         });
+        let activeAvatars = [];
+        if (activeIds.size > 0) {
+          try {
+            const ids = [...activeIds].map(id => `"${id}"`).join(',');
+            const usersRes = await fetch(
+              SB_URL + '/rest/v1/users?select=' + encodeURIComponent('"deviceId",avatar') + '&"deviceId"=in.(' + ids + ')',
+              { cache: 'no-store', headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY } }
+            );
+            if (usersRes.ok) {
+              const users = await usersRes.json();
+              activeAvatars = (Array.isArray(users) ? users : []).map(u => {
+                const dId = String(u.deviceId || '');
+                return normalizeLiveAvatar(u.avatar || '') || `images/avatars/av${avIdx(dId)}.png`;
+              });
+            }
+          } catch (_) {}
+        }
         const next = {
           totalMinutes,
           activeCount: activeIds.size,
           participantCount: participantIds.size,
+          activeAvatars,
           fetchedAt: Date.now(),
         };
         challengeActivitySummaryCache = next;
