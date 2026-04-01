@@ -357,6 +357,35 @@
     }
     .prog-guest-title { font-size:15px; font-weight:800; color:#1e1047; }
     .prog-guest-desc { font-size:12px; color:var(--sub); line-height:1.65; }
+    .together-time-card {
+      margin-top: 14px;
+      padding: 16px 18px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #f8fbff 0%, #eef6ff 100%);
+      border: 1px solid rgba(147, 197, 253, 0.44);
+      box-shadow: 0 8px 20px rgba(37, 99, 235, 0.06);
+    }
+    .together-time-label {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+      color: #2563eb;
+    }
+    .together-time-value {
+      margin-top: 8px;
+      font-size: 26px;
+      font-weight: 900;
+      letter-spacing: -0.7px;
+      color: #1e1047;
+      line-height: 1.1;
+    }
+    .together-time-sub {
+      margin-top: 6px;
+      font-size: 12px;
+      line-height: 1.6;
+      color: var(--sub);
+    }
     @keyframes routeChipFloat {
       0%, 100% { transform: translateY(0) scale(1); }
       50% { transform: translateY(-2px) scale(1.03); }
@@ -1522,7 +1551,7 @@
     </div>
     <div class="prog-guest-card">
       <div class="prog-guest-layout">
-        <img src="images/Eun-joo.png?v=20260322-1" alt="권은주 선수" class="prog-guest-media" onerror="if(this.dataset.err)return;this.dataset.err=1;this.src='images/Eun-joo.png'">
+        <img src="images/Eun-joo.png?v=20260401-2" alt="권은주 선수" class="prog-guest-media" onerror="if(this.dataset.err)return;this.dataset.err=1;this.src='images/Eun-joo.png'">
         <div class="prog-guest-copy">
           <div class="prog-guest-head">
             <div class="prog-guest-title">권은주 선수</div>
@@ -1531,6 +1560,11 @@
           <div class="prog-guest-desc">1997년 춘천국제마라톤과 1999년 도쿄국제여자마라톤 우승을 기록한 대한민국 대표 마라토너입니다. RUN DAY 현장에서는 함께 달리기 프로그램과 스페셜 강연을 함께합니다.</div>
         </div>
       </div>
+    </div>
+    <div class="together-time-card">
+      <div class="together-time-label">같이 운동한 시간</div>
+      <div class="together-time-value" id="together-time-value">집계 중</div>
+      <div class="together-time-sub" id="together-time-sub">워밍업 시작 후 참가자 운동 시간을 집계하고 있어요.</div>
     </div>
   </div>
 </div>
@@ -2159,6 +2193,8 @@
   const SB_URL = 'https://nbnmvvobehjitophkqmu.supabase.co';
   const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ibm12dm9iZWhqaXRvcGhrcW11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3Nzk4NzQsImV4cCI6MjA4ODM1NTg3NH0.iZS4JvhHUqv4ZMPxm9STit6xqVp2JA5H55M8Wmd1yjY';
   const DEFAULT_CHALLENGE_DEADLINE = '2026-03-21';
+  const CHALLENGE_ACTIVITY_START_TS = new Date('2026-03-25T00:00:00+09:00').getTime();
+  const CHALLENGE_ACTIVITY_STALE_MS = 1000 * 60 * 5;
   let challengeDeadlineValue = DEFAULT_CHALLENGE_DEADLINE;
 
   let editingRegId = '';
@@ -2214,6 +2250,106 @@
   let regSyncAt = 0;
   let peopleLoadPromise = null;
   let peopleLoadedAt = 0;
+  let challengeActivitySummaryPromise = null;
+  let challengeActivitySummaryCache = null;
+
+  function formatDurationMinutesLabel(minutes) {
+    const mins = Math.max(0, Number(minutes) || 0);
+    if (mins < 60) return `${mins}분`;
+    const hour = Math.floor(mins / 60);
+    const remain = mins % 60;
+    return remain ? `${hour}시간 ${remain}분` : `${hour}시간`;
+  }
+
+  function setTogetherTimeSummary(summary = null) {
+    const valueEl = document.getElementById('together-time-value');
+    const subEl = document.getElementById('together-time-sub');
+    if (!valueEl || !subEl) return false;
+    const totalMinutes = Math.max(0, Number(summary?.totalMinutes) || 0);
+    const activeCount = Math.max(0, Number(summary?.activeCount) || 0);
+    const nextValue = summary ? formatDurationMinutesLabel(totalMinutes) : '집계 중';
+    const nextSub = summary
+      ? `워밍업 시작 후 누적 · ${activeCount}명이 함께 기록했어요`
+      : '워밍업 시작 후 참가자 운동 시간을 집계하고 있어요.';
+    let changed = false;
+    if (valueEl.textContent !== nextValue) {
+      valueEl.textContent = nextValue;
+      changed = true;
+    }
+    if (subEl.textContent !== nextSub) {
+      subEl.textContent = nextSub;
+      changed = true;
+    }
+    return changed;
+  }
+
+  function getChallengeActivitySummarySnapshot() {
+    if (!challengeActivitySummaryCache) return null;
+    if ((Date.now() - Number(challengeActivitySummaryCache.fetchedAt || 0)) >= CHALLENGE_ACTIVITY_STALE_MS) return null;
+    return { ...challengeActivitySummaryCache };
+  }
+
+  async function refreshChallengeActivitySummary(options = {}) {
+    const force = !!options.force;
+    if (!force) {
+      const cached = getChallengeActivitySummarySnapshot();
+      if (cached) {
+        setTogetherTimeSummary(cached);
+        return cached;
+      }
+    }
+    if (challengeActivitySummaryPromise) return challengeActivitySummaryPromise;
+    challengeActivitySummaryPromise = (async () => {
+      try {
+        const [regsRes, workoutsRes] = await Promise.all([
+          fetch(
+            SB_URL + '/rest/v1/registrations?select=' + encodeURIComponent('"deviceId",status') + '&order=id.desc',
+            { cache: 'no-store', headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY } }
+          ),
+          fetch(
+            SB_URL + '/rest/v1/workouts?select=' + encodeURIComponent('"deviceId",duration,ts') + '&ts=gte.' + CHALLENGE_ACTIVITY_START_TS,
+            { cache: 'no-store', headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY } }
+          ),
+        ]);
+        if (!regsRes.ok) throw new Error('registrations fetch failed');
+        if (!workoutsRes.ok) throw new Error('workouts fetch failed');
+        const regs = await regsRes.json();
+        const workouts = await workoutsRes.json();
+        const participantIds = new Set(
+          (Array.isArray(regs) ? regs : [])
+            .filter(row => String(row?.status || '').trim().toLowerCase() !== 'cancelled')
+            .map(row => String(row?.deviceId || '').trim())
+            .filter(Boolean)
+        );
+        let totalMinutes = 0;
+        const activeIds = new Set();
+        (Array.isArray(workouts) ? workouts : []).forEach(row => {
+          const deviceId = String(row?.deviceId || '').trim();
+          if (!participantIds.has(deviceId)) return;
+          const duration = Math.max(0, Number(row?.duration) || 0);
+          if (!duration) return;
+          totalMinutes += duration;
+          activeIds.add(deviceId);
+        });
+        const next = {
+          totalMinutes,
+          activeCount: activeIds.size,
+          participantCount: participantIds.size,
+          fetchedAt: Date.now(),
+        };
+        challengeActivitySummaryCache = next;
+        setTogetherTimeSummary(next);
+        return next;
+      } catch (error) {
+        if (!options.silent) console.warn('[refreshChallengeActivitySummary]', error);
+        setTogetherTimeSummary(challengeActivitySummaryCache);
+        return challengeActivitySummaryCache;
+      } finally {
+        challengeActivitySummaryPromise = null;
+      }
+    })();
+    return challengeActivitySummaryPromise;
+  }
 
   function isGuestChallengeViewer() {
     try {
@@ -3181,6 +3317,7 @@
         loadChallengeConfig({ force: nextOptions.force || nextOptions.forceConfig }),
         checkExisting(normalizedEmpId),
         loadPeople({ force: nextOptions.force || nextOptions.forcePeople }),
+        refreshChallengeActivitySummary({ force: nextOptions.force, silent: true }),
       ]);
       return true;
     })();
@@ -3717,6 +3854,7 @@
     }
     lastPeopleRenderKey = renderKey;
     stack.innerHTML = stackHTML;
+    refreshChallengeActivitySummary({ silent: true }).catch(() => {});
   }
 
   function countActivePeople(rows = []) {
