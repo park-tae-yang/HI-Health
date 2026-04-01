@@ -360,9 +360,19 @@
     #together-time-section { margin-top: 32px; }
     #together-time-section .section-title { margin-bottom: 20px; }
     #together-time-av-stack {
-      padding: 12px 0 0;
-      margin-top: 12px;
-      border-top: 1px solid #f0f0f4;
+      padding: 14px 20px 20px;
+      border-top: 1px solid #f3f4f6;
+      display: none;
+    }
+    #together-time-av-stack.visible { display: flex; }
+    .together-time-sub-row {
+      padding: 0 20px 16px;
+    }
+    .together-time-total {
+      display: flex; flex-direction: column; align-items: flex-end; gap: 1px;
+    }
+    .together-time-total-label {
+      font-size: 10px; font-weight: 700; color: var(--sub); letter-spacing: 0.2px;
     }
     .together-time-card {
       background: #fff;
@@ -380,9 +390,9 @@
       color: #2563eb;
     }
     .together-time-value {
-      font-size: 28px;
+      font-size: 22px;
       font-weight: 900;
-      letter-spacing: -1px;
+      letter-spacing: -0.7px;
       color: #1e1047;
       line-height: 1.1;
     }
@@ -1698,9 +1708,19 @@
   <div id="together-time-section" style="display:none">
     <div class="section-title">같이 운동한 시간</div>
     <div class="together-time-card">
-      <div class="together-time-value" id="together-time-value2"></div>
-      <div class="together-time-sub" id="together-time-sub2"></div>
-      <div id="together-time-av-stack" class="av-stack" style="display:none"></div>
+      <div class="people-head">
+        <div class="people-title-row">
+          <div class="live-dot"></div>
+          <div class="live-label">실시간</div>
+          <div class="people-count-badge" id="together-count-badge"><span id="together-count">0</span>명 기록중</div>
+        </div>
+        <div class="together-time-total">
+          <span class="together-time-total-label">총 운동시간</span>
+          <span class="together-time-value" id="together-time-value2">-</span>
+        </div>
+      </div>
+      <div id="together-time-av-stack" class="av-stack"></div>
+      <div class="together-time-sub together-time-sub-row" id="together-time-sub2"></div>
     </div>
   </div>
 </div>
@@ -2300,19 +2320,22 @@
       const el = document.getElementById(id);
       if (el && el.textContent !== nextSub) { el.textContent = nextSub; changed = true; }
     }
+    const countEl = document.getElementById('together-count');
+    if (countEl) countEl.textContent = activeCount;
+
     const avStack = document.getElementById('together-time-av-stack');
     if (avStack) {
       const avatars = Array.isArray(summary?.activeAvatars) ? summary.activeAvatars : [];
       if (avatars.length > 0) {
         const MAX_SHOW = 8;
-        const visible = avatars.slice(0, MAX_SHOW);
-        const rest = avatars.length - visible.length;
-        avStack.innerHTML = visible.map(src =>
+        const shown = avatars.slice(0, MAX_SHOW);
+        const rest = avatars.length - shown.length;
+        avStack.innerHTML = shown.map(src =>
           `<div class="av"><img src="${src}" alt="" onerror="if(this.dataset.err)return;this.dataset.err=1;this.src='${LIVE_AVATAR_FALLBACK}'"></div>`
         ).join('') + (rest > 0 ? `<div class="av-more-circle">+${rest}</div>` : '');
-        avStack.style.display = '';
+        avStack.classList.add('visible');
       } else {
-        avStack.style.display = 'none';
+        avStack.classList.remove('visible');
         avStack.innerHTML = '';
       }
     }
