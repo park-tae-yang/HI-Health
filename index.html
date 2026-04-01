@@ -3489,6 +3489,167 @@
     .admin-post-inline .admin-post-body { font-size:13px; color:#555; line-height:1.65; white-space:normal; margin-bottom:4px; }
     .admin-post-inline .admin-post-body strong { font-weight:700; }
     .admin-post-inline .admin-post-body u { text-decoration-thickness:1px; text-underline-offset:1px; text-decoration-color:currentColor; }
+    .admin-content-react-wrap {
+      margin-top:14px;
+      padding-top:12px;
+      border-top:1px solid rgba(246,216,224,0.92);
+    }
+    .admin-content-react-head {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+      margin-bottom:10px;
+    }
+    .admin-content-react-title {
+      font-size:11px;
+      font-weight:800;
+      color:#8B5A6B;
+      letter-spacing:-0.2px;
+      text-transform:uppercase;
+    }
+    .admin-content-react-sub {
+      font-size:10px;
+      color:#B08997;
+      white-space:nowrap;
+    }
+    .admin-content-react-grid {
+      display:grid;
+      grid-template-columns:repeat(3, minmax(0, 1fr));
+      gap:9px;
+    }
+    .admin-content-react-btn {
+      position:relative;
+      display:flex;
+      flex-direction:column;
+      align-items:flex-start;
+      justify-content:center;
+      gap:7px;
+      width:100%;
+      min-height:72px;
+      padding:12px 12px 11px;
+      border-radius:16px;
+      border:1px solid rgba(238,223,229,0.96);
+      background:linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(255,251,252,0.98) 100%);
+      color:#5B6472;
+      cursor:pointer;
+      transition:transform .18s ease, box-shadow .22s ease, border-color .22s ease, background .22s ease, color .22s ease;
+      transform-origin:center;
+      overflow:hidden;
+      font-family:inherit;
+      text-align:left;
+      box-shadow:0 4px 12px rgba(15,23,42,0.03);
+    }
+    .admin-content-react-btn:active { transform:scale(0.95); }
+    .admin-content-react-btn.fx-boom {
+      animation: contentReactBtnBoom 520ms cubic-bezier(.16,.82,.2,1);
+    }
+    .admin-content-react-btn.fx-boom::after {
+      content:'';
+      position:absolute;
+      inset:-35% auto -35% -34%;
+      width:48%;
+      background:linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,0.92), rgba(255,255,255,0));
+      transform:skewX(-18deg);
+      animation: contentReactBtnShine 560ms ease-out forwards;
+      pointer-events:none;
+    }
+    .admin-content-react-btn.on {
+      color:var(--accent, #BE185D);
+      border-color:var(--accent, #BE185D);
+      background:linear-gradient(180deg, var(--soft, rgba(190,24,93,0.12)) 0%, #fff 100%);
+      box-shadow:0 10px 22px rgba(15,23,42,0.06);
+    }
+    .admin-content-react-icon {
+      width:34px;
+      height:34px;
+      flex-shrink:0;
+      border-radius:12px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:20px;
+      background:var(--soft, rgba(190,24,93,0.12));
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,0.44);
+    }
+    .admin-content-react-btn.on .admin-content-react-icon {
+      transform:scale(1.06);
+    }
+    .admin-content-react-copy {
+      display:flex;
+      flex-direction:column;
+      gap:1px;
+      min-width:0;
+      width:100%;
+    }
+    .admin-content-react-label {
+      font-size:12px;
+      font-weight:800;
+      letter-spacing:-0.2px;
+      color:#334155;
+    }
+    .admin-content-react-btn.on .admin-content-react-label { color:inherit; }
+    .admin-content-react-count {
+      font-size:10px;
+      font-weight:700;
+      color:#A1AEBE;
+      min-height:12px;
+    }
+    .admin-content-react-btn.on .admin-content-react-count { color:inherit; opacity:0.78; }
+    .admin-content-react-burst {
+      position:fixed;
+      left:0;
+      top:0;
+      display:inline-flex;
+      align-items:center;
+      gap:5px;
+      padding:7px 11px;
+      border-radius:999px;
+      background:rgba(255,255,255,0.96);
+      border:1px solid rgba(255,255,255,0.96);
+      color:var(--burst-accent, #BE185D);
+      box-shadow:0 12px 28px rgba(15,23,42,0.12);
+      pointer-events:none;
+      opacity:0;
+      z-index:1450;
+      transform-origin:center;
+      animation: contentReactBurstFloat 1320ms cubic-bezier(.08,.62,.18,1) forwards;
+      animation-delay:var(--burst-delay, 0ms);
+      will-change:transform, opacity;
+    }
+    .admin-content-react-burst-emoji {
+      font-size:20px;
+      line-height:1;
+    }
+    .admin-content-react-burst-label {
+      font-size:12px;
+      font-weight:800;
+      letter-spacing:-0.2px;
+      white-space:nowrap;
+    }
+    @keyframes contentReactBtnBoom {
+      0% { transform:scale(1); box-shadow:0 0 0 rgba(0,0,0,0); }
+      34% { transform:scale(1.11); box-shadow:0 14px 30px rgba(15,23,42,0.10); }
+      70% { transform:scale(0.98); }
+      100% { transform:scale(1); box-shadow:0 0 0 rgba(0,0,0,0); }
+    }
+    @keyframes contentReactBtnShine {
+      0% { opacity:0; transform:translateX(-12px) skewX(-18deg); }
+      18% { opacity:0.92; }
+      100% { opacity:0; transform:translateX(220%) skewX(-18deg); }
+    }
+    @keyframes contentReactBurstFloat {
+      0% { opacity:0; transform:translate3d(0, 0, 0) scale(0.78) rotate(0deg); }
+      12% { opacity:1; transform:translate3d(calc(var(--burst-x, 0px) * 0.16), calc(var(--burst-y, -68px) * 0.18), 0) scale(0.94) rotate(calc(var(--burst-rotate, 0deg) * 0.18)); }
+      62% { opacity:0.84; transform:translate3d(calc(var(--burst-x, 0px) * 0.62), calc(var(--burst-y, -68px) * 0.64), 0) scale(var(--burst-scale, 1.06)) rotate(calc(var(--burst-rotate, 0deg) * 0.72)); }
+      100% { opacity:0; transform:translate3d(var(--burst-x, 0px), var(--burst-y, -68px), 0) scale(calc(var(--burst-scale, 1.06) * 1.04)) rotate(var(--burst-rotate, 0deg)); }
+    }
+    @media (max-width:420px) {
+      .admin-content-react-grid { grid-template-columns:repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width:360px) {
+      .admin-content-react-grid { grid-template-columns:1fr; }
+    }
     .admin-post-media { width:100%; margin:8px 0; }
     .admin-post-media iframe { width:100%; aspect-ratio:16/9; display:block; border:none; border-radius:8px; }
     .admin-post-media img { width:100%; display:block; max-height:240px; object-fit:cover; border-radius:8px; }
@@ -6275,6 +6436,43 @@ function buildCommunityContentLink(contentId) {
   return url.toString();
 }
 
+function getAdminContentReactionPostId(contentId) {
+  const normalizedId = String(contentId || '').trim();
+  return normalizedId ? `content:${normalizedId}` : '';
+}
+
+function createEmptyContentReactionCounts() {
+  return CONTENT_REACTIONS.reduce((acc, reaction) => {
+    acc[reaction.id] = 0;
+    return acc;
+  }, {});
+}
+
+function getAdminContentReactionState(contentId) {
+  const normalizedId = String(contentId || '').trim();
+  const item = (S.adminPosts || []).find(post => String(post?.id || '') === normalizedId);
+  return {
+    counts: item?.reactions ? { ...createEmptyContentReactionCounts(), ...item.reactions } : createEmptyContentReactionCounts(),
+    myReactions: Array.isArray(S.myContentReactions?.[normalizedId]) ? [...S.myContentReactions[normalizedId]] : [],
+  };
+}
+
+function updateAdminContentReactionState(contentId, counts, myReactions) {
+  const normalizedId = String(contentId || '').trim();
+  if (!normalizedId) return;
+  const safeCounts = { ...createEmptyContentReactionCounts(), ...(counts || {}) };
+  const safeMyReactions = Array.isArray(myReactions) ? [...new Set(myReactions.map(v => String(v || '').trim()).filter(Boolean))] : [];
+  S.myContentReactions = {
+    ...(S.myContentReactions || {}),
+    [normalizedId]: safeMyReactions,
+  };
+  S.adminPosts = (S.adminPosts || []).map(item => (
+    String(item?.id || '') === normalizedId
+      ? { ...item, reactions: safeCounts }
+      : item
+  ));
+}
+
 async function copyCommunityContentLink(contentId) {
   const normalizedId = String(contentId || '').trim();
   if (!normalizedId) return;
@@ -6323,6 +6521,7 @@ let _challengeActivitySummaryCache = {
   fetchedAt: 0,
 };
 let _challengeActivitySummaryPromise = null;
+let _adminContentReactionCache = { countMap:{}, myReactionMap:{}, ts:0 };
 
 function renderLeagueLoadingState() {
   const myRankCard = document.getElementById('my-rank-card');
@@ -6364,6 +6563,14 @@ const STICKERS = [
   { id:'congrats', emoji:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H3.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h2.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/></svg>`, label:'축하해요' },
   { id:'cool',     emoji:`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`, label:'최고예요' },
   { id:'together', emoji:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`, label:'함께해요' },
+];
+
+const CONTENT_REACTIONS = [
+  { id:'like',    emoji:'👍', label:'좋아요',   accent:'#2563EB', soft:'rgba(37,99,235,0.12)' },
+  { id:'helpful', emoji:'💡', label:'유용해요', accent:'#0F766E', soft:'rgba(15,118,110,0.12)' },
+  { id:'empathy', emoji:'💗', label:'공감해요', accent:'#DB2777', soft:'rgba(219,39,119,0.12)' },
+  { id:'cheer',   emoji:'🙌', label:'응원해요', accent:'#EA580C', soft:'rgba(234,88,12,0.12)' },
+  { id:'perfect', emoji:'💯', label:'100점',   accent:'#7C3AED', soft:'rgba(124,58,237,0.12)' },
 ];
 
 const REWARDS_DATA = [
@@ -7433,6 +7640,7 @@ let S = {
   duration: 30,
   leagueTab: 'weekly',
   myReactions: {},   // postId -> [stickerId,...]
+  myContentReactions: {}, // contentId -> [reactionId,...]
   glucoseRecords: [], // { id, value, timing, userTime?, memo?, ts }
   adminPosts: [],    // admin-written column content
   communityPosts: getCommunitySamplePosts(), // other users' posts from Supabase + local sample posts
@@ -7510,6 +7718,7 @@ function save(opts = {}) {
       pendingRewards: S.pendingRewards,
       rewardHistory: S.rewardHistory,
       myReactions: S.myReactions,
+      myContentReactions: S.myContentReactions,
       glucoseRecords: S.glucoseRecords,
       todayLog: S.todayLog,
     }));
@@ -8456,6 +8665,7 @@ function load() {
       d.glucoseRecords = [];
       d.posts = [];
       d.myReactions = {};
+      d.myContentReactions = {};
       d.todayLog = null;
       if (d.user) {
         d.user.points = 0;
@@ -8494,6 +8704,7 @@ function load() {
     }
     applyProfileOverride();
     S.myReactions = d.myReactions || {};
+    S.myContentReactions = d.myContentReactions || {};
     S.glucoseRecords = mapGlucoseRecords(d.glucoseRecords || [], []);
     S.todayLog = d.todayLog || null;
     reconcileTotalPointsFromRecords();
@@ -13927,6 +14138,7 @@ function clearInMemoryAccountData(empId = ACTIVE_EMPID || S.user?.empId || '', f
   S.pendingRewards = [];
   S.rewardHistory = [];
   S.myReactions = {};
+  S.myContentReactions = {};
   S.communityPosts = getCommunitySamplePosts();
   S.adminPosts = [];
   S.todayLog = null;
@@ -13969,6 +14181,7 @@ function resetToLoggedOutState() {
   S.pendingRewards = [];
   S.rewardHistory = [];
   S.myReactions = {};
+  S.myContentReactions = {};
   S.communityPosts = getCommunitySamplePosts();
   S.adminPosts = [];
   S.todayLog = null;
@@ -14775,6 +14988,31 @@ function renderCommunity() {
           mediaHtml = `<div class="admin-post-media"><img src="${item.mediaUrl}" alt=""></div>`;
         }
       }
+      const contentId = String(item.id || '').trim();
+      const contentReactionState = getAdminContentReactionState(contentId);
+      const totalContentReactionCount = CONTENT_REACTIONS.reduce((sum, reaction) => (
+        sum + Math.max(0, Number(contentReactionState.counts?.[reaction.id]) || 0)
+      ), 0);
+      const contentReactionButtons = CONTENT_REACTIONS.map(reaction => {
+        const count = Math.max(0, Number(contentReactionState.counts?.[reaction.id]) || 0);
+        const isOn = contentReactionState.myReactions.includes(reaction.id);
+        return `
+          <button
+            type="button"
+            class="admin-content-react-btn ${isOn ? 'on' : ''}"
+            style="--accent:${reaction.accent};--soft:${reaction.soft};"
+            data-content-id="${escHtmlComm(contentId)}"
+            data-reaction-id="${reaction.id}"
+            onclick="reactToAdminContent(this,'${String(contentId).replace(/'/g, "\\'")}','${reaction.id}')"
+          >
+            <span class="admin-content-react-icon" aria-hidden="true">${reaction.emoji}</span>
+            <span class="admin-content-react-copy">
+              <span class="admin-content-react-label">${reaction.label}</span>
+              <span class="admin-content-react-count">${count > 0 ? `${count}` : ''}</span>
+            </span>
+          </button>
+        `;
+      }).join('');
       const safeContentId = String(item.id || '').replace(/'/g, "\\'");
       return `
         <div class="post-card admin-post-inline" id="admin-post-${escHtmlComm(String(item.id || ''))}">
@@ -14786,6 +15024,13 @@ function renderCommunity() {
           <div class="admin-post-title">${escHtmlComm(item.title)}</div>
           ${mediaHtml}
           <div class="admin-post-body">${renderAdminContentBodyHtml(item.body)}</div>
+          <div class="admin-content-react-wrap">
+            <div class="admin-content-react-head">
+              <div class="admin-content-react-title">Content Reactions</div>
+              <div class="admin-content-react-sub">${totalContentReactionCount > 0 ? `총 ${totalContentReactionCount}` : ''}</div>
+            </div>
+            <div class="admin-content-react-grid">${contentReactionButtons}</div>
+          </div>
         </div>`;
     }
 
@@ -14842,7 +15087,8 @@ async function fetchAdminPosts() {
   try {
     const ap = await _db.from('admin_posts').select('*').order('createdAt', { ascending: false });
     if (ap.data) {
-      S.adminPosts = ap.data;
+      S.adminPosts = ap.data.map(item => ({ ...item, reactions: createEmptyContentReactionCounts() }));
+      await fetchAdminContentReactions({ useCache: false, silent: true });
       const page = document.querySelector('.page.active');
       const feedVisible = document.getElementById('comm-feed-panel')?.style.display !== 'none';
       if (page?.id === 'page-community' && feedVisible) renderCommunity();
@@ -14853,6 +15099,66 @@ async function fetchAdminPosts() {
 
 let _communityReactionCache = { stickerMap: {}, myReactionMap: {}, commentMap: {}, ts: 0 };
 const COMMUNITY_CACHE_TTL = 2 * 60 * 1000; // 2분
+
+async function fetchAdminContentReactions(options = {}) {
+  const useCache = options.useCache !== false;
+  const silent = options.silent !== false;
+  const contentIds = (S.adminPosts || []).map(item => String(item?.id || '').trim()).filter(Boolean);
+  if (!contentIds.length) return;
+  const cacheAge = Date.now() - Number(_adminContentReactionCache.ts || 0);
+  if (useCache && _adminContentReactionCache.ts > 0 && cacheAge < COMMUNITY_CACHE_TTL) {
+    S.adminPosts = (S.adminPosts || []).map(item => {
+      const key = String(item?.id || '').trim();
+      const nextMy = Array.isArray(_adminContentReactionCache.myReactionMap[key]) ? [..._adminContentReactionCache.myReactionMap[key]] : [];
+      if (nextMy.length) S.myContentReactions[key] = nextMy;
+      else delete S.myContentReactions[key];
+      return {
+        ...item,
+        reactions: { ...createEmptyContentReactionCounts(), ...(_adminContentReactionCache.countMap[key] || {}) },
+      };
+    });
+    return;
+  }
+  if (!_db) return;
+  try {
+    const reactionKeys = contentIds.map(getAdminContentReactionPostId).filter(Boolean);
+    if (!reactionKeys.length) return;
+    const { data, error } = await _db.from('reactions').select('*').in('postId', reactionKeys);
+    if (error) throw error;
+    const countMap = {};
+    const myReactionMap = {};
+    const reactionTemplate = createEmptyContentReactionCounts();
+    contentIds.forEach(id => {
+      countMap[id] = { ...reactionTemplate };
+    });
+    (data || []).forEach(row => {
+      const rawPostId = String(row?.postId || '').trim();
+      const contentId = rawPostId.startsWith('content:') ? rawPostId.slice('content:'.length) : '';
+      if (!contentId) return;
+      const reactionId = String(row?.stickerId || '').trim();
+      if (!(reactionId in reactionTemplate)) return;
+      if (!countMap[contentId]) countMap[contentId] = { ...reactionTemplate };
+      countMap[contentId][reactionId] = (countMap[contentId][reactionId] || 0) + 1;
+      if (String(row?.deviceId || '') === String(S.deviceId || '')) {
+        if (!myReactionMap[contentId]) myReactionMap[contentId] = [];
+        myReactionMap[contentId].push(reactionId);
+      }
+    });
+    _adminContentReactionCache = { countMap, myReactionMap, ts: Date.now() };
+    S.adminPosts = (S.adminPosts || []).map(item => {
+      const key = String(item?.id || '').trim();
+      const nextMy = Array.isArray(myReactionMap[key]) ? [...new Set(myReactionMap[key])] : [];
+      if (nextMy.length) S.myContentReactions[key] = nextMy;
+      else delete S.myContentReactions[key];
+      return {
+        ...item,
+        reactions: { ...reactionTemplate, ...(countMap[key] || {}) },
+      };
+    });
+  } catch (err) {
+    if (!silent) console.warn('[fetchAdminContentReactions]', err);
+  }
+}
 
 async function fetchCommunityPosts() {
   if (!_db) return;
@@ -15022,16 +15328,17 @@ function escHtmlComm(s) {
 function normalizeAdminContentHighlightValue(value = '') {
   const raw = String(value || '').trim().toLowerCase().replace(/\s+/g, '');
   if (!raw) return '';
-  if (raw === 'rgba(244,191,210,0.24)') return 'rgba(244, 191, 210, 0.24)';
-  if (raw === 'rgba(244,191,210,0.18)') return 'rgba(244, 191, 210, 0.24)';
-  if (raw === 'rgba(244,191,210,0.26)') return 'rgba(244, 191, 210, 0.24)';
-  if (raw === 'rgba(244,191,210,0.42)') return 'rgba(244, 191, 210, 0.24)';
-  if (raw === '#fbcfe8') return 'rgba(244, 191, 210, 0.24)';
-  if (raw === '#f9a8d4') return 'rgba(244, 191, 210, 0.24)';
-  if (raw === 'pink') return 'rgba(244, 191, 210, 0.24)';
-  if (raw === 'rgb(244,191,210)') return 'rgba(244, 191, 210, 0.24)';
-  if (raw === 'rgb(249,168,212)') return 'rgba(244, 191, 210, 0.24)';
-  if (raw === 'rgba(249,168,212,1)') return 'rgba(244, 191, 210, 0.24)';
+  if (raw === 'rgba(244,191,210,0.24)') return 'rgba(244, 191, 210, 0.28)';
+  if (raw === 'rgba(244,191,210,0.26)') return 'rgba(244, 191, 210, 0.28)';
+  if (raw === 'rgba(244,191,210,0.28)') return 'rgba(244, 191, 210, 0.28)';
+  if (raw === 'rgba(244,191,210,0.18)') return 'rgba(244, 191, 210, 0.28)';
+  if (raw === 'rgba(244,191,210,0.42)') return 'rgba(244, 191, 210, 0.28)';
+  if (raw === '#fbcfe8') return 'rgba(244, 191, 210, 0.28)';
+  if (raw === '#f9a8d4') return 'rgba(244, 191, 210, 0.28)';
+  if (raw === 'pink') return 'rgba(244, 191, 210, 0.28)';
+  if (raw === 'rgb(244,191,210)') return 'rgba(244, 191, 210, 0.28)';
+  if (raw === 'rgb(249,168,212)') return 'rgba(244, 191, 210, 0.28)';
+  if (raw === 'rgba(249,168,212,1)') return 'rgba(244, 191, 210, 0.28)';
   return '';
 }
 function renderAdminContentBodyHtml(rawHtml = '') {
@@ -15056,7 +15363,7 @@ function renderAdminContentBodyHtml(rawHtml = '') {
     const isUnderline = tag === 'u' || /text-decoration(?:-line)?\s*:\s*[^;]*underline/i.test(style);
 
     let html = childHtml;
-    if (highlight && html) html = `<span style="background-color:rgba(244, 191, 210, 0.24)">${html}</span>`;
+    if (highlight && html) html = `<span style="background-color:rgba(244, 191, 210, 0.28)">${html}</span>`;
     if (isUnderline && html) html = `<u>${html}</u>`;
     if (isBold && html) html = `<strong>${html}</strong>`;
     if (tag === 'div' || tag === 'p' || tag === 'li') return html ? `${html}<br>` : '';
@@ -15270,6 +15577,39 @@ function playStickerButtonFeedback(buttonEl) {
   return 320;
 }
 
+function playAdminContentReactionFeedback(buttonEl) {
+  if (!buttonEl) return 0;
+  buttonEl.classList.remove('fx-boom');
+  void buttonEl.offsetWidth;
+  buttonEl.classList.add('fx-boom');
+  setTimeout(() => buttonEl.classList.remove('fx-boom'), 560);
+  return 420;
+}
+
+function playAdminContentReactionBurst(buttonEl, reactionId) {
+  if (!buttonEl) return;
+  const reaction = CONTENT_REACTIONS.find(item => item.id === reactionId);
+  if (!reaction) return;
+  const rect = buttonEl.getBoundingClientRect();
+  const originX = rect.left + rect.width / 2;
+  const originY = rect.top + rect.height / 2;
+  for (let i = 0; i < 6; i++) {
+    const particle = document.createElement('span');
+    particle.className = 'admin-content-react-burst';
+    particle.style.left = `${originX}px`;
+    particle.style.top = `${originY}px`;
+    particle.style.setProperty('--burst-accent', reaction.accent);
+    particle.style.setProperty('--burst-x', `${Math.round((Math.random() - 0.5) * 92)}px`);
+    particle.style.setProperty('--burst-y', `${-78 - Math.round(Math.random() * 44)}px`);
+    particle.style.setProperty('--burst-scale', String(0.92 + Math.random() * 0.24));
+    particle.style.setProperty('--burst-rotate', `${Math.round((Math.random() - 0.5) * 18)}deg`);
+    particle.style.setProperty('--burst-delay', `${i * 36 + Math.round(Math.random() * 12)}ms`);
+    particle.innerHTML = `<span class="admin-content-react-burst-emoji">${reaction.emoji}</span><span class="admin-content-react-burst-label">${reaction.label}</span>`;
+    document.body.appendChild(particle);
+    setTimeout(() => particle.remove(), 1600);
+  }
+}
+
 function updateStickerButtonUi(buttonEl, count, isActive) {
   if (!buttonEl) return;
   buttonEl.classList.toggle('on', !!isActive);
@@ -15284,6 +15624,22 @@ function updateStickerButtonUi(buttonEl, count, isActive) {
   } else if (countEl) {
     countEl.remove();
   }
+}
+
+function updateAdminContentReactionButtonUi(buttonEl, count, isActive) {
+  if (!buttonEl) return;
+  buttonEl.classList.toggle('on', !!isActive);
+  const countEl = buttonEl.querySelector('.admin-content-react-count');
+  if (countEl) countEl.textContent = count > 0 ? `${count}` : '';
+  const card = buttonEl.closest('.admin-post-inline');
+  if (!card) return;
+  const total = [...card.querySelectorAll('.admin-content-react-btn .admin-content-react-count')]
+    .reduce((sum, el) => {
+      const match = String(el.textContent || '').match(/(\d+)/);
+      return sum + (match ? Number(match[1]) : 0);
+    }, 0);
+  const subEl = card.querySelector('.admin-content-react-sub');
+  if (subEl) subEl.textContent = total > 0 ? `총 ${total}` : '';
 }
 
 function react(buttonEl, postId, stickerId) {
@@ -15313,6 +15669,49 @@ function react(buttonEl, postId, stickerId) {
   }
   updateStickerButtonUi(buttonEl, post.stickers[stickerId] || 0, myR.includes(stickerId));
   save();
+}
+
+function reactToAdminContent(buttonEl, contentId, reactionId) {
+  const normalizedContentId = String(contentId || '').trim();
+  if (!normalizedContentId) return;
+  const reaction = CONTENT_REACTIONS.find(item => item.id === reactionId);
+  if (!reaction) return;
+  haptic('medium');
+  playAdminContentReactionFeedback(buttonEl);
+  _adminContentReactionCache.ts = 0;
+  const state = getAdminContentReactionState(normalizedContentId);
+  const nextCounts = { ...state.counts };
+  const nextMyReactions = [...state.myReactions];
+  const existingIndex = nextMyReactions.indexOf(reactionId);
+  const isRemoving = existingIndex >= 0;
+  if (isRemoving) {
+    nextMyReactions.splice(existingIndex, 1);
+    nextCounts[reactionId] = Math.max(0, (nextCounts[reactionId] || 0) - 1);
+  } else {
+    nextMyReactions.push(reactionId);
+    nextCounts[reactionId] = (nextCounts[reactionId] || 0) + 1;
+    playAdminContentReactionBurst(buttonEl, reactionId);
+  }
+  updateAdminContentReactionState(normalizedContentId, nextCounts, nextMyReactions);
+  updateAdminContentReactionButtonUi(buttonEl, nextCounts[reactionId] || 0, !isRemoving);
+  save();
+  if (!_db || !S.deviceId) return;
+  const reactionPostId = getAdminContentReactionPostId(normalizedContentId);
+  if (!reactionPostId) return;
+  if (isRemoving) {
+    _db.from('reactions').delete()
+      .eq('postId', reactionPostId)
+      .eq('deviceId', S.deviceId)
+      .eq('stickerId', reactionId)
+      .then(() => {})
+      .catch(err => console.warn('[reactToAdminContent/delete]', err));
+  } else {
+    _db.from('reactions').upsert(
+      { postId: reactionPostId, deviceId: S.deviceId, stickerId: reactionId },
+      { onConflict: 'postId,deviceId,stickerId' }
+    ).then(() => {})
+     .catch(err => console.warn('[reactToAdminContent/upsert]', err));
+  }
 }
 
 const _trashSvgSm = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>`;
@@ -18733,6 +19132,7 @@ function applyGuestSampleState() {
   S.pendingRewards = [];
   S.rewardHistory = [];
   S.myReactions = {};
+  S.myContentReactions = {};
   S.communityPosts = getCommunitySamplePosts();
   S.adminPosts = [];
   S.glucoseRecords = sample.glucoseRecords;
@@ -19974,7 +20374,8 @@ async function init() {
         .on('postgres_changes', { event: '*', schema: 'public', table: 'admin_posts' }, async () => {
           const { data } = await _db.from('admin_posts').select('*').order('createdAt', { ascending: false });
           if (data) {
-            S.adminPosts = data;
+            S.adminPosts = data.map(item => ({ ...item, reactions: createEmptyContentReactionCounts() }));
+            await fetchAdminContentReactions({ useCache: false, silent: true });
             _adminPostsFetched = true;
             const page = document.querySelector('.page.active');
             if (page && page.id === 'page-community') renderCommunity();
