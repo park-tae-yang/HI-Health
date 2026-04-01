@@ -4724,6 +4724,94 @@ async function loadPushLogs() {
   }
 }
 
+/* ── 예약 발송 ── */
+const SEND_PUSH_SCHEDULED_FN = SUPABASE_URL + '/functions/v1/send-push-scheduled';
+
+async function addScheduledPush() {
+  const title = document.getElementById('sched-title').value.trim();
+  const body = document.getElementById('sched-body').value.trim();
+  const url = document.getElementById('sched-url').value.trim() || './index.html#community';
+  const target = document.getElementById('sched-target').value || 'all';
+  const dtVal = document.getElementById('sched-datetime').value;
+  if (!title) { toast('예약 제목을 입력해주세요'); return; }
+  if (!body) { toast('예약 내용을 입력해주세요'); return; }
+  if (!dtVal) { toast('발송 시각을 선택해주세요'); return; }
+  const scheduledAt = new Date(dtVal).toISOString();
+  if (new Date(scheduledAt) <= new Date()) { toast('현재 시각 이후로 설정해주세요'); return; }
+  showLoading(true);
+  try {
+    const { error } = await db.from('push_scheduled').insert({
+      title, body, url, target_type: target,
+      scheduled_at: scheduledAt, status: 'pending',
+    });
+    if (error) throw error;
+    document.getElementById('sched-title').value = '';
+    document.getElementById('sched-body').value = '';
+    document.getElementById('sched-url').value = '';
+    document.getElementById('sched-datetime').value = '';
+    const dt = new Date(scheduledAt);
+    const label = `${dt.getMonth()+1}/${dt.getDate()} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;
+    toast(`예약 등록 완료 ✓ (${label} 발송)`);
+    loadScheduledPushList();
+  } catch (e) {
+    toast('예약 등록 실패: ' + e.message);
+  } finally {
+    showLoading(false);
+  }
+}
+
+async function cancelScheduledPush(id) {
+  if (!confirm('예약을 취소할까요?')) return;
+  showLoading(true);
+  try {
+    const { error } = await db.from('push_scheduled').update({ status: 'cancelled' }).eq('id', id).eq('status', 'pending');
+    if (error) throw error;
+    toast('예약이 취소됐어요');
+    loadScheduledPushList();
+  } catch (e) {
+    toast('취소 실패: ' + e.message);
+  } finally {
+    showLoading(false);
+  }
+}
+
+async function loadScheduledPushList() {
+  const tbody = document.getElementById('sched-list-tbody');
+  if (!tbody) return;
+  try {
+    const { data, error } = await db.from('push_scheduled')
+      .select('*')
+      .order('scheduled_at', { ascending: false })
+      .limit(30);
+    if (error) throw error;
+    if (!data?.length) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#94A3B8;padding:12px">예약된 발송이 없어요</td></tr>';
+      return;
+    }
+    tbody.innerHTML = data.map(r => {
+      const dt = new Date(r.scheduled_at);
+      const dateStr = `${dt.getMonth()+1}/${dt.getDate()} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;
+      const targetLabel = r.target_type === 'no_workout' ? '미운동자' : '전체';
+      const statusMap = { pending: '<span style="color:#D97706;font-weight:700">대기중</span>', sent: '<span style="color:#16A34A;font-weight:700">발송완료</span>', cancelled: '<span style="color:#94A3B8">취소됨</span>' };
+      const statusHtml = statusMap[r.status] || r.status;
+      const sentInfo = r.status === 'sent' && r.sent_count != null ? ` (${r.sent_count}건)` : '';
+      const cancelBtn = r.status === 'pending'
+        ? `<button class="cbtn" style="font-size:11px;padding:2px 7px;color:#DC2626;border-color:#FCA5A5" onclick="cancelScheduledPush('${r.id}')">취소</button>`
+        : '-';
+      return `<tr>
+        <td style="white-space:nowrap;font-size:12px">${dateStr}</td>
+        <td style="max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.title}</td>
+        <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#64748B">${r.body}</td>
+        <td style="text-align:center;font-size:12px">${targetLabel}</td>
+        <td style="text-align:center;font-size:12px">${statusHtml}${sentInfo}</td>
+        <td style="text-align:center">${cancelBtn}</td>
+      </tr>`;
+    }).join('');
+  } catch (e) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#DC2626;padding:12px">${e.message}</td></tr>`;
+  }
+}
+
 const CAT_LABEL = { notice:'공지', column:'칼럼', tip:'팁', video:'영상' };
 function getAdminLinkedPostId(p) {
   return String(
@@ -4856,7 +4944,7 @@ function switchTab(name, btn) {
   if (name === 'posts') renderPosts();
   if (name === 'challenge') renderChallenge();
   if (name === 'orders') { renderOrders(); loadShopConfig(); }
-  if (name === 'content') { renderAdminPosts(); loadPushLogs(); }
+  if (name === 'content') { renderAdminPosts(); loadPushLogs(); loadScheduledPushList(); }
   if (name === 'settings') loadSettingsTab();
   if (name === 'famcert') loadFamCerts();
 }
