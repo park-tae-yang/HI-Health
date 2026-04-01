@@ -1,4 +1,4 @@
-const CACHE = 'hi-health-v659';
+const CACHE = 'hi-health-v660';
 const STATIC_ASSETS = [
   './manifest.webmanifest',
   './icons/icon.svg',
@@ -107,7 +107,10 @@ self.addEventListener('push', e => {
 
 self.addEventListener('notificationclick', e => {
   e.notification.close();
-  const targetUrl = new URL(e.notification?.data?.url || './index.html', self.location.origin).href;
+  const targetUrl = new URL(
+    e.notification?.data?.url || './index.html',
+    self.registration?.scope || self.location.href
+  ).href;
   e.waitUntil((async () => {
     const clientList = await clients.matchAll({ type: 'window', includeUncontrolled: true });
     for (const client of clientList) {
