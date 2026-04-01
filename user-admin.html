@@ -909,12 +909,12 @@
       <!-- 예약 발송 -->
       <div style="margin-top:18px;border-top:1px dashed #E2E8F0;padding-top:14px">
         <div style="font-size:14px;font-weight:700;margin-bottom:10px">⏰ 예약 발송</div>
-        <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap">
-          <input class="dp-inp" id="sched-title" placeholder="푸시 제목" style="flex:1.2;min-width:140px">
-          <input class="dp-inp" id="sched-url" placeholder="클릭 이동 URL (기본: 커뮤니티)" style="flex:1;min-width:140px">
+        <div style="display:flex;gap:8px;margin-bottom:8px">
+          <input class="dp-inp" id="sched-title" placeholder="푸시 제목" style="flex:1.2">
+          <input class="dp-inp" id="sched-url" placeholder="알림 클릭 이동 URL (기본: ./index.html#community)" style="flex:1">
         </div>
-        <textarea id="sched-body" placeholder="푸시 내용을 입력하세요..." style="margin-bottom:8px"></textarea>
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px">
+        <textarea id="sched-body" placeholder="푸시 내용을 입력하세요..."></textarea>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px">
           <select class="ctrl-sel" id="sched-target" style="flex:1;min-width:120px" onchange="onSchedTargetChange()">
             <option value="all">전체 발송</option>
             <option value="no_workout">오늘 미운동자</option>
@@ -924,7 +924,9 @@
             <option value="">이용자 선택</option>
           </select>
           <input type="datetime-local" id="sched-datetime" class="ctrl-inp" style="flex:1;min-width:160px">
-          <button class="cbtn pri" onclick="addScheduledPush()" style="white-space:nowrap">예약 등록</button>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+          <button class="cbtn pri" onclick="addScheduledPush()">예약 등록</button>
         </div>
         <div style="margin-top:10px">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
