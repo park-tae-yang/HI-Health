@@ -3486,7 +3486,9 @@
     }
     .admin-post-inline .admin-post-link-btn:hover { color:#6B7280; text-decoration:underline; }
     .admin-post-inline .admin-post-title { font-size:15px; font-weight:700; color:#3F3852; margin-bottom:6px; }
-    .admin-post-inline .admin-post-body { font-size:13px; color:#555; line-height:1.65; white-space:pre-wrap; margin-bottom:4px; }
+    .admin-post-inline .admin-post-body { font-size:13px; color:#555; line-height:1.65; white-space:normal; margin-bottom:4px; }
+    .admin-post-inline .admin-post-body strong { font-weight:800; }
+    .admin-post-inline .admin-post-body u { text-decoration-thickness:1.5px; text-underline-offset:2px; }
     .admin-post-media { width:100%; margin:8px 0; }
     .admin-post-media iframe { width:100%; aspect-ratio:16/9; display:block; border:none; border-radius:8px; }
     .admin-post-media img { width:100%; display:block; max-height:240px; object-fit:cover; border-radius:8px; }
@@ -14663,7 +14665,7 @@ function renderCommunity() {
           </div>
           <div class="admin-post-title">${escHtmlComm(item.title)}</div>
           ${mediaHtml}
-          <div class="admin-post-body">${escHtmlComm(item.body).replace(/\n/g,'<br>')}</div>
+          <div class="admin-post-body">${renderAdminContentBodyHtml(item.body)}</div>
         </div>`;
     }
 
@@ -14896,6 +14898,50 @@ function isBotDeviceId(deviceId) {
 }
 function escHtmlComm(s) {
   return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function normalizeAdminContentHighlightValue(value = '') {
+  const raw = String(value || '').trim().toLowerCase().replace(/\s+/g, '');
+  if (!raw) return '';
+  if (raw === '#f9a8d4') return '#f9a8d4';
+  if (raw === 'pink') return '#f9a8d4';
+  if (raw === 'rgb(249,168,212)') return '#f9a8d4';
+  if (raw === 'rgba(249,168,212,1)') return '#f9a8d4';
+  return '';
+}
+function renderAdminContentBodyHtml(rawHtml = '') {
+  const source = String(rawHtml || '');
+  if (!source.trim()) return '';
+  const template = document.createElement('template');
+  template.innerHTML = source;
+
+  function visit(node) {
+    if (!node) return '';
+    if (node.nodeType === Node.TEXT_NODE) {
+      return escHtmlComm(node.textContent || '').replace(/\n/g, '<br>');
+    }
+    if (node.nodeType !== Node.ELEMENT_NODE) return '';
+    const tag = String(node.tagName || '').toLowerCase();
+    const childHtml = Array.from(node.childNodes || []).map(visit).join('');
+    if (tag === 'br') return '<br>';
+    const style = String(node.getAttribute('style') || '');
+    const bgMatch = style.match(/background(?:-color)?\s*:\s*([^;]+)/i);
+    const highlight = normalizeAdminContentHighlightValue(bgMatch?.[1] || '');
+    const isBold = tag === 'strong' || tag === 'b' || /font-weight\s*:\s*(bold|[5-9]00)/i.test(style);
+    const isUnderline = tag === 'u' || /text-decoration(?:-line)?\s*:\s*[^;]*underline/i.test(style);
+
+    let html = childHtml;
+    if (highlight && html) html = `<span style="background-color:#f9a8d4">${html}</span>`;
+    if (isUnderline && html) html = `<u>${html}</u>`;
+    if (isBold && html) html = `<strong>${html}</strong>`;
+    if (tag === 'div' || tag === 'p' || tag === 'li') return html ? `${html}<br>` : '';
+    return html;
+  }
+
+  return Array.from(template.content.childNodes || [])
+    .map(visit)
+    .join('')
+    .replace(/(?:<br>\s*){3,}/g, '<br><br>')
+    .replace(/^(?:<br>\s*)+|(?:<br>\s*)+$/g, '');
 }
 function loadYtPlayer(el, vid) {
   const wrap = el.closest('.admin-post-media');

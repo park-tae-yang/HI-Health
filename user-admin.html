@@ -209,6 +209,16 @@
     .ap-compose{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);padding:18px;margin-bottom:16px;}
     .ap-compose textarea{width:100%;min-height:80px;padding:10px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:inherit;font-size:14px;resize:vertical;outline:none;margin-bottom:8px;}
     .ap-compose textarea:focus{border-color:var(--p);}
+    .ap-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;padding:8px 10px;border:1px solid var(--border);border-bottom:none;border-radius:12px 12px 0 0;background:#f8fafc;}
+    .ap-toolbar-label{font-size:11px;font-weight:700;color:var(--t3);margin-right:2px;}
+    .ap-tool-btn{min-width:34px;height:34px;border:1px solid var(--border);border-radius:10px;background:#fff;color:var(--t2);font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;padding:0 10px;}
+    .ap-tool-btn:hover{border-color:#cbd5e1;background:#fdfdff;color:var(--t1);}
+    .ap-tool-btn.hl{background:#fdf2f8;}
+    .ap-editor{min-height:160px;padding:12px 13px;border:1.5px solid var(--border);border-radius:0 0 12px 12px;background:#fff;font-family:inherit;font-size:14px;line-height:1.7;outline:none;white-space:pre-wrap;word-break:break-word;margin-bottom:8px;}
+    .ap-editor:focus{border-color:var(--p);}
+    .ap-editor.is-empty::before{content:attr(data-placeholder);color:#9ca3af;pointer-events:none;}
+    .ap-editor strong{font-weight:800;}
+    .ap-editor u{text-decoration-thickness:1.5px;text-underline-offset:2px;}
 
     /* ── LOADING ── */
     .loading-bg{display:none;position:fixed;inset:0;background:rgba(255,255,255,.8);z-index:2000;align-items:center;justify-content:center;}
@@ -814,7 +824,13 @@
             <option value="video">영상</option>
           </select>
         </div>
-        <textarea id="ap-text" placeholder="내용을 입력하세요..."></textarea>
+        <div class="ap-toolbar">
+          <span class="ap-toolbar-label">선택 서식</span>
+          <button type="button" class="ap-tool-btn" onmousedown="event.preventDefault();applyAdminContentFormat('bold')" title="굵게">B</button>
+          <button type="button" class="ap-tool-btn" onmousedown="event.preventDefault();applyAdminContentFormat('underline')" title="밑줄"><u>U</u></button>
+          <button type="button" class="ap-tool-btn hl" onmousedown="event.preventDefault();applyAdminContentFormat('highlight')" title="핑크 형광">형광</button>
+        </div>
+        <div id="ap-text" class="ap-editor is-empty" contenteditable="true" data-placeholder="내용을 입력하세요..." oninput="refreshAdminContentEditorState()"></div>
         <input class="dp-inp" id="ap-media" placeholder="미디어 URL (유튜브/이미지, 선택)" style="margin-bottom:8px">
         <select class="ctrl-sel" id="ap-mediatype" style="margin-bottom:8px">
           <option value="">미디어 없음</option>
@@ -885,6 +901,43 @@
               <tbody id="no-workout-preview-tbody">
                 <tr><td colspan="4" style="text-align:center;color:#94A3B8;padding:16px">대상자를 불러오는 중...</td></tr>
               </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- 예약 발송 -->
+      <div style="margin-top:18px;border-top:1px dashed #E2E8F0;padding-top:14px">
+        <div style="font-size:14px;font-weight:700;margin-bottom:10px">⏰ 예약 발송</div>
+        <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap">
+          <input class="dp-inp" id="sched-title" placeholder="푸시 제목" style="flex:1.2;min-width:140px">
+          <input class="dp-inp" id="sched-url" placeholder="클릭 이동 URL (기본: 커뮤니티)" style="flex:1;min-width:140px">
+        </div>
+        <textarea id="sched-body" placeholder="푸시 내용을 입력하세요..." style="margin-bottom:8px"></textarea>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px">
+          <select class="ctrl-sel" id="sched-target" style="flex:1;min-width:120px">
+            <option value="all">전체 발송</option>
+            <option value="no_workout">오늘 미운동자</option>
+          </select>
+          <input type="datetime-local" id="sched-datetime" class="ctrl-inp" style="flex:1;min-width:160px">
+          <button class="cbtn pri" onclick="addScheduledPush()" style="white-space:nowrap">예약 등록</button>
+        </div>
+        <div style="margin-top:10px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+            <div style="font-size:12px;font-weight:700;color:#64748B">예약 목록</div>
+            <button class="cbtn" style="font-size:11px;padding:3px 8px" onclick="loadScheduledPushList()">새로고침</button>
+          </div>
+          <div class="tbl-wrap" style="max-height:240px;overflow-y:auto">
+            <table>
+              <thead><tr>
+                <th>예약시각</th>
+                <th>제목</th>
+                <th>내용</th>
+                <th>대상</th>
+                <th>상태</th>
+                <th style="text-align:center">관리</th>
+              </tr></thead>
+              <tbody id="sched-list-tbody"><tr><td colspan="6" style="text-align:center;color:#94A3B8;padding:12px">불러오는 중...</td></tr></tbody>
             </table>
           </div>
         </div>
@@ -1182,6 +1235,110 @@ function escHtml(v) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
+}
+
+const ADMIN_CONTENT_HIGHLIGHT = '#f9a8d4';
+
+function normalizeAdminContentHighlightValue(value = '') {
+  const raw = String(value || '').trim().toLowerCase().replace(/\s+/g, '');
+  if (!raw) return '';
+  if (raw === ADMIN_CONTENT_HIGHLIGHT) return ADMIN_CONTENT_HIGHLIGHT;
+  if (raw === 'pink') return ADMIN_CONTENT_HIGHLIGHT;
+  if (raw === 'rgb(249,168,212)') return ADMIN_CONTENT_HIGHLIGHT;
+  if (raw === 'rgba(249,168,212,1)') return ADMIN_CONTENT_HIGHLIGHT;
+  return '';
+}
+
+function sanitizeAdminContentHtml(rawHtml = '') {
+  const source = String(rawHtml || '');
+  if (!source.trim()) return '';
+  const template = document.createElement('template');
+  template.innerHTML = source;
+
+  function visit(node) {
+    if (!node) return '';
+    if (node.nodeType === Node.TEXT_NODE) {
+      return escHtml(node.textContent || '').replace(/\n/g, '<br>');
+    }
+    if (node.nodeType !== Node.ELEMENT_NODE) return '';
+    const tag = String(node.tagName || '').toLowerCase();
+    const childHtml = Array.from(node.childNodes || []).map(visit).join('');
+    if (tag === 'br') return '<br>';
+
+    const style = String(node.getAttribute('style') || '');
+    const bgMatch = style.match(/background(?:-color)?\s*:\s*([^;]+)/i);
+    const highlight = normalizeAdminContentHighlightValue(bgMatch?.[1] || '');
+    const isBold = tag === 'strong' || tag === 'b' || /font-weight\s*:\s*(bold|[5-9]00)/i.test(style);
+    const isUnderline = tag === 'u' || /text-decoration(?:-line)?\s*:\s*[^;]*underline/i.test(style);
+
+    let html = childHtml;
+    if (highlight && html) html = `<span style="background-color:${ADMIN_CONTENT_HIGHLIGHT}">${html}</span>`;
+    if (isUnderline && html) html = `<u>${html}</u>`;
+    if (isBold && html) html = `<strong>${html}</strong>`;
+    if (tag === 'div' || tag === 'p' || tag === 'li') return html ? `${html}<br>` : '';
+    return html;
+  }
+
+  return Array.from(template.content.childNodes || [])
+    .map(visit)
+    .join('')
+    .replace(/(?:<br>\s*){3,}/g, '<br><br>')
+    .replace(/^(?:<br>\s*)+|(?:<br>\s*)+$/g, '');
+}
+
+function stripAdminContentHtml(rawHtml = '') {
+  const normalized = sanitizeAdminContentHtml(rawHtml);
+  if (!normalized) return '';
+  const text = normalized
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/?(strong|u|span)[^>]*>/gi, '');
+  const div = document.createElement('div');
+  div.innerHTML = text;
+  return String(div.textContent || div.innerText || '').replace(/\s+/g, ' ').trim();
+}
+
+function getAdminContentEditor() {
+  return document.getElementById('ap-text');
+}
+
+function refreshAdminContentEditorState() {
+  const editor = getAdminContentEditor();
+  if (!editor) return;
+  const hasText = !!String(editor.textContent || '').replace(/\u200B/g, '').trim();
+  const hasMedia = !!editor.querySelector('br, strong, u, span');
+  editor.classList.toggle('is-empty', !hasText && !hasMedia);
+}
+
+function setAdminContentEditorHtml(rawHtml = '') {
+  const editor = getAdminContentEditor();
+  if (!editor) return;
+  editor.innerHTML = sanitizeAdminContentHtml(rawHtml);
+  refreshAdminContentEditorState();
+}
+
+function getAdminContentEditorValue() {
+  const editor = getAdminContentEditor();
+  if (!editor) return '';
+  return sanitizeAdminContentHtml(editor.innerHTML);
+}
+
+function clearAdminContentEditor() {
+  setAdminContentEditorHtml('');
+}
+
+function applyAdminContentFormat(type) {
+  const editor = getAdminContentEditor();
+  if (!editor) return;
+  editor.focus();
+  try {
+    document.execCommand('styleWithCSS', false, true);
+  } catch (_) {}
+  if (type === 'highlight') {
+    document.execCommand('hiliteColor', false, ADMIN_CONTENT_HIGHLIGHT);
+  } else {
+    document.execCommand(type, false, null);
+  }
+  refreshAdminContentEditorState();
 }
 
 function escapeRegNoteKey(key) {
@@ -4315,7 +4472,7 @@ function exportOrdersCsv() {
 ══════════════════════════════════════════════ */
 async function postAdminNotice() {
   const title    = document.getElementById('ap-title').value.trim();
-  const text     = document.getElementById('ap-text').value.trim();
+  const text     = getAdminContentEditorValue();
   const category = document.getElementById('ap-category').value;
   const mediaUrl = document.getElementById('ap-media').value.trim();
   const mediaType= document.getElementById('ap-mediatype').value;
@@ -4335,7 +4492,7 @@ async function postAdminNotice() {
   showLoading(false);
   if (error) { alert('게시 실패: ' + error.message); return; }
   document.getElementById('ap-title').value = '';
-  document.getElementById('ap-text').value  = '';
+  clearAdminContentEditor();
   document.getElementById('ap-media').value = '';
   document.getElementById('ap-mediatype').value = '';
   GD.adminPosts.unshift(payload);
@@ -4608,7 +4765,7 @@ function renderAdminPosts() {
       <td class="td-date">${d}</td>
       <td><span class="badge ex">${cat}</span></td>
       <td class="td-name">${p.title||'-'}</td>
-      <td class="td-memo">${(p.body||'').substring(0,50)}</td>
+      <td class="td-memo">${escHtml(stripAdminContentHtml(p.body || '-').substring(0,50) || '-')}</td>
       <td class="td-memo">
         ${linkedPreview}
         ${hasLinkedPost ? `<div style="margin-top:4px"><button class="abtn det" onclick="showPostDetail('${safeLinkedPostId}')">보기</button></div>` : ''}
@@ -4627,7 +4784,7 @@ function editAdminPost(id) {
   const p = GD.adminPosts.find(x => String(x.id) === String(id));
   if (!p) return;
   document.getElementById('ap-title').value    = p.title || '';
-  document.getElementById('ap-text').value     = p.body  || '';
+  setAdminContentEditorHtml(p.body || '');
   document.getElementById('ap-category').value = p.category || 'notice';
   document.getElementById('ap-media').value    = p.mediaUrl  || '';
   document.getElementById('ap-mediatype').value= p.mediaType || '';
@@ -4636,7 +4793,7 @@ function editAdminPost(id) {
   btn.textContent = '수정 저장';
   btn.onclick = async () => {
     const title    = document.getElementById('ap-title').value.trim();
-    const text     = document.getElementById('ap-text').value.trim();
+    const text     = getAdminContentEditorValue();
     const category = document.getElementById('ap-category').value;
     const mediaUrl = document.getElementById('ap-media').value.trim();
     const mediaType= document.getElementById('ap-mediatype').value;
@@ -4653,7 +4810,7 @@ function editAdminPost(id) {
     const idx = GD.adminPosts.findIndex(x => String(x.id) === String(id));
     if (idx !== -1) GD.adminPosts[idx] = { ...GD.adminPosts[idx], title, body: text, category, mediaUrl: mediaUrl||null, mediaType: mediaType||null };
     document.getElementById('ap-title').value = '';
-    document.getElementById('ap-text').value  = '';
+    clearAdminContentEditor();
     document.getElementById('ap-media').value = '';
     document.getElementById('ap-mediatype').value = '';
     presetPushUrlForAdminContent(id);
