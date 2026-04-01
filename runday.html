@@ -2379,7 +2379,7 @@
             { cache: 'no-store', headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY } }
           ),
           fetch(
-            SB_URL + '/rest/v1/workouts?select=' + encodeURIComponent('"deviceId",duration,ts') + '&ts=gte.' + new Date(CHALLENGE_ACTIVITY_START_TS).toISOString(),
+            SB_URL + '/rest/v1/workouts?select=' + encodeURIComponent('"deviceId",duration,ts') + '&ts=gte.' + CHALLENGE_ACTIVITY_START_TS,
             { cache: 'no-store', headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY } }
           ),
         ]);
