@@ -2340,7 +2340,7 @@
       if (avatars.length > 0) {
         const now = Date.now();
         const MAX_SHOW = 8;
-        const shown = avatars.slice(0, MAX_SHOW);
+        const shown = avatars.length > MAX_SHOW ? avatars.slice(avatars.length - MAX_SHOW) : avatars;
         const rest = avatars.length - shown.length;
         avStack.innerHTML = shown.map(({ src, latestTs }) => {
           const isNew = latestTs && (now - latestTs) <= NEW_WORKOUT_WINDOW_MS;
