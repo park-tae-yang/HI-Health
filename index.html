@@ -6348,6 +6348,8 @@ let _swUpdateCheckQueued = false;
 let _pendingCommunityPostId = '';
 let _pendingCommunityContentId = '';
 let _communityPostOpenTimer = null;
+let _adminContentViewObserver = null;
+let _adminContentViewedSessionKeys = new Set();
 let _homePushPromptTimer = null;
 let _homePushPromptCheckSeq = 0;
 
@@ -6471,6 +6473,60 @@ function updateAdminContentReactionState(contentId, counts, myReactions) {
       ? { ...item, reactions: safeCounts }
       : item
   ));
+}
+
+function resetAdminContentViewTracking(clearSeen = false) {
+  if (_adminContentViewObserver) {
+    try { _adminContentViewObserver.disconnect(); } catch (e) {}
+    _adminContentViewObserver = null;
+  }
+  if (clearSeen) _adminContentViewedSessionKeys = new Set();
+}
+
+async function recordAdminContentView(contentId) {
+  const normalizedId = String(contentId || '').trim();
+  const deviceId = String(S.deviceId || '').trim();
+  if (!normalizedId || !deviceId) return;
+  const sessionKey = `${deviceId}::${normalizedId}`;
+  if (_adminContentViewedSessionKeys.has(sessionKey)) return;
+  _adminContentViewedSessionKeys.add(sessionKey);
+  if (!_db) return;
+  const payload = {
+    id: `${normalizedId}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    content_id: normalizedId,
+    device_id: deviceId,
+    emp_id: normalizeEmpIdValue(ACTIVE_EMPID || S.user?.empId || '') || null,
+    viewed_at: new Date().toISOString(),
+  };
+  try {
+    const { error } = await _db.from('admin_post_views').insert(payload);
+    if (error && !/relation .* does not exist|Could not find the table/i.test(String(error?.message || ''))) {
+      console.warn('[recordAdminContentView]', error);
+    }
+  } catch (err) {
+    console.warn('[recordAdminContentView]', err);
+  }
+}
+
+function setupAdminContentViewTracking() {
+  resetAdminContentViewTracking(false);
+  const communityPage = document.getElementById('page-community');
+  const feedPanel = document.getElementById('comm-feed-panel');
+  if (!communityPage?.classList.contains('active') || feedPanel?.style.display === 'none') return;
+  const cards = [...document.querySelectorAll('.admin-post-inline[id^="admin-post-"]')];
+  if (!cards.length || typeof IntersectionObserver === 'undefined') return;
+  _adminContentViewObserver = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (!entry.isIntersecting || entry.intersectionRatio < 0.68) return;
+      const contentId = String(entry.target?.id || '').replace(/^admin-post-/, '').trim();
+      if (!contentId) return;
+      recordAdminContentView(contentId);
+      try { _adminContentViewObserver?.unobserve(entry.target); } catch (e) {}
+    });
+  }, {
+    threshold: [0.68],
+  });
+  cards.forEach(card => _adminContentViewObserver.observe(card));
 }
 
 async function copyCommunityContentLink(contentId) {
@@ -14139,6 +14195,7 @@ function clearInMemoryAccountData(empId = ACTIVE_EMPID || S.user?.empId || '', f
   S.rewardHistory = [];
   S.myReactions = {};
   S.myContentReactions = {};
+  resetAdminContentViewTracking(true);
   S.communityPosts = getCommunitySamplePosts();
   S.adminPosts = [];
   S.todayLog = null;
@@ -14182,6 +14239,7 @@ function resetToLoggedOutState() {
   S.rewardHistory = [];
   S.myReactions = {};
   S.myContentReactions = {};
+  resetAdminContentViewTracking(true);
   S.communityPosts = getCommunitySamplePosts();
   S.adminPosts = [];
   S.todayLog = null;
@@ -15070,6 +15128,7 @@ function renderCommunity() {
       </div>
     `;
   }).join('');
+  setupAdminContentViewTracking();
   if (_pendingCommunityPostId || _pendingCommunityContentId) schedulePendingCommunityPostOpen(80);
 }
 
@@ -19133,6 +19192,7 @@ function applyGuestSampleState() {
   S.rewardHistory = [];
   S.myReactions = {};
   S.myContentReactions = {};
+  resetAdminContentViewTracking(true);
   S.communityPosts = getCommunitySamplePosts();
   S.adminPosts = [];
   S.glucoseRecords = sample.glucoseRecords;
