@@ -3487,8 +3487,8 @@
     .admin-post-inline .admin-post-link-btn:hover { color:#6B7280; text-decoration:underline; }
     .admin-post-inline .admin-post-title { font-size:15px; font-weight:700; color:#3F3852; margin-bottom:6px; }
     .admin-post-inline .admin-post-body { font-size:13px; color:#555; line-height:1.65; white-space:normal; margin-bottom:4px; }
-    .admin-post-inline .admin-post-body strong { font-weight:800; }
-    .admin-post-inline .admin-post-body u { text-decoration-thickness:1.5px; text-underline-offset:2px; }
+    .admin-post-inline .admin-post-body strong { font-weight:700; }
+    .admin-post-inline .admin-post-body u { text-decoration-thickness:1px; text-underline-offset:1px; text-decoration-color:currentColor; }
     .admin-post-media { width:100%; margin:8px 0; }
     .admin-post-media iframe { width:100%; aspect-ratio:16/9; display:block; border:none; border-radius:8px; }
     .admin-post-media img { width:100%; display:block; max-height:240px; object-fit:cover; border-radius:8px; }
@@ -14902,10 +14902,13 @@ function escHtmlComm(s) {
 function normalizeAdminContentHighlightValue(value = '') {
   const raw = String(value || '').trim().toLowerCase().replace(/\s+/g, '');
   if (!raw) return '';
-  if (raw === '#f9a8d4') return '#f9a8d4';
-  if (raw === 'pink') return '#f9a8d4';
-  if (raw === 'rgb(249,168,212)') return '#f9a8d4';
-  if (raw === 'rgba(249,168,212,1)') return '#f9a8d4';
+  if (raw === 'rgba(244,191,210,0.42)') return 'rgba(244, 191, 210, 0.42)';
+  if (raw === '#fbcfe8') return 'rgba(244, 191, 210, 0.42)';
+  if (raw === '#f9a8d4') return 'rgba(244, 191, 210, 0.42)';
+  if (raw === 'pink') return 'rgba(244, 191, 210, 0.42)';
+  if (raw === 'rgb(244,191,210)') return 'rgba(244, 191, 210, 0.42)';
+  if (raw === 'rgb(249,168,212)') return 'rgba(244, 191, 210, 0.42)';
+  if (raw === 'rgba(249,168,212,1)') return 'rgba(244, 191, 210, 0.42)';
   return '';
 }
 function renderAdminContentBodyHtml(rawHtml = '') {
@@ -14930,7 +14933,7 @@ function renderAdminContentBodyHtml(rawHtml = '') {
     const isUnderline = tag === 'u' || /text-decoration(?:-line)?\s*:\s*[^;]*underline/i.test(style);
 
     let html = childHtml;
-    if (highlight && html) html = `<span style="background-color:#f9a8d4">${html}</span>`;
+    if (highlight && html) html = `<span style="background-color:rgba(244, 191, 210, 0.42)">${html}</span>`;
     if (isUnderline && html) html = `<u>${html}</u>`;
     if (isBold && html) html = `<strong>${html}</strong>`;
     if (tag === 'div' || tag === 'p' || tag === 'li') return html ? `${html}<br>` : '';
