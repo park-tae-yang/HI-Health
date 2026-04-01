@@ -2379,7 +2379,7 @@
             { cache: 'no-store', headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY } }
           ),
           fetch(
-            SB_URL + '/rest/v1/workouts?select=' + encodeURIComponent('"deviceId",duration,ts') + '&ts=gte.' + CHALLENGE_ACTIVITY_START_TS,
+            SB_URL + '/rest/v1/workouts?select=' + encodeURIComponent('"deviceId",duration,ts') + '&ts=gte.' + new Date(CHALLENGE_ACTIVITY_START_TS).toISOString(),
             { cache: 'no-store', headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY } }
           ),
         ]);
@@ -2406,28 +2406,29 @@
           const ts = row?.ts ? new Date(row.ts).getTime() : 0;
           if (!latestTsMap[deviceId] || ts > latestTsMap[deviceId]) latestTsMap[deviceId] = ts;
         });
-        let activeAvatars = [];
-        if (activeIds.size > 0) {
+        // activeIds 기준으로 아바타 배열 먼저 구성 (users 테이블 없어도 기본 아바타)
+        const idList = [...activeIds];
+        const avatarSrcMap = {};
+        if (idList.length > 0) {
           try {
-            const ids = [...activeIds].join(',');
+            const ids = idList.join(',');
             const usersRes = await fetch(
               SB_URL + '/rest/v1/users?select=' + encodeURIComponent('"deviceId",avatar') + '&"deviceId"=in.(' + ids + ')',
               { cache: 'no-store', headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY } }
             );
             if (usersRes.ok) {
-              const users = await usersRes.json();
-              activeAvatars = (Array.isArray(users) ? users : []).map(u => {
+              (await usersRes.json() || []).forEach(u => {
                 const dId = String(u.deviceId || '').trim();
-                return {
-                  src: normalizeLiveAvatar(u.avatar || '') || `images/avatars/av${avIdx(dId)}.png`,
-                  latestTs: latestTsMap[dId] || 0,
-                };
+                if (dId) avatarSrcMap[dId] = normalizeLiveAvatar(u.avatar || '') || '';
               });
-              // 최신 운동 기록 순으로 정렬
-              activeAvatars.sort((a, b) => b.latestTs - a.latestTs);
             }
           } catch (_) {}
         }
+        const activeAvatars = idList.map(dId => ({
+          src: avatarSrcMap[dId] || `images/avatars/av${avIdx(dId)}.png`,
+          latestTs: latestTsMap[dId] || 0,
+        }));
+        activeAvatars.sort((a, b) => b.latestTs - a.latestTs);
         const next = {
           totalMinutes,
           activeCount: activeIds.size,
