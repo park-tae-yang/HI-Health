@@ -358,7 +358,7 @@
     .prog-guest-title { font-size:15px; font-weight:800; color:#1e1047; }
     .prog-guest-desc { font-size:12px; color:var(--sub); line-height:1.65; }
     #together-time-section { margin-top: 32px; }
-    #together-time-section .section-title { margin-bottom: 8px; }
+    #together-time-section .section-title { margin-bottom: 20px; }
     #together-time-av-stack {
       padding: 12px 0 0;
       margin-top: 12px;
@@ -2289,7 +2289,7 @@
 
     const nextValue = formatDurationMinutesLabel(totalMinutes);
     const dday = getRunDayDday();
-    const nextSub = `${dday} · ${activeCount}명이 함께 기록하고 있어요\n같이 운동한 시간만큼 기부금액에 추가됩니다`;
+    const nextSub = '같이 운동한 시간만큼 기부금액에 추가됩니다';
 
     let changed = false;
     for (const id of ['together-time-value', 'together-time-value2']) {
