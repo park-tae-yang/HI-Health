@@ -7067,9 +7067,7 @@ function mergeAccountSettingsSnapshots(localSnapshot, remoteSnapshot) {
     todayPhoto: Object.prototype.hasOwnProperty.call(remoteSnapshot, 'todayPhoto')
       ? remoteSnapshot.todayPhoto
       : (localSnapshot?.todayPhoto || null),
-    dayNotes: Object.prototype.hasOwnProperty.call(remoteSnapshot, 'dayNotes')
-      ? remoteSnapshot.dayNotes
-      : (localSnapshot?.dayNotes || {}),
+    dayNotes: mergeDayNotesMaps(localSnapshot?.dayNotes || {}, remoteSnapshot?.dayNotes || {}),
   };
 }
 
@@ -7196,7 +7194,11 @@ async function syncAccountSettingsWithRemote(empId = ACTIVE_EMPID || S.user?.emp
   const remoteSnapshot = data?.settings && typeof data.settings === 'object' ? data.settings : null;
   const remoteModifiedAt = Number(remoteSnapshot?.modifiedAt) || (data?.updated_at ? new Date(data.updated_at).getTime() : 0);
   if (remoteSnapshot && remoteModifiedAt > localModifiedAt) {
-    applyAccountSettingsSnapshot(mergeAccountSettingsSnapshots(localSnapshot, remoteSnapshot), normalizedEmpId);
+    const mergedSnapshot = mergeAccountSettingsSnapshots(localSnapshot, remoteSnapshot);
+    applyAccountSettingsSnapshot(mergedSnapshot, normalizedEmpId);
+    if (dayNotesSignature(mergedSnapshot?.dayNotes) !== dayNotesSignature(remoteSnapshot?.dayNotes)) {
+      await syncAccountSettingsToRemote(true);
+    }
     return;
   }
   if (localSnapshot && (localModifiedAt > remoteModifiedAt || (hasAccountSettingsContent(localSnapshot) && !remoteSnapshot))) {
@@ -8393,10 +8395,48 @@ function getDayNotesStorageKey(empId = ACTIVE_EMPID || S.user?.empId || '') {
   return 'hi_health_day_notes_' + (normalizeEmpIdValue(empId) || '');
 }
 
+function normalizeDayNotesMap(notes) {
+  if (!notes || typeof notes !== 'object' || Array.isArray(notes)) return {};
+  const normalized = {};
+  Object.entries(notes).forEach(([rawKey, rawValue]) => {
+    const dayKey = String(rawKey || '').trim();
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dayKey)) return;
+    if (!rawValue || typeof rawValue !== 'object' || Array.isArray(rawValue)) return;
+    const note = String(rawValue.note || '').trim();
+    const photo = typeof rawValue.photo === 'string' && rawValue.photo ? rawValue.photo : null;
+    if (!note && !photo) return;
+    const ts = Number(rawValue.ts) || Date.parse(dayKey + 'T00:00:00') || Date.now();
+    normalized[dayKey] = { ts, note, photo };
+  });
+  return normalized;
+}
+
+function mergeDayNotesMaps(baseNotes, incomingNotes) {
+  const merged = normalizeDayNotesMap(baseNotes);
+  const incoming = normalizeDayNotesMap(incomingNotes);
+  Object.entries(incoming).forEach(([dayKey, incomingEntry]) => {
+    const currentEntry = merged[dayKey];
+    if (!currentEntry || Number(incomingEntry.ts || 0) >= Number(currentEntry.ts || 0)) {
+      merged[dayKey] = incomingEntry;
+    }
+  });
+  return merged;
+}
+
+function dayNotesSignature(notes) {
+  const normalized = normalizeDayNotesMap(notes);
+  return JSON.stringify(
+    Object.keys(normalized).sort().reduce((acc, key) => {
+      acc[key] = normalized[key];
+      return acc;
+    }, {})
+  );
+}
+
 function readDayNotesState(empId = ACTIVE_EMPID || S.user?.empId || '') {
   try {
     const parsed = JSON.parse(localStorage.getItem(getDayNotesStorageKey(empId)) || '{}');
-    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+    return normalizeDayNotesMap(parsed);
   } catch (e) {
     return {};
   }
@@ -8404,7 +8444,7 @@ function readDayNotesState(empId = ACTIVE_EMPID || S.user?.empId || '') {
 
 function writeDayNotesState(notes, empId = ACTIVE_EMPID || S.user?.empId || '') {
   try {
-    const safeNotes = notes && typeof notes === 'object' && !Array.isArray(notes) ? notes : {};
+    const safeNotes = normalizeDayNotesMap(notes);
     localStorage.setItem(getDayNotesStorageKey(empId), JSON.stringify(safeNotes));
   } catch (e) {}
 }
