@@ -1243,7 +1243,7 @@ function escHtml(v) {
     .replace(/'/g, '&#39;');
 }
 
-const ADMIN_CONTENT_HIGHLIGHT = 'rgba(244, 191, 210, 0.42)';
+const ADMIN_CONTENT_HIGHLIGHT = 'rgba(244, 191, 210, 0.24)';
 
 function normalizeAdminContentHighlightValue(value = '') {
   const raw = String(value || '').trim().toLowerCase().replace(/\s+/g, '');
@@ -1253,6 +1253,9 @@ function normalizeAdminContentHighlightValue(value = '') {
   if (raw === 'pink') return ADMIN_CONTENT_HIGHLIGHT;
   if (raw === '#f9a8d4') return ADMIN_CONTENT_HIGHLIGHT;
   if (raw === 'rgb(244,191,210)') return ADMIN_CONTENT_HIGHLIGHT;
+  if (raw === 'rgba(244,191,210,0.24)') return ADMIN_CONTENT_HIGHLIGHT;
+  if (raw === 'rgba(244,191,210,0.18)') return ADMIN_CONTENT_HIGHLIGHT;
+  if (raw === 'rgba(244,191,210,0.26)') return ADMIN_CONTENT_HIGHLIGHT;
   if (raw === 'rgba(244,191,210,0.42)') return ADMIN_CONTENT_HIGHLIGHT;
   if (raw === 'rgb(249,168,212)') return ADMIN_CONTENT_HIGHLIGHT;
   if (raw === 'rgba(249,168,212,1)') return ADMIN_CONTENT_HIGHLIGHT;

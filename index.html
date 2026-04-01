@@ -4714,6 +4714,35 @@
       line-height:1.65;
       color:#475569;
     }
+    .ch-together-time-card {
+      margin-top:14px;
+      padding:16px 18px;
+      border-radius:18px;
+      background:linear-gradient(140deg,#fff7fb 0%,#fffafc 52%,#ffffff 100%);
+      border:1px solid rgba(244,114,182,0.14);
+      box-shadow:0 10px 24px rgba(244,114,182,0.08);
+    }
+    .ch-together-time-label {
+      font-size:11px;
+      font-weight:800;
+      color:#9f1239;
+      letter-spacing:.5px;
+      text-transform:uppercase;
+      margin-bottom:6px;
+    }
+    .ch-together-time-value {
+      font-size:26px;
+      font-weight:900;
+      color:#0f172a;
+      line-height:1.15;
+      letter-spacing:-0.4px;
+    }
+    .ch-together-time-sub {
+      margin-top:6px;
+      font-size:12px;
+      line-height:1.55;
+      color:#64748b;
+    }
     @media (max-width:420px) {
       .ch-route-head {
         flex-direction:column;
@@ -6285,6 +6314,15 @@ let _leagueCache = {
   weeklyWeekStartTs: 0,
   weeklyFetchedAt: 0,
 };
+const CHALLENGE_ACTIVITY_CACHE_TTL_MS = 5 * 60 * 1000;
+let _challengeActivitySummaryCache = {
+  totalMinutes: null,
+  participantCount: 0,
+  activeCount: 0,
+  rangeStartTs: 0,
+  fetchedAt: 0,
+};
+let _challengeActivitySummaryPromise = null;
 
 function renderLeagueLoadingState() {
   const myRankCard = document.getElementById('my-rank-card');
@@ -7913,6 +7951,88 @@ function formatDurationMinutesLabel(minutes) {
   const hour = Math.floor(mins / 60);
   const remain = mins % 60;
   return remain ? `${hour}시간 ${remain}분` : `${hour}시간`;
+}
+
+function getChallengeActivityRangeStartTs() {
+  const start = CH?.preStart;
+  if (start instanceof Date) return start.getTime();
+  const parsed = Date.parse(String(start || ''));
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function hasFreshChallengeActivitySummary() {
+  const rangeStartTs = getChallengeActivityRangeStartTs();
+  return !!_challengeActivitySummaryCache.fetchedAt
+    && _challengeActivitySummaryCache.rangeStartTs === rangeStartTs
+    && (Date.now() - _challengeActivitySummaryCache.fetchedAt) < CHALLENGE_ACTIVITY_CACHE_TTL_MS;
+}
+
+function getChallengeActivitySummarySnapshot() {
+  if (hasFreshChallengeActivitySummary()) return { ..._challengeActivitySummaryCache };
+  return null;
+}
+
+async function refreshChallengeActivitySummary(options = {}) {
+  if (_challengeActivitySummaryPromise) return _challengeActivitySummaryPromise;
+  const run = async () => {
+    const rangeStartTs = getChallengeActivityRangeStartTs();
+    if (!_db || !rangeStartTs) {
+      const localMinutes = (S.workouts || []).reduce((sum, workout) => {
+        const ts = Number(workout?.ts) || 0;
+        if (rangeStartTs && ts && ts < rangeStartTs) return sum;
+        return sum + Math.max(0, Number(workout?.duration) || 0);
+      }, 0);
+      const fallback = {
+        totalMinutes: localMinutes,
+        participantCount: hasActiveChallengeRegistration() ? 1 : 0,
+        activeCount: localMinutes > 0 ? 1 : 0,
+        rangeStartTs,
+        fetchedAt: Date.now(),
+      };
+      _challengeActivitySummaryCache = fallback;
+      return fallback;
+    }
+    try {
+      const [regsRes, workoutsRes] = await Promise.all([
+        _db.from('registrations').select('deviceId,status'),
+        _db.from('workouts').select('deviceId,duration,ts').gte('ts', String(rangeStartTs)),
+      ]);
+      if (regsRes?.error) throw regsRes.error;
+      if (workoutsRes?.error) throw workoutsRes.error;
+      const participantIds = new Set(
+        (regsRes?.data || [])
+          .filter(row => String(row?.status || '').trim().toLowerCase() !== 'cancelled')
+          .map(row => String(row?.deviceId || '').trim())
+          .filter(Boolean)
+      );
+      let totalMinutes = 0;
+      const activeIds = new Set();
+      (workoutsRes?.data || []).forEach(row => {
+        const deviceId = String(row?.deviceId || '').trim();
+        if (!participantIds.has(deviceId)) return;
+        const duration = Math.max(0, Number(row?.duration) || 0);
+        if (!duration) return;
+        totalMinutes += duration;
+        activeIds.add(deviceId);
+      });
+      const next = {
+        totalMinutes,
+        participantCount: participantIds.size,
+        activeCount: activeIds.size,
+        rangeStartTs,
+        fetchedAt: Date.now(),
+      };
+      _challengeActivitySummaryCache = next;
+      return next;
+    } catch (e) {
+      if (!options.silent) console.warn('[refreshChallengeActivitySummary]', e);
+      return getChallengeActivitySummarySnapshot();
+    } finally {
+      _challengeActivitySummaryPromise = null;
+    }
+  };
+  _challengeActivitySummaryPromise = run();
+  return _challengeActivitySummaryPromise;
 }
 
 function formatWorkoutRouteSubtitle(workout) {
@@ -14902,13 +15022,16 @@ function escHtmlComm(s) {
 function normalizeAdminContentHighlightValue(value = '') {
   const raw = String(value || '').trim().toLowerCase().replace(/\s+/g, '');
   if (!raw) return '';
-  if (raw === 'rgba(244,191,210,0.42)') return 'rgba(244, 191, 210, 0.42)';
-  if (raw === '#fbcfe8') return 'rgba(244, 191, 210, 0.42)';
-  if (raw === '#f9a8d4') return 'rgba(244, 191, 210, 0.42)';
-  if (raw === 'pink') return 'rgba(244, 191, 210, 0.42)';
-  if (raw === 'rgb(244,191,210)') return 'rgba(244, 191, 210, 0.42)';
-  if (raw === 'rgb(249,168,212)') return 'rgba(244, 191, 210, 0.42)';
-  if (raw === 'rgba(249,168,212,1)') return 'rgba(244, 191, 210, 0.42)';
+  if (raw === 'rgba(244,191,210,0.24)') return 'rgba(244, 191, 210, 0.24)';
+  if (raw === 'rgba(244,191,210,0.18)') return 'rgba(244, 191, 210, 0.24)';
+  if (raw === 'rgba(244,191,210,0.26)') return 'rgba(244, 191, 210, 0.24)';
+  if (raw === 'rgba(244,191,210,0.42)') return 'rgba(244, 191, 210, 0.24)';
+  if (raw === '#fbcfe8') return 'rgba(244, 191, 210, 0.24)';
+  if (raw === '#f9a8d4') return 'rgba(244, 191, 210, 0.24)';
+  if (raw === 'pink') return 'rgba(244, 191, 210, 0.24)';
+  if (raw === 'rgb(244,191,210)') return 'rgba(244, 191, 210, 0.24)';
+  if (raw === 'rgb(249,168,212)') return 'rgba(244, 191, 210, 0.24)';
+  if (raw === 'rgba(249,168,212,1)') return 'rgba(244, 191, 210, 0.24)';
   return '';
 }
 function renderAdminContentBodyHtml(rawHtml = '') {
@@ -14933,7 +15056,7 @@ function renderAdminContentBodyHtml(rawHtml = '') {
     const isUnderline = tag === 'u' || /text-decoration(?:-line)?\s*:\s*[^;]*underline/i.test(style);
 
     let html = childHtml;
-    if (highlight && html) html = `<span style="background-color:rgba(244, 191, 210, 0.42)">${html}</span>`;
+    if (highlight && html) html = `<span style="background-color:rgba(244, 191, 210, 0.24)">${html}</span>`;
     if (isUnderline && html) html = `<u>${html}</u>`;
     if (isBold && html) html = `<strong>${html}</strong>`;
     if (tag === 'div' || tag === 'p' || tag === 'li') return html ? `${html}<br>` : '';
@@ -17494,6 +17617,20 @@ function renderChallenge() {
   const eventDayStart = new Date('2026-04-15T00:00:00');
   const warmupDday = Math.max(0, Math.ceil((challengeStart - now) / 86400000));
   const eventDday = Math.max(0, Math.ceil((eventDayStart - now) / 86400000));
+  const challengeActivitySummary = getChallengeActivitySummarySnapshot();
+  const totalChallengeMinutes = Math.max(0, Number(challengeActivitySummary?.totalMinutes) || 0);
+  const totalChallengeTimeLabel = challengeActivitySummary
+    ? formatDurationMinutesLabel(totalChallengeMinutes)
+    : '집계 중';
+  const totalChallengeTimeSub = challengeActivitySummary
+    ? `워밍업 시작 후 누적 · ${Math.max(0, Number(challengeActivitySummary.activeCount) || 0)}명이 함께 기록했어요`
+    : '참가자 운동 시간을 집계하고 있어요';
+  if (!challengeActivitySummary) {
+    refreshChallengeActivitySummary({ silent: true }).then(summary => {
+      if (!summary) return;
+      if (document.getElementById('page-challenge')?.classList.contains('active')) renderChallenge();
+    }).catch(err => console.warn('[challenge-activity-summary]', err));
+  }
   const heroBadge = phase === 'ended'
     ? 'CHALLENGE END'
     : phase === 'event'
@@ -18067,6 +18204,11 @@ function renderChallenge() {
           </div>
           <div class="ch-route-note">직선 주로가 많아 쾌적하지만 주로가 좁아지거나 자전거 주행과 겹치는 구간이 발생하여 주의가 필요합니다. 햇살이 강할수 있어 선캡이나 선글라스 착용을 추천합니다.</div>
         </div>
+      </div>
+      <div class="ch-together-time-card">
+        <div class="ch-together-time-label">같이 운동한 시간</div>
+        <div class="ch-together-time-value">${totalChallengeTimeLabel}</div>
+        <div class="ch-together-time-sub">${totalChallengeTimeSub}</div>
       </div>
     `;
     setChallengeSectionHtml(
