@@ -3350,6 +3350,11 @@
     .league-rank-badge.streak {
       color:var(--text);
     }
+    .league-rank-badge.streak-milestone {
+      color:#92400E;
+      background:#FFF7D6;
+      border-color:#FDE68A;
+    }
     .league-rank-badge.rise::before {
       content:'▲';
     }
@@ -3360,6 +3365,9 @@
     }
     .league-rank-badge.streak::before {
       content:'⌁';
+    }
+    .league-rank-badge.streak-milestone::before {
+      content:'🔥';
     }
     .lb-level-icon {
       width:22px; height:22px; flex-shrink:0;
@@ -6324,7 +6332,7 @@ const PUSH_DEFAULT_URL  = './index.html#community';
 const HOME_PUSH_PROMPT_DISMISSED_KEY = 'hi_home_push_prompt_dismissed';
 const HOME_PUSH_PROMPT_SESSION_KEY   = 'hi_home_push_prompt_seen';
 const AUTO_COMMENT_FN   = 'https://nbnmvvobehjitophkqmu.supabase.co/functions/v1/auto-comment';
-const SW_VERSION        = '20260402-105';
+const SW_VERSION        = '20260403-001';
 const CHALLENGE_PEOPLE_CACHE_KEY = 'hi_health_people_cache_v1';
 let _swControllerReloaded = false;
 let _swUpdateCheckQueued = false;
@@ -10013,9 +10021,19 @@ function getLeagueBadgeState(entries = [], tab = S.leagueTab) {
   return badgeState;
 }
 
+function getLeagueStreakMilestoneLabel(streak = 0) {
+  const value = Number(streak) || 0;
+  if (value >= 30) return '30일 연속';
+  if (value >= 21) return '21일 연속';
+  if (value >= 14) return '14일 연속';
+  if (value >= 7) return '7일 연속';
+  return '';
+}
+
 function renderLeagueEntryBadgesHtml(entry, badgeState = {}, tab = S.leagueTab) {
   const key = getLeagueEntryKey(entry);
   const badges = [];
+  const streakMilestoneLabel = getLeagueStreakMilestoneLabel(entry?.streak);
   if ((tab === 'weekly' || tab === 'challenger') && key && badgeState.risingKingKey === key) {
     badges.push('<span class="league-rank-badge rise">상승왕</span>');
   }
@@ -10024,6 +10042,9 @@ function renderLeagueEntryBadgesHtml(entry, badgeState = {}, tab = S.leagueTab) 
   }
   if (key && badgeState.streakKingKey === key) {
     badges.push('<span class="league-rank-badge streak">연속운동왕</span>');
+  }
+  if (streakMilestoneLabel) {
+    badges.push(`<span class="league-rank-badge streak-milestone">${streakMilestoneLabel}</span>`);
   }
   return badges.length ? `<span class="league-rank-badges">${badges.join('')}</span>` : '';
 }
