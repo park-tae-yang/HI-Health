@@ -14708,10 +14708,8 @@ async function fetchLeagueData(opts = {}) {
       canReuseUsers
         ? Promise.resolve(null)
         : Promise.all([
-            _db.from('users').select('empId,name,nickname,avatar,points,tags,deviceId,streak'),
+            _db.from('users').select('empId,name,nickname,avatar,points,totalPoints,tags,deviceId,streak'),
             _db.from('registrations').select('id,empId,deviceId,status'),
-            _db.from('workouts').select('deviceId,points'),
-            _db.from('glucose').select('deviceId,points'),
           ]),
       needWeekly && !canReuseWeekly
         ? _db.from('workouts').select('deviceId,points').gte('ts', String(weekStartTs))
@@ -14719,14 +14717,14 @@ async function fetchLeagueData(opts = {}) {
     ]);
 
     if (userBundle) {
-      const [usersRes, regsRes, workoutsRes, glucoseRes] = userBundle;
+      const [usersRes, regsRes] = userBundle;
       if (usersRes?.error) throw usersRes.error;
       if (regsRes?.error) throw regsRes.error;
-      if (workoutsRes?.error) throw workoutsRes.error;
-      if (glucoseRes?.error) throw glucoseRes.error;
       allUsers = usersRes?.data || [];
       allRegs = regsRes?.data || [];
-      totalPtsByDevice = buildLeagueAlltimePointsMap(workoutsRes?.data || [], glucoseRes?.data || []);
+      totalPtsByDevice = Object.fromEntries(
+        allUsers.map(u => [String(u.deviceId || '').trim(), Math.max(0, Number(u.totalPoints || u.points) || 0)])
+      );
       _leagueCache.users = allUsers;
       _leagueCache.regs = allRegs;
       _leagueCache.totalPtsByDevice = totalPtsByDevice;
