@@ -383,10 +383,11 @@
               <th>운동</th>
               <th>연속</th>
               <th>마지막 활동</th>
+              <th>버전</th>
               <th>관리</th>
             </tr></thead>
             <tbody id="u-tbody">
-              <tr><td class="empty-cell" colspan="10">불러오는 중...</td></tr>
+              <tr><td class="empty-cell" colspan="11">불러오는 중...</td></tr>
             </tbody>
           </table>
         </div>
@@ -2688,7 +2689,7 @@ function renderUsers() {
   const tbody = document.getElementById('u-tbody');
 
   if (!page.length) {
-    tbody.innerHTML = `<tr><td class="empty-cell" colspan="10">이용자가 없습니다</td></tr>`;
+    tbody.innerHTML = `<tr><td class="empty-cell" colspan="11">이용자가 없습니다</td></tr>`;
     document.getElementById('u-pager').innerHTML = '';
     return;
   }
@@ -2723,6 +2724,7 @@ function renderUsers() {
       <td>${woCnt[u.deviceId]||0}</td>
       <td>${Number(u.streak)||0}일</td>
       <td>${actCell}</td>
+      <td style="font-size:11px;color:var(--t2);white-space:nowrap">${u.app_version || '-'}</td>
       <td>
         <button class="abtn del" onclick="deleteUser('${safeId}','${safeName}')" title="삭제"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg></button>
       </td>

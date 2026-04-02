@@ -7744,6 +7744,7 @@ function save(opts = {}) {
       nickname: resolvedNickname,
       registrationId: S.user.registrationId || '',
       lastactiveat: new Date().toISOString(),
+      app_version: SW_VERSION,
       pendingrewards:  (S.pendingRewards  || []).join(','),
       redeemedrewards: (S.redeemedRewards || []).join(','),
     };
