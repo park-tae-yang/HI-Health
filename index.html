@@ -14663,7 +14663,7 @@ function buildRealLeagueUsers(allUsers, allRegs, alltimePtsByDevice = {}, wPtsBy
     lv: getLevel(Math.max(0, Number(alltimePtsByDevice[String(u.deviceId || '').trim()]) || 0)).lv,
     pts: Math.max(0, Number(alltimePtsByDevice[String(u.deviceId || '').trim()]) || 0),
     wPts: wPtsByDevice[u.deviceId] || 0,
-    streak: streakByDevice[String(u.deviceId || '').trim()] ?? Number(u.streak) || 0,
+    streak: (function(did){ return did in streakByDevice ? streakByDevice[did] : (Number(u.streak) || 0); })(String(u.deviceId || '').trim()),
     change: 0,
     isNew: false,
     isMe: false,
