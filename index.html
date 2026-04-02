@@ -9978,7 +9978,6 @@ function getLeagueMetricValue(entry, tab = S.leagueTab) {
 function getLeagueBadgeState(entries = [], tab = S.leagueTab) {
   const badgeState = {
     risingKingKey: '',
-    streakKingKey: '',
     newKeys: new Set(),
   };
   if (!Array.isArray(entries) || !entries.length) return badgeState;
@@ -10001,15 +10000,6 @@ function getLeagueBadgeState(entries = [], tab = S.leagueTab) {
     if (risingKing) badgeState.risingKingKey = getLeagueEntryKey(risingKing);
   }
 
-  const streakKing = [...entries]
-    .filter(entry => (Number(entry?.streak) || 0) > 0)
-    .sort((a, b) => {
-      const diff = (Number(b?.streak) || 0) - (Number(a?.streak) || 0);
-      if (diff) return diff;
-      return compareLeagueEntriesByMetric(a, b, getLeagueMetricForTab(tab));
-    })[0];
-  if (streakKing) badgeState.streakKingKey = getLeagueEntryKey(streakKing);
-
   return badgeState;
 }
 
@@ -10022,9 +10012,7 @@ function renderLeagueEntryBadgesHtml(entry, badgeState = {}, tab = S.leagueTab) 
   if (tab === 'weekly' && key && badgeState.newKeys instanceof Set && badgeState.newKeys.has(key)) {
     badges.push('<span class="league-rank-badge new">NEW</span>');
   }
-  if (key && badgeState.streakKingKey === key) {
-    badges.push('<span class="league-rank-badge streak">연속운동왕</span>');
-  }
+
   return badges.length ? `<span class="league-rank-badges">${badges.join('')}</span>` : '';
 }
 
@@ -10250,13 +10238,10 @@ function getLeagueAlertMessage(entries = [], meEntry = null, tab = S.leagueTab) 
   const badgeState = getLeagueBadgeState(entries, tab);
   const myKey = getLeagueEntryKey(meEntry);
   const isRisingKing = (tab === 'weekly' || tab === 'challenger') && myKey && badgeState.risingKingKey === myKey;
-  const isStreakKing = myKey && badgeState.streakKingKey === myKey;
-  const specialChip = isRisingKing ? '상승왕' : isStreakKing ? '연속기록왕' : '';
+  const specialChip = isRisingKing ? '상승왕' : '';
   const specialLine = isRisingKing
     ? '활력이 수직 상승 중! 오늘 기분 좋은 일이 있으셨나 봐요? 🚀'
-    : isStreakKing
-      ? '작심삼일이 뭐죠? 당신을 "루틴 요정"으로 임명합니다! 🧚'
-      : '';
+    : '';
 
   if (specialLine && myRank > 3) {
     return {
