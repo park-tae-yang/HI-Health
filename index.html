@@ -10039,16 +10039,17 @@ function renderLeagueEntryBadgesHtml(entry, badgeState = {}, tab = S.leagueTab) 
   const key = getLeagueEntryKey(entry);
   const badges = [];
   const streakMilestoneLabel = getLeagueStreakMilestoneLabel(entry?.streak);
+  const isStreakKing = key && badgeState.streakKingKey === key;
   if ((tab === 'weekly' || tab === 'challenger') && key && badgeState.risingKingKey === key) {
     badges.push('<span class="league-rank-badge rise">상승왕</span>');
   }
   if (tab === 'weekly' && key && badgeState.newKeys instanceof Set && badgeState.newKeys.has(key)) {
     badges.push('<span class="league-rank-badge new">NEW</span>');
   }
-  if (key && badgeState.streakKingKey === key) {
+  if (isStreakKing) {
     badges.push('<span class="league-rank-badge streak">연속운동왕</span>');
   }
-  if (streakMilestoneLabel) {
+  if (streakMilestoneLabel && !isStreakKing) {
     badges.push(`<span class="league-rank-badge streak-milestone">${streakMilestoneLabel}</span>`);
   }
   return badges.length ? `<span class="league-rank-badges">${badges.join('')}</span>` : '';
