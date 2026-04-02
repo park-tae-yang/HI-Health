@@ -19279,6 +19279,7 @@ async function doAppLogin() {
   restorePersistedUserTags(ACTIVE_EMPID || regId, { storageKey: STORAGE_KEY });
   await syncMyChallengeRegistrationWithOptions({ pruneMissingRemote: true });
   repairChRegNote();
+  updateStreak();
   save();
   sessionStorage.setItem('hi_session_empid', ACTIVE_EMPID);
   // IS_RUN_MODE(챌린지 직원)는 항상 localStorage에 저장 (카카오톡 인앱브라우저 세션 유실 방지)
@@ -19477,6 +19478,7 @@ async function init() {
     await syncAccountSettingsWithRemote(savedEmpId);
     restorePersistedUserTags(savedEmpId, { storageKey: STORAGE_KEY });
     await syncMyChallengeRegistrationWithOptions({ pruneMissingRemote: true });
+    updateStreak();
     save();
     renderHeader();
     renderHome();
