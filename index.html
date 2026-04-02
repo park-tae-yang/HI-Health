@@ -9978,6 +9978,7 @@ function getLeagueMetricValue(entry, tab = S.leagueTab) {
 function getLeagueBadgeState(entries = [], tab = S.leagueTab) {
   const badgeState = {
     risingKingKey: '',
+    streakKingKey: '',
     newKeys: new Set(),
   };
   if (!Array.isArray(entries) || !entries.length) return badgeState;
@@ -10000,6 +10001,15 @@ function getLeagueBadgeState(entries = [], tab = S.leagueTab) {
     if (risingKing) badgeState.risingKingKey = getLeagueEntryKey(risingKing);
   }
 
+  const streakKing = [...entries]
+    .filter(entry => (Number(entry?.streak) || 0) > 0)
+    .sort((a, b) => {
+      const diff = (Number(b?.streak) || 0) - (Number(a?.streak) || 0);
+      if (diff) return diff;
+      return compareLeagueEntriesByMetric(a, b, getLeagueMetricForTab(tab));
+    })[0];
+  if (streakKing) badgeState.streakKingKey = getLeagueEntryKey(streakKing);
+
   return badgeState;
 }
 
@@ -10012,7 +10022,9 @@ function renderLeagueEntryBadgesHtml(entry, badgeState = {}, tab = S.leagueTab) 
   if (tab === 'weekly' && key && badgeState.newKeys instanceof Set && badgeState.newKeys.has(key)) {
     badges.push('<span class="league-rank-badge new">NEW</span>');
   }
-
+  if (key && badgeState.streakKingKey === key) {
+    badges.push('<span class="league-rank-badge streak">연속운동왕</span>');
+  }
   return badges.length ? `<span class="league-rank-badges">${badges.join('')}</span>` : '';
 }
 
