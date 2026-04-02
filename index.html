@@ -6500,7 +6500,6 @@ let _lastKnownServerPts = null; // 마지막으로 서버에서 확인한 포인
 let _realLeagueUsers = null; // Supabase에서 가져온 실제 유저 목록
 let _challengerDeviceIds = new Set(); // 챌린지 신청자 deviceId 세트
 let _leagueFetching = false;
-let _leagueDebugError = null;
 const LEAGUE_CACHE_TTL_MS = 2 * 60 * 1000;
 const LEAGUE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 const LEAGUE_RANK_SNAPSHOT_KEY = 'hi_league_weekly_rank_snapshot_v3';
@@ -6701,7 +6700,7 @@ document.addEventListener('visibilitychange', () => {
 async function refreshUserPointsFromServer() {
   if (!_db || !S.deviceId || IS_GUEST) return;
   try {
-    const { data } = await _db.from('users').select('points,totalPoints').eq('deviceId', S.deviceId).maybeSingle();
+    const { data } = await _db.from('users').select('points').eq('deviceId', S.deviceId).maybeSingle();
     if (!data) return;
     const srvPts   = Number(data.points)       || 0;
     const srvTotal = Number(data.totalPoints || data.points) || 0;
@@ -7740,7 +7739,6 @@ function save(opts = {}) {
       empId: S.user.empId || '',
       dept: S.user.dept || '',
       points: S.user.points,
-      totalPoints: S.user.totalPoints || S.user.points,
       streak: S.user.streak,
       nickname: resolvedNickname,
       registrationId: S.user.registrationId || '',
@@ -7772,7 +7770,7 @@ function save(opts = {}) {
                 } else {
                   // 행은 있으나 서버 포인트가 더 높음 (관리자 보너스 등)
                   // 클라이언트가 새로 획득한 포인트 delta를 서버 값에 더해 병합
-                  const { points: _p, totalPoints: _tp, ...payloadNoPts } = payload;
+                  const { points: _p, ...payloadNoPts } = payload;
                   const earnedDelta = (_lastKnownServerPts !== null)
                     ? Math.max(0, payload.points - _lastKnownServerPts)
                     : 0;
@@ -7784,7 +7782,6 @@ function save(opts = {}) {
                         const mergedPayload = {
                           ...payloadNoPts,
                           points: mergedPts,
-                          totalPoints: Math.max(mergedPts, Number(payload.totalPoints) || mergedPts),
                         };
                         _db.from('users').update(mergedPayload).eq('deviceId', S.deviceId)
                           .then(({ error: e3 }) => {
@@ -7867,8 +7864,9 @@ function forceSyncPoints(opts = {}) {
   if (!_db || !S.deviceId) return;
   const includePoints = opts.includePoints !== false;
   const payload = includePoints
-    ? { points: S.user.points, totalPoints: S.user.totalPoints || S.user.points }
-    : { totalPoints: S.user.totalPoints || S.user.points };
+    ? { points: S.user.points }
+    : {};
+  if (!Object.keys(payload).length) return;
   _db.from('users')
     .update(payload)
     .eq('deviceId', S.deviceId)
@@ -12376,7 +12374,7 @@ function deleteWorkout(id) {
           await deleteRemoteRecordById('workouts', targetId, [wo?.deviceId, S.deviceId]);
           // 포인트 차감을 users 테이블에 즉시 반영
           if (S.deviceId) {
-            await _db.from('users').update({ points: S.user.points, totalPoints: S.user.totalPoints || S.user.points, streak: S.user.streak })
+            await _db.from('users').update({ points: S.user.points, streak: S.user.streak })
               .eq('deviceId', S.deviceId);
           }
         } catch (e) {
@@ -14713,7 +14711,7 @@ async function fetchLeagueData(opts = {}) {
       canReuseUsers
         ? Promise.resolve(null)
         : Promise.all([
-            _db.from('users').select('empId,name,nickname,avatar,points,totalPoints,tags,deviceId,streak'),
+            _db.from('users').select('empId,name,nickname,avatar,points,tags,deviceId,streak'),
             _db.from('registrations').select('id,empId,deviceId,status'),
           ]),
       needWeekly && !canReuseWeekly
@@ -14728,7 +14726,7 @@ async function fetchLeagueData(opts = {}) {
       allUsers = usersRes?.data || [];
       allRegs = regsRes?.data || [];
       totalPtsByDevice = Object.fromEntries(
-        allUsers.map(u => [String(u.deviceId || '').trim(), Math.max(0, Number(u.totalPoints || u.points) || 0)])
+        allUsers.map(u => [String(u.deviceId || '').trim(), Math.max(0, Number(u.points) || 0)])
       );
       _leagueCache.users = allUsers;
       _leagueCache.regs = allRegs;
@@ -14753,7 +14751,6 @@ async function fetchLeagueData(opts = {}) {
       totalPtsByDevice || {},
       needWeekly ? wPtsByDevice : {}
     );
-    console.log('[League] allUsers:', allUsers?.length, 'realLeagueUsers:', _realLeagueUsers?.length);
     // 커뮤니티 피드가 열려있고 챌린지 필터 중이면 재렌더
     if (_feedFilter === '챌린지') {
       const page = document.querySelector('.page.active');
@@ -14761,7 +14758,6 @@ async function fetchLeagueData(opts = {}) {
     }
   } catch(e) {
     console.error('League fetch error:', e);
-    _leagueDebugError = String(e?.message || e);
   } finally {
     _leagueFetching = false;
     if (document.getElementById('comm-league-panel')?.style.display !== 'none') renderLeague();
@@ -14770,10 +14766,6 @@ async function fetchLeagueData(opts = {}) {
 }
 
 function renderLeague() {
-  if (_leagueDebugError) {
-    const dbgEl = document.getElementById('lb-list');
-    if (dbgEl) dbgEl.innerHTML = `<div style="padding:16px;color:red;font-size:12px;word-break:break-all">[디버그] 리그 오류: ${_leagueDebugError}<br>allUsers: ${_leagueCache?.users?.length ?? 'null'}, real: ${_realLeagueUsers?.length ?? 'null'}</div>`;
-  }
   const tab = S.leagueTab;
   const canJoinLeague = canJoinLeagueRanking();
   if (tab === 'challenger' && !hasActiveChallengeRegistration()) {
