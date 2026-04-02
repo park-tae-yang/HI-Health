@@ -14712,7 +14712,7 @@ async function fetchLeagueData(opts = {}) {
       canReuseUsers
         ? Promise.resolve(null)
         : Promise.all([
-            _db.from('users').select('empId,name,nickname,avatar,points,tags,deviceId,streak'),
+            _db.from('users').select('empId,name,nickname,avatar,points,totalPoints,tags,deviceId,streak'),
             _db.from('registrations').select('id,empId,deviceId,status'),
           ]),
       needWeekly && !canReuseWeekly
