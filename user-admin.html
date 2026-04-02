@@ -2635,7 +2635,8 @@ function sortedUsers(arr) {
     woCnt[w.deviceId] = (woCnt[w.deviceId]||0)+1;
     lastWorkoutTsMap[w.deviceId] = Math.max(lastWorkoutTsMap[w.deviceId] || 0, Number(w.ts || 0));
   });
-  GD.users.forEach(u => strk[u.deviceId] = u.streak||0);
+  const computedStreak = computeAdminStreakByDevice();
+  GD.users.forEach(u => strk[u.deviceId] = computedStreak[u.deviceId] || u.streak || 0);
   return [...arr].sort((a, b) => {
     if (sort === 'points')   return getAdminEffectivePoints(b, activityPointsMap) - getAdminEffectivePoints(a, activityPointsMap);
     if (sort === 'lastActive') return getUserLastActiveTs(b, lastWorkoutTsMap) - getUserLastActiveTs(a, lastWorkoutTsMap);
@@ -2645,10 +2646,33 @@ function sortedUsers(arr) {
   });
 }
 
+function computeAdminStreakByDevice(workouts = GD.workouts) {
+  const tsByDevice = {};
+  workouts.forEach(w => {
+    const did = String(w.deviceId || '').trim();
+    if (!did) return;
+    if (!tsByDevice[did]) tsByDevice[did] = [];
+    tsByDevice[did].push(Number(w.ts));
+  });
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const result = {};
+  Object.entries(tsByDevice).forEach(([did, tsList]) => {
+    const dateSet = new Set(tsList.map(ts => { const d = new Date(ts); d.setHours(0,0,0,0); return d.getTime(); }));
+    let streak = 0;
+    for (let i = 0; i < 365; i++) {
+      const d = new Date(today); d.setDate(today.getDate() - i);
+      if (dateSet.has(d.getTime())) streak++;
+      else if (i > 0) break;
+    }
+    result[did] = streak;
+  });
+  return result;
+}
 function renderUsers() {
   const dupIds = getDupEmpIds();
   const woCnt = {}, lastWorkoutTsMap = {};
   const activityPointsMap = getAdminActivityPointsMap();
+  const streakByDevice = computeAdminStreakByDevice();
   GD.workouts.forEach(w => {
     woCnt[w.deviceId] = (woCnt[w.deviceId]||0)+1;
     lastWorkoutTsMap[w.deviceId] = Math.max(lastWorkoutTsMap[w.deviceId] || 0, Number(w.ts || 0));
@@ -2722,7 +2746,7 @@ function renderUsers() {
       <td>${u.dept||'-'}</td>
       <td><span class="badge pts" onclick="openPtsPopup('${safeId}',event)">+${effectivePoints.toLocaleString()}p</span></td>
       <td>${woCnt[u.deviceId]||0}</td>
-      <td>${Number(u.streak)||0}일</td>
+      <td>${streakByDevice[u.deviceId]||0}일</td>
       <td>${actCell}</td>
       <td style="font-size:11px;color:var(--t2);white-space:nowrap">${u.app_version || '-'}</td>
       <td>
