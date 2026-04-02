@@ -6500,6 +6500,7 @@ let _lastKnownServerPts = null; // 마지막으로 서버에서 확인한 포인
 let _realLeagueUsers = null; // Supabase에서 가져온 실제 유저 목록
 let _challengerDeviceIds = new Set(); // 챌린지 신청자 deviceId 세트
 let _leagueFetching = false;
+let _leagueDebugError = null;
 const LEAGUE_CACHE_TTL_MS = 2 * 60 * 1000;
 const LEAGUE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 const LEAGUE_RANK_SNAPSHOT_KEY = 'hi_league_weekly_rank_snapshot_v3';
@@ -14760,6 +14761,7 @@ async function fetchLeagueData(opts = {}) {
     }
   } catch(e) {
     console.error('League fetch error:', e);
+    _leagueDebugError = String(e?.message || e);
   } finally {
     _leagueFetching = false;
     if (document.getElementById('comm-league-panel')?.style.display !== 'none') renderLeague();
@@ -14768,6 +14770,10 @@ async function fetchLeagueData(opts = {}) {
 }
 
 function renderLeague() {
+  if (_leagueDebugError) {
+    const dbgEl = document.getElementById('lb-list');
+    if (dbgEl) dbgEl.innerHTML = `<div style="padding:16px;color:red;font-size:12px;word-break:break-all">[디버그] 리그 오류: ${_leagueDebugError}<br>allUsers: ${_leagueCache?.users?.length ?? 'null'}, real: ${_realLeagueUsers?.length ?? 'null'}</div>`;
+  }
   const tab = S.leagueTab;
   const canJoinLeague = canJoinLeagueRanking();
   if (tab === 'challenger' && !hasActiveChallengeRegistration()) {
