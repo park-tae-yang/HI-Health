@@ -10251,6 +10251,23 @@ function getLeagueAlertMessage(entries = [], meEntry = null, tab = S.leagueTab) 
     };
   }
 
+  // 연속 운동 마일스톤 멘트 (rank 4위 이하일 때만, 1~3위는 순위 멘트 우선)
+  const myStreak = Number(meEntry?.streak || S.user.streak) || 0;
+  if (myStreak > 0 && myStreak % 7 === 0 && myRank > 3) {
+    const streakLines = {
+      7:  ['7일 연속 달성! 한 주를 꽉 채웠어요. 이 기세 그대로 가봐요! 🔥', '일주일 내내 운동이라니! 루틴이 몸에 완전히 배셨네요 💪'],
+      14: ['14일 연속! 2주를 쉬지 않고 달렸어요. 정말 대단한 의지예요 🏅', '2주 연속 달성! 이미 습관 장인이에요. 이 페이스 유지해봐요 🌟'],
+      21: ['21일 연속! 3주 완주는 아무나 못 해요. 오늘도 어김없이 등장이네요 🏆'],
+      30: ['30일 연속!! 한 달을 하루도 빠짐없이 달렸어요. 레전드입니다 🎖️'],
+    };
+    const lines = streakLines[myStreak] || [`${myStreak}일 연속 달성! 꾸준함이 곧 실력이에요. 오늘도 화이팅! 🔥`];
+    return {
+      tone: 'lead',
+      chip: `${myStreak}일 연속`,
+      text: coachLine(pickLine(lines, `streak-${myStreak}`)),
+    };
+  }
+
   if (tab === 'level') {
     if (!nextLevel) {
       return {
