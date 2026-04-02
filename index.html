@@ -4979,6 +4979,10 @@
 <div id="toast" class="toast"></div>
 <div id="snackbar" class="snackbar"></div>
 <div id="together-popup" class="together-popup">
+  <div style="padding:14px 16px 0;display:flex;align-items:center;justify-content:space-between">
+    <span style="font-size:16px;font-weight:700;color:#1e1047;letter-spacing:-0.4px">같이 운동한 시간</span>
+    <button type="button" onclick="closeTogetherPopup(false)" style="background:none;border:none;padding:4px;cursor:pointer;color:#9ca3af;font-size:16px;line-height:1;flex-shrink:0">✕</button>
+  </div>
   <div class="together-popup-head">
     <div class="together-popup-title-row">
       <div class="live-dot" style="width:8px;height:8px;border-radius:50%;background:#1e1047;animation:livepulse 1.8s ease-out infinite;flex-shrink:0"></div>
@@ -4986,7 +4990,6 @@
       <div class="together-popup-badge"><span id="together-popup-count">0</span>명 기록중</div>
     </div>
     <div class="together-popup-total">총 운동시간 <strong id="together-popup-mins">-</strong></div>
-    <button type="button" onclick="closeTogetherPopup(false)" style="margin-left:8px;background:none;border:none;padding:4px;cursor:pointer;color:#9ca3af;font-size:16px;line-height:1;flex-shrink:0">✕</button>
   </div>
   <div class="together-popup-avs" id="together-popup-avs"></div>
   <div class="together-popup-sub" id="together-popup-sub"></div>
