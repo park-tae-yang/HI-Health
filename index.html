@@ -12279,6 +12279,7 @@ function logExercise() {
   haptic('success');
   localStorage.removeItem(TOGETHER_POPUP_CACHE_KEY);
   showToast(photoBonus ? `🎉 운동 기록 완료! +${pts}p (사진 인증 +5p 포함!)` : `🎉 운동 기록 완료! +${pts}p 획득!`);
+  setTimeout(showTogetherPopup, 2000);
   renderExercise();
   refreshWorkoutLinkedSurfaces();
   updateSharePreview(); // 새 운동 포함한 메시지 즉시 재생성
