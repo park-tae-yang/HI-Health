@@ -14703,12 +14703,11 @@ async function fetchLeagueData(opts = {}) {
   }
 
   _leagueFetching = true;
-  const streakWindowTs = Date.now() - 65 * 24 * 60 * 60 * 1000;
   try {
     let allUsers = canReuseUsers ? (_leagueCache.users || []) : null;
     let allRegs = canReuseUsers ? (_leagueCache.regs || []) : null;
     let totalPtsByDevice = canReuseUsers ? (_leagueCache.totalPtsByDevice || {}) : {};
-    let streakByDevice = canReuseUsers ? (_leagueCache.streakByDevice || {}) : {};
+    let streakByDevice = _leagueCache.streakByDevice || {};
     let wPtsByDevice = canReuseWeekly ? (_leagueCache.wPtsByDevice || {}) : {};
 
     const [userBundle, weeklyRes] = await Promise.all([
@@ -14717,7 +14716,6 @@ async function fetchLeagueData(opts = {}) {
         : Promise.all([
             _db.from('users').select('empId,name,nickname,avatar,points,totalPoints,tags,deviceId,streak'),
             _db.from('registrations').select('id,empId,deviceId,status'),
-            _db.from('workouts').select('deviceId,ts').gte('ts', String(streakWindowTs)).limit(5000),
           ]),
       needWeekly && !canReuseWeekly
         ? _db.from('workouts').select('deviceId,points').gte('ts', String(weekStartTs))
@@ -14725,7 +14723,7 @@ async function fetchLeagueData(opts = {}) {
     ]);
 
     if (userBundle) {
-      const [usersRes, regsRes, streakWorkoutsRes] = userBundle;
+      const [usersRes, regsRes] = userBundle;
       if (usersRes?.error) throw usersRes.error;
       if (regsRes?.error) throw regsRes.error;
       allUsers = usersRes?.data || [];
@@ -14733,21 +14731,9 @@ async function fetchLeagueData(opts = {}) {
       totalPtsByDevice = Object.fromEntries(
         allUsers.map(u => [String(u.deviceId || '').trim(), Math.max(0, Number(u.totalPoints || u.points) || 0)])
       );
-      // 운동 기록 날짜 기준으로 각 유저의 연속 기록일 계산
-      const tsByDevice = {};
-      (streakWorkoutsRes?.data || []).forEach(w => {
-        const did = String(w.deviceId || '').trim();
-        if (!did) return;
-        if (!tsByDevice[did]) tsByDevice[did] = [];
-        tsByDevice[did].push(Number(w.ts));
-      });
-      streakByDevice = Object.fromEntries(
-        Object.entries(tsByDevice).map(([did, tsList]) => [did, computeStreakFromTsList(tsList)])
-      );
       _leagueCache.users = allUsers;
       _leagueCache.regs = allRegs;
       _leagueCache.totalPtsByDevice = totalPtsByDevice;
-      _leagueCache.streakByDevice = streakByDevice;
       _leagueCache.usersFetchedAt = Date.now();
     }
 
@@ -14767,13 +14753,41 @@ async function fetchLeagueData(opts = {}) {
       allRegs || [],
       totalPtsByDevice || {},
       needWeekly ? wPtsByDevice : {},
-      streakByDevice || {}
+      streakByDevice
     );
     renderLeague();
     // 커뮤니티 피드가 열려있고 챌린지 필터 중이면 재렌더
     if (_feedFilter === '챌린지') {
       const page = document.querySelector('.page.active');
       if (page?.id === 'page-community') renderCommunity();
+    }
+
+    // streak는 백그라운드에서 계산 후 조용히 업데이트
+    if (!canReuseUsers) {
+      const streakWindowTs = Date.now() - 65 * 24 * 60 * 60 * 1000;
+      _db.from('workouts').select('deviceId,ts').gte('ts', String(streakWindowTs)).limit(5000)
+        .then(({ data }) => {
+          if (!data) return;
+          const tsByDevice = {};
+          data.forEach(w => {
+            const did = String(w.deviceId || '').trim();
+            if (!did) return;
+            if (!tsByDevice[did]) tsByDevice[did] = [];
+            tsByDevice[did].push(Number(w.ts));
+          });
+          _leagueCache.streakByDevice = Object.fromEntries(
+            Object.entries(tsByDevice).map(([did, tsList]) => [did, computeStreakFromTsList(tsList)])
+          );
+          buildRealLeagueUsers(
+            _leagueCache.users || [],
+            _leagueCache.regs || [],
+            _leagueCache.totalPtsByDevice || {},
+            needWeekly ? (_leagueCache.wPtsByDevice || {}) : {},
+            _leagueCache.streakByDevice
+          );
+          renderLeague();
+        })
+        .catch(() => {});
     }
   } catch(e) {
     console.error('League fetch error:', e);
