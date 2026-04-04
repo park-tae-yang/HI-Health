@@ -6330,7 +6330,7 @@ const PUSH_DEFAULT_URL  = './index.html#community';
 const HOME_PUSH_PROMPT_DISMISSED_KEY = 'hi_home_push_prompt_dismissed';
 const HOME_PUSH_PROMPT_SESSION_KEY   = 'hi_home_push_prompt_seen';
 const AUTO_COMMENT_FN   = 'https://nbnmvvobehjitophkqmu.supabase.co/functions/v1/auto-comment';
-const SW_VERSION        = '20260405-004';
+const SW_VERSION        = '20260405-005';
 const SW_UPDATE_POLL_MS = 60 * 1000;
 const CHALLENGE_PEOPLE_CACHE_KEY = 'hi_health_people_cache_v1';
 let _swControllerReloaded = false;
@@ -9725,18 +9725,18 @@ function fmtTime(ts) {
 }
 function computeStreakFromTsList(tsList) {
   if (!tsList || !tsList.length) return 0;
-  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
   const dateSet = new Set(tsList.map(ts => {
     const normalizedTs = recordTsValue({ ts });
     if (!normalizedTs) return null;
-    const d = new Date(normalizedTs);
-    d.setHours(0, 0, 0, 0);
-    return d.getTime();
+    return getLocalDateKey(new Date(normalizedTs));
   }).filter(Boolean));
   let streak = 0;
   for (let i = 0; i < 365; i++) {
-    const d = new Date(today); d.setDate(today.getDate() - i);
-    if (dateSet.has(d.getTime())) streak++;
+    const d = new Date(today);
+    d.setDate(today.getDate() - i);
+    if (dateSet.has(getLocalDateKey(d))) streak++;
     else if (i > 0) break;
   }
   return streak;
@@ -14823,8 +14823,10 @@ async function fetchLeagueData(opts = {}) {
       (alltimeWRes?.data || []).forEach(w => {
         const did = String(w.deviceId || '').trim();
         if (!did) return;
+        const ts = recordTsValue(w);
+        if (!Number.isFinite(ts) || ts <= 0) return;
         if (!tsByDevice[did]) tsByDevice[did] = [];
-        tsByDevice[did].push(Number(w.ts));
+        tsByDevice[did].push(ts);
       });
       // streak 계산
       const streakByDevice = {};
