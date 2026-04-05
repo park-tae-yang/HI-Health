@@ -18511,11 +18511,14 @@ async function refreshCurrentUserPointsFromRemote() {
   return remoteUser;
 }
 
+let _familyCertRewardShownThisSession = false;
 async function consumeFamilyCertReward(row) {
   if (!row || String(row?.status || '').trim().toLowerCase() !== 'approved') return false;
   if (!isCurrentFamilyCertRow(row)) return false;
   if (!hasFamilyCertRewardGrant(row)) return false;
   if (hasSeenFamilyCertReward(row)) return false;
+  if (_familyCertRewardShownThisSession) return false;
+  _familyCertRewardShownThisSession = true;
 
   const rewardPoints = getFamilyCertRewardPoints(row);
   await refreshCurrentUserPointsFromRemote();
