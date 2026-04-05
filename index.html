@@ -19078,10 +19078,12 @@ function renderChallenge() {
   const familyCertActionHtml = `
     <div class="card-header" style="margin-bottom:10px">
       <span class="card-title">가족과 함께 운동해요</span>
-      <div class="ch-family-spotlight-reward">${familyCertRow ? '+100P 완료' : '+100P'}</div>
     </div>
     <div class="ch-family-spotlight-card">
-      <div class="ch-family-spotlight-sub" style="margin-bottom:10px">가족과 함께 운동하는 사진 또는 영상을 올려주세요.</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <span class="ch-family-spotlight-sub" style="margin:0;flex:1">가족과 함께 운동하는 사진 또는 영상을 올려주세요.</span>
+        <div class="ch-family-spotlight-reward">${familyCertRow ? '+100P 완료' : '+100P'}</div>
+      </div>
       ${familyCertRow
         ? `<div class="ch-family-spotlight-meta">
              <span class="badge ${familyCertStatus.cls}">${familyCertStatus.label}</span>
