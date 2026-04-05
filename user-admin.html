@@ -1068,7 +1068,7 @@
         <div class="ch-s-pill"><div class="ch-s-val" id="fc-total">-</div><div class="ch-s-lbl">전체</div></div>
         <div class="ch-s-pill"><div class="ch-s-val" id="fc-pend">-</div><div class="ch-s-lbl">대기</div></div>
         <div class="ch-s-pill"><div class="ch-s-val" id="fc-ok">-</div><div class="ch-s-lbl">승인</div></div>
-        <div class="ch-s-pill"><div class="ch-s-val" id="fc-rej">-</div><div class="ch-s-lbl">반려</div></div>
+        <div class="ch-s-pill"><div class="ch-s-val" id="fc-rej">-</div><div class="ch-s-lbl">취소</div></div>
       </div>
       <div class="ctrl-bar">
         <input class="ctrl-inp" id="fc-search" placeholder="이름·사번 검색" oninput="renderFamCert()">
@@ -1076,7 +1076,7 @@
           <option value="">전체 상태</option>
           <option value="pending">대기</option>
           <option value="approved">승인</option>
-          <option value="rejected">반려</option>
+          <option value="cancelled">취소</option>
         </select>
         <span class="ctrl-count" id="fc-count">0건</span>
       </div>
@@ -2800,7 +2800,7 @@ function renderUsers() {
         ${isCh ? '<span class="badge ch" style="margin-left:4px">챌린지</span>' : ''}
         ${hasPush ? '<span class="badge" style="margin-left:4px;background:#ecfeff;color:#0f766e;border-color:#99f6e4">푸시ON</span>' : ''}
         ${u.__derived ? '<span class="badge" style="margin-left:4px">임시</span>' : ''}
-        <span style="font-size:10px;color:var(--t3);margin-left:3px">✏️</span>
+
       </td>
       <td style="color:var(--t2)">${u.nickname||'-'}</td>
       <td>${u.empId||'-'}</td>
@@ -5228,6 +5228,27 @@ let GD_famcert = [];
 const FAMILY_CERT_REWARD_POINTS = 100;
 const FAMILY_CERT_REWARD_LIMIT = 3;
 
+function getAdminFamCertStorageObjectPath(row) {
+  const rawUrl = String(row?.media_url || row?.mediaUrl || '').trim();
+  if (!rawUrl) return '';
+  const marker = '/storage/v1/object/public/family-certifications/';
+  const idx = rawUrl.indexOf(marker);
+  const path = idx >= 0 ? rawUrl.slice(idx + marker.length) : rawUrl.split('/family-certifications/')[1] || '';
+  return decodeURIComponent(String(path || '').split('?')[0]);
+}
+
+async function cleanupAdminFamCertStorageObject(row) {
+  const objectPath = getAdminFamCertStorageObjectPath(row);
+  if (!objectPath) return;
+  const deleteRes = await fetch(`${SUPABASE_URL}/storage/v1/object/family-certifications/${encodeURIComponent(objectPath)}`, {
+    method: 'DELETE',
+    headers: { 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY },
+  });
+  if (!deleteRes.ok && deleteRes.status !== 404) {
+    throw new Error(await deleteRes.text().catch(() => '가족인증 파일 삭제 실패'));
+  }
+}
+
 function isFamCertRewardColumnMissingError(error) {
   const message = String(error?.message || error || '');
   return /rewarded_at|reward_points|reward_message/i.test(message) && /column .* does not exist|Could not find the '.*' column/i.test(message);
@@ -5368,7 +5389,7 @@ function renderFamCert() {
   const fcBadge = document.getElementById('famcert-badge');
   if (fcBadge) { fcBadge.textContent = fcPendCount; fcBadge.style.display = fcPendCount > 0 ? '' : 'none'; }
   document.getElementById('fc-ok').textContent = GD_famcert.filter(r => r.status === 'approved').length;
-  document.getElementById('fc-rej').textContent = GD_famcert.filter(r => r.status === 'rejected').length;
+  document.getElementById('fc-rej').textContent = GD_famcert.filter(r => r.status === 'cancelled').length;
   document.getElementById('fc-count').textContent = rows.length + '건';
   const tbody = document.getElementById('fc-tbody');
   if (!tbody) return;
@@ -5376,8 +5397,8 @@ function renderFamCert() {
     tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--t3);padding:32px">제출된 인증이 없습니다.</td></tr>';
     return;
   }
-  const statusLabel = { pending: '대기', approved: '승인', rejected: '반려' };
-  const statusColor = { pending: 'amb', approved: 'grn', rejected: 'dan' };
+  const statusLabel = { pending: '대기', approved: '승인', rejected: '반려', cancelled: '취소' };
+  const statusColor = { pending: 'amb', approved: 'grn', rejected: 'dan', cancelled: '' };
   tbody.innerHTML = rows.map(r => {
     const dt = r.submitted_at ? new Date(r.submitted_at).toLocaleString('ko') : '-';
     const mediaIcon = r.media_type === 'video' ? '🎬' : '🖼️';
@@ -5394,8 +5415,8 @@ function renderFamCert() {
       <td><span class="cbtn ${statusColor[st]}" style="pointer-events:none;font-size:11px;padding:4px 10px">${statusLabel[st] || st}</span></td>
       <td>
         <div style="display:flex;gap:4px">
-          ${st !== 'approved' ? `<button class="cbtn grn" onclick="reviewFamCert('${escHtml(r.id)}','approved')">승인</button>` : ''}
-          ${st !== 'rejected' ? `<button class="cbtn dan" onclick="reviewFamCert('${escHtml(r.id)}','rejected')">반려</button>` : ''}
+          ${st === 'pending' ? `<button class="cbtn grn" onclick="reviewFamCert('${escHtml(r.id)}','approved')">승인</button>` : ''}
+          ${st === 'cancelled' || st === 'rejected' ? `<button class="cbtn dan" onclick="deleteFamCert('${escHtml(r.id)}')">삭제</button>` : ''}
         </div>
       </td>
     </tr>`;
@@ -5518,6 +5539,31 @@ async function reviewFamCert(id, status) {
   toast(status === 'approved'
     ? `인증 승인 및 ${FAMILY_CERT_REWARD_POINTS}포인트 지급 완료 ✓`
     : `인증 ${label} 완료 ✓`);
+}
+
+async function deleteFamCert(id) {
+  const certRow = GD_famcert.find(r => String(r.id) === String(id));
+  if (!certRow) { toast('가족인증 정보를 찾을 수 없습니다'); return; }
+  const status = String(certRow.status || '').trim().toLowerCase();
+  if (status !== 'cancelled' && status !== 'rejected') {
+    toast('취소된 인증만 삭제할 수 있습니다');
+    return;
+  }
+  if (!confirm('이 가족인증 항목을 완전히 삭제할까요?\n삭제 후에는 복구할 수 없습니다.')) return;
+  showLoading(true);
+  const { error } = await db.from('family_certifications').delete().eq('id', id);
+  if (error) {
+    showLoading(false);
+    toast('삭제 실패: ' + formatFamCertReviewError(error));
+    return;
+  }
+  cleanupAdminFamCertStorageObject(certRow).catch(err => {
+    console.warn('[deleteFamCert/storage]', err);
+  });
+  GD_famcert = GD_famcert.filter(r => String(r.id) !== String(id));
+  showLoading(false);
+  renderFamCert();
+  toast('가족인증 항목을 삭제했습니다');
 }
 
 /* ── 구매 기능 설정 ── */
