@@ -6641,7 +6641,7 @@ const PUSH_DEFAULT_URL  = './index.html#community';
 const HOME_PUSH_PROMPT_DISMISSED_KEY = 'hi_home_push_prompt_dismissed';
 const HOME_PUSH_PROMPT_SESSION_KEY   = 'hi_home_push_prompt_seen';
 const AUTO_COMMENT_FN   = 'https://nbnmvvobehjitophkqmu.supabase.co/functions/v1/auto-comment';
-const SW_VERSION        = '20260405-017';
+const SW_VERSION        = '20260405-018';
 const SW_UPDATE_POLL_MS = 15 * 60 * 1000;
 const CHALLENGE_PEOPLE_CACHE_KEY = 'hi_health_people_cache_v1';
 // Keep self-registration sync lean because this query can fire on login/focus recovery paths.
@@ -6844,6 +6844,24 @@ async function copyCommunityContentLink(contentId) {
 }
 let _db = null; // Supabase 클라이언트
 let _lastKnownServerPts = null; // 마지막으로 서버에서 확인한 포인트 (delta 병합용)
+const BONUS_POINTS_SYNC_SEEN_KEY = 'hi_bonus_points_sync_seen';
+
+function readSeenBonusSyncPoints(empId = ACTIVE_EMPID || S.user?.empId || '') {
+  try {
+    return Number(localStorage.getItem(getAccountScopedStorageKey(BONUS_POINTS_SYNC_SEEN_KEY, empId)) || '0') || 0;
+  } catch (e) {
+    return 0;
+  }
+}
+
+function writeSeenBonusSyncPoints(points, empId = ACTIVE_EMPID || S.user?.empId || '') {
+  try {
+    localStorage.setItem(
+      getAccountScopedStorageKey(BONUS_POINTS_SYNC_SEEN_KEY, empId),
+      String(Math.max(0, Number(points) || 0))
+    );
+  } catch (e) {}
+}
 let _realLeagueUsers = null; // Supabase에서 가져온 실제 유저 목록
 let _challengerDeviceIds = new Set(); // 챌린지 신청자 deviceId 세트
 let _leagueFetching = false;
@@ -7055,6 +7073,7 @@ async function refreshUserPointsFromServer() {
     const srvPts = Number(data.points) || 0;
     const prevPts = Number(S.user.points || 0);
     const prevTotal = Number(S.user.totalPoints || 0);
+    const seenPts = readSeenBonusSyncPoints();
     S.user.points = srvPts;
     S.user.totalPoints = srvPts;
     _lastKnownServerPts = srvPts;
@@ -7065,10 +7084,11 @@ async function refreshUserPointsFromServer() {
       const gained = srvPts - prevPts;
       if (!reconciled) save({ skipRemote: true });
       refreshVisiblePointUi();
-      if (gained > 0) {
-        showCelebration('bonuspoints', { gained, message: '추가 포인트를 받았어요~' });
+      if (gained > 0 && srvPts > seenPts) {
+        showCelebration('bonuspoints', { gained, message: '서버에 반영된 포인트가 동기화되었어요.' });
       }
     }
+    writeSeenBonusSyncPoints(Math.max(seenPts, srvPts));
   } catch(e) { /* 네트워크 오류 무시 */ }
 }
 
@@ -10017,8 +10037,8 @@ function showCelebration(type, data) {
     iconWrap.innerHTML = '<div style="width:72px;height:72px;border-radius:50%;background:#F3F4F6;display:flex;align-items:center;justify-content:center;margin:0 auto 12px"><img src="' + data.img + '" style="width:72%;height:72%;object-fit:contain"></div>';
   } else if (type === 'bonuspoints') {
     const gained = Number(data?.gained) || 0;
-    title.textContent = '포인트 지급!';
-    sub.textContent = data?.message || '추가 포인트를 받았어요~';
+    title.textContent = '포인트 동기화';
+    sub.textContent = data?.message || '서버에 반영된 포인트가 동기화되었어요.';
     iconWrap.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;gap:8px;margin-bottom:12px">
       <div style="width:76px;height:76px;border-radius:24px;background:linear-gradient(135deg,#4F46E5,#7C3AED);display:flex;align-items:center;justify-content:center;font-size:36px;box-shadow:0 16px 32px rgba(79,70,229,0.28)">🎁</div>
       ${gained ? `<div style="display:inline-flex;align-items:center;justify-content:center;padding:6px 14px;border-radius:999px;background:#ede9fe;color:#5b21b6;font-size:14px;font-weight:900;border:1px solid #c4b5fd">+${gained.toLocaleString()}P</div>` : ''}

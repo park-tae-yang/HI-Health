@@ -261,6 +261,13 @@
     .wo-guide{font-size:12px;color:var(--t3);margin-bottom:14px;line-height:1.5;}
     .wo-summary-grid{margin-bottom:14px;}
     .wo-inline-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+    .wo-add-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:14px;}
+    .wo-add-grid .full{grid-column:1 / -1;}
+    .wo-add-label{display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:600;color:var(--t2);}
+    .wo-add-label textarea{min-height:84px;resize:vertical;}
+    .wo-add-meta{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;border-radius:12px;background:#f8fafc;color:#475569;font-size:12px;margin-bottom:14px;flex-wrap:wrap;}
+    .wo-add-points{font-size:13px;font-weight:800;color:var(--amber);}
+    @media(max-width:640px){.wo-add-grid{grid-template-columns:1fr;}}
 
     .shop-config-bar{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:16px 18px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:16px;}
     .shop-config-title{font-size:14px;font-weight:700;color:#111827;margin-bottom:4px;}
@@ -471,6 +478,7 @@
           <option value="100">100건씩</option>
           <option value="200">200건씩</option>
         </select>
+        <button class="cbtn pri" onclick="openWorkoutAddModal()">지난 날짜 운동 기록</button>
         <div class="sel-bar" id="wo-sel-bar" style="display:none">
           <span id="wo-sel-name"></span> 운동기록 보는 중
           <button onclick="clearWorkoutUserFilter()" title="선택 해제">✕</button>
@@ -1141,6 +1149,51 @@
   </div>
 </div>
 
+<!-- WORKOUT BACKFILL MODAL -->
+<div class="modal-bg" id="wo-add-modal">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-title">지난 날짜 운동 기록 추가</div>
+    <div class="wo-add-grid">
+      <label class="wo-add-label full">
+        <span>이용자</span>
+        <select class="ctrl-sel" id="wo-add-user" onchange="updateWorkoutBackfillMeta()">
+          <option value="">이용자 선택</option>
+        </select>
+      </label>
+      <label class="wo-add-label">
+        <span>운동 일시</span>
+        <input class="ctrl-inp" type="datetime-local" id="wo-add-datetime" onchange="updateWorkoutBackfillMeta()">
+      </label>
+      <label class="wo-add-label">
+        <span>운동 종류</span>
+        <select class="ctrl-sel" id="wo-add-type" onchange="updateWorkoutBackfillTypeUi();updateWorkoutBackfillMeta()">
+          <option value="">운동 종류 선택</option>
+        </select>
+      </label>
+      <label class="wo-add-label full" id="wo-add-custom-wrap" style="display:none">
+        <span>기타 운동명</span>
+        <input class="ctrl-inp" id="wo-add-custom-name" placeholder="예: 스피닝, 줌바" oninput="updateWorkoutBackfillMeta()">
+      </label>
+      <label class="wo-add-label">
+        <span>운동 시간(분)</span>
+        <input class="ctrl-inp" type="number" id="wo-add-duration" min="1" max="1440" step="1" value="30" oninput="updateWorkoutBackfillMeta()">
+      </label>
+      <label class="wo-add-label full">
+        <span>메모</span>
+        <textarea class="ctrl-inp" id="wo-add-memo" placeholder="선택 사항"></textarea>
+      </label>
+    </div>
+    <div class="wo-add-meta">
+      <span id="wo-add-user-meta">이용자를 선택하면 현재 포인트와 연속일수를 보여드립니다.</span>
+      <span class="wo-add-points" id="wo-add-points">예상 +0p</span>
+    </div>
+    <div class="modal-footer">
+      <button class="mfbtn pri" id="wo-add-submit-btn" onclick="submitWorkoutBackfill()">기록 추가</button>
+      <button class="mfbtn close" onclick="closeModal('wo-add-modal')">닫기</button>
+    </div>
+  </div>
+</div>
+
 <!-- POST DETAIL MODAL -->
 <div class="modal-bg" id="po-modal">
   <div class="modal" style="max-width:520px">
@@ -1221,6 +1274,26 @@ const EX_ICON = {
   'aerial-yoga':'🪂', climbing:'🧗', kendo:'🥋', soccer:'⚽', boxing:'🥊',
   badminton:'🏸', custom:'✏️'
 };
+const ADMIN_EX_PPM = {
+  walking: 0.5,
+  running: 1.0,
+  swimming: 1.2,
+  cycling: 0.8,
+  yoga: 0.7,
+  strength: 1.0,
+  stretching: 0.7,
+  hiking: 0.9,
+  tennis: 0.9,
+  pilates: 0.8,
+  'aerial-yoga': 0.8,
+  climbing: 1.1,
+  kendo: 1.0,
+  soccer: 0.9,
+  boxing: 1.0,
+  badminton: 0.9,
+  custom: 0.8,
+};
+let workoutBackfillSaving = false;
 const CH_SHOE_LABELS = {
   'nb-860-v15':'New Balance 860 v15',
   nike:'Nike',
@@ -3396,6 +3469,32 @@ function buildExTypes() {
     uSel.appendChild(o);
   });
   uSel.value = [...uSel.options].some(opt => opt.value === prevUser) ? prevUser : '';
+  const addUserSel = document.getElementById('wo-add-user');
+  if (addUserSel) {
+    const prevAddUser = addUserSel.value;
+    addUserSel.innerHTML = '<option value="">이용자 선택</option>';
+    [...GD.users]
+      .filter(u => !u.__derived)
+      .sort((a,b) => (a.name||'').localeCompare(b.name||'','ko'))
+      .forEach(u => {
+        const o = document.createElement('option');
+        o.value = u.deviceId;
+        o.textContent = `${u.name || u.deviceId}${u.empId ? ' · ' + u.empId : ''}`;
+        addUserSel.appendChild(o);
+      });
+    addUserSel.value = [...addUserSel.options].some(opt => opt.value === prevAddUser) ? prevAddUser : '';
+  }
+  const addTypeSel = document.getElementById('wo-add-type');
+  if (addTypeSel && !addTypeSel.dataset.bound) {
+    addTypeSel.innerHTML = '<option value="">운동 종류 선택</option>';
+    Object.keys(EX_MAP).forEach(id => {
+      const o = document.createElement('option');
+      o.value = id;
+      o.textContent = `${EX_ICON[id] || ''} ${EX_MAP[id] || id}`.trim();
+      addTypeSel.appendChild(o);
+    });
+    addTypeSel.dataset.bound = '1';
+  }
   // 커뮤니티 이용자 드롭다운
   const puSel = document.getElementById('po-user');
   if (puSel) {
@@ -3419,6 +3518,173 @@ function buildExTypes() {
       pushSel.appendChild(o);
     });
     pushSel.value = [...pushSel.options].some(opt => opt.value === prev) ? prev : '';
+  }
+}
+
+function getAdminWorkoutPpm(exId = 'custom') {
+  return Number(ADMIN_EX_PPM[exId]) || Number(ADMIN_EX_PPM.custom) || 0.8;
+}
+
+function calcAdminWorkoutPoints(exId = 'custom', duration = 0) {
+  return Math.max(0, Math.round(getAdminWorkoutPpm(exId) * Math.max(0, Number(duration) || 0)));
+}
+
+function formatAdminDateTimeLocalValue(value = Date.now()) {
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return '';
+  const year = d.getFullYear();
+  const month = pad(d.getMonth() + 1);
+  const date = pad(d.getDate());
+  const hours = pad(d.getHours());
+  const minutes = pad(d.getMinutes());
+  return `${year}-${month}-${date}T${hours}:${minutes}`;
+}
+
+function updateWorkoutBackfillTypeUi() {
+  const type = document.getElementById('wo-add-type')?.value || '';
+  const wrap = document.getElementById('wo-add-custom-wrap');
+  if (wrap) wrap.style.display = type === 'custom' ? '' : 'none';
+}
+
+function updateWorkoutBackfillMeta() {
+  const deviceId = document.getElementById('wo-add-user')?.value || '';
+  const duration = Number(document.getElementById('wo-add-duration')?.value) || 0;
+  const exId = document.getElementById('wo-add-type')?.value || 'custom';
+  const user = GD.users.find(u => String(u.deviceId || '').trim() === deviceId) || null;
+  const activityPointsMap = getAdminActivityPointsMap();
+  const currentPoints = user ? getAdminEffectivePoints(user, activityPointsMap) : 0;
+  const streakByDevice = computeAdminStreakByDevice();
+  const currentStreak = user
+    ? ((streakByDevice[deviceId] ?? Number(user.streak)) || 0)
+    : 0;
+  const userMeta = document.getElementById('wo-add-user-meta');
+  const pointsEl = document.getElementById('wo-add-points');
+  if (userMeta) {
+    userMeta.textContent = user
+      ? `${user.name || user.deviceId}${user.empId ? ' · ' + user.empId : ''} · 현재 ${currentPoints.toLocaleString()}p · 연속 ${currentStreak}일`
+      : '이용자를 선택하면 현재 포인트와 연속일수를 보여드립니다.';
+  }
+  if (pointsEl) pointsEl.textContent = `예상 +${calcAdminWorkoutPoints(exId, duration).toLocaleString()}p`;
+}
+
+function openWorkoutAddModal(deviceId = getWorkoutSelectedUserId() || selDeviceId || '') {
+  buildExTypes();
+  const userSel = document.getElementById('wo-add-user');
+  const typeSel = document.getElementById('wo-add-type');
+  const dtInput = document.getElementById('wo-add-datetime');
+  const durationInput = document.getElementById('wo-add-duration');
+  const memoInput = document.getElementById('wo-add-memo');
+  const customNameInput = document.getElementById('wo-add-custom-name');
+  if (userSel && deviceId && [...userSel.options].some(opt => opt.value === deviceId)) userSel.value = deviceId;
+  else if (userSel && !userSel.value && userSel.options.length > 1) userSel.value = userSel.options[1].value;
+  if (typeSel && !typeSel.value) typeSel.value = 'walking';
+  if (dtInput && !dtInput.value) dtInput.value = formatAdminDateTimeLocalValue();
+  if (durationInput && !durationInput.value) durationInput.value = '30';
+  if (memoInput) memoInput.value = '';
+  if (customNameInput) customNameInput.value = '';
+  updateWorkoutBackfillTypeUi();
+  updateWorkoutBackfillMeta();
+  document.getElementById('wo-add-modal')?.classList.add('open');
+}
+
+async function submitWorkoutBackfill() {
+  if (workoutBackfillSaving) return;
+  const userSel = document.getElementById('wo-add-user');
+  const dtInput = document.getElementById('wo-add-datetime');
+  const typeSel = document.getElementById('wo-add-type');
+  const durationInput = document.getElementById('wo-add-duration');
+  const memoInput = document.getElementById('wo-add-memo');
+  const customNameInput = document.getElementById('wo-add-custom-name');
+  const submitBtn = document.getElementById('wo-add-submit-btn');
+  const deviceId = String(userSel?.value || '').trim();
+  const user = GD.users.find(u => String(u.deviceId || '').trim() === deviceId) || null;
+  if (!user) { toast('이용자를 선택해주세요'); return; }
+  if (user.__derived) { toast('임시 이용자는 먼저 users 복구 후 진행해주세요'); return; }
+  const exId = String(typeSel?.value || '').trim();
+  if (!exId) { toast('운동 종류를 선택해주세요'); return; }
+  const customName = String(customNameInput?.value || '').trim();
+  if (exId === 'custom' && !customName) { toast('기타 운동명을 입력해주세요'); return; }
+  const duration = Math.max(0, parseInt(durationInput?.value, 10) || 0);
+  if (!duration) { toast('운동 시간을 입력해주세요'); return; }
+  const rawDateTime = String(dtInput?.value || '').trim();
+  if (!rawDateTime) { toast('운동 일시를 선택해주세요'); return; }
+  const workoutDate = new Date(rawDateTime);
+  const workoutTs = workoutDate.getTime();
+  if (!Number.isFinite(workoutTs) || workoutTs <= 0) { toast('운동 일시가 올바르지 않습니다'); return; }
+  if (workoutTs > Date.now() + 60000) { toast('미래 시각은 입력할 수 없습니다'); return; }
+  const points = calcAdminWorkoutPoints(exId, duration);
+  const memo = String(memoInput?.value || '').trim();
+  const workoutId = `admin-${deviceId}-${workoutTs}-${Math.random().toString(36).slice(2, 8)}`;
+  const workoutPayload = {
+    id: workoutId,
+    deviceId,
+    userName: String(user.name || user.nickname || deviceId).trim(),
+    exId,
+    exName: exId === 'custom' ? customName : '',
+    duration,
+    points,
+    memo,
+    ts: String(workoutTs),
+  };
+  const nextStreak = computeAdminStreakByDevice([...GD.workouts, workoutPayload])[deviceId] || 0;
+  const currentPoints = getAdminEffectivePoints(user);
+  const nextPoints = Math.max(0, currentPoints + points);
+  const baseTotalPoints = Math.max(Number(user.totalPoints || 0), currentPoints);
+  const nextTotalPoints = Math.max(0, baseTotalPoints + points);
+  const currentLastActiveTs = getUserLastActiveTs(user);
+  const touchTs = Math.max(currentLastActiveTs || 0, workoutTs);
+  const touchedAt = new Date(touchTs || workoutTs).toISOString();
+
+  workoutBackfillSaving = true;
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.textContent = '저장 중...';
+  }
+  showLoading(true);
+  try {
+    const insertRes = await db.from('workouts').insert(workoutPayload);
+    if (insertRes.error) throw insertRes.error;
+
+    const pointResult = await updateUserPointsFields(deviceId, nextPoints, nextTotalPoints, touchedAt, { empId: user.empId || '' });
+    if (pointResult.error) {
+      await db.from('workouts').delete().eq('id', workoutId);
+      throw pointResult.error;
+    }
+
+    const streakRes = await db.from('users').update({ streak: nextStreak, lastactiveat: touchedAt }).eq('deviceId', deviceId);
+    if (streakRes.error) {
+      await db.from('workouts').delete().eq('id', workoutId);
+      throw streakRes.error;
+    }
+
+    GD.workouts.push({
+      ...workoutPayload,
+      userName: workoutPayload.userName,
+      exName: workoutPayload.exName,
+      ts: workoutTs,
+    });
+    user.points = Number(pointResult.points) || nextPoints;
+    if (pointResult.appliedTotalPoints) user.totalPoints = Number(pointResult.totalPoints) || nextTotalPoints;
+    user.streak = nextStreak;
+    if (!user.lastactiveat || touchTs >= getUserLastActiveTs(user)) {
+      user.lastactiveat = touchedAt;
+      user.lastActiveAt = touchedAt;
+    }
+    closeModal('wo-add-modal');
+    setWorkoutUserFilter(deviceId, { skipRender: true });
+    renderStats();
+    renderUsers();
+    renderWorkouts();
+    toast(`운동 기록 추가 완료 ✓ +${points}p / 연속 ${nextStreak}일`);
+  } catch (e) {
+    toast('운동 기록 추가 실패: ' + (e?.message || e));
+  } finally {
+    workoutBackfillSaving = false;
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = '기록 추가';
+    }
+    showLoading(false);
   }
 }
 
