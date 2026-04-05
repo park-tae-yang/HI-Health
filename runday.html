@@ -2617,6 +2617,10 @@
     }, 30000);
   }
 
+  function getParentFamilyCertAllCount() {
+    try { return window.parent?._familyCertAllRows?.length || 0; } catch (_) { return 0; }
+  }
+
   function getParentFamilyCertRow() {
     try {
       return window.parent?.getCurrentFamilyCertLatestRow?.() || null;
@@ -2665,26 +2669,21 @@
         ? `<div class="family-mission-preview"><video src="${mediaUrl}" controls playsinline preload="metadata"></video></div>`
         : `<div class="family-mission-preview"><img src="${mediaUrl}" alt="가족 운동 인증" onclick="openFamilyMissionMedia()"></div>`
       : '';
+    const certCount = getParentFamilyCertAllCount() || (row ? 1 : 0);
     card.innerHTML = `
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:${certCount > 0 ? '8px' : '10px'}">
         <span class="family-mission-sub" style="margin:0;flex:1">가족과 함께 운동하는 사진 또는 영상을 올려주세요.</span>
-        <span class="family-mission-reward">${row ? '+100P 완료' : '+100P'}</span>
+        <span class="family-mission-reward">${certCount > 0 ? '+100P 완료' : '+100P'}</span>
       </div>
-      ${row
-        ? `<div class="family-mission-meta">
+      ${certCount > 0
+        ? `<div class="family-mission-meta" style="margin-bottom:10px">
+             <span style="font-size:12px;color:#6b7280;font-weight:600">${certCount}회 인증</span>
              <span class="family-mission-status ${status.cls}">${status.label}</span>
-             ${submittedAt ? `<span class="together-time-sub" style="margin:0">${submittedAt} 업로드</span>` : ''}
-           </div>
-           ${previewHtml}
-           ${memo ? `<div class="family-mission-memo">${esc(memo)}</div>` : ''}
-           <div class="family-mission-actions">
-             <button type="button" class="family-mission-btn" onclick="openFamilyMissionMedia()">파일 보기</button>
-             <button type="button" class="family-mission-btn delete" onclick="deleteFamilyMission()">삭제</button>
-             <button type="button" class="family-mission-btn" onclick="shareFamilyMission()">커뮤니티 공유</button>
            </div>`
-        : `<div class="family-mission-actions">
-             <button type="button" class="family-mission-btn primary" onclick="openFamilyMissionUpload()">가족 사진 · 영상 올리기</button>
-           </div>`}
+        : ''}
+      <div class="family-mission-actions">
+        <button type="button" class="family-mission-btn primary" onclick="openFamilyMissionUpload()">가족 사진 · 영상 올리기</button>
+      </div>
     `;
   }
 

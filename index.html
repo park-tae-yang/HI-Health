@@ -19066,37 +19066,23 @@ function renderChallenge() {
 
   const familyCertRow = getCurrentFamilyCertLatestRow();
   const familyCertStatus = getFamilyCertStatusMeta(familyCertRow?.status);
-  const familyCertMemo = getFamilyCertMemoText(familyCertRow);
-  const familyCertSubmittedAt = getFamilyCertSubmittedText(familyCertRow);
-  const familyCertMediaUrl = escHtmlComm(familyCertRow?.media_url || '');
-  const familyCertImageAlt = escHtmlComm('가족 운동 인증');
-  const familyCertPreviewHtml = familyCertRow?.media_url
-    ? String(familyCertRow?.media_type || '').startsWith('video')
-      ? `<div class="ch-family-cert-preview"><video class="ch-family-cert-media" src="${familyCertMediaUrl}" controls playsinline preload="metadata"></video></div>`
-      : `<div class="ch-family-cert-preview"><img class="ch-family-cert-media" src="${familyCertMediaUrl}" alt="${familyCertImageAlt}" onclick="openPhotoLightbox('${familyCertMediaUrl}','${familyCertImageAlt}')"></div>`
-    : '';
+  const familyCertCount = _familyCertAllRows.length || (familyCertRow ? 1 : 0);
   const familyCertActionHtml = `
     <div class="card-header" style="margin-bottom:10px">
       <span class="card-title">가족과 함께 운동해요</span>
     </div>
     <div class="ch-family-spotlight-card">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:${familyCertCount > 0 ? '8px' : '10px'}">
         <span class="ch-family-spotlight-sub" style="margin:0;flex:1">가족과 함께 운동하는 사진 또는 영상을 올려주세요.</span>
-        <div class="ch-family-spotlight-reward">${familyCertRow ? '+100P 완료' : '+100P'}</div>
+        <div class="ch-family-spotlight-reward">${familyCertCount > 0 ? '+100P 완료' : '+100P'}</div>
       </div>
-      ${familyCertRow
-        ? `<div class="ch-family-spotlight-meta">
+      ${familyCertCount > 0
+        ? `<div class="ch-family-spotlight-meta" style="margin-bottom:10px">
+             <span style="font-size:12px;color:var(--text-secondary);font-weight:600">${familyCertCount}회 인증</span>
              <span class="badge ${familyCertStatus.cls}">${familyCertStatus.label}</span>
-             ${familyCertSubmittedAt ? `<span class="ch-family-cert-sub" style="margin:0">${familyCertSubmittedAt} 업로드</span>` : ''}
-           </div>
-           ${familyCertPreviewHtml}
-           ${familyCertMemo ? `<div class="ch-family-cert-memo">${escHtmlComm(familyCertMemo)}</div>` : ''}
-           <div class="ch-family-spotlight-actions">
-             <button type="button" class="ch-family-spotlight-btn" onclick="openCurrentFamilyCertMedia()">파일 보기</button>
-             <button type="button" class="ch-family-spotlight-btn delete" onclick="confirmDeleteCurrentFamilyCert()">삭제</button>
-             <button type="button" class="ch-family-spotlight-btn" onclick="shareCurrentFamilyCertToCommunity()">커뮤니티 공유</button>
            </div>`
-        : `<button type="button" class="ch-family-spotlight-btn primary" onclick="goToFamilyCert()">가족 사진 · 영상 올리기</button>`}
+        : ''}
+      <button type="button" class="ch-family-spotlight-btn primary" onclick="goToFamilyCert()">가족 사진 · 영상 올리기</button>
     </div>
   `;
 
@@ -19405,6 +19391,7 @@ function renderChallenge() {
         challengeTimeLabel: totalChallengeTimeLabel,
         challengeTimeSub: totalChallengeTimeSub,
         familyCertToken: getFamilyCertLatestRowToken(familyCertRow),
+        familyCertCount,
         renderVersion: '20260405-speaker-family-dday-1',
       })
     );
