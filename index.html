@@ -4395,9 +4395,9 @@
       margin:0 0 14px;
       padding:18px;
       border-radius:20px;
-      background:linear-gradient(140deg,#fff7ed 0%,#fff1f2 52%,#ffffff 100%);
-      border:1px solid rgba(251,146,60,0.16);
-      box-shadow:0 12px 28px rgba(251,146,60,0.10);
+      background:#ffffff;
+      border:1px solid rgba(0,0,0,0.07);
+      box-shadow:0 2px 8px rgba(0,0,0,0.06);
     }
     .ch-family-spotlight-top {
       display:flex;
@@ -4415,11 +4415,10 @@
       margin-bottom:6px;
     }
     .ch-family-spotlight-title {
-      font-size:24px;
-      font-weight:900;
+      font-size:15px;
+      font-weight:700;
       color:#111827;
       line-height:1.2;
-      letter-spacing:-0.4px;
     }
     .ch-family-spotlight-sub {
       margin-top:6px;
@@ -18913,12 +18912,8 @@ function renderChallenge() {
   const familyCertActionHtml = `
     <div class="ch-family-spotlight-card">
       <div class="ch-family-spotlight-top">
-        <div>
-          <div class="ch-family-spotlight-label">Family Mission</div>
-          <div class="ch-family-spotlight-title">가족과 함께 운동해요~</div>
-          <div class="ch-family-spotlight-sub">걷기, 스트레칭, 러닝 어떤 순간도 좋아요. 인증하면 챌린지 보너스 <strong>+100P</strong>가 추가돼요.</div>
-        </div>
-        <div class="ch-family-spotlight-reward">${familyCertRow ? '+100P 완료' : '+100P 미션'}</div>
+        <div class="ch-family-spotlight-title">가족과 함께 운동해요</div>
+        <div class="ch-family-spotlight-reward">${familyCertRow ? '+100P 완료' : '+100P'}</div>
       </div>
       ${familyCertRow
         ? `<div class="ch-family-spotlight-meta">
@@ -18926,14 +18921,13 @@ function renderChallenge() {
              ${familyCertSubmittedAt ? `<span class="ch-family-cert-sub" style="margin:0">${familyCertSubmittedAt} 업로드</span>` : ''}
            </div>
            ${familyCertPreviewHtml}
-           <div class="ch-family-cert-copy">올린 파일을 바로 확인하고, 필요하면 삭제하거나 커뮤니티에 공유할 수 있어요.</div>
            ${familyCertMemo ? `<div class="ch-family-cert-memo">${escHtmlComm(familyCertMemo)}</div>` : ''}
            <div class="ch-family-spotlight-actions">
              <button type="button" class="ch-family-spotlight-btn" onclick="openCurrentFamilyCertMedia()">파일 보기</button>
              <button type="button" class="ch-family-spotlight-btn delete" onclick="confirmDeleteCurrentFamilyCert()">삭제</button>
              <button type="button" class="ch-family-spotlight-btn" onclick="shareCurrentFamilyCertToCommunity()">커뮤니티 공유</button>
            </div>`
-        : `<div class="ch-family-spotlight-note">신청 여부와 무관하게 가족과 함께한 걷기, 운동, 스트레칭 인증을 제출할 수 있어요. 사진이나 영상 하나만 올려도 바로 참여됩니다.</div>
+        : `<div class="ch-family-spotlight-sub">사진 또는 영상 인증 시 <strong>+100P</strong> 추가 지급</div>
            <button type="button" class="ch-family-spotlight-btn primary" onclick="goToFamilyCert()">가족 사진 · 영상 올리기</button>`}
     </div>
   `;
