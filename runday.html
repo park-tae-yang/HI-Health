@@ -177,6 +177,43 @@
       font-size: 9px; font-weight: 700; letter-spacing: 2px;
       color: #c4b5fd; text-transform: uppercase;
     }
+    .hero-dday-wrap {
+      padding: 14px 16px 0;
+    }
+    .runday-dday-card {
+      padding: 16px 18px;
+      border-radius: 20px;
+      background: linear-gradient(140deg,#fff8ec 0%,#fff3f4 48%,#ffffff 100%);
+      border: 1px solid rgba(249,115,22,0.16);
+      box-shadow: 0 10px 24px rgba(249,115,22,0.08);
+    }
+    .runday-dday-label {
+      font-size: 11px;
+      font-weight: 800;
+      color: #c2410c;
+      letter-spacing: .5px;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    .runday-dday-value {
+      font-size: 30px;
+      font-weight: 900;
+      color: #0f172a;
+      line-height: 1.1;
+      letter-spacing: -0.5px;
+    }
+    .runday-dday-title {
+      margin-top: 4px;
+      font-size: 13px;
+      font-weight: 800;
+      color: #7c2d12;
+    }
+    .runday-dday-sub {
+      margin-top: 7px;
+      font-size: 12px;
+      line-height: 1.6;
+      color: #64748b;
+    }
 
     /* ─── WHY SECTION ────────────────────────── */
     .why-section {
@@ -394,6 +431,165 @@
       line-height: 1.6;
       color: var(--sub);
       white-space: pre-line;
+    }
+    .family-mission-wrap {
+      margin-top: 16px;
+    }
+    .family-mission-card {
+      padding: 18px;
+      border-radius: 20px;
+      background: linear-gradient(140deg,#fff7ed 0%,#fff1f2 52%,#ffffff 100%);
+      border: 1px solid rgba(251,146,60,0.16);
+      box-shadow: 0 12px 28px rgba(251,146,60,0.10);
+    }
+    .family-mission-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .family-mission-label {
+      font-size: 11px;
+      font-weight: 800;
+      color: #c2410c;
+      letter-spacing: .5px;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    .family-mission-title {
+      font-size: 24px;
+      font-weight: 900;
+      color: #111827;
+      line-height: 1.2;
+      letter-spacing: -0.4px;
+    }
+    .family-mission-sub {
+      margin-top: 6px;
+      font-size: 12px;
+      line-height: 1.6;
+      color: #6b7280;
+    }
+    .family-mission-reward {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      white-space: nowrap;
+      padding: 7px 11px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.8);
+      border: 1px solid rgba(251,146,60,0.22);
+      color: #c2410c;
+      font-size: 11px;
+      font-weight: 900;
+      box-shadow: 0 6px 18px rgba(251,146,60,0.08);
+    }
+    .family-mission-meta {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .family-mission-status {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 22px;
+      padding: 0 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 800;
+    }
+    .family-mission-status.pending {
+      background: #fff7ed;
+      color: #b45309;
+      border: 1px solid rgba(245,158,11,0.24);
+    }
+    .family-mission-status.approved {
+      background: #ecfdf5;
+      color: #047857;
+      border: 1px solid rgba(16,185,129,0.18);
+    }
+    .family-mission-status.rejected,
+    .family-mission-status.cancelled {
+      background: #fff1f2;
+      color: #be123c;
+      border: 1px solid rgba(244,63,94,0.18);
+    }
+    .family-mission-preview {
+      margin-bottom: 12px;
+      border-radius: 14px;
+      overflow: hidden;
+      background: #0f172a;
+      border: 1px solid rgba(15,23,42,0.08);
+    }
+    .family-mission-preview img,
+    .family-mission-preview video {
+      width: 100%;
+      max-height: 280px;
+      display: block;
+      object-fit: cover;
+      background: #000;
+    }
+    .family-mission-copy {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    .family-mission-note {
+      margin-bottom: 12px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.72);
+      border: 1px solid rgba(251,146,60,0.10);
+      color: #6b7280;
+      font-size: 12px;
+      line-height: 1.65;
+    }
+    .family-mission-memo {
+      margin-bottom: 10px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: #f8fafc;
+      color: #334155;
+      font-size: 12px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      border: 1px solid rgba(148,163,184,0.18);
+    }
+    .family-mission-actions {
+      display: grid;
+      grid-template-columns: repeat(3,minmax(0,1fr));
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .family-mission-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 0;
+      padding: 11px 10px;
+      border: none;
+      border-radius: 14px;
+      background: #fff;
+      color: #374151;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: inset 0 0 0 1px rgba(148,163,184,0.22);
+    }
+    .family-mission-btn.primary {
+      grid-column: 1 / -1;
+      background: linear-gradient(135deg,#fb923c,#f97316);
+      color: #fff;
+      box-shadow: none;
+    }
+    .family-mission-btn.delete {
+      color: #b91c1c;
+      box-shadow: inset 0 0 0 1px rgba(248,113,113,0.22);
     }
     @keyframes routeChipFloat {
       0%, 100% { transform: translateY(0) scale(1); }
@@ -1244,6 +1440,17 @@
       background: #fff;
       color: #4338ca;
     }
+    @media (max-width: 420px) {
+      .family-mission-top {
+        flex-direction: column;
+      }
+      .family-mission-reward {
+        align-self: flex-start;
+      }
+      .family-mission-actions {
+        grid-template-columns: 1fr;
+      }
+    }
 
     .hide { display: none !important; }
 
@@ -1412,6 +1619,15 @@
       <div class="scroll-bar"></div>
       <div class="scroll-text">scroll</div>
     </div>
+  </div>
+</div>
+
+<div class="hero-dday-wrap">
+  <div class="runday-dday-card" id="runday-dday-card">
+    <div class="runday-dday-label">HI RUN DAY COUNTDOWN</div>
+    <div class="runday-dday-value" id="runday-dday-value">D-0</div>
+    <div class="runday-dday-title" id="runday-dday-title">런데이까지 남은 시간</div>
+    <div class="runday-dday-sub" id="runday-dday-sub">2026년 4월 15일 수요일 · 선유도공원에서 출발해 여의도공원까지 함께 달려요.</div>
   </div>
 </div>
 
@@ -1711,6 +1927,9 @@
       <div id="together-time-av-stack" class="av-stack"></div>
       <div class="together-time-sub together-time-sub-row" id="together-time-sub2"></div>
     </div>
+  </div>
+  <div class="family-mission-wrap" id="family-mission-wrap">
+    <div class="family-mission-card" id="family-mission-card"></div>
   </div>
 </div>
 
@@ -2077,6 +2296,13 @@
       .replace(/>/g, '&gt;');
   }
 
+  function esc(v) {
+    return String(v || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+  }
+
   function normalizeFamilyMembers(rows) {
     if (!Array.isArray(rows)) return [];
     return rows.map(row => ({
@@ -2284,6 +2510,131 @@
     if (diff > 0) return `런데이까지 D-${diff}`;
     if (diff === 0) return '오늘이 런데이!';
     return '런데이 완료';
+  }
+
+  function renderRunDayCountdownCard() {
+    const valueEl = document.getElementById('runday-dday-value');
+    const titleEl = document.getElementById('runday-dday-title');
+    const subEl = document.getElementById('runday-dday-sub');
+    if (!valueEl || !titleEl || !subEl) return;
+    const label = getRunDayDday();
+    if (/D-(\d+)/.test(label)) {
+      valueEl.textContent = label.replace('런데이까지 ', '');
+      titleEl.textContent = '런데이까지 남은 시간';
+      subEl.textContent = '2026년 4월 15일 수요일 · 선유도공원에서 출발해 여의도공원까지 함께 달려요.';
+      return;
+    }
+    if (label === '오늘이 런데이!') {
+      valueEl.textContent = 'D-DAY';
+      titleEl.textContent = '오늘이 바로 런데이예요!';
+      subEl.textContent = '오늘 선유도공원에서 출발해 여의도공원까지 함께 달려요.';
+      return;
+    }
+    valueEl.textContent = 'RUN DAY 완료';
+    titleEl.textContent = '2026년 4월 15일 HI RUN DAY를 함께 마쳤어요';
+    subEl.textContent = '함께 달린 순간들을 가족 인증이나 커뮤니티 기록으로 남겨보세요.';
+  }
+
+  function getParentFamilyCertRow() {
+    try {
+      return window.parent?.getCurrentFamilyCertLatestRow?.() || null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function getParentFamilyCertMemo(row) {
+    const raw = String(row?.memo || '').trim();
+    return raw
+      .replace(/\[홍보영상 활용 동의\]/g, '')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
+  }
+
+  function getParentFamilyCertSubmittedText(row) {
+    const ts = Date.parse(String(row?.submitted_at || row?.created_at || 0)) || 0;
+    if (!ts) return '';
+    return new Date(ts).toLocaleString('ko-KR', {
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  }
+
+  function getParentFamilyCertStatusMeta(status) {
+    const normalized = String(status || '').trim().toLowerCase();
+    if (normalized === 'approved') return { label: '승인 완료', cls: 'approved' };
+    if (normalized === 'rejected') return { label: '반려', cls: 'rejected' };
+    if (normalized === 'cancelled') return { label: '취소됨', cls: 'cancelled' };
+    return { label: '검토 중', cls: 'pending' };
+  }
+
+  function renderFamilyMissionCard() {
+    const card = document.getElementById('family-mission-card');
+    if (!card) return;
+    const row = getParentFamilyCertRow();
+    const memo = getParentFamilyCertMemo(row);
+    const submittedAt = getParentFamilyCertSubmittedText(row);
+    const status = getParentFamilyCertStatusMeta(row?.status);
+    const mediaUrl = escAttr(String(row?.media_url || ''));
+    const previewHtml = row?.media_url
+      ? String(row?.media_type || '').startsWith('video')
+        ? `<div class="family-mission-preview"><video src="${mediaUrl}" controls playsinline preload="metadata"></video></div>`
+        : `<div class="family-mission-preview"><img src="${mediaUrl}" alt="가족 운동 인증" onclick="openFamilyMissionMedia()"></div>`
+      : '';
+    card.innerHTML = `
+      <div class="family-mission-top">
+        <div>
+          <div class="family-mission-label">Family Mission</div>
+          <div class="family-mission-title">가족과 함께 운동해요~</div>
+          <div class="family-mission-sub">걷기, 스트레칭, 러닝 어떤 순간도 좋아요. 인증하면 챌린지 보너스 <strong>+100P</strong>가 추가돼요.</div>
+        </div>
+        <div class="family-mission-reward">${row ? '+100P 완료' : '+100P 미션'}</div>
+      </div>
+      ${row
+        ? `<div class="family-mission-meta">
+             <span class="family-mission-status ${status.cls}">${status.label}</span>
+             ${submittedAt ? `<span class="together-time-sub" style="margin:0">${submittedAt} 업로드</span>` : ''}
+           </div>
+           ${previewHtml}
+           <div class="family-mission-copy">올린 파일을 바로 확인하고, 필요하면 삭제하거나 커뮤니티에 공유할 수 있어요.</div>
+           ${memo ? `<div class="family-mission-memo">${esc(memo)}</div>` : ''}
+           <div class="family-mission-actions">
+             <button type="button" class="family-mission-btn" onclick="openFamilyMissionMedia()">파일 보기</button>
+             <button type="button" class="family-mission-btn delete" onclick="deleteFamilyMission()">삭제</button>
+             <button type="button" class="family-mission-btn" onclick="shareFamilyMission()">커뮤니티 공유</button>
+           </div>`
+        : `<div class="family-mission-note">신청 여부와 무관하게 가족과 함께한 걷기, 운동, 스트레칭 인증을 제출할 수 있어요. 사진이나 영상 하나만 올려도 바로 참여됩니다.</div>
+           <div class="family-mission-actions">
+             <button type="button" class="family-mission-btn primary" onclick="openFamilyMissionUpload()">가족 사진 · 영상 올리기</button>
+           </div>`}
+    `;
+  }
+
+  function openFamilyMissionUpload() {
+    try {
+      if (window.parent?.openFamilyCertModal) window.parent.openFamilyCertModal();
+    } catch (_) {}
+  }
+
+  function openFamilyMissionMedia() {
+    try {
+      if (window.parent?.openCurrentFamilyCertMedia) window.parent.openCurrentFamilyCertMedia();
+      else if (window.parent?.openFamilyCertModal) window.parent.openFamilyCertModal();
+    } catch (_) {}
+  }
+
+  function deleteFamilyMission() {
+    try {
+      if (window.parent?.confirmDeleteCurrentFamilyCert) window.parent.confirmDeleteCurrentFamilyCert();
+    } catch (_) {}
+  }
+
+  function shareFamilyMission() {
+    try {
+      if (window.parent?.shareCurrentFamilyCertToCommunity) window.parent.shareCurrentFamilyCertToCommunity();
+    } catch (_) {}
   }
 
   let _togetherTimePrevMinutes = 0;
@@ -3408,6 +3759,8 @@
         return false;
       }
       setRundayPageActive(true, { bootstrap: false });
+      renderRunDayCountdownCard();
+      renderFamilyMissionCard();
       const identity = syncInitialIdentity({ scheduleRestore: false });
       syncChallengeStateFromParent();
       syncChallengePeopleFromParent();
@@ -3456,6 +3809,8 @@
     if (e.data?.type === 'LOGIN' || e.data?.type === 'AVATAR_CHANGE') {
       prefillFromLogin(e.data.name, e.data.empId, e.data.avatar);
       updateStoredAvatarForCurrentEmp(e.data.empId, e.data.avatar);
+      renderRunDayCountdownCard();
+      renderFamilyMissionCard();
       const activeReg = getLatestActiveRegistrationForCurrentEmp();
       if (activeReg) renderSuccessScreen(activeReg);
       if (latestPeopleList.length) renderPeople(latestPeopleList);
@@ -4114,60 +4469,18 @@
       return;
     }
     const familyRows = normalizeFamilyMembers(reg.familyMembers || []).filter(m => m.gender || m.tshirtSize || m.memo);
-    const shoeSummary = reg.shoeSize ? reg.shoeSize + 'mm' : '-';
-    const rows = [
-      ['운동화', shoeSummary],
-      ['티셔츠', normalizeTshirtSizeLabel(reg.tshirtSize) || '-'],
-      ['혈당체크기기', reg.cgmParticipation ? '신청' : '미신청'],
-      ['가족 참여', reg.familyParticipation ? `가족 ${reg.familyCount || familyRows.length || 1}명` : '본인만'],
-    ];
     lastSuccessRenderKey = renderKey;
     successContent.innerHTML = `
-      <div class="succ-title">신청 완료!</div>
-      <p class="succ-sub">HI RUN DAY 챌린지 신청이 완료됐습니다.</p>
-      <div class="succ-card">
-        <div class="succ-head">
-          <div>
-            <div style="display:flex;align-items:center;gap:6px;">
-              <div class="succ-name">${reg.name}</div>
-              <span style="font-size:10px;padding:3px 9px;border-radius:20px;background:#6d28d9;color:#fff;font-weight:700;letter-spacing:0.02em;flex-shrink:0;">🏅 챌린지 참여중</span>
-            </div>
-            <div class="succ-meta">${reg.empId} · ${reg.dept || '부서 미입력'}</div>
-          </div>
-          <div class="succ-badge">신청 완료</div>
-        </div>
-        <div class="succ-summary">
-          ${rows.map(([label, value]) => `<div class="succ-item"><div class="succ-label">${label}</div><div class="succ-val">${value}</div></div>`).join('')}
-        </div>
-        <div class="succ-actions">
-          <div class="succ-note">${manageNotice}</div>
-          ${canManage ? `<div class="succ-btn-row">
-            <button type="button" class="btn-edit-reg" data-success-action="edit" data-reg-id="${escAttr(reg.id)}">수정</button>
-            <button type="button" class="btn-cancel-reg" data-success-action="cancel" data-reg-id="${escAttr(reg.id)}">취소</button>
-          </div>` : ''}
-        </div>
+      <div class="succ-sub" style="margin-bottom:10px">신청은 완료되었어요. 가족 인증은 위 카드에서 바로 이어서 참여할 수 있어요.</div>
+      <div class="family-mission-note" style="margin-bottom:12px">
+        <strong style="color:#1e1047">${esc(reg.name)}</strong> · ${esc(reg.empId)}${reg.dept ? ` · ${esc(reg.dept)}` : ''}<br>
+        ${manageNotice}
       </div>
-      <div class="succ-cta-stack">
-        <button type="button" class="btn-app" onclick="if(window.parent&&window.parent.navigate){window.parent.navigate('exercise')}else{window.parent.location.href='index.html'}">
-          <div class="btn-app-icon"><img id="success-app-avatar-img" src="${appAvatarSrc}" alt="운동 기록 아바타" onerror="if(this.dataset.err)return;this.dataset.err=1;this.src='${LIVE_AVATAR_FALLBACK}'"></div>
-          <div class="btn-app-body">
-            <div class="btn-app-main">운동 기록하러 가기</div>
-            <div class="btn-app-sub">챌린지 인증 · 혈당 · 리그</div>
-          </div>
-          <div class="btn-app-arr">›</div>
-        </button>
-        <button type="button" class="btn-app fc-cta" onclick="if(window.parent&&window.parent.openFamilyCertModal){window.parent.openFamilyCertModal()}">
-          <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px">
-            <div class="btn-app-icon" style="font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center">인증</div>
-            <span style="font-size:10px;font-weight:800;color:#7c3aed">+100P</span>
-          </div>
-          <div class="btn-app-body">
-            <div class="btn-app-main">가족 사진 · 영상 인증하기</div>
-            <div class="btn-app-sub">가족과 함께한 운동 장면을 올려보세요</div>
-          </div>
-          <div class="btn-app-arr">›</div>
-        </button>
-      </div>`;
+      ${canManage ? `<div class="succ-btn-row">
+        <button type="button" class="btn-edit-reg" data-success-action="edit" data-reg-id="${escAttr(reg.id)}">수정</button>
+        <button type="button" class="btn-cancel-reg" data-success-action="cancel" data-reg-id="${escAttr(reg.id)}">취소</button>
+      </div>` : ''}`;
+    renderFamilyMissionCard();
     updateSuccessActionAvatar(appAvatarSrc);
   }
 
