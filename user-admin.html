@@ -2873,7 +2873,7 @@ async function updateUserPointsFields(deviceId, nextPoints, nextTotalPoints, tou
   const delta = (Number(nextPoints) || 0) - currentPoints;
   const resolveTargetUser = async () => {
     if (normalizedDeviceId) {
-      const existsRes = await db.from('users').select('deviceId,empId,name,points,totalPoints,lastactiveat').eq('deviceId', normalizedDeviceId);
+      const existsRes = await db.from('users').select('deviceId,empId,name,points,lastactiveat').eq('deviceId', normalizedDeviceId);
       if (existsRes.error) return { error: existsRes.error, user: null };
       const directUser = pickFamCertRewardUser(existsRes.data || [], normalizedEmpId, normalizedDeviceId);
       if (directUser?.deviceId) return { error: null, user: directUser };
@@ -2883,7 +2883,7 @@ async function updateUserPointsFields(deviceId, nextPoints, nextTotalPoints, tou
     }
     const lookupRes = await db
       .from('users')
-      .select('deviceId,empId,name,points,totalPoints,lastactiveat')
+      .select('deviceId,empId,name,points,lastactiveat')
       .or(buildAdminEmpIdFilters('empId', [normalizedEmpId]).join(','));
     if (lookupRes.error) return { error: lookupRes.error, user: null };
     const picked = pickFamCertRewardUser(lookupRes.data || [], normalizedEmpId, normalizedDeviceId)
@@ -2944,7 +2944,7 @@ async function updateUserPointsFields(deviceId, nextPoints, nextTotalPoints, tou
 
   const verifyPointsRes = await db
     .from('users')
-    .select('deviceId,empId,points,totalPoints,lastactiveat')
+    .select('deviceId,empId,points,lastactiveat')
     .eq('deviceId', targetDeviceId)
     .maybeSingle();
   if (verifyPointsRes.error) {
@@ -2954,46 +2954,12 @@ async function updateUserPointsFields(deviceId, nextPoints, nextTotalPoints, tou
     return { error: new Error('포인트 지급 대상 이용자 업데이트가 반영되지 않았습니다'), appliedTotalPoints: false };
   }
 
-  const totalPayload = {
-    totalPoints: Math.max(0, Number(nextTotalPoints) || 0),
-    lastactiveat: touchedAt,
-  };
-  const totalRes = await db.from('users')
-    .update(totalPayload)
-    .eq('deviceId', targetDeviceId);
-  if (!totalRes.error) {
-    const verifyTotalRes = await db
-      .from('users')
-      .select('deviceId,totalPoints')
-      .eq('deviceId', targetDeviceId)
-      .maybeSingle();
-    if (!verifyTotalRes.error && verifyTotalRes.data) {
-      return {
-        error: null,
-        appliedTotalPoints: true,
-        deviceId: targetDeviceId,
-        points: Math.max(0, Number(nextPoints) || 0),
-        totalPoints: Math.max(0, Number(nextTotalPoints) || 0),
-      };
-    }
-  }
-  if (!totalRes.error) {
-    return {
-      error: null,
-      appliedTotalPoints: false,
-      deviceId: targetDeviceId,
-      points: Math.max(0, Number(nextPoints) || 0),
-      totalPoints: Math.max(0, Number(nextTotalPoints) || 0),
-    };
-  }
-  console.warn('[points] totalPoints sync skipped:', totalRes.error);
   return {
     error: null,
     appliedTotalPoints: false,
     deviceId: targetDeviceId,
     points: Math.max(0, Number(nextPoints) || 0),
     totalPoints: Math.max(0, Number(nextTotalPoints) || 0),
-    totalPointsError: totalRes.error,
   };
 }
 
@@ -5411,7 +5377,7 @@ async function resolveFamCertRewardTarget(certRow) {
 
   const userRes = await db
     .from('users')
-    .select('deviceId,empId,name,points,totalPoints,lastactiveat')
+    .select('deviceId,empId,name,points,lastactiveat')
     .or(filters.join(','));
   if (userRes.error) {
     const localUser = pickFamCertRewardUser((GD.users || []), targetEmpId, targetDeviceId);
@@ -5574,12 +5540,14 @@ async function reviewFamCert(id, status) {
       toast('대상 이용자 조회 실패: ' + formatFamCertReviewError(targetRes.error));
       return;
     }
-    if (!targetRes.user?.deviceId) {
-      showLoading(false);
-      toast('포인트를 지급할 이용자를 찾지 못했습니다');
-      return;
+    const isUserMissing = !targetRes.user?.deviceId || !!targetRes.user?.__derived;
+    if (isUserMissing) {
+      // 앱 로그인 이력이 없는 신청자 — 승인은 진행하되 포인트 자동 지급 불가
+      rewardLimitReached = true;
+      rewardBlockedMessage = '앱 계정을 찾지 못해 포인트가 자동 지급되지 않았습니다. 관리자가 수동으로 포인트를 조정해주세요.';
     }
 
+    if (!isUserMissing) {
     const rewardCountRes = await countGrantedFamilyCertRewards(certRow, targetRes);
     if (rewardCountRes.error) {
       showLoading(false);
@@ -5615,6 +5583,7 @@ async function reviewFamCert(id, status) {
         rewardMessage: `가족 운동 인증이 승인되어 ${FAMILY_CERT_REWARD_POINTS}포인트가 지급되었습니다!`,
       };
     }
+    } // end !isUserMissing
   }
 
   const updatePayload = { status, reviewed_at: reviewedAt };

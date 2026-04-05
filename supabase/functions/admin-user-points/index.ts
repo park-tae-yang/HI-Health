@@ -50,16 +50,14 @@ Deno.serve(async (req) => {
 
     const { data: user, error: userError } = await db
       .from("users")
-      .select("deviceId,points,totalPoints")
+      .select("deviceId,points")
       .eq("deviceId", normalizedDeviceId)
       .maybeSingle();
     if (userError) return json({ error: userError.message }, 500);
     if (!user) return json({ error: "User not found" }, 404);
 
     const currentPoints = Number(user.points) || 0;
-    const currentTotalPoints = Math.max(Number(user.totalPoints || 0), currentPoints);
     const nextPoints = Math.max(0, currentPoints + pointDelta);
-    const nextTotalPoints = Math.max(0, currentTotalPoints + pointDelta);
     const updatedAt = String(touchedAt || new Date().toISOString());
 
     const { error: pointsError } = await db
@@ -68,26 +66,10 @@ Deno.serve(async (req) => {
       .eq("deviceId", normalizedDeviceId);
     if (pointsError) return json({ error: pointsError.message }, 500);
 
-    const { error: totalError } = await db
-      .from("users")
-      .update({ totalPoints: nextTotalPoints, lastactiveat: updatedAt })
-      .eq("deviceId", normalizedDeviceId);
-
-    if (totalError) {
-      console.warn("[admin-user-points] totalPoints sync skipped:", totalError.message);
-      return json({
-        ok: true,
-        points: nextPoints,
-        totalPoints: currentTotalPoints,
-        appliedTotalPoints: false,
-      });
-    }
-
     return json({
       ok: true,
       points: nextPoints,
-      totalPoints: nextTotalPoints,
-      appliedTotalPoints: true,
+      appliedTotalPoints: false,
     });
   } catch (e) {
     return json({ error: (e as Error).message || "Unknown error" }, 500);
