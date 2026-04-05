@@ -214,18 +214,18 @@
       gap: 4px;
     }
     .runday-dday-digit {
+      --digit-height: 58px;
       width: 44px;
-      height: 58px;
+      height: var(--digit-height);
       background: #111111;
       border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
       font-size: 38px;
       font-weight: 900;
       color: #ffffff;
       font-variant-numeric: tabular-nums;
       position: relative;
+      overflow: hidden;
+      perspective: 800px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.07);
     }
     .runday-dday-digit::after {
@@ -233,7 +233,82 @@
       position: absolute;
       left: 0; right: 0; top: 50%;
       height: 1.5px;
-      background: rgba(0,0,0,0.55);
+      background: linear-gradient(180deg, rgba(255,255,255,0.08) 0%, rgba(0,0,0,0.58) 100%);
+      box-shadow: 0 1px 0 rgba(255,255,255,0.05);
+      z-index: 4;
+      pointer-events: none;
+    }
+    .runday-dday-static,
+    .runday-dday-flip {
+      position: absolute;
+      left: 0;
+      width: 100%;
+      height: 50%;
+      overflow: hidden;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.02) 24%, rgba(0,0,0,0) 100%),
+        #111111;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+    }
+    .runday-dday-static.top,
+    .runday-dday-flip.top {
+      top: 0;
+      border-radius: 8px 8px 0 0;
+    }
+    .runday-dday-static.bottom,
+    .runday-dday-flip.bottom {
+      bottom: 0;
+      border-radius: 0 0 8px 8px;
+    }
+    .runday-dday-static.top,
+    .runday-dday-static.bottom {
+      z-index: 1;
+    }
+    .runday-dday-flip {
+      z-index: 2;
+      pointer-events: none;
+    }
+    .runday-dday-flip.top {
+      transform-origin: center bottom;
+      transform: rotateX(0deg);
+    }
+    .runday-dday-flip.bottom {
+      transform-origin: center top;
+      transform: rotateX(90deg);
+    }
+    .runday-dday-half-glyph {
+      position: absolute;
+      left: 0;
+      width: 100%;
+      height: var(--digit-height);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      text-shadow: 0 1px 0 rgba(255,255,255,0.06);
+    }
+    .runday-dday-static.top .runday-dday-half-glyph,
+    .runday-dday-flip.top .runday-dday-half-glyph {
+      top: 0;
+    }
+    .runday-dday-static.bottom .runday-dday-half-glyph,
+    .runday-dday-flip.bottom .runday-dday-half-glyph {
+      top: calc(var(--digit-height) * -0.5);
+    }
+    .runday-dday-digit.is-animating .runday-dday-flip.top {
+      animation: rundayDdayFlipTop 180ms cubic-bezier(.6,0,.78,.2) forwards;
+    }
+    .runday-dday-digit.is-animating .runday-dday-flip.bottom {
+      animation: rundayDdayFlipBottom 180ms cubic-bezier(.18,.9,.28,1) 180ms forwards;
+    }
+    @keyframes rundayDdayFlipTop {
+      from { transform: rotateX(0deg); }
+      to { transform: rotateX(-90deg); }
+    }
+    @keyframes rundayDdayFlipBottom {
+      from { transform: rotateX(90deg); }
+      to { transform: rotateX(0deg); }
     }
     .runday-dday-sep {
       font-size: 32px;
@@ -307,6 +382,8 @@
       .why-img.warmup,
       .why-img.record,
       .why-img.donate { animation: none; }
+      .runday-dday-digit.is-animating .runday-dday-flip.top,
+      .runday-dday-digit.is-animating .runday-dday-flip.bottom { animation: none; }
     }
     .why-body {}
     .why-card-title { font-size: 16px; font-weight: 800; color: var(--text); margin-bottom: 4px; }
@@ -475,6 +552,7 @@
     }
     .family-mission-wrap {
       margin-top: 32px;
+      margin-bottom: 32px;
     }
     .family-mission-section-title {
       margin-bottom: 12px;
@@ -520,12 +598,12 @@
       white-space: nowrap;
       padding: 7px 11px;
       border-radius: 999px;
-      background: rgba(255,255,255,0.8);
-      border: 1px solid rgba(251,146,60,0.22);
-      color: #c2410c;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      color: #1d4ed8;
       font-size: 11px;
       font-weight: 900;
-      box-shadow: 0 6px 18px rgba(251,146,60,0.08);
+      box-shadow: 0 6px 18px rgba(29,78,216,0.08);
     }
     .family-mission-meta {
       display: flex;
@@ -2563,6 +2641,7 @@
   let peopleLoadedAt = 0;
   let challengeActivitySummaryPromise = null;
   let challengeActivitySummaryCache = null;
+  let latestFamilyMissionState = null;
 
   function formatDurationMinutesLabel(minutes) {
     return `${Math.max(0, Number(minutes) || 0).toLocaleString()}분`;
@@ -2584,6 +2663,68 @@
     };
   }
 
+  let runDayCountdownDidInit = false;
+
+  function setRunDayCountdownDigitHalfText(el, selector, ch) {
+    const target = el?.querySelector(selector);
+    if (target) target.textContent = ch;
+  }
+
+  function syncRunDayCountdownDigitFaces(el, ch) {
+    setRunDayCountdownDigitHalfText(el, '.runday-dday-static.top .runday-dday-half-glyph', ch);
+    setRunDayCountdownDigitHalfText(el, '.runday-dday-static.bottom .runday-dday-half-glyph', ch);
+    setRunDayCountdownDigitHalfText(el, '.runday-dday-flip.top .runday-dday-half-glyph', ch);
+    setRunDayCountdownDigitHalfText(el, '.runday-dday-flip.bottom .runday-dday-half-glyph', ch);
+    el.dataset.value = ch;
+  }
+
+  function ensureRunDayCountdownDigit(el) {
+    if (!el) return null;
+    if (el.dataset.flipReady === '1') return el;
+    const initial = String(el.textContent || '0').trim() || '0';
+    el.innerHTML = `
+      <span class="runday-dday-static top"><span class="runday-dday-half-glyph">${initial}</span></span>
+      <span class="runday-dday-static bottom"><span class="runday-dday-half-glyph">${initial}</span></span>
+      <span class="runday-dday-flip top"><span class="runday-dday-half-glyph">${initial}</span></span>
+      <span class="runday-dday-flip bottom"><span class="runday-dday-half-glyph">${initial}</span></span>
+    `;
+    el.dataset.flipReady = '1';
+    el.dataset.value = initial;
+    return el;
+  }
+
+  function setRunDayCountdownDigit(id, ch, animate = true) {
+    const el = ensureRunDayCountdownDigit(document.getElementById(id));
+    if (!el) return;
+    const nextValue = String(ch || '0');
+    const prevValue = String(el.dataset.value || nextValue);
+    const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+
+    if (!animate || reduceMotion || prevValue === nextValue) {
+      if (el._flipTimer) {
+        clearTimeout(el._flipTimer);
+        el._flipTimer = null;
+      }
+      el.classList.remove('is-animating');
+      syncRunDayCountdownDigitFaces(el, nextValue);
+      return;
+    }
+
+    if (el._flipTimer) clearTimeout(el._flipTimer);
+    el.classList.remove('is-animating');
+    setRunDayCountdownDigitHalfText(el, '.runday-dday-static.top .runday-dday-half-glyph', nextValue);
+    setRunDayCountdownDigitHalfText(el, '.runday-dday-static.bottom .runday-dday-half-glyph', prevValue);
+    setRunDayCountdownDigitHalfText(el, '.runday-dday-flip.top .runday-dday-half-glyph', prevValue);
+    setRunDayCountdownDigitHalfText(el, '.runday-dday-flip.bottom .runday-dday-half-glyph', nextValue);
+    void el.offsetWidth;
+    el.classList.add('is-animating');
+    el._flipTimer = setTimeout(() => {
+      el.classList.remove('is-animating');
+      syncRunDayCountdownDigitFaces(el, nextValue);
+      el._flipTimer = null;
+    }, 380);
+  }
+
   function renderRunDayCountdownCard() {
     const grid = document.getElementById('runday-dday-grid');
     const titleEl = document.getElementById('runday-dday-title');
@@ -2598,10 +2739,14 @@
     const ds = pad(countdown.days);
     const hs = pad(countdown.hours);
     const ms = pad(countdown.minutes);
-    const setDigit = (id, ch) => { const el = document.getElementById(id); if (el) el.textContent = ch; };
-    setDigit('runday-dday-d0', ds[0]); setDigit('runday-dday-d1', ds[1]);
-    setDigit('runday-dday-h0', hs[0]); setDigit('runday-dday-h1', hs[1]);
-    setDigit('runday-dday-m0', ms[0]); setDigit('runday-dday-m1', ms[1]);
+    const animateDigits = runDayCountdownDidInit;
+    setRunDayCountdownDigit('runday-dday-d0', ds[0], animateDigits);
+    setRunDayCountdownDigit('runday-dday-d1', ds[1], animateDigits);
+    setRunDayCountdownDigit('runday-dday-h0', hs[0], animateDigits);
+    setRunDayCountdownDigit('runday-dday-h1', hs[1], animateDigits);
+    setRunDayCountdownDigit('runday-dday-m0', ms[0], animateDigits);
+    setRunDayCountdownDigit('runday-dday-m1', ms[1], animateDigits);
+    runDayCountdownDidInit = true;
   }
 
   let runDayCountdownTimer = null;
@@ -2618,10 +2763,14 @@
   }
 
   function getParentFamilyCertAllCount() {
+    if (latestFamilyMissionState && Number.isFinite(Number(latestFamilyMissionState.count))) {
+      return Math.max(0, Number(latestFamilyMissionState.count) || 0);
+    }
     try { return window.parent?._familyCertAllRows?.length || 0; } catch (_) { return 0; }
   }
 
   function getParentFamilyCertRow() {
+    if (latestFamilyMissionState && latestFamilyMissionState.row) return latestFamilyMissionState.row;
     try {
       return window.parent?.getCurrentFamilyCertLatestRow?.() || null;
     } catch (_) {
@@ -2660,29 +2809,20 @@
     const card = document.getElementById('family-mission-card');
     if (!card) return;
     const row = getParentFamilyCertRow();
-    const memo = getParentFamilyCertMemo(row);
-    const submittedAt = getParentFamilyCertSubmittedText(row);
-    const status = getParentFamilyCertStatusMeta(row?.status);
-    const mediaUrl = escAttr(String(row?.media_url || ''));
-    const previewHtml = row?.media_url
-      ? String(row?.media_type || '').startsWith('video')
-        ? `<div class="family-mission-preview"><video src="${mediaUrl}" controls playsinline preload="metadata"></video></div>`
-        : `<div class="family-mission-preview"><img src="${mediaUrl}" alt="가족 운동 인증" onclick="openFamilyMissionMedia()"></div>`
-      : '';
     const certCount = getParentFamilyCertAllCount() || (row ? 1 : 0);
+    const buttonLabel = certCount > 0
+      ? `가족 사진 · 영상 추가로 올리기 (${certCount}회)`
+      : '가족 사진 · 영상 올리기';
     card.innerHTML = `
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:${certCount > 0 ? '8px' : '10px'}">
-        <span class="family-mission-sub" style="margin:0;flex:1">가족과 함께 운동하는 사진 또는 영상을 올려주세요.</span>
+      <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:${certCount > 0 ? '8px' : '10px'}">
+        <div style="display:flex;flex-direction:column;gap:4px;flex:1;min-width:0">
+          <span class="family-mission-sub" style="margin:0">가족과 함께 운동하는 사진 또는 영상을 올려주세요.</span>
+          <span class="family-mission-sub" style="margin:0">챌린지 기간 중 최대 3회까지 참여할 수 있어요.</span>
+        </div>
         <span class="family-mission-reward">${certCount > 0 ? '+100P 완료' : '+100P'}</span>
       </div>
-      ${certCount > 0
-        ? `<div class="family-mission-meta" style="margin-bottom:10px">
-             <span style="font-size:12px;color:#6b7280;font-weight:600">${certCount}회 인증</span>
-             <span class="family-mission-status ${status.cls}">${status.label}</span>
-           </div>`
-        : ''}
       <div class="family-mission-actions">
-        <button type="button" class="family-mission-btn primary" onclick="openFamilyMissionUpload()">가족 사진 · 영상 올리기</button>
+        <button type="button" class="family-mission-btn primary" onclick="openFamilyMissionUpload()">${buttonLabel}</button>
       </div>
     `;
   }
@@ -2741,7 +2881,7 @@
     if (!hasData) return false;
 
     const nextValue = formatDurationMinutesLabel(totalMinutes);
-    const nextSub = '챌린지 기간, 같이 운동한 시간만큼 기부금액에 추가됩니다';
+    const nextSub = '챌린지 기간, 같이 운동한 시간만큼 기부금액에 추가됩니다.';
 
     let changed = false;
 
@@ -3881,6 +4021,14 @@
       applyParentChallengePeopleState(e.data);
       return;
     }
+    if (e.data?.type === 'FAMILY_CERT_STATE') {
+      latestFamilyMissionState = {
+        count: Number(e.data.count) || 0,
+        row: e.data.row || null,
+      };
+      renderFamilyMissionCard();
+      return;
+    }
     if (e.data?.type === 'LOGIN' || e.data?.type === 'AVATAR_CHANGE') {
       prefillFromLogin(e.data.name, e.data.empId, e.data.avatar);
       updateStoredAvatarForCurrentEmp(e.data.empId, e.data.avatar);
@@ -3908,7 +4056,7 @@
 
   /* ── 실시간 신청자 현황 ─────────────────── */
   const AV_COUNT = 20;
-  const NEW_PEOPLE_WINDOW_MS = 1000 * 60 * 60 * 3;
+  const NEW_PEOPLE_WINDOW_MS = 1000 * 60 * 60 * 6;
 
   function avIdx(seed) {
     let h = 0;
