@@ -5641,17 +5641,14 @@ async function reviewFamCert(id, status) {
       certRow.reward_message = rewardBlockedMessage;
     }
   }
+  const toastMsg = (status === 'approved' && rewardLimitReached)
+    ? `인증 승인 완료 ✓ 포인트는 최대 ${FAMILY_CERT_REWARD_LIMIT}회까지만 지급됩니다`
+    : status === 'approved'
+      ? `인증 승인 및 ${FAMILY_CERT_REWARD_POINTS}포인트 지급 완료 ✓`
+      : `인증 ${label} 완료 ✓`;
   showLoading(false);
-  renderFamCert();
-  renderUsers();
-  renderStats();
-  if (status === 'approved' && rewardLimitReached) {
-    toast(`인증 승인 완료 ✓ 포인트는 최대 ${FAMILY_CERT_REWARD_LIMIT}회까지만 지급됩니다`);
-    return;
-  }
-  toast(status === 'approved'
-    ? `인증 승인 및 ${FAMILY_CERT_REWARD_POINTS}포인트 지급 완료 ✓`
-    : `인증 ${label} 완료 ✓`);
+  toast(toastMsg);
+  await loadAll({ silent: true });
 }
 
 async function deleteFamCert(id) {
