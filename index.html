@@ -18104,7 +18104,8 @@ function normalizeFamilyCertRow(row) {
 function isActiveFamilyCertRow(row) {
   const normalized = normalizeFamilyCertRow(row);
   if (!normalized) return false;
-  return String(normalized.status || '').trim().toLowerCase() !== 'cancelled';
+  const status = String(normalized.status || '').trim().toLowerCase();
+  return status !== 'cancelled' && status !== 'deleted';
 }
 
 function getFamilyCertLatestRowToken(row) {
@@ -18164,6 +18165,7 @@ function getFamilyCertStatusMeta(status) {
   if (normalized === 'approved') return { label:'승인 완료', cls:'badge-success' };
   if (normalized === 'rejected') return { label:'반려', cls:'' };
   if (normalized === 'cancelled') return { label:'취소됨', cls:'' };
+  if (normalized === 'deleted') return { label:'삭제됨', cls:'' };
   return { label:'검토 중', cls:'badge-warning' };
 }
 
@@ -18559,9 +18561,11 @@ async function syncFamilyCertRewardStatus() {
 }
 
 function openFamilyCertModal() {
-  renderFamilyCertList();
+  const listEl = document.getElementById('fc-list');
+  if (listEl) listEl.innerHTML = '';
+  showFcUploadForm();
   document.getElementById('fc-overlay').classList.remove('pm-hidden');
-  refreshCurrentFamilyCertLatest({ silent: true }).then(() => {
+  refreshCurrentFamilyCertLatest({ force: true, silent: true }).then(() => {
     renderFamilyCertList();
   }).catch(() => {});
 }
@@ -18579,10 +18583,17 @@ function showFcUploadForm() {
   document.getElementById('fc-file-input').value = '';
   document.getElementById('fc-memo').value = '';
   document.getElementById('fc-consent').checked = false;
-  document.getElementById('fc-img').style.display = 'none';
-  document.getElementById('fc-vid').style.display = 'none';
+  const imgEl = document.getElementById('fc-img');
+  const vidEl = document.getElementById('fc-vid');
+  imgEl.style.display = 'none';
+  imgEl.removeAttribute('src');
+  vidEl.pause?.();
+  vidEl.style.display = 'none';
+  vidEl.removeAttribute('src');
   document.getElementById('fc-preview-wrap').style.display = 'none';
   document.getElementById('fc-done').style.display = 'none';
+  const formEl = document.getElementById('fc-upload-form');
+  if (formEl) formEl.style.display = '';
   const placeholder = document.getElementById('fc-upload-placeholder');
   if (placeholder) placeholder.style.display = '';
   const box = document.getElementById('fc-upload-box');
@@ -18614,7 +18625,8 @@ function renderFamilyCertList() {
   if (!listEl) return;
   const latest = getCurrentFamilyCertLatestRow();
   const visibleRows = _familyCertAllRows.filter(isActiveFamilyCertRow);
-  const rows = visibleRows.length ? visibleRows : (latest ? [latest] : []);
+  const shouldUseLatestFallback = !_familyCertLatestFetchedAt;
+  const rows = visibleRows.length ? visibleRows : (shouldUseLatestFallback && latest ? [latest] : []);
   if (!rows.length) {
     listEl.innerHTML = '';
     return;
