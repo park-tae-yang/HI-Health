@@ -18915,6 +18915,7 @@ function renderChallenge() {
       <div class="ch-family-spotlight-reward">${familyCertRow ? '+100P 완료' : '+100P'}</div>
     </div>
     <div class="ch-family-spotlight-card">
+      <div class="ch-family-spotlight-sub" style="margin-bottom:10px">가족과 함께 운동하는 사진 또는 영상을 올려주세요.</div>
       ${familyCertRow
         ? `<div class="ch-family-spotlight-meta">
              <span class="badge ${familyCertStatus.cls}">${familyCertStatus.label}</span>
@@ -18927,8 +18928,7 @@ function renderChallenge() {
              <button type="button" class="ch-family-spotlight-btn delete" onclick="confirmDeleteCurrentFamilyCert()">삭제</button>
              <button type="button" class="ch-family-spotlight-btn" onclick="shareCurrentFamilyCertToCommunity()">커뮤니티 공유</button>
            </div>`
-        : `<div class="ch-family-spotlight-sub">사진 또는 영상 인증 시 <strong>+100P</strong> 추가 지급</div>
-           <button type="button" class="ch-family-spotlight-btn primary" onclick="goToFamilyCert()">가족 사진 · 영상 올리기</button>`}
+        : `<button type="button" class="ch-family-spotlight-btn primary" onclick="goToFamilyCert()">가족 사진 · 영상 올리기</button>`}
     </div>
   `;
 
@@ -20413,7 +20413,6 @@ async function init() {
 
     <!-- 업로드 폼 -->
     <div id="fc-upload-form">
-      <div class="fc-sub">가족과 함께 운동하는 사진 또는 영상을 올려주세요.<br>관리자 승인 완료 시 추가 <strong>100포인트</strong>가 자동 지급됩니다.</div>
       <div id="fc-preview-wrap" class="fc-preview-wrap">
         <img id="fc-img" class="fc-media-preview" style="display:none" alt="인증 미리보기">
         <video id="fc-vid" class="fc-media-preview" controls style="display:none"></video>

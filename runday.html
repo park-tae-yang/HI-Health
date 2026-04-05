@@ -2666,6 +2666,7 @@
         : `<div class="family-mission-preview"><img src="${mediaUrl}" alt="가족 운동 인증" onclick="openFamilyMissionMedia()"></div>`
       : '';
     card.innerHTML = `
+      <div class="family-mission-sub" style="margin-bottom:10px">가족과 함께 운동하는 사진 또는 영상을 올려주세요.</div>
       ${row
         ? `<div class="family-mission-meta">
              <span class="family-mission-status ${status.cls}">${status.label}</span>
@@ -2680,7 +2681,6 @@
              <button type="button" class="family-mission-btn" onclick="shareFamilyMission()">커뮤니티 공유</button>
            </div>`
         : `<div class="family-mission-meta"><span class="family-mission-reward">+100P</span></div>
-           <div class="family-mission-sub">사진 또는 영상 인증 시 <strong>+100P</strong> 추가 지급</div>
            <div class="family-mission-actions">
              <button type="button" class="family-mission-btn primary" onclick="openFamilyMissionUpload()">가족 사진 · 영상 올리기</button>
            </div>`}
