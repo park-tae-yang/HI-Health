@@ -10095,7 +10095,7 @@ function myLeagueRank() {
     me
   ];
   if (!entries.length) return null;
-  const metric = tab === 'weekly' ? 'wPts' : 'pts';
+  const metric = getLeagueMetricForTab(tab);
   const ranked = [...entries].sort((a, b) => compareLeagueEntriesByMetric(a, b, metric));
   const myIndex = ranked.findIndex(u => getLeagueEntryKey(u) === getLeagueEntryKey(me));
   return myIndex >= 0 ? myIndex + 1 : null;
