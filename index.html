@@ -15180,10 +15180,15 @@ async function fetchLeagueData(opts = {}) {
       allUsers.forEach(u => {
         const did = String(u.deviceId || '').trim();
         if (!did) return;
-        if (!totalPtsByDevice[did]) totalPtsByDevice[did] = Math.max(0, Number(u.points) || 0);
+        const serverPoints = Math.max(0, Number(u.points || 0) || 0);
+        const serverTotalPoints = Math.max(0, Number(u.totalPoints || u.totalpoints || 0) || 0);
+        const activityPoints = Math.max(0, Number(totalPtsByDevice[did]) || 0);
+        if (!totalPtsByDevice[did]) totalPtsByDevice[did] = serverPoints;
         cumulativePtsByDevice[did] = Math.max(
           0,
-          Number(u.points || u.totalPoints || u.totalpoints || 0) || Number(totalPtsByDevice[did]) || 0
+          serverPoints,
+          serverTotalPoints,
+          activityPoints
         );
         if (!(did in streakByDevice)) streakByDevice[did] = Number(u.streak) || 0;
       });
