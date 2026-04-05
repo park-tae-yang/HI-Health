@@ -6644,6 +6644,35 @@ const AUTO_COMMENT_FN   = 'https://nbnmvvobehjitophkqmu.supabase.co/functions/v1
 const SW_VERSION        = '20260405-017';
 const SW_UPDATE_POLL_MS = 15 * 60 * 1000;
 const CHALLENGE_PEOPLE_CACHE_KEY = 'hi_health_people_cache_v1';
+// Keep self-registration sync lean because this query can fire on login/focus recovery paths.
+const CHALLENGE_REGISTRATION_REMOTE_SELECT = [
+  'id',
+  '"deviceId"',
+  '"empId"',
+  'name',
+  'avatar',
+  'dept',
+  'phone',
+  '"shoeSize"',
+  '"tshirtSize"',
+  '"shoePrefs"',
+  '"shoeRequestNote"',
+  '"cgmParticipation"',
+  '"familyParticipation"',
+  '"familyCount"',
+  '"familyGender"',
+  '"familyAge"',
+  '"familyShoeSize"',
+  '"familyMemo"',
+  '"familyMembers"',
+  '"cruiseParticipation"',
+  '"eventParticipation"',
+  'note',
+  '"adminNote"',
+  'status',
+  '"registeredAt"',
+].join(',');
+const CHALLENGE_REGISTRATION_SYNC_LIMIT = 20;
 let _swControllerReloaded = false;
 let _swUpdateCheckQueued = false;
 let _pendingCommunityPostId = '';
@@ -17926,7 +17955,11 @@ async function syncMyChallengeRegistrationWithOptions(opts = {}) {
   if (!filters.length) return getMyReg();
 
   try {
-    const { data, error } = await _db.from('registrations').select('*').or(filters.join(','));
+    const { data, error } = await _db
+      .from('registrations')
+      .select(CHALLENGE_REGISTRATION_REMOTE_SELECT)
+      .or(filters.join(','))
+      .limit(CHALLENGE_REGISTRATION_SYNC_LIMIT);
     if (error) {
       console.error('[syncMyChallengeRegistration]', error);
       return getMyReg();

@@ -2630,7 +2630,36 @@
   const CHALLENGE_CONFIG_SYNC_KEY = 'hi_health_challenge_config_sync';
   let challengeConfigChannel = null;
   const CHALLENGE_CONFIG_STALE_MS = 15000;
-  const REG_SYNC_STALE_MS = 1200;
+  // This sync runs often around page enter/focus, so keep both cadence and payload conservative.
+  const REG_SYNC_STALE_MS = 10000;
+  const REGISTRATION_REMOTE_SELECT = [
+    'id',
+    '"deviceId"',
+    '"empId"',
+    'name',
+    'avatar',
+    'dept',
+    'phone',
+    '"shoeSize"',
+    '"tshirtSize"',
+    '"shoePrefs"',
+    '"shoeRequestNote"',
+    '"cgmParticipation"',
+    '"familyParticipation"',
+    '"familyCount"',
+    '"familyGender"',
+    '"familyAge"',
+    '"familyShoeSize"',
+    '"familyMemo"',
+    '"familyMembers"',
+    '"cruiseParticipation"',
+    '"eventParticipation"',
+    'note',
+    '"adminNote"',
+    'status',
+    '"registeredAt"',
+  ].join(',');
+  const REGISTRATION_SYNC_LIMIT = 20;
   const PEOPLE_FETCH_STALE_MS = 10000;
   let challengeConfigLoadPromise = null;
   let challengeConfigLoadedAt = 0;
@@ -3398,7 +3427,7 @@
         if (identity.deviceId) filters.push(`"deviceId".eq.${identity.deviceId}`);
         if (!filters.length) return false;
         const res = await fetch(
-          SB_URL + '/rest/v1/registrations?select=*&or=(' + filters.join(',') + ')',
+          SB_URL + '/rest/v1/registrations?select=' + encodeURIComponent(REGISTRATION_REMOTE_SELECT) + '&or=(' + filters.join(',') + ')&limit=' + REGISTRATION_SYNC_LIMIT,
           { cache: 'no-store', headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY } }
         );
         if (res.ok) remote = await res.json();

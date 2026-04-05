@@ -1590,6 +1590,18 @@ let _loadSafetyTimer = null;
 let _queuedLoadOpts = null;
 let _lastDataSignature = '';
 let _adminVisibilityBound = false;
+const ADMIN_LOAD_QUERY_TIMEOUT_MS = 8000;
+const ADMIN_LOAD_SAFETY_TIMEOUT_MS = 12000;
+const ADMIN_POLL_INTERVAL_MS = 30000;
+
+function withAdminLoadTimeout(promise, label, ms = ADMIN_LOAD_QUERY_TIMEOUT_MS) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => {
+      setTimeout(() => reject(new Error(`${label} 조회 시간이 초과되었습니다`)), ms);
+    }),
+  ]);
+}
 
 /* ══════════════════════════════════════════════
    AUTH
@@ -1701,7 +1713,7 @@ function initSupabase() {
   _pollTimer = setInterval(() => {
     if (document.hidden) return;
     loadAll({ silent: true });
-  }, 5000);
+  }, ADMIN_POLL_INTERVAL_MS);
 }
 
 let _rtChannels = [];
@@ -2249,29 +2261,43 @@ async function loadAll(opts = {}) {
   }
   const client = db;
   if (!req.silent) showLoading(true);
-  // 15초 안전 타임아웃: _loadInFlight가 영구 차단되는 상황 방지
+  // 안전 타임아웃: _loadInFlight가 영구 차단되는 상황 방지
   if (_loadSafetyTimer) clearTimeout(_loadSafetyTimer);
   _loadSafetyTimer = setTimeout(() => {
     if (_loadInFlight) {
       console.warn('[loadAll] safety timeout — resetting');
+      if (!req.silent) {
+        showLoading(false);
+        setStatus('서버 응답이 지연되고 있습니다. 잠시 후 다시 시도해주세요', false);
+      }
       _loadInFlight = null;
       _loadSafetyTimer = null;
-      loadAll({ silent: true });
     }
-  }, 15000);
+  }, ADMIN_LOAD_SAFETY_TIMEOUT_MS);
   _loadInFlight = (async () => {
   try {
-    const [u, w, p, g, r, ps, o, ap, apv] = await Promise.all([
-      client.from('users').select('*'),
-      client.from('workouts').select('*'),
-      client.from('posts').select('*'),
-      client.from('glucose').select('*'),
-      client.from('registrations').select('*'),
+    // Fetch admin datasets sequentially to avoid bursting the project with many full-table reads at once.
+    const u = await withAdminLoadTimeout(client.from('users').select('*'), 'users');
+    const w = await withAdminLoadTimeout(client.from('workouts').select('*'), 'workouts');
+    const p = await withAdminLoadTimeout(client.from('posts').select('*'), 'posts');
+    const g = await withAdminLoadTimeout(client.from('glucose').select('*'), 'glucose');
+    const r = await withAdminLoadTimeout(client.from('registrations').select('*'), 'registrations');
+    const ps = await withAdminLoadTimeout(
       client.from('push_subscriptions').select('endpoint,device_id,emp_id,enabled,permission,updated_at'),
+      'push_subscriptions'
+    );
+    const o = await withAdminLoadTimeout(
       client.from('orders').select('*').order('orderedAt', { ascending: false }),
+      'orders'
+    );
+    const ap = await withAdminLoadTimeout(
       client.from('admin_posts').select('*').order('createdAt', { ascending: false }),
+      'admin_posts'
+    );
+    const apv = await withAdminLoadTimeout(
       client.from('admin_post_views').select('id,content_id,device_id,emp_id,viewed_at').order('viewed_at', { ascending: false }),
-    ]);
+      'admin_post_views'
+    );
     if (db !== client) return;
     const queryErrors = [
       ['users', u.error],
