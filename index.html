@@ -6636,7 +6636,7 @@ const PUSH_DEFAULT_URL  = './index.html#community';
 const HOME_PUSH_PROMPT_DISMISSED_KEY = 'hi_home_push_prompt_dismissed';
 const HOME_PUSH_PROMPT_SESSION_KEY   = 'hi_home_push_prompt_seen';
 const AUTO_COMMENT_FN   = 'https://nbnmvvobehjitophkqmu.supabase.co/functions/v1/auto-comment';
-const SW_VERSION        = '20260405-011';
+const SW_VERSION        = '20260405-012';
 const SW_UPDATE_POLL_MS = 60 * 1000;
 const CHALLENGE_PEOPLE_CACHE_KEY = 'hi_health_people_cache_v1';
 let _swControllerReloaded = false;
@@ -8139,20 +8139,13 @@ function getCurrentRewardPoints() {
 
 function reconcileTotalPointsFromRecords(opts = {}) {
   if (IS_GUEST) return false;
-  const derivedTotal = getRecordDerivedTotalPoints();
-  const canTrustDerivedCurrentPoints = !hasPointSpendHistory();
   const currentPoints = Number(S.user.points || 0);
-  const nextPoints = canTrustDerivedCurrentPoints
-    ? Math.max(currentPoints, derivedTotal)
-    : currentPoints;
-  const pointsChanged = nextPoints !== currentPoints;
-  if (pointsChanged) S.user.points = nextPoints;
-  const nextTotal = nextPoints;
+  const nextTotal = currentPoints;
   const totalChanged = nextTotal !== Number(S.user.totalPoints || 0);
-  if (!pointsChanged && !totalChanged) return false;
+  if (!totalChanged) return false;
   S.user.totalPoints = nextTotal;
   save({ skipRemote: true });
-  if (opts.syncRemote) forceSyncPoints({ includePoints: pointsChanged });
+  if (opts.syncRemote) forceSyncPoints({ includePoints: false });
   return true;
 }
 
@@ -8958,13 +8951,6 @@ async function hydrateAccountFromRemote(empId, fallbackName = '') {
         }, { onConflict: 'id' })
           .then(({ error }) => { if (error) console.error('[retrySync/workout]', wr.id, error); });
       });
-      // 누락 기록만큼 포인트도 재계산 후 users 테이블 업데이트
-      const recalcPoints = S.workouts.reduce((s, w) => s + (Number(w.points) || 0), 0);
-      if (recalcPoints > S.user.points) {
-        S.user.points = recalcPoints;
-        S.user.totalPoints = Math.max(recalcPoints, S.user.totalPoints || 0);
-        save();
-      }
     }
     S.glucoseRecords = mergeGlucoseRecords(g.data || [], S.glucoseRecords);
     reconcileTotalPointsFromRecords({ syncRemote: true });
@@ -12773,7 +12759,7 @@ function deleteWorkout(id) {
           await deleteRemoteRecordById('workouts', targetId, [wo?.deviceId, S.deviceId]);
           // 포인트 차감을 users 테이블에 즉시 반영
           if (S.deviceId) {
-            await _db.from('users').update({ points: S.user.points, streak: S.user.streak })
+            await _db.from('users').update({ points: S.user.points, totalPoints: S.user.points, streak: S.user.streak })
               .eq('deviceId', S.deviceId);
           }
         } catch (e) {
