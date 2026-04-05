@@ -2977,8 +2977,7 @@
     .fc-media-preview { width:100%; display:block; border-radius:10px; }
     .fc-file-label { display:flex; align-items:center; justify-content:center; gap:6px; width:100%; padding:10px; border-radius:10px; background:#f5f3ff; border:1px solid #ddd6fe; color:#6d28d9; font-size:13px; font-weight:700; cursor:pointer; margin-bottom:10px; }
     .fc-file-label:active { background:#ede9fe; }
-    .fc-reward-note { display:flex; align-items:flex-start; gap:8px; padding:11px 12px; border-radius:12px; background:#f5f3ff; border:1px solid #ddd6fe; color:#5b21b6; font-size:12px; font-weight:700; line-height:1.55; margin-bottom:10px; }
-    .fc-reward-note strong { color:#4c1d95; }
+    .fc-info-notice { background:#f5f3ff; border:1px solid #ddd6fe; border-radius:12px; padding:11px 14px; font-size:12px; color:#5b21b6; line-height:1.65; margin-bottom:14px; font-weight:600; }
     .fc-memo { width:100%; padding:9px 12px; border:1.5px solid var(--border); border-radius:10px; font-family:inherit; font-size:13px; outline:none; resize:none; margin-bottom:12px; background:var(--card); color:var(--text); box-sizing:border-box; }
     .fc-memo:focus { border-color:#7c3aed; }
     .fc-consent { margin-bottom:12px; padding:12px; border-radius:12px; background:#fff; border:1px solid var(--border); }
@@ -2987,7 +2986,22 @@
     .fc-consent-check input { width:16px; height:16px; margin-top:1px; accent-color:var(--primary); flex-shrink:0; }
     .fc-submit-btn { width:100%; padding:13px; border-radius:12px; border:none; background:linear-gradient(135deg,#6d28d9,#5b21b6); color:#fff; font-family:inherit; font-size:14px; font-weight:800; cursor:pointer; }
     .fc-submit-btn:disabled { background:#d1d5db; cursor:not-allowed; }
-    .fc-action-row { margin-bottom:12px; }
+    .fc-list { display:flex; flex-direction:column; gap:10px; margin-bottom:4px; }
+    .fc-list-item { display:flex; gap:12px; align-items:flex-start; background:var(--card); border:1px solid var(--border); border-radius:14px; padding:12px; }
+    .fc-list-thumb { width:64px; height:64px; border-radius:10px; overflow:hidden; flex-shrink:0; background:#f1f5f9; display:flex; align-items:center; justify-content:center; font-size:26px; cursor:pointer; }
+    .fc-list-thumb img, .fc-list-thumb video { width:100%; height:100%; object-fit:cover; display:block; pointer-events:none; }
+    .fc-list-body { flex:1; min-width:0; }
+    .fc-list-status { display:inline-flex; align-items:center; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:800; margin-bottom:4px; }
+    .fc-list-status.pending { background:#fff7ed; color:#b45309; border:1px solid rgba(245,158,11,0.24); }
+    .fc-list-status.approved { background:#ecfdf5; color:#047857; border:1px solid rgba(16,185,129,0.18); }
+    .fc-list-status.rejected, .fc-list-status.cancelled { background:#fff1f2; color:#be123c; border:1px solid rgba(244,63,94,0.18); }
+    .fc-list-date { font-size:11px; color:var(--text-secondary); margin-bottom:6px; }
+    .fc-list-btns { display:flex; gap:6px; flex-wrap:wrap; }
+    .fc-list-btn { padding:5px 12px; border-radius:20px; font-size:11px; font-weight:700; cursor:pointer; font-family:inherit; background:var(--bg); color:var(--text); border:1px solid var(--border); }
+    .fc-list-btn.share { color:#1535c4; border-color:rgba(21,53,196,0.25); }
+    .fc-list-btn.del { color:#b91c1c; border-color:rgba(248,113,113,0.3); }
+    .fc-add-btn { width:100%; padding:12px; border-radius:12px; border:1.5px dashed #c4b5fd; background:none; color:#6d28d9; font-family:inherit; font-size:13px; font-weight:700; cursor:pointer; margin-bottom:12px; }
+    .fc-add-btn:active { background:#f5f3ff; }
     .fc-done { text-align:center; padding:20px 0 8px; }
     .fc-done-icon { font-size:36px; margin-bottom:8px; }
     .fc-done-text { font-size:15px; font-weight:800; color:#5b21b6; }
@@ -17940,6 +17954,7 @@ const FAMILY_CERT_REWARD_SEEN_KEY = 'hi_family_cert_reward_seen';
 const FAMILY_CERT_LATEST_SUBMISSION_KEY = 'hi_family_cert_latest_submission';
 let _familyCertRewardSyncPromise = null;
 let _familyCertLatestRow = null;
+let _familyCertAllRows = [];
 let _familyCertLatestFetchPromise = null;
 let _familyCertLatestEmpId = '';
 let _familyCertLatestFetchedAt = 0;
@@ -18131,6 +18146,7 @@ async function refreshCurrentFamilyCertLatest(opts = {}) {
       .filter(isCurrentFamilyCertRow)
       .sort((a, b) => getFamilyCertLatestSortTs(b) - getFamilyCertLatestSortTs(a));
     _familyCertLatestFetchedAt = Date.now();
+    _familyCertAllRows = matched;
     const changed = setFamilyCertLatestRow(matched[0] || null, identity.empId);
     if (changed && document.getElementById('page-challenge')?.classList.contains('active')) renderChallenge();
     return _familyCertLatestRow;
@@ -18325,31 +18341,162 @@ async function syncFamilyCertRewardStatus() {
 }
 
 function openFamilyCertModal() {
-  const row = getCurrentFamilyCertLatestRow();
-  if (!renderFamilyCertSubmittedView(row)) {
-    showFcUploadForm();
-  }
+  renderFamilyCertList();
   document.getElementById('fc-overlay').classList.remove('pm-hidden');
+  refreshCurrentFamilyCertLatest({ silent: true }).then(() => {
+    renderFamilyCertList();
+  }).catch(() => {});
 }
 
 function showFcUploadForm() {
   document.getElementById('fc-file-input').value = '';
   document.getElementById('fc-memo').value = '';
   document.getElementById('fc-consent').checked = false;
-  const actionWrap = document.getElementById('fc-submitted-actions');
-  if (actionWrap) actionWrap.innerHTML = '';
   document.getElementById('fc-img').style.display = 'none';
   document.getElementById('fc-vid').style.display = 'none';
   document.getElementById('fc-preview-wrap').style.display = 'none';
   document.getElementById('fc-done').style.display = 'none';
   const btn = document.getElementById('fc-submit-btn');
   btn.style.display = ''; btn.disabled = false; btn.textContent = '관리자에게 제출하기';
-  document.getElementById('fc-submitted-view').style.display = 'none';
   document.getElementById('fc-upload-form').style.display = '';
+  const addBtn = document.getElementById('fc-add-btn');
+  if (addBtn) addBtn.textContent = '접기 ▲';
+}
+
+function toggleFcUploadForm() {
+  const form = document.getElementById('fc-upload-form');
+  const addBtn = document.getElementById('fc-add-btn');
+  if (!form) return;
+  const isHidden = form.style.display === 'none';
+  if (isHidden) {
+    showFcUploadForm();
+  } else {
+    form.style.display = 'none';
+    if (addBtn) addBtn.textContent = '+ 사진 · 영상 추가 제출하기';
+  }
 }
 
 function closeFamilyCertModal() {
   document.getElementById('fc-overlay').classList.add('pm-hidden');
+}
+
+function renderFamilyCertList() {
+  const listEl = document.getElementById('fc-list');
+  if (!listEl) return;
+  const latest = getCurrentFamilyCertLatestRow();
+  const rows = _familyCertAllRows.length ? _familyCertAllRows : (latest ? [latest] : []);
+  if (!rows.length) {
+    listEl.innerHTML = '';
+    showFcUploadForm();
+    return;
+  }
+  // Collapse form if list has items (let user toggle)
+  const formEl = document.getElementById('fc-upload-form');
+  const doneEl = document.getElementById('fc-done');
+  if (formEl && doneEl && doneEl.style.display === 'none') {
+    formEl.style.display = 'none';
+    const addBtn = document.getElementById('fc-add-btn');
+    if (addBtn) addBtn.textContent = '+ 사진 · 영상 추가 제출하기';
+  }
+  listEl.innerHTML = rows.map(rawRow => {
+    const row = normalizeFamilyCertRow(rawRow);
+    if (!row) return '';
+    const status = getFamilyCertStatusMeta(row.status);
+    const mediaUrl = escHtmlComm(String(row.media_url || ''));
+    const isVideo = String(row.media_type || '').startsWith('video');
+    const thumbHtml = mediaUrl
+      ? isVideo
+        ? `<video src="${mediaUrl}" style="width:100%;height:100%;object-fit:cover;display:block"></video>`
+        : `<img src="${mediaUrl}" alt="인증" style="width:100%;height:100%;object-fit:cover;display:block">`
+      : '📷';
+    const rowId = escHtmlComm(String(row.id || ''));
+    const dateStr = row.submitted_at
+      ? new Date(row.submitted_at).toLocaleString('ko-KR', { month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+      : '';
+    return `<div class="fc-list-item">
+      <div class="fc-list-thumb" onclick="openFamilyCertMediaById('${rowId}')">${thumbHtml}</div>
+      <div class="fc-list-body">
+        <div class="fc-list-status ${status.cls}">${status.label}</div>
+        ${dateStr ? `<div class="fc-list-date">${dateStr} 제출</div>` : ''}
+        <div class="fc-list-btns">
+          <button type="button" class="fc-list-btn" onclick="openFamilyCertMediaById('${rowId}')">보기</button>
+          <button type="button" class="fc-list-btn share" onclick="shareFamilyCertById('${rowId}')">공유</button>
+          <button type="button" class="fc-list-btn del" onclick="confirmDeleteFamilyCertById('${rowId}')">삭제</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function getFamilyCertRowById(id) {
+  const sid = String(id || '');
+  if (!sid) return null;
+  return _familyCertAllRows.find(r => String(normalizeFamilyCertRow(r)?.id || '') === sid) || null;
+}
+
+function openFamilyCertMediaById(id) {
+  const row = getFamilyCertRowById(id) || getCurrentFamilyCertLatestRow();
+  if (!row?.media_url) { showToast('파일을 찾을 수 없어요.'); return; }
+  if (String(row.media_type || '').startsWith('video')) {
+    window.open(row.media_url, '_blank', 'noopener');
+    return;
+  }
+  openPhotoLightbox(row.media_url, '가족 운동 인증');
+}
+
+function shareFamilyCertById(id) {
+  if (IS_GUEST) { flashGuestBanner(); return; }
+  const row = getFamilyCertRowById(id) || getCurrentFamilyCertLatestRow();
+  if (!row?.media_url) { showToast('공유할 파일이 없어요.'); return; }
+  const prevLatest = _familyCertLatestRow;
+  _familyCertLatestRow = row;
+  shareCurrentFamilyCertToCommunity();
+  _familyCertLatestRow = prevLatest;
+}
+
+function confirmDeleteFamilyCertById(id) {
+  const row = getFamilyCertRowById(id);
+  if (!row?.id) { showToast('삭제할 항목이 없어요.'); return; }
+  showConfirm({
+    title: '가족 인증을 삭제할까요?',
+    msg: '업로드한 파일과 인증 내역이 삭제됩니다.',
+    okLabel: '삭제',
+    onOk: () => { deleteFamilyCertById(id).catch(err => {
+      console.error('[deleteFamilyCertById]', err);
+      showToast('삭제에 실패했어요. 잠시 후 다시 시도해주세요.');
+    }); },
+  });
+}
+
+async function deleteFamilyCertById(id) {
+  const rawRow = getFamilyCertRowById(id);
+  const row = normalizeFamilyCertRow(rawRow);
+  if (!row?.id) return;
+  const dbRes = _db
+    ? await _db.from('family_certifications').delete().eq('id', row.id)
+    : await (async () => {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/family_certifications?id=eq.${encodeURIComponent(row.id)}`, {
+          method: 'DELETE',
+          headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY },
+        });
+        return res.ok ? { error: null } : { error: new Error(await res.text().catch(() => '삭제 실패')) };
+      })();
+  if (dbRes?.error) throw dbRes.error;
+  const objectPath = getFamilyCertStorageObjectPath(row);
+  if (objectPath) {
+    await fetch(`${SUPABASE_URL}/storage/v1/object/family-certifications/${encodeURIComponent(objectPath)}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY },
+    }).catch(() => {});
+  }
+  _familyCertAllRows = _familyCertAllRows.filter(r => String(normalizeFamilyCertRow(r)?.id || '') !== String(row.id));
+  const identity = getCurrentFamilyCertIdentity();
+  setFamilyCertLatestRow(_familyCertAllRows[0] || null, identity.empId);
+  _familyCertLatestFetchedAt = 0;
+  renderFamilyCertList();
+  renderChallenge();
+  showToast('가족 인증을 삭제했어요.');
+  refreshCurrentFamilyCertLatest({ force: true, silent: true }).then(() => renderFamilyCertList()).catch(() => {});
 }
 
 function openCurrentFamilyCertMedia() {
@@ -18552,7 +18699,7 @@ async function submitFamilyCertFromIndex() {
     btn.style.display = 'none';
     document.getElementById('fc-done').style.display = 'block';
     renderChallenge();
-    refreshCurrentFamilyCertLatest({ force: true, silent: true }).catch(err => console.warn('[family-cert/post-submit-sync]', err));
+    refreshCurrentFamilyCertLatest({ force: true, silent: true }).then(() => renderFamilyCertList()).catch(err => console.warn('[family-cert/post-submit-sync]', err));
   } catch (err) {
     console.error('[submitFamilyCertFromIndex]', err);
     btn.disabled = false; btn.textContent = '관리자에게 제출하기';
@@ -20402,17 +20549,16 @@ async function init() {
       <button type="button" onclick="closeFamilyCertModal()" style="background:none;border:none;font-size:20px;color:var(--text-secondary);cursor:pointer;padding:0">✕</button>
     </div>
 
-    <!-- 기제출 상태 뷰 -->
-    <div id="fc-submitted-view" style="display:none">
-      <div id="fc-submitted-media-wrap" style="margin-bottom:12px;border-radius:10px;overflow:hidden;background:var(--bg)"></div>
-      <div id="fc-submitted-status" style="margin-bottom:6px;text-align:center;font-size:14px;font-weight:700"></div>
-      <div id="fc-submitted-date" style="text-align:center;font-size:12px;color:var(--text-secondary);margin-bottom:16px"></div>
-      <div id="fc-submitted-actions" class="fc-action-row"></div>
-      <button type="button" class="fc-submit-btn" style="background:var(--border);color:var(--text-secondary)" onclick="showFcUploadForm()">추가 제출하기</button>
+    <div class="fc-info-notice">
+      가족 운동 인증이 승인되면 챌린지 보너스 <strong>100포인트</strong>가 자동 지급됩니다.
     </div>
 
+    <div id="fc-list" class="fc-list"></div>
+
+    <button type="button" class="fc-add-btn" id="fc-add-btn" onclick="toggleFcUploadForm()">+ 사진 · 영상 추가 제출하기</button>
+
     <!-- 업로드 폼 -->
-    <div id="fc-upload-form">
+    <div id="fc-upload-form" style="display:none">
       <div id="fc-preview-wrap" class="fc-preview-wrap">
         <img id="fc-img" class="fc-media-preview" style="display:none" alt="인증 미리보기">
         <video id="fc-vid" class="fc-media-preview" controls style="display:none"></video>
@@ -20421,7 +20567,6 @@ async function init() {
         📁 사진 / 영상 선택
         <input type="file" id="fc-file-input" accept="image/*,video/*" style="display:none" onchange="handleFcFileSelect(this)">
       </label>
-      <div class="fc-reward-note"><span>가족 운동 인증이 승인되면 챌린지 보너스 <strong>100포인트</strong>가 자동 지급됩니다.</span></div>
       <textarea class="fc-memo" id="fc-memo" rows="2" placeholder="한 줄 메모 (선택사항)"></textarea>
       <div class="fc-consent">
         <div class="fc-consent-copy">제출한 사진 및 영상은 병원 홍보 영상 또는 관련 홍보 콘텐츠에 활용될 수 있습니다.</div>
