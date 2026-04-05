@@ -6636,7 +6636,7 @@ const PUSH_DEFAULT_URL  = './index.html#community';
 const HOME_PUSH_PROMPT_DISMISSED_KEY = 'hi_home_push_prompt_dismissed';
 const HOME_PUSH_PROMPT_SESSION_KEY   = 'hi_home_push_prompt_seen';
 const AUTO_COMMENT_FN   = 'https://nbnmvvobehjitophkqmu.supabase.co/functions/v1/auto-comment';
-const SW_VERSION        = '20260405-009';
+const SW_VERSION        = '20260405-010';
 const SW_UPDATE_POLL_MS = 60 * 1000;
 const CHALLENGE_PEOPLE_CACHE_KEY = 'hi_health_people_cache_v1';
 let _swControllerReloaded = false;
@@ -12543,7 +12543,21 @@ function updatePtsPreview() {
     infoEl.className = 'daily-limit-info daily-limit-info--center';
   }
 }
-function logExercise() {
+
+function setExerciseLogButtonBusy(isBusy) {
+  const btn = document.getElementById('log-exercise-btn');
+  if (!btn) return;
+  if (!btn.dataset.defaultLabel) btn.dataset.defaultLabel = btn.innerHTML;
+  btn.disabled = !!isBusy;
+  btn.classList.toggle('btn-inactive', !!isBusy);
+  btn.innerHTML = isBusy ? '저장 중...' : btn.dataset.defaultLabel;
+}
+
+function waitForNextPaint() {
+  return new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+}
+
+async function logExercise() {
   if (IS_GUEST) { flashGuestBanner(); return; }
   if (!S.selectedEx || !S.durationTouched) {
     haptic('error');
@@ -12616,69 +12630,75 @@ function logExercise() {
     suppList:  _suppList.length ? [..._suppList] : null,
     ts: Date.now(),
   };
-  S.workouts.push(workoutRecord);
-  if (memoEl?.dataset) delete memoEl.dataset.trackedRunToken;
-  _pendingTrackedRun = null;
-  const prevEarnedIds = new Set(earnedAchs().map(a => a.id));
-  S.user.points += pts;
-  S.user.totalPoints = (S.user.totalPoints || 0) + pts;
-  reconcileTotalPointsFromRecords();
-  updateStreak();
-  // 운동 기록 완료 후 공유 패널 초기화 (자동 게시 없음 — 수동 "지금 공유하기" 전용)
-  _shareRewrite = false;
-  _sharePhoto   = false;
-  _shareHealth  = false;
-  _shareOn      = true;
-  document.getElementById('share-toggle-sub').textContent = '저장하거나 커뮤니티에 공유해보세요';
-  const soEl = document.getElementById('share-options');
-  if (soEl) soEl.innerHTML = '';
+  setExerciseLogButtonBusy(true);
+  await waitForNextPaint();
+  try {
+    S.workouts.push(workoutRecord);
+    if (memoEl?.dataset) delete memoEl.dataset.trackedRunToken;
+    _pendingTrackedRun = null;
+    const prevEarnedIds = new Set(earnedAchs().map(a => a.id));
+    S.user.points += pts;
+    S.user.totalPoints = (S.user.totalPoints || 0) + pts;
+    reconcileTotalPointsFromRecords();
+    updateStreak();
+    // 운동 기록 완료 후 공유 패널 초기화 (자동 게시 없음 — 수동 "지금 공유하기" 전용)
+    _shareRewrite = false;
+    _sharePhoto   = false;
+    _shareHealth  = false;
+    _shareOn      = true;
+    document.getElementById('share-toggle-sub').textContent = '저장하거나 커뮤니티에 공유해보세요';
+    const soEl = document.getElementById('share-options');
+    if (soEl) soEl.innerHTML = '';
 
-  document.getElementById('ex-memo').value = '';
-  if (S.selectedEx === 'custom') document.getElementById('custom-ex-name').value = '';
-  resetHealthChecks();
-  // 기록 후 종목/시간 초기화
-  S.selectedEx = null;
-  S.duration = 30;
-  S.durationTouched = false;
-  document.getElementById('dur-val')?.classList.remove('active');
-  save();
-  // 운동 기록 구글 시트 동기화
-  if (workoutRecord) {
-    const exInfo = getExType(workoutRecord.exId);
-    apiSync('addWorkout', {
-      id: workoutRecord.id,
-      deviceId: S.deviceId,
-      userName: S.user.name,
-      date: new Date(workoutRecord.ts).toLocaleDateString('ko-KR'),
-      exId: workoutRecord.exId,
-      exName: workoutRecord.customName || exInfo.name,
-      duration: workoutRecord.duration,
-      points: workoutRecord.points,
-      memo: workoutRecord.memo || '',
-      ts: workoutRecord.ts,
-      routepath: (workoutRecord.routePath && workoutRecord.routePath.length > 1) ? workoutRecord.routePath : null,
-    });
-  }
-  renderHeader();
-  haptic('success');
-  invalidateTogetherPopupCache();
-  showToast(photoBonus ? `🎉 운동 기록 완료! +${pts}p (사진 인증 +5p 포함!)` : `🎉 운동 기록 완료! +${pts}p 획득!`);
-  setTimeout(() => refreshTogetherPopupAfterWorkoutChange({ show: true }), 2000);
-  renderExercise();
-  refreshWorkoutLinkedSurfaces();
-  updateSharePreview(); // 새 운동 포함한 메시지 즉시 재생성
+    document.getElementById('ex-memo').value = '';
+    if (S.selectedEx === 'custom') document.getElementById('custom-ex-name').value = '';
+    resetHealthChecks();
+    // 기록 후 종목/시간 초기화
+    S.selectedEx = null;
+    S.duration = 30;
+    S.durationTouched = false;
+    document.getElementById('dur-val')?.classList.remove('active');
+    save();
+    // 운동 기록 구글 시트 동기화
+    if (workoutRecord) {
+      const exInfo = getExType(workoutRecord.exId);
+      apiSync('addWorkout', {
+        id: workoutRecord.id,
+        deviceId: S.deviceId,
+        userName: S.user.name,
+        date: new Date(workoutRecord.ts).toLocaleDateString('ko-KR'),
+        exId: workoutRecord.exId,
+        exName: workoutRecord.customName || exInfo.name,
+        duration: workoutRecord.duration,
+        points: workoutRecord.points,
+        memo: workoutRecord.memo || '',
+        ts: workoutRecord.ts,
+        routepath: (workoutRecord.routePath && workoutRecord.routePath.length > 1) ? workoutRecord.routePath : null,
+      });
+    }
+    renderHeader();
+    haptic('success');
+    invalidateTogetherPopupCache();
+    showToast(photoBonus ? `🎉 운동 기록 완료! +${pts}p (사진 인증 +5p 포함!)` : `🎉 운동 기록 완료! +${pts}p 획득!`);
+    setTimeout(() => refreshTogetherPopupAfterWorkoutChange({ show: true }), 2000);
+    renderExercise();
+    refreshWorkoutLinkedSurfaces();
+    updateSharePreview(); // 새 운동 포함한 메시지 즉시 재생성
 
-  // Check new badges
-  const newBadges = earnedAchs().filter(a => !prevEarnedIds.has(a.id));
+    // Check new badges
+    const newBadges = earnedAchs().filter(a => !prevEarnedIds.has(a.id));
 
-  // Check level up
-  const lv = getLevel(S.user.totalPoints || S.user.points);
-  const prevPts = (S.user.totalPoints || S.user.points) - pts;
-  const prevLv = getLevel(prevPts);
-  if (lv.lv > prevLv.lv) {
-    setTimeout(() => { haptic('levelup'); showCelebration('levelup', lv); }, 1200);
-  } else if (newBadges.length > 0) {
-    setTimeout(() => { haptic('success'); showCelebration('badge', newBadges[0]); }, 1200);
+    // Check level up
+    const lv = getLevel(S.user.totalPoints || S.user.points);
+    const prevPts = (S.user.totalPoints || S.user.points) - pts;
+    const prevLv = getLevel(prevPts);
+    if (lv.lv > prevLv.lv) {
+      setTimeout(() => { haptic('levelup'); showCelebration('levelup', lv); }, 1200);
+    } else if (newBadges.length > 0) {
+      setTimeout(() => { haptic('success'); showCelebration('badge', newBadges[0]); }, 1200);
+    }
+  } finally {
+    setExerciseLogButtonBusy(false);
   }
 }
 
