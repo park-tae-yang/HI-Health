@@ -7,6 +7,12 @@
 
 ## 🐛 오류 / 이슈
 
+### [2026-04-05] 가족인증 승인 시 포인트 지급 실패
+**증상**: 가족인증 승인 버튼을 누르면 "포인트 지급 실패" 메시지가 뜨고 승인이 안 됨
+**원인**: 챌린지만 신청하고 앱에 로그인한 적 없는 사용자는 `users` 테이블에 레코드가 없음. `resolveFamCertRewardTarget`이 이 경우 GD.users fallback에서 `__derived` 임시 유저(deviceId가 `'emp:A1234'` 같은 가짜값)를 반환. `updateUserPointsFields`가 가짜 deviceId로 DB 업데이트를 시도 → 0행 갱신 → verify 실패 → 에러 반환 → 승인 자체가 차단됨
+**해결**: `reviewFamCert`에서 `isUserMissing` 플래그(`!targetRes.user?.deviceId || __derived`)를 추가. 앱 계정이 없는 경우 승인은 진행하되 포인트 자동 지급을 skip하고 수동 조정 안내 메시지 출력. 승인 자체가 막히는 문제 해소
+**관련 파일**: `user-admin.html:5577-5620`
+
 ### [2026-04-05] 운동 기록 후 목록에 항목이 바로 안 뜨는 버그
 **증상**: 운동탭에서 "운동 기록하기" 버튼을 누르면 기록 목록에 항목이 즉시 표시되지 않음
 **원인**: `logExercise()` 내 토스트 메시지 라인에서 `photoBonus` 변수를 사용하지만 해당 변수가 어디에도 선언되지 않음. `ReferenceError`가 발생해 `try` 블록이 조기 종료 → `save()`와 `renderExercise()`가 호출되지 않아 UI 갱신 안 됨. 기록은 메모리(`S.workouts`)에 추가됐지만 localStorage 저장 및 렌더링 모두 스킵됨
