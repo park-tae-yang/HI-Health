@@ -117,6 +117,17 @@
 
 ## 🚧 작업 (Task)
 
+### #6 🔵 진행중 [2026-04-05] 커뮤니티 스타 배지 시스템 구축 — Claude
+**목표**: 커뮤니티 스타 배지 수상자에게 특별 선물을 증정하기 위한 앱/어드민 구조 구축
+**현재 상태**:
+- `supabase/migrations/20260405_community_star_badge.sql` — `users` 테이블에 `communityStarBadge boolean`, `giftSent boolean` 컬럼 추가 SQL 작성 완료 (DB 적용 필요)
+- `index.html` — 배지 달성 시 축하 팝업 (`cs-overlay`), 피드에 ⭐ 스타 뱃지 표시, `checkAndGrantCommunityStarBadge()` 함수 추가
+- `user-admin.html` — 커뮤니티 스타 관리 패널 (`panel-commstar`) 추가: 수상자 목록, 선물 발송 상태 관리, 수동 지정/회수 기능
+**다음 단계**:
+- Supabase에 migration SQL 실행 (`supabase db push` 또는 대시보드에서 직접 실행)
+- 공지글 작성 (관리자가 직접 콘텐츠 작성 탭에서 등록)
+**관련 파일**: `index.html`, `user-admin.html`, `supabase/migrations/20260405_community_star_badge.sql`
+
 <!-- 형식:
 ### #N [상태] [YYYY-MM-DD] 작업 제목 — 담당자
 상태: 🔵 진행중 | ✅ 완료 | ⏸️ 보류

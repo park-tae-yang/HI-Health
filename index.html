@@ -2987,6 +2987,7 @@
     .fc-consent-check input { width:16px; height:16px; margin-top:1px; accent-color:var(--primary); flex-shrink:0; }
     .fc-submit-btn { width:100%; padding:13px; border-radius:12px; border:none; background:linear-gradient(135deg,#6d28d9,#5b21b6); color:#fff; font-family:inherit; font-size:14px; font-weight:800; cursor:pointer; }
     .fc-submit-btn:disabled { background:#d1d5db; cursor:not-allowed; }
+    .fc-action-row { margin-bottom:12px; }
     .fc-done { text-align:center; padding:20px 0 8px; }
     .fc-done-icon { font-size:36px; margin-bottom:8px; }
     .fc-done-text { font-size:15px; font-weight:800; color:#5b21b6; }
@@ -3481,6 +3482,60 @@
       24% { opacity: 0.95; }
       100% { opacity: 0; transform: translateX(190%) skewX(-20deg); }
     }
+    /* ── Community Star Badge ── */
+    .comm-star-badge {
+      display:inline-flex; align-items:center; gap:2px;
+      background:linear-gradient(135deg,#ffe066,#ffb300);
+      color:#7c5600; font-size:9px; font-weight:800;
+      padding:2px 6px; border-radius:10px; line-height:1.3;
+      flex-shrink:0; white-space:nowrap;
+    }
+    /* ── Community Star 축하 모달 ── */
+    .cs-overlay {
+      position:fixed; inset:0; background:rgba(0,0,0,0.55);
+      z-index:9000; display:flex; align-items:center; justify-content:center;
+      padding:24px; animation:fadeIn 0.2s ease;
+    }
+    .cs-overlay.pm-hidden { display:none !important; }
+    .cs-card {
+      background:#fff; border-radius:24px; padding:32px 28px 28px;
+      max-width:340px; width:100%; text-align:center;
+      box-shadow:0 20px 60px rgba(0,0,0,0.2);
+      position:relative; overflow:hidden;
+    }
+    .cs-confetti {
+      font-size:36px; display:block; margin-bottom:12px;
+      animation:csIconBounce 0.7s cubic-bezier(.2,.8,.2,1);
+    }
+    @keyframes csIconBounce {
+      0%   { transform:scale(0.5); opacity:0; }
+      60%  { transform:scale(1.15); opacity:1; }
+      100% { transform:scale(1); }
+    }
+    .cs-badge-img {
+      width:80px; height:80px; margin:0 auto 16px;
+      background:linear-gradient(135deg,#fff9c4,#ffe066);
+      border-radius:50%; display:flex; align-items:center; justify-content:center;
+      box-shadow:0 4px 20px rgba(255,179,0,0.4);
+    }
+    .cs-badge-img img { width:60%; height:60%; object-fit:contain; }
+    .cs-title { font-size:20px; font-weight:800; color:#1a1a2e; margin-bottom:6px; }
+    .cs-sub   { font-size:13px; color:#666; line-height:1.6; margin-bottom:20px; }
+    .cs-gift-box {
+      background:linear-gradient(135deg,#fff3cd,#ffe066 60%,#ffd000);
+      border-radius:14px; padding:14px 16px; margin-bottom:20px;
+      border:1.5px solid rgba(255,179,0,0.4);
+    }
+    .cs-gift-label { font-size:11px; font-weight:700; color:#b8860b; margin-bottom:4px; }
+    .cs-gift-text  { font-size:13px; font-weight:700; color:#7c5600; line-height:1.55; }
+    .cs-close-btn {
+      width:100%; padding:13px; border-radius:14px;
+      background:linear-gradient(135deg,#ffe066,#ffb300);
+      color:#7c5600; font-size:14px; font-weight:800;
+      border:none; cursor:pointer;
+    }
+    .cs-close-btn:active { opacity:0.85; }
+
     .sticker-burst {
       position: fixed;
       left: 0;
@@ -4336,6 +4391,108 @@
     .ch-reg-value { font-weight:600; color:#78350f; font-size:12px; }
     .ch-reg-phase { font-size:11px; font-weight:600; color:#b45309; opacity:0.75; margin-bottom:10px; }
     .ch-share-btn { flex:1; padding:8px 12px; background:#F59E0B; color:#fff; border:none; border-radius:20px; font-size:12px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:5px; }
+    .ch-family-spotlight-card {
+      margin:0 0 14px;
+      padding:18px;
+      border-radius:20px;
+      background:linear-gradient(140deg,#fff7ed 0%,#fff1f2 52%,#ffffff 100%);
+      border:1px solid rgba(251,146,60,0.16);
+      box-shadow:0 12px 28px rgba(251,146,60,0.10);
+    }
+    .ch-family-spotlight-top {
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:12px;
+    }
+    .ch-family-spotlight-label {
+      font-size:11px;
+      font-weight:800;
+      color:#c2410c;
+      letter-spacing:.5px;
+      text-transform:uppercase;
+      margin-bottom:6px;
+    }
+    .ch-family-spotlight-title {
+      font-size:24px;
+      font-weight:900;
+      color:#111827;
+      line-height:1.2;
+      letter-spacing:-0.4px;
+    }
+    .ch-family-spotlight-sub {
+      margin-top:6px;
+      font-size:12px;
+      line-height:1.6;
+      color:#6b7280;
+    }
+    .ch-family-spotlight-reward {
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      white-space:nowrap;
+      padding:7px 11px;
+      border-radius:999px;
+      background:rgba(255,255,255,0.8);
+      border:1px solid rgba(251,146,60,0.22);
+      color:#c2410c;
+      font-size:11px;
+      font-weight:900;
+      box-shadow:0 6px 18px rgba(251,146,60,0.08);
+    }
+    .ch-family-spotlight-meta {
+      display:flex;
+      align-items:center;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-bottom:10px;
+    }
+    .ch-family-spotlight-note {
+      margin-bottom:12px;
+      padding:12px 14px;
+      border-radius:14px;
+      background:rgba(255,255,255,0.72);
+      border:1px solid rgba(251,146,60,0.10);
+      color:#6b7280;
+      font-size:12px;
+      line-height:1.65;
+    }
+    .ch-family-spotlight-actions,
+    .fc-action-row {
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:8px;
+      margin-top:12px;
+    }
+    .ch-family-spotlight-btn,
+    .fc-action-btn {
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      min-width:0;
+      padding:11px 10px;
+      border:none;
+      border-radius:14px;
+      background:#fff;
+      color:#374151;
+      font-family:inherit;
+      font-size:12px;
+      font-weight:800;
+      cursor:pointer;
+      box-shadow:inset 0 0 0 1px rgba(148,163,184,0.22);
+    }
+    .ch-family-spotlight-btn.primary {
+      grid-column:1/-1;
+      background:linear-gradient(135deg,#fb923c,#f97316);
+      color:#fff;
+      box-shadow:none;
+    }
+    .ch-family-spotlight-btn.delete,
+    .fc-action-btn.delete {
+      color:#b91c1c;
+      box-shadow:inset 0 0 0 1px rgba(248,113,113,0.22);
+    }
     .ch-family-cert-preview {
       margin-bottom:12px;
       border-radius:14px;
@@ -4866,6 +5023,41 @@
       line-height:1.55;
       color:#64748b;
     }
+    .ch-dday-card {
+      margin:0 0 14px;
+      padding:16px 18px;
+      border-radius:18px;
+      background:linear-gradient(140deg,#fff8ec 0%,#fff3f4 48%,#ffffff 100%);
+      border:1px solid rgba(249,115,22,0.16);
+      box-shadow:0 10px 24px rgba(249,115,22,0.08);
+    }
+    .ch-dday-label {
+      font-size:11px;
+      font-weight:800;
+      color:#c2410c;
+      letter-spacing:.5px;
+      text-transform:uppercase;
+      margin-bottom:6px;
+    }
+    .ch-dday-value {
+      font-size:30px;
+      font-weight:900;
+      color:#0f172a;
+      line-height:1.1;
+      letter-spacing:-0.5px;
+    }
+    .ch-dday-title {
+      margin-top:4px;
+      font-size:13px;
+      font-weight:800;
+      color:#7c2d12;
+    }
+    .ch-dday-sub {
+      margin-top:7px;
+      font-size:12px;
+      line-height:1.6;
+      color:#64748b;
+    }
     @media (max-width:420px) {
       .ch-speaker-card {
         grid-template-columns:1fr;
@@ -4874,6 +5066,16 @@
         width:100%;
         max-width:180px;
         height:180px;
+      }
+      .ch-family-spotlight-top {
+        flex-direction:column;
+      }
+      .ch-family-spotlight-reward {
+        align-self:flex-start;
+      }
+      .ch-family-spotlight-actions,
+      .fc-action-row {
+        grid-template-columns:1fr;
       }
       .ch-route-head {
         flex-direction:column;
@@ -7631,7 +7833,7 @@ const WEEK_DAYS = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
 ════════════════════════════════════════ */
 let S = {
   deviceId: null,
-  user: { name:'', nickname:'', avatar:AVATARS[0], empId:'', dept:'', points:0, totalPoints:0, streak:0, stickersReceived:0, levelCardShares:0, registrationId:null, tags:[] },
+  user: { name:'', nickname:'', avatar:AVATARS[0], empId:'', dept:'', points:0, totalPoints:0, streak:0, stickersReceived:0, levelCardShares:0, registrationId:null, tags:[], communityStarBadge:false },
   workouts: [],
   posts: JSON.parse(JSON.stringify(MOCK_POSTS_SEED)),
   redeemedRewards: [],
@@ -8641,7 +8843,9 @@ async function hydrateAccountFromRemote(empId, fallbackName = '') {
       totalPoints: Number(u.totalPoints || u.points) || 0,
       streak: Number(u.streak) || 0,
       tags: normalizeUserTags(S.user.tags),
+      communityStarBadge: !!u.communityStarBadge,
     };
+    if (S.user.communityStarBadge) _communityStarDeviceIds.add(resolvedDid);
     _lastKnownServerPts = Number(u.points) || 0;
     S.workouts = mergeWorkoutRecords(w.data || [], S.workouts);
 
@@ -8744,6 +8948,7 @@ function load() {
     S.glucoseRecords = mapGlucoseRecords(d.glucoseRecords || [], []);
     S.todayLog = d.todayLog || null;
     reconcileTotalPointsFromRecords();
+    hydrateCommStarState();
   } catch(e) {}
 }
 
@@ -15294,6 +15499,7 @@ function renderCommunity() {
           <div class="post-info">
             <div class="post-title-line">
               <span class="post-uname">${p.name}</span>
+              ${_communityStarDeviceIds.has(p.deviceId) ? `<span class="comm-star-badge">⭐ 커뮤니티 스타</span>` : ''}
               <div class="post-meta">
                 ${!isBotDeviceId(p.deviceId) ? `<span class="post-lv-icon">${lv.icon}</span><span>${lv.name}</span><span>·</span>` : ''}
                 <span>${p.time}</span>
@@ -15344,6 +15550,14 @@ const COMMUNITY_CACHE_TTL = 2 * 60 * 1000; // 2분
 async function fetchCommunityPosts() {
   if (!_db) return;
   try {
+    // 커뮤니티 스타 배지 보유자 목록 로드 (피드 뱃지 표시용)
+    _db.from('users').select('deviceId').eq('communityStarBadge', true)
+      .then(({ data: starRows }) => {
+        if (starRows?.length) {
+          starRows.forEach(r => { if (r.deviceId) _communityStarDeviceIds.add(r.deviceId); });
+        }
+      });
+
     // 1단계: posts만 먼저 → 즉시 렌더
     const { data: postsData } = await _db.from('posts').select('*').order('ts', { ascending: false }).limit(30);
     const remotePosts = postsData || [];
@@ -15793,7 +16007,10 @@ function react(buttonEl, postId, stickerId) {
     myR.push(stickerId);
     post.stickers[stickerId] = (post.stickers[stickerId]||0) + 1;
     playStickerBurst(buttonEl, stickerId);
-    if (post.userId !== 0) S.user.stickersReceived++;
+    if (post.userId !== 0) {
+      S.user.stickersReceived++;
+      checkAndGrantCommunityStarBadge();
+    }
     if (_db) _db.from('reactions').upsert(
       { postId: String(postId), deviceId: S.deviceId, stickerId },
       { onConflict: 'postId,deviceId,stickerId' }
@@ -15801,6 +16018,44 @@ function react(buttonEl, postId, stickerId) {
   }
   updateStickerButtonUi(buttonEl, post.stickers[stickerId] || 0, myR.includes(stickerId));
   save();
+}
+
+/* ════════════════════════════════════════
+   COMMUNITY STAR BADGE
+════════════════════════════════════════ */
+let _communityStarDeviceIds = new Set();
+const COMMUNITY_STAR_GOAL = 50;
+
+function checkAndGrantCommunityStarBadge() {
+  if (IS_GUEST) return;
+  if (S.user.stickersReceived < COMMUNITY_STAR_GOAL) return;
+  if (S.user.communityStarBadge) return; // 이미 달성
+  S.user.communityStarBadge = true;
+  _communityStarDeviceIds.add(S.deviceId);
+  if (_db) {
+    _db.from('users')
+      .update({ communityStarBadge: true })
+      .eq('deviceId', S.deviceId)
+      .then(({ error }) => { if (error) console.warn('[commstar/grant]', error); });
+  }
+  // 팝업은 기기당 최초 1회만
+  if (!localStorage.getItem('cs_modal_shown_' + S.deviceId)) {
+    localStorage.setItem('cs_modal_shown_' + S.deviceId, '1');
+    setTimeout(() => showCommunityStarModal(), 600);
+  }
+}
+
+function showCommunityStarModal() {
+  document.getElementById('cs-overlay')?.classList.remove('pm-hidden');
+}
+
+function closeCommunityStarModal() {
+  document.getElementById('cs-overlay')?.classList.add('pm-hidden');
+}
+
+// 앱 시작 시 이미 달성한 경우 Set 초기화
+function hydrateCommStarState() {
+  if (S.user.communityStarBadge) _communityStarDeviceIds.add(S.deviceId);
 }
 
 const _trashSvgSm = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>`;
@@ -17746,6 +18001,50 @@ function getFamilyCertMemoText(row) {
     .trim();
 }
 
+function getFamilyCertStorageObjectPath(row) {
+  const rawUrl = String(row?.media_url || row?.mediaUrl || '').trim();
+  if (!rawUrl) return '';
+  const marker = '/storage/v1/object/public/family-certifications/';
+  const idx = rawUrl.indexOf(marker);
+  const path = idx >= 0 ? rawUrl.slice(idx + marker.length) : rawUrl.split('/family-certifications/')[1] || '';
+  return decodeURIComponent(String(path || '').split('?')[0]);
+}
+
+function buildFamilyCertCommunityBody(row) {
+  const memo = getFamilyCertMemoText(row);
+  return memo
+    ? `가족과 함께 운동한 순간을 인증했어요.\n${memo}`
+    : '가족과 함께 운동한 순간을 인증했어요.';
+}
+
+function renderFamilyCertSubmittedView(row) {
+  const normalized = normalizeFamilyCertRow(row);
+  if (!normalized || !normalized.media_url) return false;
+  const mediaWrap = document.getElementById('fc-submitted-media-wrap');
+  const actionsWrap = document.getElementById('fc-submitted-actions');
+  const isVideo = String(normalized.media_type || '').startsWith('video');
+  mediaWrap.innerHTML = isVideo
+    ? `<video src="${normalized.media_url}" controls playsinline preload="metadata" style="width:100%;max-height:200px;display:block"></video>`
+    : `<img src="${normalized.media_url}" alt="제출한 인증 사진" style="width:100%;max-height:200px;object-fit:cover;display:block;cursor:zoom-in" onclick="openCurrentFamilyCertMedia()">`;
+  const statusMeta = getFamilyCertStatusMeta(normalized.status);
+  const statusColors = { 'badge-success': '#166534', '': '#92400e' };
+  const color = statusColors[statusMeta.cls] || '#92400e';
+  document.getElementById('fc-submitted-status').innerHTML = `<span style="background:${color}15;color:${color};padding:4px 14px;border-radius:20px;border:1px solid ${color}30">${statusMeta.label}</span>`;
+  document.getElementById('fc-submitted-date').textContent = normalized.submitted_at
+    ? new Date(normalized.submitted_at).toLocaleString('ko-KR', { month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }) + ' 제출'
+    : '';
+  if (actionsWrap) {
+    actionsWrap.innerHTML = `
+      <button type="button" class="fc-action-btn" onclick="openCurrentFamilyCertMedia()">파일 보기</button>
+      <button type="button" class="fc-action-btn delete" onclick="confirmDeleteCurrentFamilyCert()">삭제</button>
+      <button type="button" class="fc-action-btn" onclick="shareCurrentFamilyCertToCommunity()">커뮤니티 공유</button>
+    `;
+  }
+  document.getElementById('fc-submitted-view').style.display = '';
+  document.getElementById('fc-upload-form').style.display = 'none';
+  return true;
+}
+
 async function refreshCurrentFamilyCertLatest(opts = {}) {
   if (!_db) return getCurrentFamilyCertLatestRow();
   if (!opts.force && _familyCertLatestFetchedAt && (Date.now() - _familyCertLatestFetchedAt) < 30000) {
@@ -17969,22 +18268,7 @@ async function syncFamilyCertRewardStatus() {
 
 function openFamilyCertModal() {
   const row = getCurrentFamilyCertLatestRow();
-  if (row && row.media_url) {
-    // 기제출 상태 보여주기
-    const mediaWrap = document.getElementById('fc-submitted-media-wrap');
-    const isVideo = String(row.media_type || '').startsWith('video');
-    mediaWrap.innerHTML = isVideo
-      ? `<video src="${row.media_url}" controls playsinline preload="metadata" style="width:100%;max-height:200px;display:block"></video>`
-      : `<img src="${row.media_url}" alt="제출한 인증 사진" style="width:100%;max-height:200px;object-fit:cover;display:block;cursor:zoom-in" onclick="openPhotoLightbox('${row.media_url}','제출한 인증 사진')">`;
-    const statusMeta = getFamilyCertStatusMeta(row.status);
-    const statusColors = { 'badge-success': '#166534', '': '#92400e' };
-    const color = statusColors[statusMeta.cls] || '#92400e';
-    document.getElementById('fc-submitted-status').innerHTML = `<span style="background:${color}15;color:${color};padding:4px 14px;border-radius:20px;border:1px solid ${color}30">${statusMeta.label}</span>`;
-    const dateStr = row.submitted_at ? new Date(row.submitted_at).toLocaleString('ko-KR', { month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }) + ' 제출' : '';
-    document.getElementById('fc-submitted-date').textContent = dateStr;
-    document.getElementById('fc-submitted-view').style.display = '';
-    document.getElementById('fc-upload-form').style.display = 'none';
-  } else {
+  if (!renderFamilyCertSubmittedView(row)) {
     showFcUploadForm();
   }
   document.getElementById('fc-overlay').classList.remove('pm-hidden');
@@ -17994,6 +18278,8 @@ function showFcUploadForm() {
   document.getElementById('fc-file-input').value = '';
   document.getElementById('fc-memo').value = '';
   document.getElementById('fc-consent').checked = false;
+  const actionWrap = document.getElementById('fc-submitted-actions');
+  if (actionWrap) actionWrap.innerHTML = '';
   document.getElementById('fc-img').style.display = 'none';
   document.getElementById('fc-vid').style.display = 'none';
   document.getElementById('fc-preview-wrap').style.display = 'none';
@@ -18006,6 +18292,140 @@ function showFcUploadForm() {
 
 function closeFamilyCertModal() {
   document.getElementById('fc-overlay').classList.add('pm-hidden');
+}
+
+function openCurrentFamilyCertMedia() {
+  const row = getCurrentFamilyCertLatestRow();
+  if (!row?.media_url) {
+    showToast('먼저 업로드한 파일이 필요해요.');
+    return;
+  }
+  if (String(row.media_type || '').startsWith('video')) {
+    window.open(row.media_url, '_blank', 'noopener');
+    return;
+  }
+  openPhotoLightbox(row.media_url, '가족 운동 인증');
+}
+
+function shareCurrentFamilyCertToCommunity() {
+  if (IS_GUEST) { flashGuestBanner(); return; }
+  const row = getCurrentFamilyCertLatestRow();
+  if (!row?.media_url) {
+    showToast('공유할 가족 인증 파일이 아직 없어요.');
+    return;
+  }
+  const displayName = myDisplayName();
+  const lv = getLevel(S.user.points);
+  const body = buildFamilyCertCommunityBody(row);
+  const userTags = [...new Set([...(Array.isArray(S.user.tags) ? S.user.tags : []), '가족과 함께'])];
+  const sharePhoto = String(row.media_type || '').startsWith('video') ? null : row.media_url;
+  const existing = (S.posts || []).find(p => p.userId === 0 && String(p.familyCertId || '') === String(row.id || ''));
+
+  if (existing) {
+    existing.body = body;
+    existing.avatar = S.user.avatar;
+    existing.userTags = userTags;
+    existing.sharePhoto = sharePhoto;
+    existing.time = '방금 전';
+    apiSync('addPost', {
+      id: String(existing.id),
+      deviceId: S.deviceId,
+      userName: displayName,
+      body: existing.body,
+      exTag: '',
+      userTags: userTags.join(','),
+      ts: String(existing.id),
+    });
+    showToast('가족 인증 공유글을 업데이트했어요.');
+  } else {
+    const postId = Date.now();
+    S.posts.unshift({
+      id: postId,
+      userId: 0,
+      name: displayName,
+      avatar: S.user.avatar,
+      lv: lv.lv,
+      body,
+      exTag: null,
+      userTags,
+      sharePhoto,
+      shareHealth: null,
+      familyCertId: String(row.id || ''),
+      time: '방금 전',
+      stickers: { cheer:0, love:0, congrats:0, cool:0, together:0 },
+      myReactions: [],
+      comments: 0,
+      commentList: [],
+    });
+    apiSync('addPost', {
+      id: String(postId),
+      deviceId: S.deviceId,
+      userName: displayName,
+      body,
+      exTag: '',
+      userTags: userTags.join(','),
+      ts: String(postId),
+    });
+    triggerAutoComment({ id: String(postId), deviceId: S.deviceId, userName: displayName, body, exTag: '' });
+    showToast(sharePhoto ? '가족 인증을 커뮤니티에 공유했어요!' : '가족 인증을 커뮤니티에 글로 공유했어요!');
+  }
+  save();
+  if (document.getElementById('page-community')?.classList.contains('active')) renderCommunity();
+}
+
+function confirmDeleteCurrentFamilyCert() {
+  const row = getCurrentFamilyCertLatestRow();
+  if (!row?.id) {
+    showToast('삭제할 가족 인증이 없어요.');
+    return;
+  }
+  showConfirm({
+    title: '가족 인증을 삭제할까요?',
+    msg: '업로드한 파일과 현재 인증 내역이 함께 삭제됩니다.',
+    okLabel: '삭제',
+    onOk: () => { deleteCurrentFamilyCertSubmission().catch(err => {
+      console.error('[deleteCurrentFamilyCertSubmission]', err);
+      showToast('삭제에 실패했어요. 잠시 후 다시 시도해주세요.');
+    }); },
+  });
+}
+
+async function deleteCurrentFamilyCertSubmission() {
+  const row = normalizeFamilyCertRow(getCurrentFamilyCertLatestRow());
+  if (!row?.id) return;
+
+  const dbRes = _db
+    ? await _db.from('family_certifications').delete().eq('id', row.id)
+    : await (async () => {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/family_certifications?id=eq.${encodeURIComponent(row.id)}`, {
+          method: 'DELETE',
+          headers: {
+            'apikey': SUPABASE_ANON_KEY,
+            'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+          },
+        });
+        return res.ok ? { error: null } : { error: new Error(await res.text().catch(() => '삭제 실패')) };
+      })();
+  if (dbRes?.error) throw dbRes.error;
+
+  const objectPath = getFamilyCertStorageObjectPath(row);
+  if (objectPath) {
+    const deleteRes = await fetch(`${SUPABASE_URL}/storage/v1/object/family-certifications/${encodeURIComponent(objectPath)}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY },
+    });
+    if (!deleteRes.ok && deleteRes.status !== 404) {
+      console.warn('[deleteCurrentFamilyCertSubmission/storage]', await deleteRes.text().catch(() => '파일 삭제 실패'));
+    }
+  }
+
+  const identity = getCurrentFamilyCertIdentity();
+  setFamilyCertLatestRow(null, identity.empId);
+  _familyCertLatestFetchedAt = 0;
+  const latestRow = await refreshCurrentFamilyCertLatest({ force: true, silent: true });
+  if (!renderFamilyCertSubmittedView(latestRow)) showFcUploadForm();
+  renderChallenge();
+  showToast('가족 인증을 삭제했어요.');
 }
 
 function handleFcFileSelect(input) {
@@ -18253,35 +18673,7 @@ function renderChallenge() {
   let shouldRenderFormControls = false;
 
   if (myReg && myReg.status !== 'cancelled') {
-    const statusLbl = { pending:'검토 중', confirmed:'선정 완료', cancelled:'미선정' }[myReg.status] || myReg.status;
-    const statusColor = myReg.status === 'confirmed' ? '#166534' : myReg.status === 'cancelled' ? '#991b1b' : '#92400e';
-    const canCancelReg = myReg.status === 'pending' && now <= CH.deadline;
-    doneHtml = `
-      <div class="ch-reg-card">
-        <div class="ch-reg-badge">${renderNamedSvgIcon('medal', { size:'12px', color:'#b45309' })}<span>HI RUN DAY 신청 완료</span></div>
-        <div class="ch-reg-person">
-          <div class="ch-reg-icon">${avHTML(S.user.avatar)}</div>
-          <div>
-            <div class="ch-reg-name">${myReg.name} · ${myReg.dept}</div>
-            <div class="ch-reg-sub">신청번호 ${myReg.id}</div>
-          </div>
-          <div style="margin-left:auto;background:${statusColor}15;color:${statusColor};font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;border:1px solid ${statusColor}30">${statusLbl}</div>
-        </div>
-        <div class="ch-reg-rows">
-          <div class="ch-reg-row"><span class="ch-reg-label">신발 사이즈</span><span class="ch-reg-value">${myReg.shoeSize}mm</span></div>
-          <div class="ch-reg-row"><span class="ch-reg-label">가족 참여</span><span class="ch-reg-value">${myReg.familyParticipation ? familySummary : '본인만'}</span></div>
-          ${shoeRequestNote ? `<div class="ch-reg-row ch-reg-row-full"><span class="ch-reg-label">운동화 요청</span><span class="ch-reg-value">${escHtmlComm(shoeRequestNote)}</span></div>` : ''}
-          ${myReg.familyParticipation && familyMemo ? `<div class="ch-reg-row ch-reg-row-full"><span class="ch-reg-label">가족 메모</span><span class="ch-reg-value">${escHtmlComm(familyMemo)}</span></div>` : ''}
-          ${shoePrefSummary.length ? `<div class="ch-reg-row ch-reg-row-full"><span class="ch-reg-label">운동화모델</span><span class="ch-reg-value">${shoePrefSummary.join(' / ')}</span></div>` : ''}
-        </div>
-        <div class="ch-reg-phase">현재 단계: ${getChallengePhaseLabel(phase)}</div>
-        <div style="display:flex;align-items:center;gap:8px">
-          <button type="button" class="ch-share-btn" onclick="shareChReg('${myReg.id}','${myReg.name}','${myReg.dept}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg> 공유하기</button>
-          ${canCancelReg ? `<button type="button" class="ch-cancel-reg-btn" onclick="cancelRegistration('${myReg.id}')">신청 취소</button>` : ''}
-        </div>
-        <button type="button" class="btn btn-primary btn-full ch-workout-btn" style="margin-top:8px;padding:8px;font-size:11px" onclick="scrollToExerciseForm()">오늘 운동 기록하기</button>
-      </div>
-    `;
+    doneHtml = '';
     formHtml = '';
     doneRenderKey = JSON.stringify({
       type: 'challenge-reg-done',
@@ -18297,7 +18689,6 @@ function renderChallenge() {
       familyMemo,
       shoePrefSummary,
       avatar: String(S.user.avatar || ''),
-      canCancelReg,
     });
     formRenderKey = `challenge:${phase}:form:none`;
   } else if (phase === 'registration') {
@@ -18392,28 +18783,53 @@ function renderChallenge() {
   const familyCertSubmittedAt = getFamilyCertSubmittedText(familyCertRow);
   const familyCertMediaUrl = escHtmlComm(familyCertRow?.media_url || '');
   const familyCertImageAlt = escHtmlComm('가족 운동 인증');
+  const runDayDdayValue = phase === 'ended' ? 'RUN DAY 완료' : eventDday === 0 ? 'D-DAY' : `D-${eventDday}`;
+  const runDayDdayTitle = phase === 'ended' ? '2026년 4월 15일 HI RUN DAY를 함께 마쳤어요' : eventDday === 0 ? '오늘이 바로 런데이예요!' : '런데이까지 남은 시간';
+  const runDayDdaySub = phase === 'ended'
+    ? '함께 달린 순간들을 가족 인증이나 커뮤니티 기록으로 남겨보세요.'
+    : '2026년 4월 15일 수요일 · 선유도공원에서 출발해 여의도공원까지 함께 달려요.';
   const familyCertPreviewHtml = familyCertRow?.media_url
     ? String(familyCertRow?.media_type || '').startsWith('video')
       ? `<div class="ch-family-cert-preview"><video class="ch-family-cert-media" src="${familyCertMediaUrl}" controls playsinline preload="metadata"></video></div>`
       : `<div class="ch-family-cert-preview"><img class="ch-family-cert-media" src="${familyCertMediaUrl}" alt="${familyCertImageAlt}" onclick="openPhotoLightbox('${familyCertMediaUrl}','${familyCertImageAlt}')"></div>`
     : '';
-  const familyCertActionHtml = `
-    <div class="card">
-      <div class="card-header">
-        <span class="card-title">가족 인증</span>
-        ${familyCertRow ? `<span class="badge ${familyCertStatus.cls}">${familyCertStatus.label}</span>` : ''}
-      </div>
-      ${familyCertPreviewHtml}
-      ${familyCertRow
-        ? `<div class="ch-family-cert-points">+100P</div>
-           <div class="ch-family-cert-copy">가족 운동 인증에 참여하였습니다.</div>
-           <div class="ch-family-cert-sub">${familyCertSubmittedAt ? `${familyCertSubmittedAt} 업로드` : '업로드한 인증 파일입니다.'}</div>
-           ${familyCertMemo ? `<div class="ch-family-cert-memo">${escHtmlComm(familyCertMemo)}</div>` : ''}`
-        : `<div style="font-size:12px;line-height:1.6;color:var(--text-secondary);margin-bottom:10px">신청 여부와 무관하게 가족과 함께한 걷기, 운동, 스트레칭 인증을 제출할 수 있어요.</div>`}
-      <button type="button" class="btn btn-primary btn-full ch-workout-btn" style="padding:8px;font-size:11px" onclick="goToFamilyCert()">가족사진 영상 인증하기</button>
+  const runDayDdayHtml = `
+    <div class="ch-dday-card">
+      <div class="ch-dday-label">HI RUN DAY COUNTDOWN</div>
+      <div class="ch-dday-value">${runDayDdayValue}</div>
+      <div class="ch-dday-title">${runDayDdayTitle}</div>
+      <div class="ch-dday-sub">${runDayDdaySub}</div>
     </div>
   `;
-  doneHtml += familyCertActionHtml;
+  const familyCertActionHtml = `
+    <div class="ch-family-spotlight-card">
+      <div class="ch-family-spotlight-top">
+        <div>
+          <div class="ch-family-spotlight-label">Family Mission</div>
+          <div class="ch-family-spotlight-title">가족과 함께 운동해요~</div>
+          <div class="ch-family-spotlight-sub">걷기, 스트레칭, 러닝 어떤 순간도 좋아요. 인증하면 챌린지 보너스 <strong>+100P</strong>가 추가돼요.</div>
+        </div>
+        <div class="ch-family-spotlight-reward">${familyCertRow ? '+100P 완료' : '+100P 미션'}</div>
+      </div>
+      ${familyCertRow
+        ? `<div class="ch-family-spotlight-meta">
+             <span class="badge ${familyCertStatus.cls}">${familyCertStatus.label}</span>
+             ${familyCertSubmittedAt ? `<span class="ch-family-cert-sub" style="margin:0">${familyCertSubmittedAt} 업로드</span>` : ''}
+           </div>
+           ${familyCertPreviewHtml}
+           <div class="ch-family-cert-copy">올린 파일을 바로 확인하고, 필요하면 삭제하거나 커뮤니티에 공유할 수 있어요.</div>
+           ${familyCertMemo ? `<div class="ch-family-cert-memo">${escHtmlComm(familyCertMemo)}</div>` : ''}
+           <div class="ch-family-spotlight-actions">
+             <button type="button" class="ch-family-spotlight-btn" onclick="openCurrentFamilyCertMedia()">파일 보기</button>
+             <button type="button" class="ch-family-spotlight-btn delete" onclick="confirmDeleteCurrentFamilyCert()">삭제</button>
+             <button type="button" class="ch-family-spotlight-btn" onclick="shareCurrentFamilyCertToCommunity()">커뮤니티 공유</button>
+           </div>`
+        : `<div class="ch-family-spotlight-note">신청 여부와 무관하게 가족과 함께한 걷기, 운동, 스트레칭 인증을 제출할 수 있어요. 사진이나 영상 하나만 올려도 바로 참여됩니다.</div>
+           <button type="button" class="ch-family-spotlight-btn primary" onclick="goToFamilyCert()">가족 사진 · 영상 올리기</button>`}
+    </div>
+  `;
+  doneHtml = runDayDdayHtml + familyCertActionHtml + doneHtml;
+  doneRenderKey += '|dday:' + runDayDdayValue + '|' + phase;
   doneRenderKey += '|family-cert:' + getFamilyCertLatestRowToken(familyCertRow);
 
   const formChanged = setChallengeSectionHtml(formEl, formHtml, formRenderKey);
@@ -19889,6 +20305,7 @@ async function init() {
       <div id="fc-submitted-media-wrap" style="margin-bottom:12px;border-radius:10px;overflow:hidden;background:var(--bg)"></div>
       <div id="fc-submitted-status" style="margin-bottom:6px;text-align:center;font-size:14px;font-weight:700"></div>
       <div id="fc-submitted-date" style="text-align:center;font-size:12px;color:var(--text-secondary);margin-bottom:16px"></div>
+      <div id="fc-submitted-actions" class="fc-action-row"></div>
       <button type="button" class="fc-submit-btn" style="background:var(--border);color:var(--text-secondary)" onclick="showFcUploadForm()">추가 제출하기</button>
     </div>
 
@@ -19919,6 +20336,21 @@ async function init() {
         <div class="fc-done-sub">관리자 승인 후 100포인트가 자동 지급됩니다.</div>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- ── 커뮤니티 스타 축하 모달 ── -->
+<div id="cs-overlay" class="cs-overlay pm-hidden" onclick="if(event.target===this)closeCommunityStarModal()">
+  <div class="cs-card">
+    <span class="cs-confetti">🎉</span>
+    <div class="cs-badge-img"><img src="images/badge8.png" alt="커뮤니티 스타"></div>
+    <div class="cs-title">커뮤니티 스타!</div>
+    <div class="cs-sub">응원 스티커를 50개 받았어요.<br>활발한 커뮤니티 참여에 감사해요!</div>
+    <div class="cs-gift-box">
+      <div class="cs-gift-label">🎁 특별 선물 안내</div>
+      <div class="cs-gift-text">곧 관리자가 공지를 통해<br>선물 수령 방법을 안내해드릴게요!</div>
+    </div>
+    <button class="cs-close-btn" onclick="closeCommunityStarModal()">확인했어요!</button>
   </div>
 </div>
 
