@@ -5025,38 +5025,94 @@
     }
     .ch-dday-card {
       margin:0 0 14px;
-      padding:16px 18px;
+      padding:20px 18px 18px;
       border-radius:18px;
-      background:linear-gradient(140deg,#fff8ec 0%,#fff3f4 48%,#ffffff 100%);
-      border:1px solid rgba(249,115,22,0.16);
-      box-shadow:0 10px 24px rgba(249,115,22,0.08);
+      background:#111111;
+      box-shadow:0 12px 36px rgba(0,0,0,0.35);
     }
     .ch-dday-label {
-      font-size:11px;
+      font-size:12px;
       font-weight:800;
-      color:#c2410c;
-      letter-spacing:.5px;
+      color:#f5a623;
+      letter-spacing:1.5px;
       text-transform:uppercase;
-      margin-bottom:6px;
+      text-align:center;
+      margin-bottom:16px;
     }
-    .ch-dday-value {
-      font-size:30px;
+    /* 카운트다운 숫자 영역 */
+    .ch-countdown-row {
+      display:flex;
+      justify-content:center;
+      align-items:flex-start;
+      gap:10px;
+    }
+    .ch-countdown-unit {
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:7px;
+    }
+    .ch-countdown-digits {
+      display:flex;
+      gap:4px;
+    }
+    .ch-digit-box {
+      width:44px;
+      height:58px;
+      background:#222222;
+      border-radius:8px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:38px;
       font-weight:900;
-      color:#0f172a;
+      color:#ffffff;
+      font-variant-numeric:tabular-nums;
+      position:relative;
+      box-shadow:0 4px 12px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.07);
+    }
+    .ch-digit-box::after {
+      content:'';
+      position:absolute;
+      left:0; right:0; top:50%;
+      height:1.5px;
+      background:rgba(0,0,0,0.55);
+    }
+    .ch-countdown-unit-lbl {
+      font-size:10px;
+      font-weight:700;
+      color:rgba(255,255,255,0.45);
+      letter-spacing:1px;
+    }
+    .ch-countdown-sep {
+      font-size:32px;
+      font-weight:900;
+      color:rgba(255,255,255,0.2);
+      line-height:1;
+      padding-top:13px;
+    }
+    /* 종료 / D-DAY 텍스트 모드 */
+    .ch-dday-value {
+      font-size:36px;
+      font-weight:900;
+      color:#ffffff;
+      text-align:center;
       line-height:1.1;
       letter-spacing:-0.5px;
     }
     .ch-dday-title {
-      margin-top:4px;
+      margin-top:12px;
       font-size:13px;
-      font-weight:800;
-      color:#7c2d12;
+      font-weight:700;
+      color:rgba(255,255,255,0.7);
+      text-align:center;
     }
     .ch-dday-sub {
-      margin-top:7px;
-      font-size:12px;
-      line-height:1.6;
-      color:#64748b;
+      margin-top:8px;
+      font-size:11px;
+      line-height:1.65;
+      color:rgba(255,255,255,0.4);
+      text-align:center;
     }
     @media (max-width:420px) {
       .ch-speaker-card {
@@ -11260,6 +11316,9 @@ function navigate(page) {
       renderChallenge();
       queueActivateInlineChallengePage();
     });
+    startDdayCountdownTimer();
+  } else {
+    stopDdayCountdownTimer();
   }
   placeGuestBanner(page);
   window.scrollTo(0, 0);
@@ -18510,6 +18569,31 @@ function setChallengeSectionHtml(el, html, renderKey = html) {
   return true;
 }
 
+let _ddayTimer = null;
+function startDdayCountdownTimer() {
+  stopDdayCountdownTimer();
+  _ddayTimer = setInterval(() => {
+    if (!document.getElementById('page-challenge')?.classList.contains('active')) return;
+    const row = document.querySelector('.ch-countdown-row');
+    if (!row) return;
+    const eventDayStart = new Date('2026-04-15T00:00:00');
+    const msLeft = eventDayStart - new Date();
+    if (msLeft <= 0) return;
+    const vals = [
+      Math.floor(msLeft / 86400000),
+      Math.floor((msLeft % 86400000) / 3600000),
+      Math.floor((msLeft % 3600000) / 60000),
+    ];
+    row.querySelectorAll('.ch-countdown-unit').forEach((unit, i) => {
+      const str = String(vals[i]).padStart(2, '0');
+      unit.querySelectorAll('.ch-digit-box').forEach((box, j) => { box.textContent = str[j] || '0'; });
+    });
+  }, 60000);
+}
+function stopDdayCountdownTimer() {
+  if (_ddayTimer) { clearInterval(_ddayTimer); _ddayTimer = null; }
+}
+
 function renderChallenge() {
   if (document.getElementById('page-challenge') && !document.getElementById('ch-hero')) {
     queueActivateInlineChallengePage();
@@ -18560,15 +18644,37 @@ function renderChallenge() {
   `;
   setChallengeSectionHtml(document.getElementById('ch-hero'), heroHtml, `challenge:${phase}:hero:${heroBadge}`);
 
-  const runDayDdayValue = phase === 'ended' ? 'RUN DAY 완료' : eventDday === 0 ? 'D-DAY' : `D-${eventDday}`;
+  const msLeft = eventDayStart - now;
+  const ddDays  = Math.max(0, Math.floor(msLeft / 86400000));
+  const ddHours = Math.max(0, Math.floor((msLeft % 86400000) / 3600000));
+  const ddMins  = Math.max(0, Math.floor((msLeft % 3600000) / 60000));
+  const _digBox = n => String(n).padStart(2, '0').split('').map(d => `<div class="ch-digit-box">${d}</div>`).join('');
   const runDayDdayTitle = phase === 'ended' ? '2026년 4월 15일 HI RUN DAY를 함께 마쳤어요' : eventDday === 0 ? '오늘이 바로 런데이예요!' : '런데이까지 남은 시간';
   const runDayDdaySub = phase === 'ended'
     ? '함께 달린 순간들을 가족 인증이나 커뮤니티 기록으로 남겨보세요.'
     : '2026년 4월 15일 수요일 · 선유도공원에서 출발해 여의도공원까지 함께 달려요.';
+  const countdownInnerHtml = (phase === 'ended' || eventDday === 0)
+    ? `<div class="ch-dday-value">${phase === 'ended' ? 'RUN DAY 완료' : 'D-DAY'}</div>`
+    : `<div class="ch-countdown-row">
+        <div class="ch-countdown-unit">
+          <div class="ch-countdown-digits">${_digBox(ddDays)}</div>
+          <div class="ch-countdown-unit-lbl">일</div>
+        </div>
+        <div class="ch-countdown-sep">:</div>
+        <div class="ch-countdown-unit">
+          <div class="ch-countdown-digits">${_digBox(ddHours)}</div>
+          <div class="ch-countdown-unit-lbl">시간</div>
+        </div>
+        <div class="ch-countdown-sep">:</div>
+        <div class="ch-countdown-unit">
+          <div class="ch-countdown-digits">${_digBox(ddMins)}</div>
+          <div class="ch-countdown-unit-lbl">분</div>
+        </div>
+      </div>`;
   const runDayDdayHtml = `
     <div class="ch-dday-card">
       <div class="ch-dday-label">HI RUN DAY COUNTDOWN</div>
-      <div class="ch-dday-value">${runDayDdayValue}</div>
+      ${countdownInnerHtml}
       <div class="ch-dday-title">${runDayDdayTitle}</div>
       <div class="ch-dday-sub">${runDayDdaySub}</div>
     </div>
