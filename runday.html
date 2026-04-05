@@ -179,54 +179,25 @@
     }
     .hero-dday-wrap {
       padding: 16px 16px 0;
+      background: #ffffff;
     }
     .runday-dday-card {
-      position: relative;
-      overflow: visible;
-      padding: 22px 18px 18px;
-      border-radius: 22px;
-      background:
-        radial-gradient(circle at top, rgba(68,255,220,0.16), transparent 34%),
-        linear-gradient(180deg, #17181d 0%, #0c0d10 100%);
-      border: 1px solid rgba(255,255,255,0.08);
-      box-shadow:
-        0 18px 34px rgba(15, 23, 42, 0.18),
-        inset 0 1px 0 rgba(255,255,255,0.08),
-        inset 0 -10px 24px rgba(0,0,0,0.38);
+      padding: 0;
+      background: #ffffff;
+      border: 0;
+      box-shadow: none;
     }
-    .runday-dday-card::before,
-    .runday-dday-card::after {
-      content: "";
-      position: absolute;
-      top: -12px;
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
-      background: #f5f7fb;
-      border: 5px solid #2b2b31;
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08);
-    }
-    .runday-dday-card::before {
-      left: 26px;
-    }
-    .runday-dday-card::after {
-      right: 26px;
-    }
-    .runday-dday-title {
-      font-size: 18px;
-      font-weight: 800;
-      color: rgba(232,239,255,0.92);
-      letter-spacing: -0.3px;
-      text-align: center;
-      text-shadow: 0 0 16px rgba(112,255,228,0.12);
+    .runday-dday-heading {
+      margin-bottom: 20px;
     }
     .runday-dday-grid {
-      margin-top: 16px;
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 10px;
     }
     .runday-dday-unit {
+      position: relative;
+      overflow: visible;
       border-radius: 16px;
       background:
         linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.02) 100%),
@@ -238,6 +209,24 @@
         0 0 0 1px rgba(8,11,16,0.35);
       padding: 16px 10px 14px;
       text-align: center;
+    }
+    .runday-dday-unit::before,
+    .runday-dday-unit::after {
+      content: "";
+      position: absolute;
+      top: -11px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #f5f7fb;
+      border: 4px solid #24262d;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08);
+    }
+    .runday-dday-unit::before {
+      left: 16px;
+    }
+    .runday-dday-unit::after {
+      right: 16px;
     }
     .runday-dday-num {
       font-family: "SFMono-Regular", "JetBrains Mono", "Roboto Mono", monospace;
@@ -1667,8 +1656,8 @@
 </div>
 
 <div class="hero-dday-wrap">
+  <div class="section-title runday-dday-heading" id="runday-dday-title">런데이까지 남은 시간</div>
   <div class="runday-dday-card" id="runday-dday-card">
-    <div class="runday-dday-title" id="runday-dday-title">런데이까지 남은 시간</div>
     <div class="runday-dday-grid">
       <div class="runday-dday-unit">
         <div class="runday-dday-num" id="runday-dday-days">0</div>
