@@ -2871,6 +2871,36 @@ async function updateUserPointsFields(deviceId, nextPoints, nextTotalPoints, tou
     || null;
   const currentPoints = Number(currentUser?.points) || 0;
   const delta = (Number(nextPoints) || 0) - currentPoints;
+  const resolveTargetUser = async () => {
+    if (normalizedDeviceId) {
+      const existsRes = await db.from('users').select('deviceId,empId,name,points,totalPoints,lastactiveat').eq('deviceId', normalizedDeviceId);
+      if (existsRes.error) return { error: existsRes.error, user: null };
+      const directUser = pickFamCertRewardUser(existsRes.data || [], normalizedEmpId, normalizedDeviceId);
+      if (directUser?.deviceId) return { error: null, user: directUser };
+    }
+    if (!normalizedEmpId) {
+      return { error: null, user: currentUser ? normalizeUserRow(currentUser) : null };
+    }
+    const lookupRes = await db
+      .from('users')
+      .select('deviceId,empId,name,points,totalPoints,lastactiveat')
+      .or(buildAdminEmpIdFilters('empId', [normalizedEmpId]).join(','));
+    if (lookupRes.error) return { error: lookupRes.error, user: null };
+    const picked = pickFamCertRewardUser(lookupRes.data || [], normalizedEmpId, normalizedDeviceId)
+      || pickFamCertRewardUser((GD.users || []), normalizedEmpId, normalizedDeviceId);
+    return { error: null, user: picked || null };
+  };
+
+  const targetLookup = await resolveTargetUser();
+  if (targetLookup.error) {
+    return { error: targetLookup.error, appliedTotalPoints: false };
+  }
+  const targetUser = targetLookup.user || null;
+  const targetDeviceId = String(targetUser?.deviceId || normalizedDeviceId).trim();
+  if (!targetDeviceId) {
+    return { error: new Error('포인트 지급 대상 이용자를 찾지 못했습니다'), appliedTotalPoints: false };
+  }
+
   if (ADMIN_AUTH_KEY) {
     try {
       const res = await fetch(ADMIN_POINTS_FN, {
@@ -2882,7 +2912,7 @@ async function updateUserPointsFields(deviceId, nextPoints, nextTotalPoints, tou
         },
         body: JSON.stringify({
           adminKey: ADMIN_AUTH_KEY,
-          deviceId,
+          deviceId: targetDeviceId,
           delta,
           touchedAt,
         }),
@@ -2892,6 +2922,7 @@ async function updateUserPointsFields(deviceId, nextPoints, nextTotalPoints, tou
       return {
         error: null,
         appliedTotalPoints: !!result?.appliedTotalPoints,
+        deviceId: targetDeviceId,
         points: Number(result?.points) || Math.max(0, Number(nextPoints) || 0),
         totalPoints: Number(result?.totalPoints) || Math.max(0, Number(nextTotalPoints) || 0),
       };
@@ -2900,44 +2931,26 @@ async function updateUserPointsFields(deviceId, nextPoints, nextTotalPoints, tou
     }
   }
 
-  const resolveTargetDeviceId = async () => {
-    if (normalizedDeviceId) {
-      const existsRes = await db.from('users').select('deviceId,empId,name,points,totalPoints,lastactiveat').eq('deviceId', normalizedDeviceId);
-      if (existsRes.error) return { error: existsRes.error, deviceId: '' };
-      if ((existsRes.data || []).length > 0) return { error: null, deviceId: normalizedDeviceId };
-    }
-    if (!normalizedEmpId) return { error: null, deviceId: normalizedDeviceId };
-    const lookupRes = await db
-      .from('users')
-      .select('deviceId,empId,name,points,totalPoints,lastactiveat')
-      .or(buildAdminEmpIdFilters('empId', [normalizedEmpId]).join(','));
-    if (lookupRes.error) return { error: lookupRes.error, deviceId: '' };
-    const picked = pickFamCertRewardUser(lookupRes.data || [], normalizedEmpId, normalizedDeviceId)
-      || pickFamCertRewardUser((GD.users || []), normalizedEmpId, normalizedDeviceId);
-    return { error: null, deviceId: String(picked?.deviceId || '').trim() };
-  };
-
-  const targetRes = await resolveTargetDeviceId();
-  if (targetRes.error) {
-    return { error: targetRes.error, appliedTotalPoints: false };
-  }
-  const targetDeviceId = String(targetRes.deviceId || normalizedDeviceId).trim();
-  if (!targetDeviceId) {
-    return { error: new Error('포인트 지급 대상 이용자를 찾지 못했습니다'), appliedTotalPoints: false };
-  }
-
   const pointsPayload = {
     points: Math.max(0, Number(nextPoints) || 0),
     lastactiveat: touchedAt,
   };
   const pointsRes = await db.from('users')
     .update(pointsPayload)
-    .eq('deviceId', targetDeviceId)
-    .select('deviceId,empId,points,totalPoints');
+    .eq('deviceId', targetDeviceId);
   if (pointsRes.error) {
     return { error: pointsRes.error, appliedTotalPoints: false };
   }
-  if (!Array.isArray(pointsRes.data) || pointsRes.data.length === 0) {
+
+  const verifyPointsRes = await db
+    .from('users')
+    .select('deviceId,empId,points,totalPoints,lastactiveat')
+    .eq('deviceId', targetDeviceId)
+    .maybeSingle();
+  if (verifyPointsRes.error) {
+    return { error: verifyPointsRes.error, appliedTotalPoints: false };
+  }
+  if (!verifyPointsRes.data) {
     return { error: new Error('포인트 지급 대상 이용자 업데이트가 반영되지 않았습니다'), appliedTotalPoints: false };
   }
 
@@ -2947,12 +2960,27 @@ async function updateUserPointsFields(deviceId, nextPoints, nextTotalPoints, tou
   };
   const totalRes = await db.from('users')
     .update(totalPayload)
-    .eq('deviceId', targetDeviceId)
-    .select('deviceId,totalPoints');
-  if (!totalRes.error && Array.isArray(totalRes.data) && totalRes.data.length > 0) {
+    .eq('deviceId', targetDeviceId);
+  if (!totalRes.error) {
+    const verifyTotalRes = await db
+      .from('users')
+      .select('deviceId,totalPoints')
+      .eq('deviceId', targetDeviceId)
+      .maybeSingle();
+    if (!verifyTotalRes.error && verifyTotalRes.data) {
+      return {
+        error: null,
+        appliedTotalPoints: true,
+        deviceId: targetDeviceId,
+        points: Math.max(0, Number(nextPoints) || 0),
+        totalPoints: Math.max(0, Number(nextTotalPoints) || 0),
+      };
+    }
+  }
+  if (!totalRes.error) {
     return {
       error: null,
-      appliedTotalPoints: true,
+      appliedTotalPoints: false,
       deviceId: targetDeviceId,
       points: Math.max(0, Number(nextPoints) || 0),
       totalPoints: Math.max(0, Number(nextTotalPoints) || 0),
