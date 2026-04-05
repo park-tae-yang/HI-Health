@@ -5343,6 +5343,14 @@ function formatFamCertReviewError(error) {
   return error?.message || String(error || '알 수 없는 오류');
 }
 
+function isFamCertApprovedWithoutReward(row) {
+  const status = String(row?.status || '').trim().toLowerCase();
+  if (status !== 'approved') return false;
+  if (String(row?.rewarded_at || '').trim()) return false;
+  const rewardPoints = Number(row?.reward_points);
+  return !Number.isFinite(rewardPoints) || rewardPoints <= 0;
+}
+
 function pickFamCertRewardUser(rows, targetEmpId = '', targetDeviceId = '') {
   const normalizedEmpId = normRegEmpId(targetEmpId);
   const normalizedDeviceId = String(targetDeviceId || '').trim();
@@ -5528,6 +5536,7 @@ function renderFamCert() {
       ? `<a href="${escHtml(r.media_url)}" target="_blank" style="color:var(--p);text-decoration:underline">${mediaIcon} 보기</a>`
       : '-';
     const st = r.status || 'pending';
+    const canDelete = st === 'cancelled' || st === 'rejected' || isFamCertApprovedWithoutReward(r);
     return `<tr>
       <td style="white-space:nowrap;font-size:12px">${escHtml(dt)}</td>
       <td style="font-weight:700">${escHtml(r.name || '-')}</td>
@@ -5538,7 +5547,7 @@ function renderFamCert() {
       <td>
         <div style="display:flex;gap:4px">
           ${st === 'pending' ? `<button class="cbtn grn" onclick="reviewFamCert('${escHtml(r.id)}','approved')">승인</button>` : ''}
-          ${st === 'cancelled' || st === 'rejected' ? `<button class="cbtn dan" onclick="deleteFamCert('${escHtml(r.id)}')">삭제</button>` : ''}
+          ${canDelete ? `<button class="cbtn dan" onclick="deleteFamCert('${escHtml(r.id)}')">삭제</button>` : ''}
         </div>
       </td>
     </tr>`;
@@ -5680,8 +5689,9 @@ async function deleteFamCert(id) {
   const certRow = GD_famcert.find(r => String(r.id) === String(id));
   if (!certRow) { toast('가족인증 정보를 찾을 수 없습니다'); return; }
   const status = String(certRow.status || '').trim().toLowerCase();
-  if (status !== 'cancelled' && status !== 'rejected') {
-    toast('취소된 인증만 삭제할 수 있습니다');
+  const canDelete = status === 'cancelled' || status === 'rejected' || isFamCertApprovedWithoutReward(certRow);
+  if (!canDelete) {
+    toast('취소되었거나 미지급 승인 상태의 인증만 삭제할 수 있습니다');
     return;
   }
   if (!confirm('이 가족인증 항목을 완전히 삭제할까요?\n삭제 후에는 복구할 수 없습니다.')) return;
