@@ -6614,6 +6614,28 @@ const DAILY_GLUCOSE_LIMIT  = 4;  // 하루 최대 혈당 기록 횟수
 const GLUCOSE_POINTS       = 5;  // 혈당 1회 기록 포인트
 let SHOP_ORDERS_KEY = 'hi_health_shop_orders';
 let SHOP_CART_KEY   = 'hi_health_cart';
+function isRewardExchangeOrder(order) {
+  const pickup = String(order?.pickup || '').trim();
+  const orderId = String(order?.id || '').trim().toUpperCase();
+  return pickup === '포인트교환' || orderId.startsWith('REW-');
+}
+function getStoredShopOrders() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(SHOP_ORDERS_KEY) || '[]');
+    return Array.isArray(raw) ? raw.filter(order => !isRewardExchangeOrder(order)) : [];
+  } catch (e) {
+    return [];
+  }
+}
+function saveStoredShopOrders(orders = []) {
+  try {
+    const safeOrders = (Array.isArray(orders) ? orders : []).filter(order => !isRewardExchangeOrder(order));
+    localStorage.setItem(SHOP_ORDERS_KEY, JSON.stringify(safeOrders));
+    return safeOrders;
+  } catch (e) {
+    return [];
+  }
+}
 /* ── 현재 로그인 사용자 (로그인 후 설정) ── */
 let ACTIVE_EMPID = '';
 let STORAGE_KEY  = 'hi_health_v2'; // 로그인 시 'hi_health_v2_사번'으로 변경
@@ -7795,7 +7817,7 @@ function openCartPanel() {
   }
   // 구매내역
   const histEl = document.getElementById('cart-panel-history');
-  const orders = JSON.parse(localStorage.getItem(SHOP_ORDERS_KEY) || '[]').slice().reverse();
+  const orders = getStoredShopOrders().slice().reverse();
   if (orders.length === 0) {
     histEl.innerHTML = '<div class="cart-panel-empty">구매내역이 없어요</div>';
   } else {
@@ -7822,7 +7844,7 @@ function closeCartPanel() {
 }
 
 function openOrderDetail(orderId) {
-  const orders = JSON.parse(localStorage.getItem(SHOP_ORDERS_KEY) || '[]');
+  const orders = getStoredShopOrders();
   const o = orders.find(x => x.id === orderId);
   if (!o) return;
   const statusLabel = { pending:'확인중', confirmed:'수령완료', shipped:'수령완료', done:'처리완료', cancelled:'취소됨' };
@@ -7878,9 +7900,9 @@ function deleteOrder(orderId) {
     msg: '이 주문 내역을 삭제하시겠어요?',
     okLabel: '삭제',
     onOk: () => {
-      const orders = JSON.parse(localStorage.getItem(SHOP_ORDERS_KEY) || '[]');
+      const orders = getStoredShopOrders();
       const updated = orders.filter(o => o.id !== orderId);
-      localStorage.setItem(SHOP_ORDERS_KEY, JSON.stringify(updated));
+      saveStoredShopOrders(updated);
       closeOrderDetail();
       openCartPanel();
       showToast('주문 내역이 삭제됐습니다');
@@ -16673,7 +16695,7 @@ function renderShopOrderHistory() {
   if (!el) return;
 
   // localStorage 즉시 렌더
-  const local = JSON.parse(localStorage.getItem(SHOP_ORDERS_KEY) || '[]');
+  const local = getStoredShopOrders();
   _renderOrderCards(local.slice().reverse());
 
   // Supabase에서 최신 이력 동기화 (이전 기록 복원 + 상태 갱신)
@@ -16683,21 +16705,22 @@ function renderShopOrderHistory() {
       .then(({ data, error }) => {
         console.log('[orders fetch] deviceId:', S.deviceId, 'count:', data?.length, 'error:', error);
         if (!data) return;
-        const merged = JSON.parse(localStorage.getItem(SHOP_ORDERS_KEY) || '[]');
+        const merged = getStoredShopOrders();
         data.forEach(row => {
+          if (isRewardExchangeOrder(row)) return;
           if (typeof row.items === 'string') { try { row.items = JSON.parse(row.items); } catch(e) { row.items = []; } }
           const idx = merged.findIndex(o => String(o.id) === String(row.id));
-          if (idx >= 0) { merged[idx].status = row.status; }
+          if (idx >= 0) { merged[idx] = { ...merged[idx], ...row, items: row.items }; }
           else { merged.push(row); }
         });
-        localStorage.setItem(SHOP_ORDERS_KEY, JSON.stringify(merged));
+        saveStoredShopOrders(merged);
         _renderOrderCards(merged.slice().reverse());
       });
   }
 }
 
 function openOrderDetail(orderId) {
-  const orders = JSON.parse(localStorage.getItem(SHOP_ORDERS_KEY) || '[]');
+  const orders = getStoredShopOrders();
   const o = orders.find(x => x.id === orderId);
   if (!o) return;
   const statusLabel = { pending:'처리 대기', confirmed:'주문 확인', shipped:'수령완료', done:'수령 완료', cancelled:'취소' };
@@ -16746,11 +16769,11 @@ function closeOrderDetail() {
 
 function cancelOrder(orderId) {
   if (!confirm('정말 취소하시겠습니까?')) return;
-  const orders = JSON.parse(localStorage.getItem(SHOP_ORDERS_KEY) || '[]');
+  const orders = getStoredShopOrders();
   const o = orders.find(x => x.id === orderId);
   if (!o) return;
   o.status = 'cancelled';
-  localStorage.setItem(SHOP_ORDERS_KEY, JSON.stringify(orders));
+  saveStoredShopOrders(orders);
   if (_db) _db.from('orders').update({ status: 'cancelled' }).eq('id', orderId);
   renderShopOrderHistory();
   showToast('주문이 취소됐습니다');
@@ -16824,7 +16847,7 @@ function submitShopOrder() {
     const p = SHOP_PRODUCTS.find(x => x.id === id);
     return { id, name: p ? p.name : id, price: p ? p.price : 0, qty };
   });
-  const orders = JSON.parse(localStorage.getItem(SHOP_ORDERS_KEY) || '[]');
+  const orders = getStoredShopOrders();
   const newOrder = {
     id: 'ORD-' + String(Date.now()).slice(-6),
     name, phone,
@@ -16839,7 +16862,7 @@ function submitShopOrder() {
     orderedAt: new Date().toISOString(),
   };
   orders.push(newOrder);
-  localStorage.setItem(SHOP_ORDERS_KEY, JSON.stringify(orders));
+  saveStoredShopOrders(orders);
   apiSync('addOrder', {
     id: newOrder.id,
     deviceId: S.deviceId,
@@ -20862,14 +20885,15 @@ function loadSheetsUserData(data) {
   }
   // 주문 상태 동기화 (Sheets의 최신 상태로 로컬 업데이트)
   if (data.orders && data.orders.length) {
-    const local = JSON.parse(localStorage.getItem(SHOP_ORDERS_KEY) || '[]');
+    const local = getStoredShopOrders();
     const sheetsMap = {};
-    data.orders.forEach(o => { sheetsMap[String(o.id)] = o.status; });
+    data.orders.filter(o => !isRewardExchangeOrder(o)).forEach(o => { sheetsMap[String(o.id)] = o.status; });
     // 로컬에 있는 주문 상태 업데이트
     local.forEach(o => { if (sheetsMap[String(o.id)]) o.status = sheetsMap[String(o.id)]; });
     // Sheets에만 있는 주문 (다른 기기에서 신청) 추가
     const localIds = new Set(local.map(o => String(o.id)));
     data.orders.forEach(o => {
+      if (isRewardExchangeOrder(o)) return;
       if (!localIds.has(String(o.id))) {
         local.push({
           id: o.id, name: o.name, phone: o.phone, pickup: o.pickup,
@@ -20879,7 +20903,7 @@ function loadSheetsUserData(data) {
         });
       }
     });
-    localStorage.setItem(SHOP_ORDERS_KEY, JSON.stringify(local));
+    saveStoredShopOrders(local);
   }
 }
 
@@ -21891,11 +21915,11 @@ async function init() {
           if (!S.deviceId) return;
           const changed = payload.new;
           if (changed.deviceId !== S.deviceId) return;
-          const orders = JSON.parse(localStorage.getItem(SHOP_ORDERS_KEY) || '[]');
+          const orders = getStoredShopOrders();
           const idx = orders.findIndex(o => String(o.id) === String(changed.id));
           if (idx >= 0) {
             orders[idx].status = changed.status;
-            localStorage.setItem(SHOP_ORDERS_KEY, JSON.stringify(orders));
+            saveStoredShopOrders(orders);
             renderShopOrderHistory();
           }
         })
