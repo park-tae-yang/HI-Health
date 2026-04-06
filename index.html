@@ -6663,7 +6663,7 @@ const PUSH_DEFAULT_URL  = './index.html#community';
 const HOME_PUSH_PROMPT_DISMISSED_KEY = 'hi_home_push_prompt_dismissed';
 const HOME_PUSH_PROMPT_SESSION_KEY   = 'hi_home_push_prompt_seen';
 const AUTO_COMMENT_FN   = 'https://nbnmvvobehjitophkqmu.supabase.co/functions/v1/auto-comment';
-const SW_VERSION        = '20260406-001';
+const SW_VERSION        = '20260407-001';
 const SW_UPDATE_POLL_MS = 15 * 60 * 1000;
 const CHALLENGE_PEOPLE_CACHE_KEY = 'hi_health_people_cache_v1';
 // Keep self-registration sync lean because this query can fire on login/focus recovery paths.
@@ -10162,10 +10162,10 @@ function myLeagueRank() {
     ? myWeekPts()
     : tab === 'challenger'
       ? getCurrentChallengeLeaguePoints()
-    : tab === 'alltime'
+    : tab === 'alltime' || tab === 'level'
       ? getCurrentLeagueAlltimePoints()
       : getCurrentLeaguePoints();
-  const myLv = getLevel(tab === 'alltime' ? getCurrentLeagueAlltimePoints() : getCurrentLeaguePoints()).lv;
+  const myLv = getLevel(tab === 'alltime' || tab === 'level' ? getCurrentLeagueAlltimePoints() : getCurrentLeaguePoints()).lv;
   const me = {
     id: (S.user.empId || S.deviceId || 'me').toString(),
     name: myDisplayName() + ' (나)',
@@ -10610,7 +10610,9 @@ function getLeagueAlertExerciseId(tab = S.leagueTab) {
 
 function getLeagueAlertMessage(entries = [], meEntry = null, tab = S.leagueTab) {
   const myName = escHtmlComm((myDisplayName() || '회원').replace(/\s*\(나\)\s*$/, ''));
-  const myLeaguePoints = getCurrentLeaguePoints();
+  const myLeaguePoints = tab === 'alltime' || tab === 'level'
+    ? getCurrentLeagueAlltimePoints()
+    : getCurrentLeaguePoints();
   const nextLevel = getLeagueNextLevelInfo(myLeaguePoints);
   const chip = getLeagueAlertChip(tab);
   const coachLine = (text, opts = {}) => {
@@ -10896,9 +10898,10 @@ function getLeagueAlertMessage(entries = [], meEntry = null, tab = S.leagueTab) 
 }
 
 function getLeagueGuideText(tab = S.leagueTab) {
-  if (tab === 'weekly') return '이번주는 운동 포인트 기준으로 순위가 매겨져요.';
+  if (tab === 'weekly') return '이번주는 운동+혈당 포인트 기준으로 순위가 매겨져요.';
   if (tab === 'challenger') return '챌린지는 2026년 3월 25일 이후 운동+혈당 누적 포인트 기준이며, 가족인증은 제외돼요.';
-  if (tab === 'alltime') return '리그 전체기록 순위를 확인해보세요.';
+  if (tab === 'level') return '레벨별은 현재 보유포인트 기준으로 같은 레벨 이용자끼리 비교해요.';
+  if (tab === 'alltime') return '전체기록은 현재 보유포인트 기준으로 순위가 매겨져요.';
   return '리그는 운동+혈당 누적 포인트 기준으로 순위가 매겨져요. 가족인증은 제외돼요.';
 }
 
