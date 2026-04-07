@@ -316,7 +316,7 @@
       <button class="sb-item" id="tab-btn-challenge" data-tab="challenge" onclick="switchTab('challenge',this)"><span class="sb-icon">🏆</span>챌린지</button>
       <button class="sb-item" id="tab-btn-famcert" data-tab="famcert" onclick="switchTab('famcert',this)"><span class="sb-icon">📸</span>가족인증<span class="sb-badge" id="famcert-badge" style="display:none"></span></button>
       <div class="sb-section" style="margin-top:4px">운영</div>
-      <button class="sb-item" id="tab-btn-commstar" data-tab="commstar" onclick="switchTab('commstar',this)"><span class="sb-icon">⭐</span>커뮤니티 스타<span class="sb-badge" id="commstar-badge" style="display:none"></span></button>
+      <button class="sb-item" id="tab-btn-commstar" data-tab="commstar" onclick="switchTab('commstar',this)"><span class="sb-icon">🏅</span>배지<span class="sb-badge" id="commstar-badge" style="display:none"></span></button>
       <button class="sb-item" id="tab-btn-orders" data-tab="orders" onclick="switchTab('orders',this)"><span class="sb-icon">🛒</span>구매<span class="sb-badge" id="orders-badge" style="display:none"></span></button>
       <button class="sb-item" id="tab-btn-content" data-tab="content" onclick="switchTab('content',this)"><span class="sb-icon">📝</span>콘텐츠 작성</button>
       <button class="sb-item" id="tab-btn-settings" data-tab="settings" onclick="switchTab('settings',this)"><span class="sb-icon">⚙️</span>설정</button>
@@ -773,20 +773,17 @@
     </div>
 
     <!-- ── PANEL: ORDERS ── -->
-    <!-- ── PANEL: COMMUNITY STAR ── -->
+    <!-- ── PANEL: BADGES ── -->
     <div class="panel" id="panel-commstar">
       <div class="ch-status-bar">
-        <div class="ch-s-pill"><div class="ch-s-val" id="cs-total">-</div><div class="ch-s-lbl">수상자</div></div>
-        <div class="ch-s-pill"><div class="ch-s-val" id="cs-gift-pending">-</div><div class="ch-s-lbl">선물 대기</div></div>
-        <div class="ch-s-pill"><div class="ch-s-val" id="cs-gift-sent">-</div><div class="ch-s-lbl">선물 발송</div></div>
+        <div class="ch-s-pill"><div class="ch-s-val" id="cs-total">-</div><div class="ch-s-lbl">배지 보유자</div></div>
+        <div class="ch-s-pill"><div class="ch-s-val" id="cs-max-badges">-</div><div class="ch-s-lbl">최다 배지</div></div>
+        <div class="ch-s-pill"><div class="ch-s-val" id="cs-avg-badges">-</div><div class="ch-s-lbl">평균 배지</div></div>
       </div>
 
-      <div class="ctrl-bar" style="flex-wrap:wrap;gap:8px">
-        <div style="font-size:13px;color:var(--t2);flex:1;min-width:200px">
-          ⭐ 커뮤니티 스타 배지 수상자 목록 — 스티커 50개 이상 달성 또는 관리자 수동 지정
-        </div>
-        <button class="cbtn sky" onclick="loadCommStarUsers()">↻ 새로고침</button>
-        <button class="cbtn" onclick="grantCommStarManual()">+ 수동 지정</button>
+      <div class="ctrl-bar">
+        <input class="ctrl-inp" id="badge-search" placeholder="이름·계정 ID 검색" oninput="renderBadgeUsers()">
+        <button class="cbtn sky" onclick="loadBadgeUsers()">↻ 새로고침</button>
       </div>
 
       <div class="tbl-wrap">
@@ -797,12 +794,11 @@
               <th>이름</th>
               <th>계정 ID</th>
               <th>부서</th>
-              <th>달성 일시</th>
-              <th>선물 상태</th>
-              <th>관리</th>
+              <th>배지 수</th>
+              <th>획득 배지</th>
             </tr></thead>
             <tbody id="cs-tbody">
-              <tr><td class="empty-cell" colspan="7">새로고침을 눌러 수상자를 확인하세요</td></tr>
+              <tr><td class="empty-cell" colspan="6">새로고침을 눌러 확인하세요</td></tr>
             </tbody>
           </table>
         </div>
@@ -5475,7 +5471,7 @@ const TAB_TITLES = {
   users: '이용자 관리', workouts: '운동 기록', glucose: '혈당 기록', posts: '커뮤니티',
   league: '리그', challenge: '챌린지', orders: '구매 관리',
   content: '콘텐츠 작성', settings: '설정', famcert: '가족인증',
-  commstar: '커뮤니티 스타',
+  commstar: '배지 현황',
 };
 function switchTab(name, btn) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
@@ -5499,101 +5495,85 @@ function switchTab(name, btn) {
 }
 
 /* ══════════════════════════════════════════════
-   COMMUNITY STAR
+   BADGES
 ══════════════════════════════════════════════ */
+const BADGE_NAMES = {
+  a1:'첫 걸음', a2:'3일 연속', a3:'10회 달성', a4:'7일 연속', a5:'30회 달성',
+  a6:'포인트 왕', a7:'레전드', a8:'커뮤니티 스타', a9:'공유 스타', a10:'공감 스타',
+};
+
 let GD_commstar = [];
 
-async function loadCommStarUsers() {
+async function loadBadgeUsers() {
   if (!db) return;
   const tbody = document.getElementById('cs-tbody');
-  if (tbody) tbody.innerHTML = '<tr><td class="empty-cell" colspan="7">불러오는 중...</td></tr>';
+  if (tbody) tbody.innerHTML = '<tr><td class="empty-cell" colspan="6">불러오는 중...</td></tr>';
   try {
     const { data, error } = await db.from('users')
-      .select('deviceId,name,nickname,empId,dept,communityStarBadge,giftSent,lastactiveat')
-      .eq('communityStarBadge', true)
-      .order('lastactiveat', { ascending: false });
+      .select('deviceId,name,nickname,empId,dept,badge_count,points,streak,lastactiveat')
+      .gt('badge_count', 0)
+      .order('badge_count', { ascending: false });
     if (error) throw error;
     GD_commstar = data || [];
-    renderCommStarUsers();
+    renderBadgeUsers();
   } catch(e) {
-    if (tbody) tbody.innerHTML = `<tr><td class="empty-cell" colspan="7">오류: ${e.message}</td></tr>`;
+    if (tbody) tbody.innerHTML = `<tr><td class="empty-cell" colspan="6">오류: ${e.message}</td></tr>`;
   }
 }
 
-function renderCommStarUsers() {
+// loadCommStarUsers는 switchTab에서 호출되므로 별칭 유지
+function loadCommStarUsers() { loadBadgeUsers(); }
+
+function renderBadgeUsers() {
   const tbody = document.getElementById('cs-tbody');
   if (!tbody) return;
+  const q = (document.getElementById('badge-search')?.value || '').trim().toLowerCase();
+  const filtered = q
+    ? GD_commstar.filter(u => (u.nickname || u.name || '').toLowerCase().includes(q) || (u.empId || '').toLowerCase().includes(q))
+    : GD_commstar;
+
   const total = GD_commstar.length;
-  const sent  = GD_commstar.filter(u => u.giftSent).length;
-  const pending = total - sent;
+  const maxBadges = GD_commstar[0]?.badge_count || 0;
+  const avg = total ? (GD_commstar.reduce((s, u) => s + (u.badge_count || 0), 0) / total).toFixed(1) : 0;
   const el = id => document.getElementById(id);
-  if (el('cs-total'))       el('cs-total').textContent = total;
-  if (el('cs-gift-pending'))el('cs-gift-pending').textContent = pending;
-  if (el('cs-gift-sent'))   el('cs-gift-sent').textContent = sent;
-  // 뱃지 카운트 (미발송이면 주황 뱃지)
-  const badge = document.getElementById('commstar-badge');
-  if (badge) {
-    badge.textContent = pending > 0 ? pending : '';
-    badge.style.display = pending > 0 ? 'inline-flex' : 'none';
-  }
-  if (!total) {
-    tbody.innerHTML = '<tr><td class="empty-cell" colspan="7">아직 수상자가 없습니다</td></tr>';
+  if (el('cs-total'))      el('cs-total').textContent = total;
+  if (el('cs-max-badges')) el('cs-max-badges').textContent = maxBadges;
+  if (el('cs-avg-badges')) el('cs-avg-badges').textContent = avg;
+
+  if (!filtered.length) {
+    tbody.innerHTML = `<tr><td class="empty-cell" colspan="6">${q ? '검색 결과 없음' : '배지 보유자가 없습니다'}</td></tr>`;
     return;
   }
-  tbody.innerHTML = GD_commstar.map((u, i) => {
+
+  tbody.innerHTML = filtered.map((u, i) => {
     const name = u.nickname || u.name || '(이름 없음)';
-    const date = u.lastactiveat ? new Date(u.lastactiveat).toLocaleDateString('ko-KR') : '-';
-    const giftBadge = u.giftSent
-      ? `<span style="background:#dcfce7;color:#166534;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700">발송 완료</span>`
-      : `<span style="background:#fef3c7;color:#b45309;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700">대기중</span>`;
+    const cnt = u.badge_count || 0;
+    // badge_count 바 표시 (최다 기준 %)
+    const pct = maxBadges > 0 ? Math.round((cnt / maxBadges) * 100) : 0;
+    const bar = `<div style="display:flex;align-items:center;gap:6px">
+      <div style="flex:1;height:6px;background:#e5e7eb;border-radius:4px;min-width:60px">
+        <div style="width:${pct}%;height:100%;background:#6366f1;border-radius:4px"></div>
+      </div>
+      <strong>${cnt}개</strong>
+    </div>`;
+    // 어떤 배지인지 힌트 (points/streak 기반으로 추정 가능한 것만)
+    const hints = [];
+    if ((u.points || 0) >= 1) hints.push('첫 걸음');
+    if ((u.streak || 0) >= 3) hints.push('3일 연속');
+    if ((u.points || 0) >= 1000) hints.push('포인트 왕');
+    if ((u.streak || 0) >= 7) hints.push('7일 연속');
+    const hintHtml = hints.length
+      ? hints.map(h => `<span style="font-size:10px;background:#f3f4f6;color:#374151;padding:1px 6px;border-radius:8px">${h}</span>`).join(' ')
+      : '<span style="font-size:11px;color:var(--t3)">—</span>';
     return `<tr>
       <td>${i + 1}</td>
       <td><strong>${name}</strong></td>
       <td style="font-size:11px;color:var(--t3)">${u.empId || '-'}</td>
       <td style="font-size:11px">${u.dept || '-'}</td>
-      <td style="font-size:11px">${date}</td>
-      <td>${giftBadge}</td>
-      <td>
-        ${u.giftSent
-          ? `<button class="cbtn" onclick="toggleGiftSent('${u.deviceId}',false)">취소</button>`
-          : `<button class="cbtn sky" onclick="toggleGiftSent('${u.deviceId}',true)">발송 완료</button>`
-        }
-        <button class="cbtn dan" onclick="revokeCommStar('${u.deviceId}','${name}')">배지 회수</button>
-      </td>
+      <td style="min-width:120px">${bar}</td>
+      <td style="min-width:140px">${hintHtml}</td>
     </tr>`;
   }).join('');
-}
-
-async function toggleGiftSent(deviceId, sent) {
-  if (!db) return;
-  const { error } = await db.from('users').update({ giftSent: sent }).eq('deviceId', deviceId);
-  if (error) { toast('업데이트 실패: ' + error.message); return; }
-  const u = GD_commstar.find(u => u.deviceId === deviceId);
-  if (u) u.giftSent = sent;
-  renderCommStarUsers();
-  toast(sent ? '선물 발송 완료로 표시했습니다' : '발송 완료 취소했습니다');
-}
-
-async function revokeCommStar(deviceId, name) {
-  if (!confirm(`"${name}"의 커뮤니티 스타 배지를 회수하시겠어요?`)) return;
-  if (!db) return;
-  const { error } = await db.from('users').update({ communityStarBadge: false, giftSent: false }).eq('deviceId', deviceId);
-  if (error) { toast('배지 회수 실패: ' + error.message); return; }
-  GD_commstar = GD_commstar.filter(u => u.deviceId !== deviceId);
-  renderCommStarUsers();
-  toast(`"${name}" 배지를 회수했습니다`);
-}
-
-async function grantCommStarManual() {
-  const empId = prompt('배지를 부여할 계정 ID (empId)를 입력하세요:');
-  if (!empId?.trim()) return;
-  if (!db) return;
-  const { error } = await db.from('users')
-    .update({ communityStarBadge: true })
-    .ilike('empId', empId.trim());
-  if (error) { toast('부여 실패: ' + error.message); return; }
-  toast(`"${empId.trim()}" 에게 커뮤니티 스타 배지를 부여했습니다`);
-  loadCommStarUsers();
 }
 
 /* ══════════════════════════════════════════════
