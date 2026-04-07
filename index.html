@@ -16416,7 +16416,16 @@ function react(buttonEl, postId, stickerId) {
     myR.push(stickerId);
     post.stickers[stickerId] = (post.stickers[stickerId]||0) + 1;
     playStickerBurst(buttonEl, stickerId);
-    S.user.stickersGiven = (S.user.stickersGiven || 0) + 1;
+    const prevGiven = S.user.stickersGiven || 0;
+    S.user.stickersGiven = prevGiven + 1;
+    if (prevGiven < 50 && S.user.stickersGiven >= 50 && !IS_GUEST) {
+      const seenKey = 'giver_badge_shown_' + S.deviceId;
+      if (!localStorage.getItem(seenKey)) {
+        localStorage.setItem(seenKey, '1');
+        const giverAch = ACHIEVEMENTS_DATA.find(a => a.id === 'a10');
+        setTimeout(() => { haptic('success'); showCelebration('badge', giverAch); }, 400);
+      }
+    }
     if (_db) _db.from('reactions').upsert(
       { postId: String(postId), deviceId: S.deviceId, stickerId },
       { onConflict: 'postId,deviceId,stickerId' }
