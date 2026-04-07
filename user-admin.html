@@ -2590,11 +2590,10 @@ function getAdminServerPointsMap(users = GD.users) {
   return byDeviceId;
 }
 
-function getAdminAlltimePointsFromValues(serverPoints = 0, workoutPoints = 0, glucosePoints = 0) {
+function getAdminAlltimePointsFromValues(serverPoints = 0, activityPoints = 0) {
   const normalizedServerPoints = Math.max(0, Number(serverPoints) || 0);
-  const normalizedWorkoutPoints = Math.max(0, Number(workoutPoints) || 0);
-  const normalizedGlucosePoints = Math.max(0, Number(glucosePoints) || 0);
-  return normalizedWorkoutPoints + normalizedGlucosePoints + Math.max(0, normalizedServerPoints - normalizedWorkoutPoints);
+  const normalizedActivityPoints = Math.max(0, Number(activityPoints) || 0);
+  return normalizedActivityPoints + Math.max(0, normalizedServerPoints - normalizedActivityPoints);
 }
 
 function getAdminPointBreakdownMaps(workouts = GD.workouts, glucose = GD.glucose, users = GD.users) {
@@ -2612,11 +2611,9 @@ function getAdminPointBreakdownMaps(workouts = GD.workouts, glucose = GD.glucose
     ...Object.keys(activityPointsByDeviceId),
   ]);
   deviceIds.forEach(deviceId => {
-    const workoutPoints = Math.max(0, Number(workoutPointsByDeviceId[deviceId]) || 0);
-    const glucosePoints = Math.max(0, Number(glucosePointsByDeviceId[deviceId]) || 0);
     const serverPoints = Math.max(0, Number(serverPointsByDeviceId[deviceId]) || 0);
-    const activityPoints = workoutPoints + glucosePoints;
-    const alltimePoints = getAdminAlltimePointsFromValues(serverPoints, workoutPoints, glucosePoints);
+    const activityPoints = Math.max(0, Number(activityPointsByDeviceId[deviceId]) || 0);
+    const alltimePoints = getAdminAlltimePointsFromValues(serverPoints, activityPoints);
     alltimePointsByDeviceId[deviceId] = alltimePoints;
     bonusPointsByDeviceId[deviceId] = Math.max(0, alltimePoints - activityPoints);
   });
@@ -2640,10 +2637,9 @@ function getAdminEffectivePoints(u, pointMaps = null) {
   const maps = pointMaps && typeof pointMaps === 'object' && (pointMaps.workoutPointsByDeviceId || pointMaps.glucosePointsByDeviceId)
     ? pointMaps
     : getAdminPointBreakdownMaps();
-  const workoutPoints = deviceId ? Math.max(0, Number(maps.workoutPointsByDeviceId?.[deviceId]) || 0) : 0;
-  const glucosePoints = deviceId ? Math.max(0, Number(maps.glucosePointsByDeviceId?.[deviceId]) || 0) : 0;
+  const activityPoints = deviceId ? Math.max(0, Number(maps.activityPointsByDeviceId?.[deviceId]) || 0) : 0;
   const serverPoints = deviceId ? Math.max(0, Number(maps.serverPointsByDeviceId?.[deviceId] ?? rawPoints) || 0) : rawPoints;
-  return getAdminAlltimePointsFromValues(serverPoints, workoutPoints, glucosePoints);
+  return getAdminAlltimePointsFromValues(serverPoints, activityPoints);
 }
 
 function getAdminAlltimeLeaguePoints(u) {

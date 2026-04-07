@@ -10163,27 +10163,21 @@ function earnedAchs() {
   });
 }
 
-function getLeagueAlltimeBonusPoints(serverPoints = 0, workoutPoints = 0) {
+function getLeagueAlltimeBonusPoints(serverPoints = 0, activityPoints = 0) {
   const normalizedServerPoints = Math.max(0, Number(serverPoints) || 0);
-  const normalizedWorkoutPoints = Math.max(0, Number(workoutPoints) || 0);
-  return Math.max(0, normalizedServerPoints - normalizedWorkoutPoints);
+  const normalizedActivityPoints = Math.max(0, Number(activityPoints) || 0);
+  return Math.max(0, normalizedServerPoints - normalizedActivityPoints);
 }
 
-function getLeagueAlltimePointsFromParts(serverPoints = 0, workoutPoints = 0, glucosePoints = 0) {
-  const normalizedWorkoutPoints = Math.max(0, Number(workoutPoints) || 0);
-  const normalizedGlucosePoints = Math.max(0, Number(glucosePoints) || 0);
-  return normalizedWorkoutPoints + normalizedGlucosePoints + getLeagueAlltimeBonusPoints(serverPoints, normalizedWorkoutPoints);
+function getLeagueAlltimePointsFromParts(serverPoints = 0, activityPoints = 0) {
+  const normalizedActivityPoints = Math.max(0, Number(activityPoints) || 0);
+  return normalizedActivityPoints + getLeagueAlltimeBonusPoints(serverPoints, normalizedActivityPoints);
 }
 
 function getCurrentLeagueAlltimePoints() {
   const serverPoints = Math.max(0, Number(S.user?.points || 0) || 0);
-  const workoutPoints = (S.workouts || []).reduce((sum, workout) => {
-    return sum + Math.max(0, Number(workout?.points) || 0);
-  }, 0);
-  const glucosePoints = (S.glucoseRecords || []).reduce((sum, record) => {
-    return sum + Math.max(0, Number(record?.points) || 0);
-  }, 0);
-  return getLeagueAlltimePointsFromParts(serverPoints, workoutPoints, glucosePoints);
+  const activityPoints = Math.max(0, getRecordDerivedTotalPoints());
+  return getLeagueAlltimePointsFromParts(serverPoints, activityPoints);
 }
 
 function getCurrentChallengeLeaguePoints() {
@@ -15477,9 +15471,10 @@ async function fetchLeagueData(opts = {}) {
         const workoutPoints = Math.max(0, Number(workoutPtsByDevice[did]) || 0);
         const glucosePoints = Math.max(0, Number(glucosePtsByDevice[did]) || 0);
         if (!totalPtsByDevice[did]) totalPtsByDevice[did] = serverPoints;
+        const activityPoints = workoutPoints + glucosePoints;
         // 전체/레벨용 누적 포인트:
-        // 운동+혈당 합계에 서버에서 운동 위로 더해진 추가 포인트(관리자 조정, 가족인증 등)만 더한다.
-        cumulativePtsByDevice[did] = getLeagueAlltimePointsFromParts(serverPoints, workoutPoints, glucosePoints);
+        // 운동+혈당 합계에 서버에만 남아있는 추가 포인트(관리자 조정, 가족인증 등)만 더한다.
+        cumulativePtsByDevice[did] = getLeagueAlltimePointsFromParts(serverPoints, activityPoints);
         if (!(did in streakByDevice)) streakByDevice[did] = Number(u.streak) || 0;
       });
       _leagueCache.users = allUsers;
