@@ -3422,13 +3422,22 @@
       content:'';
     }
     .league-rank-badge.comm-star {
-      background:#FCE4EC; color:#c2185b; border-color:#f48fb1;
+      color:var(--text);
     }
     .league-rank-badge.giver-star {
-      background:#FFF3E0; color:#e65100; border-color:#ffb74d;
+      color:var(--text);
     }
     .league-rank-badge.badge-king {
-      background:#F3E8FF; color:#7c3aed; border-color:#c4b5fd;
+      color:var(--text);
+    }
+    .league-rank-badge.comm-star::before {
+      content:'✦';
+    }
+    .league-rank-badge.giver-star::before {
+      content:'♡';
+    }
+    .league-rank-badge.badge-king::before {
+      content:'◇';
     }
     .lb-level-icon {
       width:22px; height:22px; flex-shrink:0;
@@ -10506,14 +10515,14 @@ function renderLeagueEntryBadgesHtml(entry, badgeState = {}, tab = S.leagueTab) 
   }
   // 커뮤니티 스타 / 공감왕 — 커뮤니티 탭 로드 후 동적 계산된 값 사용
   if (did && _communityTopPosterDeviceId && did === _communityTopPosterDeviceId) {
-    badges.push('<span class="league-rank-badge comm-star">⭐ 커뮤니티 스타</span>');
+    badges.push('<span class="league-rank-badge comm-star">커뮤니티 스타</span>');
   }
   if (did && _communityTopGiverDeviceId && did === _communityTopGiverDeviceId) {
-    badges.push('<span class="league-rank-badge giver-star">💖 공감왕</span>');
+    badges.push('<span class="league-rank-badge giver-star">공감왕</span>');
   }
   // 배지왕
   if (key && badgeState.badgeKingKey && key === badgeState.badgeKingKey) {
-    badges.push('<span class="league-rank-badge badge-king">🏅 배지왕</span>');
+    badges.push('<span class="league-rank-badge badge-king">배지왕</span>');
   }
   return badges.length ? `<span class="league-rank-badges">${badges.join('')}</span>` : '';
 }

@@ -783,7 +783,7 @@
 
       <div class="ctrl-bar">
         <input class="ctrl-inp" id="badge-search" placeholder="이름·계정 ID 검색" oninput="renderBadgeUsers()">
-        <button class="cbtn sky" onclick="loadBadgeUsers()">↻ 새로고침</button>
+        <button class="cbtn sky" onclick="loadBadgeUsers({ force: true })">↻ 새로고침</button>
       </div>
 
       <div class="tbl-wrap">
@@ -2463,6 +2463,9 @@ function renderAll() {
   renderChallenge();
   renderOrders();
   renderAdminPosts();
+  if (document.getElementById('panel-commstar')?.classList.contains('active')) {
+    loadBadgeUsers({ silent: true });
+  }
 }
 
 /* ══════════════════════════════════════════════
@@ -2601,6 +2604,14 @@ function getAdminEffectivePoints(u, pointMaps = null) {
 
 function getAdminAlltimeLeaguePoints(u) {
   return getAdminEffectivePoints(u);
+}
+
+function getAdminBalancePoints(u) {
+  return Math.max(0, Number(u?.points) || 0);
+}
+
+function getAdminBalanceTotalPoints(u) {
+  return Math.max(getAdminBalancePoints(u), Math.max(0, Number(u?.totalPoints) || 0));
 }
 
 function getAdminLevelLeagueMeta(u) {
@@ -2877,7 +2888,6 @@ function filteredUsers() {
 function sortedUsers(arr) {
   const sort = document.getElementById('u-sort')?.value || 'name';
   const woCnt = {}, strk = {}, lastWorkoutTsMap = {};
-  const pointMaps = getAdminPointBreakdownMaps();
   GD.workouts.forEach(w => {
     woCnt[w.deviceId] = (woCnt[w.deviceId]||0)+1;
     lastWorkoutTsMap[w.deviceId] = Math.max(lastWorkoutTsMap[w.deviceId] || 0, getAdminRecordTsValue(w));
@@ -2890,7 +2900,7 @@ function sortedUsers(arr) {
       : (Number(u.streak) || 0);
   });
   return [...arr].sort((a, b) => {
-    if (sort === 'points')   return getAdminEffectivePoints(b, pointMaps) - getAdminEffectivePoints(a, pointMaps);
+    if (sort === 'points')   return getAdminBalancePoints(b) - getAdminBalancePoints(a);
     if (sort === 'lastActive') return getUserLastActiveTs(b, lastWorkoutTsMap) - getUserLastActiveTs(a, lastWorkoutTsMap);
     if (sort === 'workouts') return (woCnt[b.deviceId]||0) - (woCnt[a.deviceId]||0);
     if (sort === 'streak')   return (strk[b.deviceId]||0) - (strk[a.deviceId]||0);
@@ -2927,7 +2937,6 @@ function computeAdminStreakByDevice(workouts = GD.workouts) {
 function renderUsers() {
   const dupIds = getDupEmpIds();
   const woCnt = {}, lastWorkoutTsMap = {};
-  const pointMaps = getAdminPointBreakdownMaps();
   const streakByDevice = computeAdminStreakByDevice();
   GD.workouts.forEach(w => {
     woCnt[w.deviceId] = (woCnt[w.deviceId]||0)+1;
@@ -2976,7 +2985,7 @@ function renderUsers() {
 
   tbody.innerHTML = page.map((u, i) => {
     const rank = uPage * PAGE + i + 1;
-    const effectivePoints = getAdminEffectivePoints(u, pointMaps);
+    const balancePoints = getAdminBalancePoints(u);
     const rc = rank === 1 ? 'g1' : rank === 2 ? 'g2' : rank === 3 ? 'g3' : '';
     const bad = isBadName(u.name);
     const dup = dupIds.has((u.empId||'').trim());
@@ -3000,7 +3009,7 @@ function renderUsers() {
       <td style="color:var(--t2)">${u.nickname||'-'}</td>
       <td>${u.empId||'-'}</td>
       <td>${u.dept||'-'}</td>
-      <td><span class="badge pts" onclick="openPtsPopup('${safeId}',event)">+${effectivePoints.toLocaleString()}p</span></td>
+      <td><span class="badge pts" onclick="openPtsPopup('${safeId}',event)">+${balancePoints.toLocaleString()}p</span></td>
       <td>${woCnt[u.deviceId]||0}</td>
       <td>${streakByDevice[u.deviceId]||0}일</td>
       <td>${actCell}</td>
@@ -3036,11 +3045,11 @@ function openPtsPopup(deviceId, e) {
   selDeviceId = deviceId;
   const u = GD.users.find(x => x.deviceId === deviceId);
   if (!u) return;
-  const effectivePoints = getAdminEffectivePoints(u);
+  const balancePoints = getAdminBalancePoints(u);
   selectUser(deviceId, u.name || '');
   const popup = document.getElementById('pts-popup');
   document.getElementById('pts-popup-name').textContent = u.name || '(이름없음)';
-  document.getElementById('pts-popup-cur').textContent = effectivePoints.toLocaleString() + 'p';
+  document.getElementById('pts-popup-cur').textContent = balancePoints.toLocaleString() + 'p';
   document.getElementById('adj-val').value = '';
   popup.style.display = 'block';
   // 클릭 위치 기준으로 팝업 위치 결정
@@ -3064,8 +3073,6 @@ async function updateUserPointsFields(deviceId, nextPoints, nextTotalPoints, tou
   const currentUser = GD.users.find(x => String(x?.deviceId || '').trim() === normalizedDeviceId)
     || (normalizedEmpId ? GD.users.find(x => normRegEmpId(x?.empId) === normalizedEmpId) : null)
     || null;
-  const currentPoints = Number(currentUser?.points) || 0;
-  const delta = (Number(nextPoints) || 0) - currentPoints;
   const resolveTargetUser = async () => {
     if (normalizedDeviceId) {
       const existsRes = await db.from('users').select('deviceId,empId,name,points,lastactiveat').eq('deviceId', normalizedDeviceId);
@@ -3095,6 +3102,8 @@ async function updateUserPointsFields(deviceId, nextPoints, nextTotalPoints, tou
   if (!targetDeviceId) {
     return { error: new Error('포인트 지급 대상 이용자를 찾지 못했습니다'), appliedTotalPoints: false };
   }
+  const currentPoints = Math.max(0, Number(targetUser?.points ?? currentUser?.points) || 0);
+  const delta = (Number(nextPoints) || 0) - currentPoints;
 
   if (ADMIN_AUTH_KEY) {
     try {
@@ -3165,9 +3174,9 @@ async function adjPoints(sign) {
   const u = GD.users.find(x => x.deviceId === selDeviceId);
   if (!u) return;
   if (u.__derived) { toast('임시 이용자는 포인트 조정이 불가합니다. users 생성 후 진행해주세요.'); return; }
-  const effectivePoints = getAdminEffectivePoints(u);
-  const newPts = Math.max(0, effectivePoints + sign * v);
-  const baseTotalPoints = Math.max(Number(u.totalPoints || 0), effectivePoints);
+  const currentPoints = getAdminBalancePoints(u);
+  const newPts = Math.max(0, currentPoints + sign * v);
+  const baseTotalPoints = getAdminBalanceTotalPoints(u);
   const newTotalPoints = Math.max(0, baseTotalPoints + sign * v);
   showLoading(true);
   const result = await updateUserPointsFields(selDeviceId, newPts, newTotalPoints);
@@ -3175,7 +3184,7 @@ async function adjPoints(sign) {
   if (result.error) { toast('실패: ' + result.error.message); return; }
   u.points = Number(result.points) || newPts;
   if (result.appliedTotalPoints) u.totalPoints = Number(result.totalPoints) || newTotalPoints;
-  document.getElementById('pts-popup-cur').textContent = getAdminEffectivePoints(u).toLocaleString() + 'p';
+  document.getElementById('pts-popup-cur').textContent = getAdminBalancePoints(u).toLocaleString() + 'p';
   document.getElementById('adj-val').value = '';
   renderStats(); renderUsers();
   toast((sign > 0 ? '+' : '') + (sign * v) + 'p 조정 완료' + (result.appliedTotalPoints ? '' : ' (누적포인트 동기화는 제외됨)'));
@@ -3612,8 +3621,7 @@ function updateWorkoutBackfillMeta() {
   const duration = Number(document.getElementById('wo-add-duration')?.value) || 0;
   const exId = document.getElementById('wo-add-type')?.value || 'custom';
   const user = GD.users.find(u => String(u.deviceId || '').trim() === deviceId) || null;
-  const pointMaps = getAdminPointBreakdownMaps();
-  const currentPoints = user ? getAdminEffectivePoints(user, pointMaps) : 0;
+  const currentPoints = user ? getAdminBalancePoints(user) : 0;
   const streakByDevice = computeAdminStreakByDevice();
   const currentStreak = user
     ? ((streakByDevice[deviceId] ?? Number(user.streak)) || 0)
@@ -3688,9 +3696,9 @@ async function submitWorkoutBackfill() {
     ts: String(workoutTs),
   };
   const nextStreak = computeAdminStreakByDevice([...GD.workouts, workoutPayload])[deviceId] || 0;
-  const currentPoints = getAdminEffectivePoints(user);
+  const currentPoints = getAdminBalancePoints(user);
   const nextPoints = Math.max(0, currentPoints + points);
-  const baseTotalPoints = Math.max(Number(user.totalPoints || 0), currentPoints);
+  const baseTotalPoints = getAdminBalanceTotalPoints(user);
   const nextTotalPoints = Math.max(0, baseTotalPoints + points);
   const currentLastActiveTs = getUserLastActiveTs(user);
   const touchTs = Math.max(currentLastActiveTs || 0, workoutTs);
@@ -5566,40 +5574,245 @@ const BADGE_NAMES = {
   a1:'첫 걸음', a2:'3일 연속', a3:'10회 달성', a4:'7일 연속', a5:'30회 달성',
   a6:'포인트 왕', a7:'레전드', a8:'커뮤니티 스타', a9:'공유 스타', a10:'공감 스타',
 };
+const BADGE_RULES = [
+  { id:'a1',  test: stats => stats.totalWorkouts >= 1 },
+  { id:'a2',  test: stats => stats.streak >= 3 },
+  { id:'a3',  test: stats => stats.totalWorkouts >= 10 },
+  { id:'a4',  test: stats => stats.streak >= 7 },
+  { id:'a5',  test: stats => stats.totalWorkouts >= 30 },
+  { id:'a6',  test: stats => stats.points >= 1000 },
+  { id:'a7',  test: stats => stats.level >= 6 },
+  { id:'a8',  test: stats => stats.totalPosts >= 5 },
+  { id:'a9',  test: stats => stats.levelCardShares >= 3 },
+  { id:'a10', test: stats => stats.stickersGiven >= 50 },
+];
+const BADGE_REACTION_CACHE_MS = 30000;
 
 let GD_commstar = [];
+let GD_badgeReactions = [];
+let GD_badgeReactionFetchedAt = 0;
+let _badgeLoadInFlight = null;
 
-async function loadBadgeUsers() {
-  if (!db) return;
-  const tbody = document.getElementById('cs-tbody');
-  if (tbody) tbody.innerHTML = '<tr><td class="empty-cell" colspan="6">불러오는 중...</td></tr>';
-  try {
-    const { data, error } = await db.from('users')
-      .select('deviceId,name,nickname,empId,dept,badge_count,points,streak,lastactiveat')
-      .gt('badge_count', 0)
-      .order('badge_count', { ascending: false });
-    if (error) throw error;
-    GD_commstar = data || [];
-    renderBadgeUsers();
-  } catch(e) {
-    if (tbody) tbody.innerHTML = `<tr><td class="empty-cell" colspan="6">오류: ${e.message}</td></tr>`;
+function computeAdminStreakFromTsList(tsList = []) {
+  if (!Array.isArray(tsList) || !tsList.length) return 0;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const dateSet = new Set(
+    tsList
+      .map(ts => {
+        const resolvedTs = Number(ts) || 0;
+        return resolvedTs ? getAdminLocalDateKey(new Date(resolvedTs)) : '';
+      })
+      .filter(Boolean)
+  );
+  let streak = 0;
+  for (let i = 0; i < 365; i++) {
+    const d = new Date(today);
+    d.setDate(today.getDate() - i);
+    if (dateSet.has(getAdminLocalDateKey(d))) streak++;
+    else if (i > 0) break;
   }
+  return streak;
+}
+
+async function getAdminBadgeReactionRows(opts = {}) {
+  const force = !!opts.force;
+  const now = Date.now();
+  if (!db) return GD_badgeReactions;
+  if (!force && GD_badgeReactionFetchedAt && (now - GD_badgeReactionFetchedAt) < BADGE_REACTION_CACHE_MS) {
+    return GD_badgeReactions;
+  }
+  const { data, error } = await withAdminLoadTimeout(
+    db.from('reactions').select('deviceId,postId,stickerId'),
+    'reactions'
+  );
+  if (error) throw error;
+  GD_badgeReactions = data || [];
+  GD_badgeReactionFetchedAt = now;
+  return GD_badgeReactions;
+}
+
+function getAdminBadgeEntries(reactions = GD_badgeReactions) {
+  const workoutCountByDeviceId = {};
+  const workoutTsByDeviceId = {};
+  const postCountByDeviceId = {};
+  const stickerGivenByDeviceId = {};
+  const levelCardSharesByDeviceId = {};
+  const hasLevelCardSharesByDeviceId = {};
+  const pointMaps = getAdminPointBreakdownMaps();
+  const groups = new Map();
+
+  (GD.workouts || []).forEach(workout => {
+    const deviceId = String(workout?.deviceId || '').trim();
+    if (!deviceId) return;
+    workoutCountByDeviceId[deviceId] = (workoutCountByDeviceId[deviceId] || 0) + 1;
+    const ts = getAdminRecordTsValue(workout);
+    if (!ts) return;
+    if (!workoutTsByDeviceId[deviceId]) workoutTsByDeviceId[deviceId] = [];
+    workoutTsByDeviceId[deviceId].push(ts);
+  });
+
+  (GD.posts || []).forEach(post => {
+    if (isBotAuthor(post)) return;
+    const deviceId = String(post?.deviceId || '').trim();
+    if (!deviceId) return;
+    postCountByDeviceId[deviceId] = (postCountByDeviceId[deviceId] || 0) + 1;
+  });
+
+  (reactions || []).forEach(reaction => {
+    const deviceId = String(reaction?.deviceId || reaction?.deviceid || '').trim();
+    if (!deviceId) return;
+    stickerGivenByDeviceId[deviceId] = (stickerGivenByDeviceId[deviceId] || 0) + 1;
+  });
+
+  (GD.users || []).forEach(user => {
+    const deviceId = String(user?.deviceId || '').trim();
+    if (!deviceId) return;
+    const hasShareMetric = Object.prototype.hasOwnProperty.call(user, 'levelCardShares')
+      || Object.prototype.hasOwnProperty.call(user, 'levelcardshares');
+    if (!hasShareMetric) return;
+    hasLevelCardSharesByDeviceId[deviceId] = true;
+    levelCardSharesByDeviceId[deviceId] = Math.max(0, Number(user?.levelCardShares ?? user?.levelcardshares) || 0);
+  });
+
+  GD.users
+    .filter(user => !USER_LIST_EXCLUDE_EMPIDS.includes((user.empId || '').trim().toUpperCase()))
+    .forEach(user => {
+      const deviceId = String(user?.deviceId || '').trim();
+      const empId = String(user?.empId || '').trim().toUpperCase();
+      const key = empId ? `emp:${empId}` : (deviceId ? `device:${deviceId}` : '');
+      if (!key) return;
+      if (!groups.has(key)) {
+        groups.set(key, {
+          representative: null,
+          representativeTs: 0,
+          deviceIds: new Set(),
+          maxServerPoints: 0,
+          maxServerBadgeCount: 0,
+        });
+      }
+      const group = groups.get(key);
+      const activeTs = getUserLastActiveTs(user);
+      if (!group.representative || activeTs >= group.representativeTs) {
+        group.representative = user;
+        group.representativeTs = activeTs;
+      }
+      if (deviceId) group.deviceIds.add(deviceId);
+      group.maxServerPoints = Math.max(group.maxServerPoints, Math.max(0, Number(user?.points) || 0));
+      group.maxServerBadgeCount = Math.max(group.maxServerBadgeCount, Math.max(0, Number(user?.badge_count ?? user?.badgeCount) || 0));
+    });
+
+  return [...groups.values()]
+    .map(group => {
+      const representative = group.representative || {};
+      const deviceIds = [...group.deviceIds].filter(Boolean);
+      const workoutPoints = deviceIds.reduce((sum, deviceId) => {
+        return sum + Math.max(0, Number(pointMaps.workoutPointsByDeviceId?.[deviceId]) || 0);
+      }, 0);
+      const glucosePoints = deviceIds.reduce((sum, deviceId) => {
+        return sum + Math.max(0, Number(pointMaps.glucosePointsByDeviceId?.[deviceId]) || 0);
+      }, 0);
+      const totalWorkouts = deviceIds.reduce((sum, deviceId) => {
+        return sum + (Number(workoutCountByDeviceId[deviceId]) || 0);
+      }, 0);
+      const streakTsList = deviceIds.flatMap(deviceId => workoutTsByDeviceId[deviceId] || []);
+      const streak = Math.max(
+        Number(representative?.streak) || 0,
+        computeAdminStreakFromTsList(streakTsList)
+      );
+      const totalPosts = deviceIds.reduce((sum, deviceId) => {
+        return sum + (Number(postCountByDeviceId[deviceId]) || 0);
+      }, 0);
+      const stickersGiven = deviceIds.reduce((sum, deviceId) => {
+        return sum + (Number(stickerGivenByDeviceId[deviceId]) || 0);
+      }, 0);
+      const shareSummary = deviceIds.reduce((acc, deviceId) => {
+        if (hasLevelCardSharesByDeviceId[deviceId]) {
+          acc.hasRemoteShareMetric = true;
+          acc.levelCardShares += Math.max(0, Number(levelCardSharesByDeviceId[deviceId]) || 0);
+        }
+        return acc;
+      }, { hasRemoteShareMetric: false, levelCardShares: 0 });
+      const points = Math.max(group.maxServerPoints, workoutPoints) + glucosePoints;
+      const level = getAdminLevel(points).lv;
+      const stats = {
+        totalWorkouts,
+        streak,
+        points,
+        level,
+        totalPosts,
+        levelCardShares: shareSummary.levelCardShares,
+        stickersGiven,
+      };
+      const badgeIds = BADGE_RULES
+        .filter(rule => rule.test(stats))
+        .map(rule => rule.id);
+
+      // 공유 횟수 원본이 없을 때만 기존 badge_count가 정확히 1개 높으면 공유 스타로 보정
+      const inferredShareBadge = !shareSummary.hasRemoteShareMetric
+        && !badgeIds.includes('a9')
+        && group.maxServerBadgeCount === badgeIds.length + 1;
+      if (inferredShareBadge) badgeIds.push('a9');
+
+      return {
+        ...representative,
+        deviceId: String(representative?.deviceId || deviceIds[0] || '').trim(),
+        badgeIds,
+        badgeNames: badgeIds.map(id => BADGE_NAMES[id]).filter(Boolean),
+        badgeCount: badgeIds.length,
+        points,
+        totalWorkouts,
+        totalPosts,
+        stickersGiven,
+        levelCardShares: shareSummary.levelCardShares,
+      };
+    })
+    .filter(entry => entry.badgeCount > 0 && (entry.name || entry.nickname || entry.empId || entry.deviceId))
+    .sort((a, b) => {
+      if (b.badgeCount !== a.badgeCount) return b.badgeCount - a.badgeCount;
+      if (b.points !== a.points) return b.points - a.points;
+      if (b.totalWorkouts !== a.totalWorkouts) return b.totalWorkouts - a.totalWorkouts;
+      return (a.nickname || a.name || '').localeCompare(b.nickname || b.name || '', 'ko');
+    });
+}
+
+async function loadBadgeUsers(opts = {}) {
+  const tbody = document.getElementById('cs-tbody');
+  const force = !!opts.force;
+  const silent = !!opts.silent;
+  if (_badgeLoadInFlight && !force) return _badgeLoadInFlight;
+  if (tbody && !silent) tbody.innerHTML = '<tr><td class="empty-cell" colspan="6">불러오는 중...</td></tr>';
+  _badgeLoadInFlight = (async () => {
+    try {
+      if (_loadInFlight) {
+        try { await _loadInFlight; } catch(_) {}
+      }
+      const reactions = await getAdminBadgeReactionRows({ force });
+      GD_commstar = getAdminBadgeEntries(reactions);
+      renderBadgeUsers();
+    } catch(e) {
+      if (tbody) tbody.innerHTML = `<tr><td class="empty-cell" colspan="6">오류: ${e.message}</td></tr>`;
+    } finally {
+      _badgeLoadInFlight = null;
+    }
+  })();
+  return _badgeLoadInFlight;
 }
 
 // loadCommStarUsers는 switchTab에서 호출되므로 별칭 유지
-function loadCommStarUsers() { loadBadgeUsers(); }
+function loadCommStarUsers(opts = {}) { return loadBadgeUsers(opts); }
 
 function renderBadgeUsers() {
   const tbody = document.getElementById('cs-tbody');
   if (!tbody) return;
   const q = (document.getElementById('badge-search')?.value || '').trim().toLowerCase();
   const filtered = q
-    ? GD_commstar.filter(u => (u.nickname || u.name || '').toLowerCase().includes(q) || (u.empId || '').toLowerCase().includes(q))
+    ? GD_commstar.filter(u => [(u.nickname || ''), (u.name || ''), (u.empId || ''), (u.dept || '')].some(v => String(v).toLowerCase().includes(q)))
     : GD_commstar;
 
   const total = GD_commstar.length;
-  const maxBadges = GD_commstar[0]?.badge_count || 0;
-  const avg = total ? (GD_commstar.reduce((s, u) => s + (u.badge_count || 0), 0) / total).toFixed(1) : 0;
+  const maxBadges = GD_commstar.reduce((max, user) => Math.max(max, Number(user?.badgeCount) || 0), 0);
+  const avg = total ? (GD_commstar.reduce((sum, user) => sum + (Number(user?.badgeCount) || 0), 0) / total).toFixed(1) : 0;
   const el = id => document.getElementById(id);
   if (el('cs-total'))      el('cs-total').textContent = total;
   if (el('cs-max-badges')) el('cs-max-badges').textContent = maxBadges;
@@ -5612,8 +5825,7 @@ function renderBadgeUsers() {
 
   tbody.innerHTML = filtered.map((u, i) => {
     const name = u.nickname || u.name || '(이름 없음)';
-    const cnt = u.badge_count || 0;
-    // badge_count 바 표시 (최다 기준 %)
+    const cnt = Number(u.badgeCount) || 0;
     const pct = maxBadges > 0 ? Math.round((cnt / maxBadges) * 100) : 0;
     const bar = `<div style="display:flex;align-items:center;gap:6px">
       <div style="flex:1;height:6px;background:#e5e7eb;border-radius:4px;min-width:60px">
@@ -5621,22 +5833,16 @@ function renderBadgeUsers() {
       </div>
       <strong>${cnt}개</strong>
     </div>`;
-    // 어떤 배지인지 힌트 (points/streak 기반으로 추정 가능한 것만)
-    const hints = [];
-    if ((u.points || 0) >= 1) hints.push('첫 걸음');
-    if ((u.streak || 0) >= 3) hints.push('3일 연속');
-    if ((u.points || 0) >= 1000) hints.push('포인트 왕');
-    if ((u.streak || 0) >= 7) hints.push('7일 연속');
-    const hintHtml = hints.length
-      ? hints.map(h => `<span style="font-size:10px;background:#f3f4f6;color:#374151;padding:1px 6px;border-radius:8px">${h}</span>`).join(' ')
+    const badgeHtml = (u.badgeNames || []).length
+      ? u.badgeNames.map(badge => `<span style="display:inline-flex;align-items:center;font-size:10px;background:#f3f4f6;color:#374151;padding:2px 7px;border-radius:999px;margin:2px 4px 2px 0">${escHtml(badge)}</span>`).join('')
       : '<span style="font-size:11px;color:var(--t3)">—</span>';
     return `<tr>
       <td>${i + 1}</td>
-      <td><strong>${name}</strong></td>
-      <td style="font-size:11px;color:var(--t3)">${u.empId || '-'}</td>
-      <td style="font-size:11px">${u.dept || '-'}</td>
+      <td><strong>${escHtml(name)}</strong></td>
+      <td style="font-size:11px;color:var(--t3)">${escHtml(u.empId || '-')}</td>
+      <td style="font-size:11px">${escHtml(u.dept || '-')}</td>
       <td style="min-width:120px">${bar}</td>
-      <td style="min-width:140px">${hintHtml}</td>
+      <td style="min-width:200px">${badgeHtml}</td>
     </tr>`;
   }).join('');
 }
