@@ -2577,20 +2577,61 @@ function getAdminGlucosePointsMap(glucose = GD.glucose) {
   return byDeviceId;
 }
 
-function getAdminPointBreakdownMaps(workouts = GD.workouts, glucose = GD.glucose) {
+function getAdminServerPointsMap(users = GD.users) {
+  const byDeviceId = {};
+  (users || []).forEach(user => {
+    const deviceId = String(user?.deviceId || '').trim();
+    if (!deviceId) return;
+    byDeviceId[deviceId] = Math.max(
+      Math.max(0, Number(byDeviceId[deviceId]) || 0),
+      Math.max(0, Number(user?.points) || 0)
+    );
+  });
+  return byDeviceId;
+}
+
+function getAdminAlltimePointsFromValues(serverPoints = 0, workoutPoints = 0, glucosePoints = 0) {
+  const normalizedServerPoints = Math.max(0, Number(serverPoints) || 0);
+  const normalizedWorkoutPoints = Math.max(0, Number(workoutPoints) || 0);
+  const normalizedGlucosePoints = Math.max(0, Number(glucosePoints) || 0);
+  return normalizedWorkoutPoints + normalizedGlucosePoints + Math.max(0, normalizedServerPoints - normalizedWorkoutPoints);
+}
+
+function getAdminPointBreakdownMaps(workouts = GD.workouts, glucose = GD.glucose, users = GD.users) {
+  const workoutPointsByDeviceId = getAdminWorkoutPointsMap(workouts);
+  const glucosePointsByDeviceId = getAdminGlucosePointsMap(glucose);
+  const serverPointsByDeviceId = getAdminServerPointsMap(users);
+  const activityPointsByDeviceId = { ...workoutPointsByDeviceId };
+  Object.entries(glucosePointsByDeviceId).forEach(([deviceId, points]) => {
+    activityPointsByDeviceId[deviceId] = (activityPointsByDeviceId[deviceId] || 0) + (Number(points) || 0);
+  });
+  const bonusPointsByDeviceId = {};
+  const alltimePointsByDeviceId = {};
+  const deviceIds = new Set([
+    ...Object.keys(serverPointsByDeviceId),
+    ...Object.keys(activityPointsByDeviceId),
+  ]);
+  deviceIds.forEach(deviceId => {
+    const workoutPoints = Math.max(0, Number(workoutPointsByDeviceId[deviceId]) || 0);
+    const glucosePoints = Math.max(0, Number(glucosePointsByDeviceId[deviceId]) || 0);
+    const serverPoints = Math.max(0, Number(serverPointsByDeviceId[deviceId]) || 0);
+    const activityPoints = workoutPoints + glucosePoints;
+    const alltimePoints = getAdminAlltimePointsFromValues(serverPoints, workoutPoints, glucosePoints);
+    alltimePointsByDeviceId[deviceId] = alltimePoints;
+    bonusPointsByDeviceId[deviceId] = Math.max(0, alltimePoints - activityPoints);
+  });
   return {
-    workoutPointsByDeviceId: getAdminWorkoutPointsMap(workouts),
-    glucosePointsByDeviceId: getAdminGlucosePointsMap(glucose),
+    workoutPointsByDeviceId,
+    glucosePointsByDeviceId,
+    serverPointsByDeviceId,
+    activityPointsByDeviceId,
+    bonusPointsByDeviceId,
+    alltimePointsByDeviceId,
   };
 }
 
 function getAdminActivityPointsMap(workouts = GD.workouts, glucose = GD.glucose) {
-  const { workoutPointsByDeviceId, glucosePointsByDeviceId } = getAdminPointBreakdownMaps(workouts, glucose);
-  const byDeviceId = { ...workoutPointsByDeviceId };
-  Object.entries(glucosePointsByDeviceId).forEach(([deviceId, points]) => {
-    byDeviceId[deviceId] = (byDeviceId[deviceId] || 0) + (Number(points) || 0);
-  });
-  return byDeviceId;
+  return getAdminPointBreakdownMaps(workouts, glucose).activityPointsByDeviceId;
 }
 
 function getAdminEffectivePoints(u, pointMaps = null) {
@@ -2601,7 +2642,8 @@ function getAdminEffectivePoints(u, pointMaps = null) {
     : getAdminPointBreakdownMaps();
   const workoutPoints = deviceId ? Math.max(0, Number(maps.workoutPointsByDeviceId?.[deviceId]) || 0) : 0;
   const glucosePoints = deviceId ? Math.max(0, Number(maps.glucosePointsByDeviceId?.[deviceId]) || 0) : 0;
-  return Math.max(rawPoints, workoutPoints) + glucosePoints;
+  const serverPoints = deviceId ? Math.max(0, Number(maps.serverPointsByDeviceId?.[deviceId] ?? rawPoints) || 0) : rawPoints;
+  return getAdminAlltimePointsFromValues(serverPoints, workoutPoints, glucosePoints);
 }
 
 function getAdminAlltimeLeaguePoints(u) {
@@ -2658,7 +2700,6 @@ function getAdminLeagueEntries() {
           representative: null,
           representativeTs: 0,
           deviceIds: new Set(),
-          maxServerPoints: 0,
           isChallenger: false,
         });
       }
@@ -2669,7 +2710,6 @@ function getAdminLeagueEntries() {
         group.representativeTs = activeTs;
       }
       if (deviceId) group.deviceIds.add(deviceId);
-      group.maxServerPoints = Math.max(group.maxServerPoints, Math.max(0, Number(u?.points) || 0));
       group.isChallenger = group.isChallenger || isChallenger(u);
     });
 
@@ -2677,9 +2717,9 @@ function getAdminLeagueEntries() {
     .map(group => {
       const representative = group.representative || {};
       const deviceIds = [...group.deviceIds];
-      const workoutPoints = deviceIds.reduce((sum, deviceId) => sum + (Math.max(0, Number(pointMaps.workoutPointsByDeviceId?.[deviceId]) || 0)), 0);
-      const glucosePoints = deviceIds.reduce((sum, deviceId) => sum + (Math.max(0, Number(pointMaps.glucosePointsByDeviceId?.[deviceId]) || 0)), 0);
-      const pts = Math.max(group.maxServerPoints, workoutPoints) + glucosePoints;
+      const pts = deviceIds.reduce((sum, deviceId) => {
+        return sum + Math.max(0, Number(pointMaps.alltimePointsByDeviceId?.[deviceId]) || 0);
+      }, 0);
       const level = getAdminLevel(pts);
       return {
         ...representative,
@@ -3059,7 +3099,7 @@ function renderPtsPopupSummary(user, pointMaps = null) {
   const balancePoints = getAdminBalancePoints(u);
   curEl.textContent = visiblePoints.toLocaleString() + 'p';
   if (visiblePoints !== balancePoints) {
-    subEl.textContent = `실제 조정 잔액 ${balancePoints.toLocaleString()}p`;
+    subEl.textContent = `실제 조정 기준 ${balancePoints.toLocaleString()}p`;
     subEl.style.display = '';
   } else {
     subEl.textContent = '';
@@ -5713,7 +5753,6 @@ function getAdminBadgeEntries(reactions = GD_badgeReactions) {
           representative: null,
           representativeTs: 0,
           deviceIds: new Set(),
-          maxServerPoints: 0,
           maxServerBadgeCount: 0,
         });
       }
@@ -5724,7 +5763,6 @@ function getAdminBadgeEntries(reactions = GD_badgeReactions) {
         group.representativeTs = activeTs;
       }
       if (deviceId) group.deviceIds.add(deviceId);
-      group.maxServerPoints = Math.max(group.maxServerPoints, Math.max(0, Number(user?.points) || 0));
       group.maxServerBadgeCount = Math.max(group.maxServerBadgeCount, Math.max(0, Number(user?.badge_count ?? user?.badgeCount) || 0));
     });
 
@@ -5732,11 +5770,8 @@ function getAdminBadgeEntries(reactions = GD_badgeReactions) {
     .map(group => {
       const representative = group.representative || {};
       const deviceIds = [...group.deviceIds].filter(Boolean);
-      const workoutPoints = deviceIds.reduce((sum, deviceId) => {
-        return sum + Math.max(0, Number(pointMaps.workoutPointsByDeviceId?.[deviceId]) || 0);
-      }, 0);
-      const glucosePoints = deviceIds.reduce((sum, deviceId) => {
-        return sum + Math.max(0, Number(pointMaps.glucosePointsByDeviceId?.[deviceId]) || 0);
+      const points = deviceIds.reduce((sum, deviceId) => {
+        return sum + Math.max(0, Number(pointMaps.alltimePointsByDeviceId?.[deviceId]) || 0);
       }, 0);
       const totalWorkouts = deviceIds.reduce((sum, deviceId) => {
         return sum + (Number(workoutCountByDeviceId[deviceId]) || 0);
@@ -5759,7 +5794,6 @@ function getAdminBadgeEntries(reactions = GD_badgeReactions) {
         }
         return acc;
       }, { hasRemoteShareMetric: false, levelCardShares: 0 });
-      const points = Math.max(group.maxServerPoints, workoutPoints) + glucosePoints;
       const level = getAdminLevel(points).lv;
       const stats = {
         totalWorkouts,

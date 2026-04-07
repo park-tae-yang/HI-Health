@@ -9338,9 +9338,10 @@ async function shareLevelCard() {
   };
 
   // ── 데이터 수집 ────────────────────────────────────────────
-  const lv       = getLevel(S.user.totalPoints || S.user.points);
+  const totalPoints = getCurrentLeagueAlltimePoints();
+  const lv       = getLevel(totalPoints);
   const nextLv   = LEVELS.find(l => l.lv === lv.lv + 1);
-  const curPts   = S.user.totalPoints || S.user.points || 0;
+  const curPts   = totalPoints;
   const pct      = nextLv ? Math.min(96, Math.round((curPts - lv.min) / (nextLv.min - lv.min) * 100)) : 96;
   const name     = myDisplayName() || '회원';
   const streak   = S.user.streak || 0;
@@ -10146,11 +10147,12 @@ function updateStreak() {
   S.user.streak = computeStreakFromTsList(S.workouts.map(w => w.ts));
 }
 function earnedAchs() {
-  const lv = getLevel(S.user.totalPoints || S.user.points).lv;
+  const totalPoints = getCurrentLeagueAlltimePoints();
+  const lv = getLevel(totalPoints).lv;
   return ACHIEVEMENTS_DATA.filter(a => {
     const val = a.key === 'totalWorkouts' ? totalWorkouts()
               : a.key === 'streak'        ? S.user.streak
-              : a.key === 'points'        ? (S.user.totalPoints || S.user.points)
+              : a.key === 'points'        ? totalPoints
               : a.key === 'level'         ? lv
               : a.key === 'stickersReceived' ? S.user.stickersReceived
               : a.key === 'stickersGiven' ? (S.user.stickersGiven || 0)
@@ -10160,6 +10162,19 @@ function earnedAchs() {
     return val >= a.goal;
   });
 }
+
+function getLeagueAlltimeBonusPoints(serverPoints = 0, workoutPoints = 0) {
+  const normalizedServerPoints = Math.max(0, Number(serverPoints) || 0);
+  const normalizedWorkoutPoints = Math.max(0, Number(workoutPoints) || 0);
+  return Math.max(0, normalizedServerPoints - normalizedWorkoutPoints);
+}
+
+function getLeagueAlltimePointsFromParts(serverPoints = 0, workoutPoints = 0, glucosePoints = 0) {
+  const normalizedWorkoutPoints = Math.max(0, Number(workoutPoints) || 0);
+  const normalizedGlucosePoints = Math.max(0, Number(glucosePoints) || 0);
+  return normalizedWorkoutPoints + normalizedGlucosePoints + getLeagueAlltimeBonusPoints(serverPoints, normalizedWorkoutPoints);
+}
+
 function getCurrentLeagueAlltimePoints() {
   const serverPoints = Math.max(0, Number(S.user?.points || 0) || 0);
   const workoutPoints = (S.workouts || []).reduce((sum, workout) => {
@@ -10168,8 +10183,7 @@ function getCurrentLeagueAlltimePoints() {
   const glucosePoints = (S.glucoseRecords || []).reduce((sum, record) => {
     return sum + Math.max(0, Number(record?.points) || 0);
   }, 0);
-  const activityPoints = workoutPoints + glucosePoints;
-  return Math.max(0, Math.max(serverPoints, workoutPoints, activityPoints - glucosePoints) + glucosePoints);
+  return getLeagueAlltimePointsFromParts(serverPoints, workoutPoints, glucosePoints);
 }
 
 function getCurrentChallengeLeaguePoints() {
@@ -10950,8 +10964,8 @@ function getLeagueAlertMessage(entries = [], meEntry = null, tab = S.leagueTab) 
 function getLeagueGuideText(tab = S.leagueTab) {
   if (tab === 'weekly') return '이번주는 운동+혈당 포인트 기준으로 순위가 매겨져요.';
   if (tab === 'challenger') return '챌린지는 2026년 3월 25일 이후 운동+혈당 누적 포인트 기준이며, 가족인증은 제외돼요.';
-  if (tab === 'level') return '레벨별은 현재 보유포인트 기준으로 같은 레벨 이용자끼리 비교해요.';
-  if (tab === 'alltime') return '전체기록은 현재 보유포인트 기준으로 순위가 매겨져요.';
+  if (tab === 'level') return '레벨별은 운동+혈당과 관리자/가족인증 추가 포인트를 합친 기준으로 같은 레벨끼리 비교해요.';
+  if (tab === 'alltime') return '전체기록은 운동+혈당과 관리자/가족인증 추가 포인트를 합친 기준으로 순위가 매겨져요.';
   return '리그는 운동+혈당 누적 포인트 기준으로 순위가 매겨져요. 가족인증은 제외돼요.';
 }
 
@@ -11604,7 +11618,8 @@ function resetEntryUiState() {
    RENDER: HOME
 ════════════════════════════════════════ */
 function renderHome() {
-  const lv = getLevel(S.user.totalPoints || S.user.points);
+  const totalPoints = getCurrentLeagueAlltimePoints();
+  const lv = getLevel(totalPoints);
   const tw = todayWorkouts();
   const todayMins = tw.reduce((s,w) => s+w.duration, 0);
   const todayPts  = tw.reduce((s,w) => s+w.points, 0);
@@ -11663,7 +11678,7 @@ function renderHome() {
   const bar = document.getElementById('lv-bar');
   bar.style.transition = 'none';
   bar.style.width = '0%';
-  const tp = S.user.totalPoints || S.user.points;
+  const tp = totalPoints;
   const targetPct = nextLv
     ? Math.max(0, Math.min(100, Number(((tp - lv.min) / (nextLv.min - lv.min) * 100).toFixed(1))))
     : 100;
@@ -12843,8 +12858,9 @@ async function logExercise() {
     if (newBadges.length) syncBadgeCountToDb();
 
     // Check level up
-    const lv = getLevel(S.user.totalPoints || S.user.points);
-    const prevPts = (S.user.totalPoints || S.user.points) - pts;
+    const totalPoints = getCurrentLeagueAlltimePoints();
+    const lv = getLevel(totalPoints);
+    const prevPts = totalPoints - pts;
     const prevLv = getLevel(prevPts);
     if (lv.lv > prevLv.lv) {
       setTimeout(() => { haptic('levelup'); showCelebration('levelup', lv); }, 1200);
@@ -15306,13 +15322,10 @@ function buildRealLeagueUsers(allUsers, allRegs, alltimePtsByDevice = {}, challe
     const sumGroupMetric = metricMap => deviceIds.reduce((sum, deviceId) => {
       return sum + Math.max(0, Number(metricMap?.[deviceId]) || 0);
     }, 0);
-    const maxGroupMetric = metricMap => deviceIds.reduce((max, deviceId) => {
-      return Math.max(max, Math.max(0, Number(metricMap?.[deviceId]) || 0));
-    }, 0);
     const mergedPts = sumGroupMetric(alltimePtsByDevice);
     const mergedChallengePts = sumGroupMetric(challengePtsByDevice);
     const mergedWeeklyPts = sumGroupMetric(wPtsByDevice);
-    const mergedCumulativePts = Math.max(mergedPts, maxGroupMetric(cumulativePtsByDevice));
+    const mergedCumulativePts = Math.max(mergedPts, sumGroupMetric(cumulativePtsByDevice));
     const mergedStreak = Math.max(
       Number(representative?.streak) || 0,
       deviceIds.reduce((max, deviceId) => Math.max(max, Number(streakByDevice?.[deviceId]) || 0), 0)
@@ -15463,12 +15476,10 @@ async function fetchLeagueData(opts = {}) {
         const serverPoints = Math.max(0, Number(u.points || 0) || 0);
         const workoutPoints = Math.max(0, Number(workoutPtsByDevice[did]) || 0);
         const glucosePoints = Math.max(0, Number(glucosePtsByDevice[did]) || 0);
-        const activityPoints = Math.max(0, Number(totalPtsByDevice[did]) || 0);
         if (!totalPtsByDevice[did]) totalPtsByDevice[did] = serverPoints;
         // 전체/레벨용 누적 포인트:
-        // users.points에는 관리자/가족인증/운동 누적이 반영된 값을 기준으로 두고,
-        // 혈당은 기록 테이블 합산을 별도로 더해 누락되지 않게 보정한다.
-        cumulativePtsByDevice[did] = Math.max(0, Math.max(serverPoints, workoutPoints, activityPoints - glucosePoints) + glucosePoints);
+        // 운동+혈당 합계에 서버에서 운동 위로 더해진 추가 포인트(관리자 조정, 가족인증 등)만 더한다.
+        cumulativePtsByDevice[did] = getLeagueAlltimePointsFromParts(serverPoints, workoutPoints, glucosePoints);
         if (!(did in streakByDevice)) streakByDevice[did] = Number(u.streak) || 0;
       });
       _leagueCache.users = allUsers;
@@ -17081,10 +17092,11 @@ function renderRewards() {
   const earned = earnedAchs();
   document.getElementById('ach-list').innerHTML = ACHIEVEMENTS_DATA.map(a => {
     const isEarned = !!earned.find(e => e.id === a.id);
-    const lv = getLevel(S.user.totalPoints || S.user.points);
+    const totalPoints = getCurrentLeagueAlltimePoints();
+    const lv = getLevel(totalPoints);
     const curVal = a.key === 'totalWorkouts' ? totalWorkouts()
                  : a.key === 'streak'        ? S.user.streak
-                 : a.key === 'points'        ? (S.user.totalPoints || S.user.points)
+                 : a.key === 'points'        ? totalPoints
                  : a.key === 'level'         ? lv.lv
                  : a.key === 'stickersGiven' ? (S.user.stickersGiven || 0)
                  : a.key === 'totalPosts'    ? (S.posts || []).filter(p => p.deviceId === S.deviceId).length
@@ -17111,7 +17123,7 @@ function renderRewards() {
   // Level guide
   const levelGuideEl = document.getElementById('level-guide');
   if (levelGuideEl) {
-    const myLv = getLevel(S.user.points);
+    const myLv = getLevel(getCurrentLeagueAlltimePoints());
     levelGuideEl.innerHTML = LEVELS.map(l => `
       <div class="lg-row ${l.lv === myLv.lv ? 'current-level' : ''}">
         ${l.lv === myLv.lv ? `<div class="lg-current">현재</div>` : ''}
