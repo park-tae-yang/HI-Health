@@ -8229,8 +8229,7 @@ function hasPointSpendHistory() {
 }
 
 function getCurrentRewardPoints() {
-  const currentPoints = Math.max(0, Number(S.user?.points || 0));
-  return currentPoints;
+  return getCurrentLeagueAlltimePoints();
 }
 
 function reconcileTotalPointsFromRecords(opts = {}) {
@@ -10162,7 +10161,15 @@ function earnedAchs() {
   });
 }
 function getCurrentLeagueAlltimePoints() {
-  return Math.max(0, Number(S.user.points || 0) || getCurrentLeaguePoints());
+  const serverPoints = Math.max(0, Number(S.user?.points || 0) || 0);
+  const workoutPoints = (S.workouts || []).reduce((sum, workout) => {
+    return sum + Math.max(0, Number(workout?.points) || 0);
+  }, 0);
+  const glucosePoints = (S.glucoseRecords || []).reduce((sum, record) => {
+    return sum + Math.max(0, Number(record?.points) || 0);
+  }, 0);
+  const activityPoints = workoutPoints + glucosePoints;
+  return Math.max(0, Math.max(serverPoints, workoutPoints, activityPoints - glucosePoints) + glucosePoints);
 }
 
 function getCurrentChallengeLeaguePoints() {
