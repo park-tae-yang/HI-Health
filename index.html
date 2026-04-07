@@ -3427,6 +3427,9 @@
     .league-rank-badge.giver-star {
       background:#FFF3E0; color:#e65100; border-color:#ffb74d;
     }
+    .league-rank-badge.badge-king {
+      background:#F3E8FF; color:#7c3aed; border-color:#c4b5fd;
+    }
     .lb-level-icon {
       width:22px; height:22px; flex-shrink:0;
       display:inline-flex; align-items:center; justify-content:center;
@@ -9527,7 +9530,7 @@ async function shareLevelCard() {
           S.user.levelCardShares = (S.user.levelCardShares || 0) + 1;
           save();
           const newBadge = earnedAchs().find(a => !prevShareEarned.includes(a.id));
-          if (newBadge) setTimeout(() => { haptic('success'); showCelebration('badge', newBadge); }, 500);
+          if (newBadge) { syncBadgeCountToDb(); setTimeout(() => { haptic('success'); showCelebration('badge', newBadge); }, 500); }
         } catch(e) {
           if (e.name !== 'AbortError') showToast('공유에 실패했어요');
         }
@@ -9542,7 +9545,7 @@ async function shareLevelCard() {
         S.user.levelCardShares = (S.user.levelCardShares || 0) + 1;
         save();
         const newBadge = earnedAchs().find(a => !prevShareEarned.includes(a.id));
-        if (newBadge) setTimeout(() => { haptic('success'); showCelebration('badge', newBadge); }, 500);
+        if (newBadge) { syncBadgeCountToDb(); setTimeout(() => { haptic('success'); showCelebration('badge', newBadge); }, 500); }
       }
     }, 'image/png');
   } catch(e) {
@@ -10465,6 +10468,12 @@ function getLeagueBadgeState(entries = [], tab = S.leagueTab) {
     })[0];
   if (streakKing) badgeState.streakKingKey = getLeagueEntryKey(streakKing);
 
+  // 배지왕: 획득 배지 수 1위
+  const badgeKing = [...entries]
+    .filter(entry => (Number(entry?.badgeCount) || 0) > 0)
+    .sort((a, b) => (Number(b?.badgeCount) || 0) - (Number(a?.badgeCount) || 0))[0];
+  if (badgeKing) badgeState.badgeKingKey = getLeagueEntryKey(badgeKing);
+
   return badgeState;
 }
 
@@ -10501,6 +10510,10 @@ function renderLeagueEntryBadgesHtml(entry, badgeState = {}, tab = S.leagueTab) 
   }
   if (did && _communityTopGiverDeviceId && did === _communityTopGiverDeviceId) {
     badges.push('<span class="league-rank-badge giver-star">💖 공감왕</span>');
+  }
+  // 배지왕
+  if (key && badgeState.badgeKingKey && key === badgeState.badgeKingKey) {
+    badges.push('<span class="league-rank-badge badge-king">🏅 배지왕</span>');
   }
   return badges.length ? `<span class="league-rank-badges">${badges.join('')}</span>` : '';
 }
@@ -12806,6 +12819,7 @@ async function logExercise() {
 
     // Check new badges
     const newBadges = earnedAchs().filter(a => !prevEarnedIds.has(a.id));
+    if (newBadges.length) syncBadgeCountToDb();
 
     // Check level up
     const lv = getLevel(S.user.totalPoints || S.user.points);
@@ -15291,6 +15305,7 @@ function buildRealLeagueUsers(allUsers, allRegs, alltimePtsByDevice = {}, challe
       totalPts: mergedCumulativePts,
       wPts: mergedWeeklyPts,
       streak: mergedStreak,
+      badgeCount: Number(representative.badge_count) || 0,
       change: 0,
       isNew: false,
       isMe: false,
@@ -16423,6 +16438,7 @@ function react(buttonEl, postId, stickerId) {
       if (!localStorage.getItem(seenKey)) {
         localStorage.setItem(seenKey, '1');
         const giverAch = ACHIEVEMENTS_DATA.find(a => a.id === 'a10');
+        syncBadgeCountToDb();
         setTimeout(() => { haptic('success'); showCelebration('badge', giverAch); }, 400);
       }
     }
@@ -16433,6 +16449,15 @@ function react(buttonEl, postId, stickerId) {
   }
   updateStickerButtonUi(buttonEl, post.stickers[stickerId] || 0, myR.includes(stickerId));
   save();
+}
+
+/* ════════════════════════════════════════
+   배지 수 DB 동기화
+════════════════════════════════════════ */
+function syncBadgeCountToDb() {
+  if (IS_GUEST || !_db || !S.deviceId) return;
+  const count = earnedAchs().length;
+  _db.from('users').update({ badge_count: count }).eq('deviceId', S.deviceId).then(() => {});
 }
 
 /* ════════════════════════════════════════
