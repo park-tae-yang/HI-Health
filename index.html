@@ -15798,6 +15798,7 @@ function setCommunityTab(tab) {
   }
   if (tab === 'league') {
     refreshUserPointsFromServer();
+    fetchCommunityPosts();
     if (!wasLeagueVisible) {
       renderLeagueLoadingState();
       fetchLeagueData({ force: true, needWeekly: S.leagueTab === 'weekly' });
@@ -16057,7 +16058,10 @@ async function fetchCommunityPosts() {
     if (cacheAge < COMMUNITY_CACHE_TTL && _communityReactionCache.ts > 0) {
       // 캐시 유효 → 캐시된 반응·댓글로 바로 렌더
       const { stickerMap, myReactionMap, commentMap, allReactions: cachedRx } = _communityReactionCache;
-      if (cachedRx) _calcCommunityRankBadges(remotePosts, cachedRx);
+      if (cachedRx) {
+        _calcCommunityRankBadges(remotePosts, cachedRx);
+        if (document.getElementById('comm-league-panel')?.style.display !== 'none') renderLeague();
+      }
       targetPostIds.forEach(pid => {
         if (myReactionMap[pid]?.length) S.myReactions[pid] = [...myReactionMap[pid]];
         else delete S.myReactions[pid];
@@ -16095,6 +16099,8 @@ async function fetchCommunityPosts() {
       _calcCommunityRankBadges(remotePosts, allReactions);
       _communityReactionCache = { stickerMap, myReactionMap, commentMap, allReactions, ts: Date.now() };
       _applyRemotePostsToState(remotePosts, stickerMap, commentMap, targetPostIdSet);
+      // 리그 패널이 열려있으면 공감왕 배지 반영을 위해 재렌더
+      if (document.getElementById('comm-league-panel')?.style.display !== 'none') renderLeague();
     }
 
     renderCommunity();
